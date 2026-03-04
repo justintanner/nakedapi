@@ -19,6 +19,7 @@ export default defineConfig({
         "./packages/provider/moonshot/src"
       ),
       "@bareapi/kie": path.resolve(__dirname, "./packages/provider/kie/src"),
+      "@bareapi/xai": path.resolve(__dirname, "./packages/provider/xai/src"),
     },
   },
 });

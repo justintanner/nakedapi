@@ -32,6 +32,7 @@ export default [
         project: [
           "./tsconfig.base.json",
           "./packages/*/tsconfig.json",
+          "./packages/provider/*/tsconfig.json",
           "./examples/*/tsconfig.json",
         ],
       },

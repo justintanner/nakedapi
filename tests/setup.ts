@@ -2,6 +2,7 @@ process.env.NODE_ENV = "test";
 
 process.env.MOONSHOT_API_KEY = "sk-test-key";
 process.env.KIE_API_KEY = "sk-test-key";
+process.env.XAI_API_KEY = "sk-test-key";
 
 export const mockMoonshotResponse = {
   id: "test-id",

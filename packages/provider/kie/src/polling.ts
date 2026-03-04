@@ -33,20 +33,37 @@ interface KieResultJson {
   [key: string]: unknown;
 }
 
+export interface PollerEndpoints {
+  statusPath: string;
+  statusQueryParam: string;
+}
+
+const DEFAULT_ENDPOINTS: PollerEndpoints = {
+  statusPath: "/api/v1/jobs/recordInfo",
+  statusQueryParam: "taskId",
+};
+
 export class TaskPoller {
   private baseURL: string;
   private apiKey: string;
   private doFetch: typeof fetch;
+  private endpoints: PollerEndpoints;
 
-  constructor(baseURL: string, apiKey: string, doFetch: typeof fetch) {
+  constructor(
+    baseURL: string,
+    apiKey: string,
+    doFetch: typeof fetch,
+    endpoints?: Partial<PollerEndpoints>
+  ) {
     this.baseURL = baseURL;
     this.apiKey = apiKey;
     this.doFetch = doFetch;
+    this.endpoints = { ...DEFAULT_ENDPOINTS, ...endpoints };
   }
 
   async getTaskStatus(taskId: string): Promise<TaskStatusDetails> {
     const res = await this.doFetch(
-      `${this.baseURL}/api/v1/jobs/recordInfo?taskId=${encodeURIComponent(taskId)}`,
+      `${this.baseURL}${this.endpoints.statusPath}?${this.endpoints.statusQueryParam}=${encodeURIComponent(taskId)}`,
       {
         method: "GET",
         headers: {

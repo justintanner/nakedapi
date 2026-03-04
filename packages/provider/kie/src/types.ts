@@ -5,10 +5,18 @@ export type KieMediaModel =
   | "grok-imagine/image-to-image"
   | "grok-imagine/text-to-video"
   | "grok-imagine/image-to-video"
-  | "nano-banana-pro";
+  | "nano-banana-pro"
+  | "bytedance/seedance-1.5-pro"
+  | "nano-banana-2"
+  | "gpt-image/1.5-image-to-image"
+  | "seedream/5-lite-image-to-image"
+  | "elevenlabs/text-to-dialogue-v3"
+  | "elevenlabs/sound-effect-v2"
+  | "elevenlabs/speech-to-text"
+  | "sora-watermark-remover";
 
 // Media generation types
-export type MediaType = "image" | "video";
+export type MediaType = "image" | "video" | "audio" | "transcription";
 
 // Task status (internal representation)
 export type TaskStatus = "pending" | "processing" | "completed" | "failed";
@@ -136,6 +144,148 @@ export interface NanoBananaProRequest extends MediaRequest {
   };
 }
 
+// Seedance 1.5 Pro video request
+export interface SeedanceVideoRequest extends MediaRequest {
+  model: "bytedance/seedance-1.5-pro";
+  input: {
+    prompt: string;
+    input_urls?: string[];
+    aspect_ratio?: "1:1" | "21:9" | "4:3" | "3:4" | "16:9" | "9:16";
+    resolution?: "480p" | "720p" | "1080p";
+    duration?: "4" | "8" | "12";
+    fixed_lens?: boolean;
+    generate_audio?: boolean;
+  };
+}
+
+// Nano Banana 2 image request
+export interface NanoBanana2Request extends MediaRequest {
+  model: "nano-banana-2";
+  input: {
+    prompt: string;
+    image_input?: string[];
+    aspect_ratio?:
+      | "1:1"
+      | "2:3"
+      | "3:2"
+      | "3:4"
+      | "4:3"
+      | "4:5"
+      | "5:4"
+      | "9:16"
+      | "16:9"
+      | "21:9"
+      | "1:4"
+      | "1:8"
+      | "4:1"
+      | "8:1"
+      | "auto";
+    resolution?: "1K" | "2K" | "4K";
+    output_format?: "png" | "jpg";
+    google_search?: boolean;
+  };
+}
+
+// GPT Image 1.5 image-to-image request
+export interface GptImageToImageRequest extends MediaRequest {
+  model: "gpt-image/1.5-image-to-image";
+  input: {
+    input_urls: string[];
+    prompt: string;
+    aspect_ratio?: "1:1" | "2:3" | "3:2";
+    quality?: "medium" | "high";
+  };
+}
+
+// Seedream 5 Lite image-to-image request
+export interface SeedreamImageToImageRequest extends MediaRequest {
+  model: "seedream/5-lite-image-to-image";
+  input: {
+    image_urls: string[];
+    prompt: string;
+    aspect_ratio?:
+      | "1:1"
+      | "4:3"
+      | "3:4"
+      | "16:9"
+      | "9:16"
+      | "2:3"
+      | "3:2"
+      | "21:9";
+    quality?: "basic" | "high";
+  };
+}
+
+// ElevenLabs voice names
+export type ElevenLabsVoice =
+  | "Adam"
+  | "Alice"
+  | "Bill"
+  | "Brian"
+  | "Callum"
+  | "Charlie"
+  | "Chris"
+  | "Daniel"
+  | "Eric"
+  | "George"
+  | "Harry"
+  | "Jessica"
+  | "Laura"
+  | "Liam"
+  | "Lily"
+  | "Matilda"
+  | "River"
+  | "Roger"
+  | "Sarah"
+  | "Will";
+
+// Dialogue line for ElevenLabs text-to-dialogue
+export interface DialogueLine {
+  text: string;
+  voice: ElevenLabsVoice;
+}
+
+// ElevenLabs text-to-dialogue v3 request
+export interface ElevenLabsDialogueRequest extends MediaRequest {
+  model: "elevenlabs/text-to-dialogue-v3";
+  input: {
+    dialogue: DialogueLine[];
+    stability?: 0 | 0.5 | 1.0;
+    language_code?: string;
+  };
+}
+
+// ElevenLabs sound effect v2 request
+export interface ElevenLabsSfxRequest extends MediaRequest {
+  model: "elevenlabs/sound-effect-v2";
+  input: {
+    text: string;
+    output_format?: string;
+    prompt_influence?: number;
+    loop?: boolean;
+    duration_seconds?: number;
+  };
+}
+
+// ElevenLabs speech-to-text request
+export interface ElevenLabsSttRequest extends MediaRequest {
+  model: "elevenlabs/speech-to-text";
+  input: {
+    audio_url: string;
+    tag_audio_events?: boolean;
+    diarize?: boolean;
+    language_code?: string;
+  };
+}
+
+// Sora watermark remover request
+export interface SoraWatermarkRequest extends MediaRequest {
+  model: "sora-watermark-remover";
+  input: {
+    video_url: string;
+  };
+}
+
 // Union type for all media requests
 export type MediaGenerationRequest =
   | KlingVideoRequest
@@ -143,7 +293,15 @@ export type MediaGenerationRequest =
   | GrokImageToImageRequest
   | GrokTextToVideoRequest
   | GrokImageToVideoRequest
-  | NanoBananaProRequest;
+  | NanoBananaProRequest
+  | SeedanceVideoRequest
+  | NanoBanana2Request
+  | GptImageToImageRequest
+  | SeedreamImageToImageRequest
+  | ElevenLabsDialogueRequest
+  | ElevenLabsSfxRequest
+  | ElevenLabsSttRequest
+  | SoraWatermarkRequest;
 
 // Task creation response
 export interface TaskResponse {
@@ -225,7 +383,7 @@ export interface KieCreditsResponse {
   currency: string;
 }
 
-// Provider interface
+// Provider interface (sub-provider types imported in index.ts)
 export interface KieProvider {
   createTask(req: MediaGenerationRequest): Promise<TaskResponse>;
   getTaskStatus(taskId: string): Promise<TaskStatusDetails>;
@@ -238,4 +396,7 @@ export interface KieProvider {
   validateModel(modelId: string): boolean;
   getModels(): string[];
   getModelType(modelId: string): MediaType | null;
+  veo: import("./veo").VeoProvider;
+  suno: import("./suno").SunoProvider;
+  chat: import("./chat").KieChatProvider;
 }

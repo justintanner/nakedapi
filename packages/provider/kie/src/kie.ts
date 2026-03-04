@@ -11,6 +11,9 @@ import {
   KieCreditsResponse,
 } from "./types";
 import { TaskPoller } from "./polling";
+import { createVeoProvider } from "./veo";
+import { createSunoProvider } from "./suno";
+import { createChatProvider } from "./chat";
 
 interface KieApiResponse {
   code: number;
@@ -32,6 +35,14 @@ const SUPPORTED_MODELS: Record<
   "grok-imagine/text-to-video": { type: "video", supported: true },
   "grok-imagine/image-to-video": { type: "video", supported: true },
   "nano-banana-pro": { type: "image", supported: true },
+  "bytedance/seedance-1.5-pro": { type: "video", supported: true },
+  "nano-banana-2": { type: "image", supported: true },
+  "gpt-image/1.5-image-to-image": { type: "image", supported: true },
+  "seedream/5-lite-image-to-image": { type: "image", supported: true },
+  "elevenlabs/text-to-dialogue-v3": { type: "audio", supported: true },
+  "elevenlabs/sound-effect-v2": { type: "audio", supported: true },
+  "elevenlabs/speech-to-text": { type: "transcription", supported: true },
+  "sora-watermark-remover": { type: "video", supported: true },
 };
 
 export function kie(opts: KieOptions): KieProvider {
@@ -41,6 +52,9 @@ export function kie(opts: KieOptions): KieProvider {
   const poller = new TaskPoller(baseURL, opts.apiKey, doFetch);
 
   return {
+    veo: createVeoProvider(baseURL, opts.apiKey, doFetch, timeout),
+    suno: createSunoProvider(baseURL, opts.apiKey, doFetch, timeout),
+    chat: createChatProvider(baseURL, opts.apiKey, doFetch, timeout),
     async createTask(req: MediaGenerationRequest): Promise<TaskResponse> {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);

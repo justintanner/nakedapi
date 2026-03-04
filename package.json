@@ -14,9 +14,10 @@
     "examples/*"
   ],
   "scripts": {
-    "build": "pnpm run build:moonshot && pnpm run build:kie",
+    "build": "pnpm run build:moonshot && pnpm run build:kie && pnpm run build:xai",
     "build:moonshot": "pnpm --filter @bareapi/moonshot run build",
     "build:kie": "pnpm --filter @bareapi/kie run build",
+    "build:xai": "pnpm --filter @bareapi/xai run build",
     "clean": "rm -rf packages/provider/*/dist",
     "prelint": "pnpm run build",
     "lint": "eslint .",

@@ -52,6 +52,8 @@ importers:
 
   packages/provider/moonshot: {}
 
+  packages/provider/xai: {}
+
 packages:
 
   '@esbuild/aix-ppc64@0.21.5':

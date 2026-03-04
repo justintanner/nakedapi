@@ -4,7 +4,7 @@ This file provides guidelines for AI agents working in this repository.
 
 ## Project Overview
 
-TypeScript monorepo for AI provider packages (@bareapi/kimi25, @bareapi/kie).
+TypeScript monorepo for AI provider packages (@bareapi/moonshot, @bareapi/kie, @bareapi/xai).
 Uses pnpm workspaces, ES modules, and Vitest for testing.
 
 ## Build/Lint/Test Commands
@@ -15,8 +15,9 @@ pnpm install
 
 # Build all packages
 pnpm run build
-pnpm run build:kimi25    # Build specific package
+pnpm run build:moonshot  # Build specific package
 pnpm run build:kie
+pnpm run build:xai
 
 # Linting
 pnpm run lint            # Check linting
@@ -31,7 +32,7 @@ pnpm run test:run        # Run tests once
 pnpm run test:ui         # Run tests with UI
 
 # Run single test file
-pnpm run test:run tests/unit/providers/kimi25.test.ts
+pnpm run test:run tests/unit/providers/moonshot.test.ts
 
 # Clean build artifacts
 pnpm run clean
@@ -71,9 +72,9 @@ import { sseToIterable } from "./sse";
 
 - Functions: camelCase (e.g., `streamChat`, `createTask`)
 - Types/Interfaces: PascalCase (e.g., `ChatRequest`, `Provider`)
-- Error classes: PascalCase ending with "Error" (e.g., `Kimi25Error`)
+- Error classes: PascalCase ending with "Error" (e.g., `MoonshotError`)
 - Private helpers: camelCase with descriptive names
-- Type guards: `is<Name>` pattern (e.g., `isKimi25ErrorBody`)
+- Type guards: `is<Name>` pattern (e.g., `isMoonshotErrorBody`)
 
 ### Error Handling
 
@@ -84,11 +85,11 @@ import { sseToIterable } from "./sse";
 - Example:
 
 ```typescript
-export class Kimi25Error extends Error {
+export class MoonshotError extends Error {
   readonly status: number;
   constructor(message: string, status: number) {
     super(message);
-    this.name = "Kimi25Error";
+    this.name = "MoonshotError";
     this.status = status;
   }
 }
@@ -131,3 +132,21 @@ packages/provider/<name>/
 
 GitHub Actions runs: lint → build → test on every PR.
 All checks must pass before merging.
+
+## Claude Code Tooling (`.claude/`)
+
+### Hooks
+
+- **PostToolUse**: Auto-formats `.ts`/`.tsx` files with prettier after every Edit/Write (skips `.claude/` directory files).
+
+### Skills
+
+| Skill | Trigger | Description |
+|-------|---------|-------------|
+| `/cp` | "commit and push" | Stage, commit, push — skips secrets, `.env`, `dist/` |
+| `/qa` | "run qa", "check changes" | Build → lint → code smell scan → tests, with summary table |
+| `/strict` | "strict review" | Launches the strict FP review agent in background |
+
+### Agents
+
+- **strict** (cyan): FP and type-safety review agent. Reviews `packages/provider/*/src/` files for functional programming violations, `any` usage, and type-safety issues. Two modes: plan review (appends advice) and code review (fixes directly).

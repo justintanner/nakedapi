@@ -46,7 +46,7 @@ const SUPPORTED_MODELS: Record<
 };
 
 export function kie(opts: KieOptions): KieProvider {
-  const baseURL = opts.baseURL ?? "https://api.kei.ai";
+  const baseURL = opts.baseURL ?? "https://api.kie.ai";
   const doFetch = opts.fetch ?? fetch;
   const timeout = opts.timeout ?? 30000;
   const poller = new TaskPoller(baseURL, opts.apiKey, doFetch);

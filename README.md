@@ -16,30 +16,32 @@ This project is based on [TetherAI](https://github.com/nbursa/TetherAI) by Nenad
 - **Middleware**: Built-in retry with exponential backoff, multi-provider fallback
 - **Edge Compatible**: Works everywhere from Node.js to Cloudflare Workers
 - **Strict TypeScript**: 100% typed, zero `any` types
+- **Polly.js Test Harness**: Record/replay integration tests with a web UI for reviewing recordings
 
 ## Architecture
 
 ```
 packages/provider/
-├── kimi25/   – @bareapi/kimi25 (Moonshot AI / Kimi chat models)
-└── kie/      – @bareapi/kie (KIE AI media generation)
+├── moonshot/  – @bareapi/moonshot (Moonshot AI / Kimi chat models)
+├── kie/       – @bareapi/kie (KIE AI media generation, chat, audio)
+└── xai/       – @bareapi/xai (X.AI / Grok chat and search)
 ```
 
 Each package is standalone with zero dependencies. Copy-paste the architecture and middleware as needed.
 
 ## Quick Start
 
-### Kimi25 (Chat)
+### Moonshot (Chat)
 
 ```bash
-npm install @bareapi/kimi25
+npm install @bareapi/moonshot
 ```
 
 ```typescript
-import { kimi25, type ChatRequest } from "@bareapi/kimi25";
+import { moonshot, type ChatRequest } from "@bareapi/moonshot";
 
-const provider = kimi25({
-  apiKey: process.env.KIMI25_API_KEY!,
+const provider = moonshot({
+  apiKey: process.env.MOONSHOT_API_KEY!,
 });
 
 const request: ChatRequest = {
@@ -80,43 +82,131 @@ const result = await provider.generate({
 console.log("Image URL:", result.imageUrl);
 ```
 
+### xAI (Grok Chat & Search)
+
+```bash
+npm install @bareapi/xai
+```
+
+```typescript
+import { xai } from "@bareapi/xai";
+
+const provider = xai({
+  apiKey: process.env.XAI_API_KEY!,
+});
+
+// Chat
+const response = await provider.chat({
+  model: "grok-4-fast",
+  messages: [{ role: "user", content: "Hello!" }],
+});
+
+console.log(response.content);
+
+// Search X
+const searchResult = await provider.search("latest TypeScript news");
+console.log(searchResult.content);
+```
+
 ## Available Providers
 
-### [@bareapi/kimi25](packages/provider/kimi25)
+### [@bareapi/moonshot](packages/provider/moonshot)
 
-Kimi25 (Moonshot AI) provider for chat completions.
+Moonshot AI provider for chat completions.
 
 - **Zero Dependencies**: Everything included
 - **Streaming Chat**: Real-time token streaming
-- **Models**: `kimi-k2-5` (131K context)
+- **Files API**: Upload, list, delete, retrieve files
+- **Embeddings API**: Generate text embeddings
+- **Models**: `kimi-k2-5`, `moonshot-v1-128k`, `moonshot-v1-32k`, `moonshot-v1-8k`
 - **Middleware**: Retry, fallback built-in
 
 ### [@bareapi/kie](packages/provider/kie)
 
-Kie provider for media generation.
+Kie provider for media generation, chat, and audio.
 
 - **Zero Dependencies**: Everything included
-- **Video Models**: Kling 3.0, Grok Imagine
-- **Image Models**: Grok Imagine, Nano Banana Pro
+- **Video Models**: Kling 3.0, Grok Imagine, Seedance 1.5 Pro, Sora Watermark Remover
+- **Image Models**: Grok Imagine, Nano Banana Pro, Nano Banana 2, GPT Image, Seedream
+- **Audio Models**: ElevenLabs text-to-dialogue, sound effects, speech-to-text
+- **Sub-Providers**: Veo (Google video), Suno (music generation), Chat
 - **Task Polling**: Built-in polling with progress callbacks
+
+### [@bareapi/xai](packages/provider/xai)
+
+X.AI / Grok provider for chat and search.
+
+- **Zero Dependencies**: Everything included
+- **Chat Completions**: OpenAI-compatible chat API
+- **X Search**: Built-in tool for searching X/Twitter
+- **Tool Use**: Function calling support
+- **Models**: `grok-4-fast`
 
 ## Middleware
 
-Both providers support the same middleware pattern:
+Both `moonshot` and `kie` providers support the same middleware pattern:
 
 ```typescript
-import { kimi25, withRetry, withFallback } from "@bareapi/kimi25";
+import { moonshot, withRetry, withFallback } from "@bareapi/moonshot";
 
-const provider = withRetry(kimi25({ apiKey: process.env.KIMI25_API_KEY! }), {
+const provider = withRetry(moonshot({ apiKey: process.env.MOONSHOT_API_KEY! }), {
   retries: 3,
   baseMs: 500,
 });
 
 const fallbackProvider = withFallback([
-  kimi25({ apiKey: process.env.KIMI25_API_KEY_1! }),
-  kimi25({ apiKey: process.env.KIMI25_API_KEY_2! }),
+  moonshot({ apiKey: process.env.MOONSHOT_API_KEY_1! }),
+  moonshot({ apiKey: process.env.MOONSHOT_API_KEY_2! }),
 ]);
 ```
+
+## Testing
+
+### Unit Tests
+
+Unit tests live in `tests/unit/` and run with Vitest:
+
+```bash
+pnpm run test:run
+```
+
+### Integration Tests (Polly.js)
+
+Integration tests use [Polly.js](https://netflix.github.io/pollyjs/) to record and replay real HTTP interactions. This means tests run against actual API responses but don't require live API keys after the initial recording.
+
+Recordings are stored as HAR files in `tests/recordings/`.
+
+**Run integration tests (replay mode):**
+
+```bash
+pnpm run test:integration
+```
+
+**Record new fixtures (requires API keys):**
+
+```bash
+pnpm run test:integration:record
+```
+
+The test harness (`tests/harness.ts`) configures Polly with:
+- `record` / `replay` / `passthrough` modes via `POLLY_MODE` env var
+- Fetch adapter for intercepting HTTP requests
+- File system persister for saving HAR recordings
+- Automatic redaction of `Authorization` headers before persisting
+- Zero-delay timing in replay mode for fast test runs
+
+### Recording Review UI
+
+A built-in web UI lets you inspect and approve new or modified Polly recordings before committing them:
+
+```bash
+pnpm run harness
+```
+
+This starts a local server at `http://localhost:3475` with:
+- **Sidebar** listing all recordings with git status indicators (green = clean, yellow = modified, red = new)
+- **Request/Response panes** showing headers and syntax-highlighted JSON bodies
+- **Approve button** that stages the recording via `git add`
 
 ## Development
 
@@ -130,12 +220,6 @@ pnpm install
 
 ```bash
 pnpm run build
-```
-
-### Test
-
-```bash
-pnpm run test:run
 ```
 
 ### Lint

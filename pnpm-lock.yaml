@@ -55,7 +55,7 @@ importers:
 
   packages/provider/kie: {}
 
-  packages/provider/moonshot: {}
+  packages/provider/kimicoding: {}
 
   packages/provider/xai: {}
 

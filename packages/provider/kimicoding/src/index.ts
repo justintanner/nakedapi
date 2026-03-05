@@ -1,6 +1,6 @@
-export { moonshot } from "./moonshot";
+export { kimicoding } from "./kimicoding";
 
-export { MoonshotError } from "./types";
+export { KimiCodingError } from "./types";
 
 export { withRetry, withFallback } from "./middleware";
 
@@ -12,9 +12,6 @@ export type {
   ChatStreamChunk,
   ChatResponse,
   Provider,
-  MoonshotOptions,
-  MoonshotProvider,
-  FileObject,
-  EmbeddingResponse,
-  EmbeddingObject,
+  KimiCodingOptions,
+  KimiCodingProvider,
 } from "./types";

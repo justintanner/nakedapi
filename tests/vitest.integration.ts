@@ -10,9 +10,9 @@ export default defineConfig({
     exclude: ["node_modules", "dist"],
     testTimeout: 30000,
     alias: {
-      "@bareapi/moonshot": path.resolve(
+      "@bareapi/kimicoding": path.resolve(
         __dirname,
-        "../packages/provider/moonshot/src"
+        "../packages/provider/kimicoding/src"
       ),
       "@bareapi/kie": path.resolve(__dirname, "../packages/provider/kie/src"),
       "@bareapi/xai": path.resolve(__dirname, "../packages/provider/xai/src"),

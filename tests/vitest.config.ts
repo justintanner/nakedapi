@@ -14,9 +14,9 @@ export default defineConfig({
       reporter: ["text", "json", "html", "lcov"],
     },
     alias: {
-      "@bareapi/moonshot": path.resolve(
+      "@bareapi/kimicoding": path.resolve(
         __dirname,
-        "./packages/provider/moonshot/src"
+        "./packages/provider/kimicoding/src"
       ),
       "@bareapi/kie": path.resolve(__dirname, "./packages/provider/kie/src"),
       "@bareapi/xai": path.resolve(__dirname, "./packages/provider/xai/src"),

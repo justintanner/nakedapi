@@ -4,7 +4,7 @@ This file provides guidelines for AI agents working in this repository.
 
 ## Project Overview
 
-TypeScript monorepo for AI provider packages (@bareapi/moonshot, @bareapi/kie, @bareapi/xai).
+TypeScript monorepo for AI provider packages (@bareapi/kimicoding, @bareapi/kie, @bareapi/xai).
 Uses pnpm workspaces, ES modules, and Vitest for testing.
 
 ## Build/Lint/Test Commands
@@ -15,7 +15,7 @@ pnpm install
 
 # Build all packages
 pnpm run build
-pnpm run build:moonshot  # Build specific package
+pnpm run build:kimicoding  # Build specific package
 pnpm run build:kie
 pnpm run build:xai
 
@@ -32,7 +32,7 @@ pnpm run test:run        # Run tests once
 pnpm run test:ui         # Run tests with UI
 
 # Run single test file
-pnpm run test:run tests/unit/providers/moonshot.test.ts
+pnpm run test:run tests/unit/providers/kimicoding.test.ts
 
 # Clean build artifacts
 pnpm run clean
@@ -72,9 +72,9 @@ import { sseToIterable } from "./sse";
 
 - Functions: camelCase (e.g., `streamChat`, `createTask`)
 - Types/Interfaces: PascalCase (e.g., `ChatRequest`, `Provider`)
-- Error classes: PascalCase ending with "Error" (e.g., `MoonshotError`)
+- Error classes: PascalCase ending with "Error" (e.g., `KimiCodingError`)
 - Private helpers: camelCase with descriptive names
-- Type guards: `is<Name>` pattern (e.g., `isMoonshotErrorBody`)
+- Type guards: `is<Name>` pattern (e.g., `isAnthropicErrorBody`)
 
 ### Error Handling
 
@@ -85,11 +85,11 @@ import { sseToIterable } from "./sse";
 - Example:
 
 ```typescript
-export class MoonshotError extends Error {
+export class KimiCodingError extends Error {
   readonly status: number;
   constructor(message: string, status: number) {
     super(message);
-    this.name = "MoonshotError";
+    this.name = "KimiCodingError";
     this.status = status;
   }
 }
@@ -130,7 +130,7 @@ packages/provider/<name>/
 
 ## CI/CD
 
-GitHub Actions runs: lint → build → test on every PR.
+GitHub Actions runs: lint -> build -> test on every PR.
 All checks must pass before merging.
 
 ## Claude Code Tooling (`.claude/`)
@@ -143,8 +143,8 @@ All checks must pass before merging.
 
 | Skill | Trigger | Description |
 |-------|---------|-------------|
-| `/cp` | "commit and push" | Stage, commit, push — skips secrets, `.env`, `dist/` |
-| `/qa` | "run qa", "check changes" | Build → lint → code smell scan → tests, with summary table |
+| `/cp` | "commit and push" | Stage, commit, push -- skips secrets, `.env`, `dist/` |
+| `/qa` | "run qa", "check changes" | Build -> lint -> code smell scan -> tests, with summary table |
 | `/strict` | "strict review" | Launches the strict FP review agent in background |
 
 ### Agents

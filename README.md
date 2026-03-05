@@ -22,30 +22,30 @@ This project is based on [TetherAI](https://github.com/nbursa/TetherAI) by Nenad
 
 ```
 packages/provider/
-├── moonshot/  – @bareapi/moonshot (Moonshot AI / Kimi chat models)
-├── kie/       – @bareapi/kie (KIE AI media generation, chat, audio)
-└── xai/       – @bareapi/xai (X.AI / Grok chat and search)
+├── kimicoding/  – @bareapi/kimicoding (Kimi for Coding, Anthropic Messages API)
+├── kie/         – @bareapi/kie (KIE AI media generation, chat, audio)
+└── xai/         – @bareapi/xai (X.AI / Grok chat and search)
 ```
 
 Each package is standalone with zero dependencies. Copy-paste the architecture and middleware as needed.
 
 ## Quick Start
 
-### Moonshot (Chat)
+### Kimi for Coding (Chat)
 
 ```bash
-npm install @bareapi/moonshot
+npm install @bareapi/kimicoding
 ```
 
 ```typescript
-import { moonshot, type ChatRequest } from "@bareapi/moonshot";
+import { kimicoding, type ChatRequest } from "@bareapi/kimicoding";
 
-const provider = moonshot({
-  apiKey: process.env.MOONSHOT_API_KEY!,
+const provider = kimicoding({
+  apiKey: process.env.KIMI_CODING_API_KEY!,
 });
 
 const request: ChatRequest = {
-  model: "kimi-k2-5",
+  model: "k2p5",
   messages: [{ role: "user", content: "Hello!" }],
 };
 
@@ -110,15 +110,14 @@ console.log(searchResult.content);
 
 ## Available Providers
 
-### [@bareapi/moonshot](packages/provider/moonshot)
+### [@bareapi/kimicoding](packages/provider/kimicoding)
 
-Moonshot AI provider for chat completions.
+Kimi for Coding provider using Anthropic Messages API format.
 
 - **Zero Dependencies**: Everything included
 - **Streaming Chat**: Real-time token streaming
-- **Files API**: Upload, list, delete, retrieve files
-- **Embeddings API**: Generate text embeddings
-- **Models**: `kimi-k2-5`, `moonshot-v1-128k`, `moonshot-v1-32k`, `moonshot-v1-8k`
+- **Anthropic API Format**: Uses `/v1/messages` endpoint
+- **Models**: `k2p5` (262,144 context, 32,768 max output)
 - **Middleware**: Retry, fallback built-in
 
 ### [@bareapi/kie](packages/provider/kie)
@@ -144,19 +143,19 @@ X.AI / Grok provider for chat and search.
 
 ## Middleware
 
-Both `moonshot` and `kie` providers support the same middleware pattern:
+Both `kimicoding` and `kie` providers support the same middleware pattern:
 
 ```typescript
-import { moonshot, withRetry, withFallback } from "@bareapi/moonshot";
+import { kimicoding, withRetry, withFallback } from "@bareapi/kimicoding";
 
-const provider = withRetry(moonshot({ apiKey: process.env.MOONSHOT_API_KEY! }), {
+const provider = withRetry(kimicoding({ apiKey: process.env.KIMI_CODING_API_KEY! }), {
   retries: 3,
   baseMs: 500,
 });
 
 const fallbackProvider = withFallback([
-  moonshot({ apiKey: process.env.MOONSHOT_API_KEY_1! }),
-  moonshot({ apiKey: process.env.MOONSHOT_API_KEY_2! }),
+  kimicoding({ apiKey: process.env.KIMI_CODING_API_KEY_1! }),
+  kimicoding({ apiKey: process.env.KIMI_CODING_API_KEY_2! }),
 ]);
 ```
 

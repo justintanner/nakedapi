@@ -58,45 +58,7 @@ export interface Provider {
   getMaxTokens(modelId: string): number;
 }
 
-export interface FileObject {
-  id: string;
-  bytes: number;
-  created_at: number;
-  filename: string;
-  purpose: string;
-  status: "uploaded" | "processed" | "error";
-  status_details?: string;
-}
-
-export interface FileListResponse {
-  object: "list";
-  data: FileObject[];
-}
-
-export interface EmbeddingRequest {
-  input: string | string[];
-  model?: string;
-  encoding_format?: "float" | "base64";
-  dimensions?: number;
-}
-
-export interface EmbeddingObject {
-  object: "embedding";
-  index: number;
-  embedding: number[];
-}
-
-export interface EmbeddingResponse {
-  object: "list";
-  data: EmbeddingObject[];
-  model: string;
-  usage: {
-    prompt_tokens: number;
-    total_tokens: number;
-  };
-}
-
-export interface MoonshotOptions {
+export interface KimiCodingOptions {
   apiKey: string;
   baseURL?: string;
   maxRetries?: number;
@@ -104,32 +66,48 @@ export interface MoonshotOptions {
   fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 }
 
-export class MoonshotError extends Error {
+export class KimiCodingError extends Error {
   readonly status: number;
   constructor(message: string, status: number) {
     super(message);
-    this.name = "MoonshotError";
+    this.name = "KimiCodingError";
     this.status = status;
   }
 }
 
-export interface MoonshotProvider extends Provider {
-  listFiles(): Promise<FileObject[]>;
-  uploadFile(
-    file: File | Blob | Buffer,
-    purpose: string,
-    filename?: string
-  ): Promise<FileObject>;
-  deleteFile(fileId: string): Promise<void>;
-  retrieveFile(fileId: string): Promise<FileObject>;
-  retrieveFileContent(fileId: string): Promise<string>;
+export interface KimiCodingProvider extends Provider {}
 
-  createEmbedding(
-    input: string | string[],
-    model?: string,
-    options?: {
-      encoding_format?: "float" | "base64";
-      dimensions?: number;
-    }
-  ): Promise<EmbeddingResponse>;
+export interface AnthropicContentBlock {
+  type: "text" | "thinking";
+  text?: string;
+  thinking?: string;
+}
+
+export interface AnthropicMessage {
+  id: string;
+  type: string;
+  role: string;
+  content: AnthropicContentBlock[];
+  model: string;
+  stop_reason: string | null;
+  usage: {
+    input_tokens: number;
+    output_tokens: number;
+  };
+}
+
+export interface AnthropicStreamEvent {
+  type: string;
+  index?: number;
+  delta?: {
+    type?: string;
+    text?: string;
+    stop_reason?: string;
+  };
+  content_block?: AnthropicContentBlock;
+  message?: AnthropicMessage;
+  usage?: {
+    input_tokens?: number;
+    output_tokens?: number;
+  };
 }

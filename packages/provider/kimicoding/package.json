@@ -1,7 +1,7 @@
 {
-  "name": "@bareapi/moonshot",
+  "name": "@bareapi/kimicoding",
   "version": "0.1.0",
-  "description": "Moonshot AI provider for BareAPI - completely standalone with streaming-first API, file uploads, embeddings, and built-in middleware.",
+  "description": "Kimi for Coding provider for BareAPI - completely standalone with Anthropic Messages API format, streaming-first, and built-in middleware.",
   "license": "MIT",
   "repository": "github:justintanner/bareapi",
   "type": "module",
@@ -21,13 +21,12 @@
   "sideEffects": false,
   "keywords": [
     "ai",
-    "moonshot",
     "kimi",
-    "kimi-k2-5",
+    "kimicoding",
+    "k2p5",
+    "anthropic",
     "chat",
     "streaming",
-    "embeddings",
-    "files",
     "bareapi"
   ],
   "author": "Justin Tanner",

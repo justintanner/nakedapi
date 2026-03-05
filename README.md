@@ -5,10 +5,6 @@
 
 NakedAPI is a **standalone-first** TypeScript platform for integrating AI providers. Each package is **completely self-contained** with no external dependencies.
 
-## Credit
-
-This project is based on [TetherAI](https://github.com/nbursa/TetherAI) by Nenad Bursac, licensed under MIT. TetherAI provided the architectural foundation and code patterns used in this repository.
-
 ## What's Included
 
 - **Standalone Packages**: Each provider is completely independent

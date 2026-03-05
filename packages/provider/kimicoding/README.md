@@ -76,6 +76,48 @@ console.log(response.content);
 console.log(response.usage); // token counts
 ```
 
+### Promises (no async/await)
+
+```javascript
+import { kimicoding, textBlock, imageBase64 } from "@nakedapi/kimicoding";
+
+const provider = kimicoding({
+  apiKey: process.env.KIMI_CODING_API_KEY,
+  timeout: 60000,
+});
+
+provider
+  .chat({
+    model: "k2p5",
+    messages: [{ role: "user", content: "What is the capital of France?" }],
+    maxTokens: 256,
+  })
+  .then(function (response) {
+    console.log(response.content);
+
+    // Chain a vision request
+    return provider.chat({
+      model: "k2p5",
+      messages: [
+        {
+          role: "user",
+          content: [
+            imageBase64(pngBase64String, "image/png"),
+            textBlock("Describe this image."),
+          ],
+        },
+      ],
+      maxTokens: 512,
+    });
+  })
+  .then(function (response) {
+    console.log(response.content);
+  })
+  .catch(function (err) {
+    console.error(err.message);
+  });
+```
+
 ## Middleware Usage
 
 ```typescript

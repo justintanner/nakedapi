@@ -43,7 +43,14 @@
     "prettier": "^3.0.0",
     "typescript": "^5.0.0",
     "typescript-eslint": "^7.0.0",
-    "vitest": "^1.0.0"
+    "vitest": "^3.2.4"
+  },
+  "pnpm": {
+    "overrides": {
+      "minimatch@<10.2.3": "10.2.3",
+      "rollup@<4.59.0": "4.59.0",
+      "esbuild@<=0.24.2": "0.25.0"
+    }
   },
   "keywords": [
     "ai",

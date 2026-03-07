@@ -1,6 +1,6 @@
 # @nakedapi/kie
 
-Kie provider for video and image generation (Kling 3.0, Grok Imagine, Nano Banana Pro).
+Kie provider for media generation — video, image, audio, and transcription.
 
 ## Installation
 
@@ -12,14 +12,22 @@ pnpm add @nakedapi/kie
 
 ## Supported Models
 
-| Model                         | Type  | Description                                           |
-| ----------------------------- | ----- | ----------------------------------------------------- |
-| `kling-3.0/video`             | Video | High-quality video generation with multi-shot support |
-| `grok-imagine/text-to-image`  | Image | Text-to-image generation                              |
-| `grok-imagine/image-to-image` | Image | Image-to-image generation                             |
-| `grok-imagine/text-to-video`  | Video | Text-to-video generation                              |
-| `grok-imagine/image-to-video` | Video | Image-to-video generation                             |
-| `nano-banana-pro`             | Image | Google's advanced image generation model              |
+| Model                              | Type           | Description                                           |
+| ---------------------------------- | -------------- | ----------------------------------------------------- |
+| `kling-3.0/video`                  | Video          | High-quality video generation with multi-shot support |
+| `grok-imagine/text-to-image`       | Image          | Text-to-image generation                              |
+| `grok-imagine/image-to-image`      | Image          | Image-to-image generation                             |
+| `grok-imagine/text-to-video`       | Video          | Text-to-video generation                              |
+| `grok-imagine/image-to-video`      | Video          | Image-to-video generation                             |
+| `nano-banana-pro`                  | Image          | Advanced image generation                             |
+| `bytedance/seedance-1.5-pro`       | Video          | Seedance video generation                             |
+| `nano-banana-2`                    | Image          | Image generation with Google Search support           |
+| `gpt-image/1.5-image-to-image`     | Image          | GPT image-to-image editing                            |
+| `seedream/5-lite-image-to-image`   | Image          | Seedream image-to-image editing                       |
+| `elevenlabs/text-to-dialogue-v3`   | Audio          | Multi-voice dialogue generation                       |
+| `elevenlabs/sound-effect-v2`       | Audio          | Sound effect generation                               |
+| `elevenlabs/speech-to-text`        | Transcription  | Speech-to-text transcription                          |
+| `sora-watermark-remover`           | Video          | Remove watermarks from video                          |
 
 ## Usage
 
@@ -76,6 +84,34 @@ const { taskId } = await provider.createTask({
 console.log("Task ID:", taskId);
 ```
 
+### Upload Media
+
+```typescript
+import { readFile } from "node:fs/promises";
+
+const buffer = await readFile("./my-image.png");
+const file = new Blob([buffer], { type: "image/png" });
+
+const { downloadUrl } = await provider.uploadMedia({
+  file,
+  filename: "my-image.png",
+});
+
+console.log("Uploaded to:", downloadUrl);
+```
+
+### Get Temporary Download URL
+
+Convert a kie.ai file URL into a temporary downloadable link (valid 20 minutes):
+
+```typescript
+const { url } = await provider.getDownloadUrl(
+  "https://cdn.kie.ai/files/some-generated-video.mp4"
+);
+
+console.log("Download from:", url);
+```
+
 ### Nano Banana Pro
 
 ```typescript
@@ -128,9 +164,19 @@ Creates a Kie provider instance.
 **Methods:**
 
 - `createTask(req)`: Creates a media generation task
+- `uploadMedia(req)`: Uploads a file and returns a hosted URL
+- `getDownloadUrl(url)`: Converts a kie.ai file URL to a temporary download link (20 min)
+- `getCredits()`: Returns account credit balance
 - `validateModel(modelId)`: Checks if a model is supported
 - `getModels()`: Returns list of supported models
 - `getModelType(modelId)`: Returns the media type for a model
+
+**Sub-providers:**
+
+- `provider.veo.generate(req)`: Generate video with Veo (veo3, veo3_fast)
+- `provider.veo.extend(req)`: Extend an existing Veo video
+- `provider.suno.generate(req)`: Generate music with Suno
+- `provider.chat.chat(req)`: Chat completions (GPT-5.2)
 
 ## License
 

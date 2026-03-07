@@ -112,6 +112,20 @@ const { url } = await provider.getDownloadUrl(
 console.log("Download from:", url);
 ```
 
+### Check Task Status
+
+```typescript
+const task = await provider.getTask(taskId);
+
+if (task.state === "success") {
+  console.log("Result URLs:", task.result?.resultUrls);
+} else if (task.state === "fail") {
+  console.log("Failed:", task.failMsg);
+} else {
+  console.log(`In progress: ${task.progress}% (${task.state})`);
+}
+```
+
 ### Nano Banana Pro
 
 ```typescript
@@ -164,6 +178,7 @@ Creates a Kie provider instance.
 **Methods:**
 
 - `createTask(req)`: Creates a media generation task
+- `getTask(taskId)`: Returns current task state, progress, and results
 - `uploadMedia(req)`: Uploads a file and returns a hosted URL
 - `getDownloadUrl(url)`: Converts a kie.ai file URL to a temporary download link (20 min)
 - `getCredits()`: Returns account credit balance

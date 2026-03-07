@@ -36,8 +36,31 @@ describe("kie provider", () => {
     url: string;
   }
 
+  type KieTaskState = "waiting" | "queuing" | "generating" | "success" | "fail";
+
+  interface KieTaskResult {
+    resultUrls: string[];
+    resultObject?: Record<string, unknown>;
+  }
+
+  interface KieTaskInfo {
+    taskId: string;
+    model: string;
+    state: KieTaskState;
+    param: string;
+    result?: KieTaskResult;
+    failCode: string;
+    failMsg: string;
+    costTime: number;
+    completeTime: number;
+    createTime: number;
+    updateTime: number;
+    progress: number;
+  }
+
   interface KieProvider {
     createTask(req: MediaGenerationRequest): Promise<TaskResponse>;
+    getTask(taskId: string): Promise<KieTaskInfo>;
     uploadMedia(req: {
       file: Blob;
       filename: string;
@@ -94,6 +117,22 @@ describe("kie provider", () => {
   function createMockProvider(): KieProvider {
     return {
       createTask: vi.fn().mockResolvedValue({ taskId: "test-task-id" }),
+      getTask: vi.fn().mockResolvedValue({
+        taskId: "test-task-id",
+        model: "nano-banana-pro",
+        state: "success",
+        param: '{"prompt":"A sunset"}',
+        result: {
+          resultUrls: ["https://cdn.kie.ai/files/result.png"],
+        },
+        failCode: "",
+        failMsg: "",
+        costTime: 12000,
+        completeTime: 1700000000000,
+        createTime: 1700000000000,
+        updateTime: 1700000000000,
+        progress: 100,
+      } satisfies KieTaskInfo),
       uploadMedia: vi.fn().mockResolvedValue({
         downloadUrl: "https://kieai.redpandaai.co/uploads/test.png",
       }),
@@ -246,6 +285,18 @@ describe("kie provider", () => {
       messages: [{ role: "user", content: "Hello" }],
     });
     expect(result.content).toBe("Hello!");
+  });
+
+  it("should get task info", async () => {
+    const provider = createMockProvider();
+    const result = await provider.getTask("test-task-id");
+    expect(result.taskId).toBe("test-task-id");
+    expect(result.state).toBe("success");
+    expect(result.model).toBe("nano-banana-pro");
+    expect(result.progress).toBe(100);
+    expect(result.result?.resultUrls).toContain(
+      "https://cdn.kie.ai/files/result.png"
+    );
   });
 
   it("should get a temporary download URL", async () => {

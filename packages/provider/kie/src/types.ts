@@ -335,6 +335,36 @@ export interface DownloadUrlResponse {
   url: string;
 }
 
+// Task states
+export type KieTaskState =
+  | "waiting"
+  | "queuing"
+  | "generating"
+  | "success"
+  | "fail";
+
+// Task result (present when state === "success" and resultJson parses)
+export interface KieTaskResult {
+  resultUrls: string[];
+  resultObject?: Record<string, unknown>;
+}
+
+// Task info from GET /api/v1/jobs/recordInfo
+export interface KieTaskInfo {
+  taskId: string;
+  model: string;
+  state: KieTaskState;
+  param: string;
+  result?: KieTaskResult;
+  failCode: string;
+  failMsg: string;
+  costTime: number;
+  completeTime: number;
+  createTime: number;
+  updateTime: number;
+  progress: number;
+}
+
 // Credits response
 export interface KieCreditsResponse {
   balance: number;
@@ -345,6 +375,7 @@ export interface KieCreditsResponse {
 // Provider interface (sub-provider types imported in index.ts)
 export interface KieProvider {
   createTask(req: MediaGenerationRequest): Promise<TaskResponse>;
+  getTask(taskId: string): Promise<KieTaskInfo>;
   uploadMedia(req: UploadMediaRequest): Promise<UploadMediaResponse>;
   getDownloadUrl(url: string): Promise<DownloadUrlResponse>;
   getCredits(): Promise<KieCreditsResponse>;

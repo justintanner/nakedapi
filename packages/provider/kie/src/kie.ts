@@ -9,6 +9,8 @@ import {
   DownloadUrlResponse,
   UploadMediaRequest,
   UploadMediaResponse,
+  KieTaskInfo,
+  KieTaskState,
 } from "./types";
 import { createVeoProvider } from "./veo";
 import { createSunoProvider } from "./suno";
@@ -136,6 +138,112 @@ export function kie(opts: KieOptions): KieProvider {
         clearTimeout(timeoutId);
         if (error instanceof KieError) throw error;
         throw new KieError(`Failed to create task: ${error}`, 500);
+      }
+    },
+
+    async getTask(taskId: string): Promise<KieTaskInfo> {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+      try {
+        const res = await doFetch(
+          `${baseURL}/api/v1/jobs/recordInfo?taskId=${encodeURIComponent(taskId)}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${opts.apiKey}`,
+              "Content-Type": "application/json",
+            },
+            signal: controller.signal,
+          }
+        );
+
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          let message = `Kie API error: ${res.status}`;
+          try {
+            const errorData: unknown = await res.json();
+            if (
+              typeof errorData === "object" &&
+              errorData !== null &&
+              "msg" in errorData &&
+              typeof (errorData as { msg?: string }).msg === "string"
+            ) {
+              message = `Kie API error ${res.status}: ${(errorData as { msg: string }).msg}`;
+            }
+          } catch {
+            // ignore parse errors
+          }
+          throw new KieError(message, res.status);
+        }
+
+        interface RecordInfoApiResponse {
+          code: number;
+          msg: string;
+          data?: {
+            taskId?: string;
+            model?: string;
+            state?: string;
+            param?: string;
+            resultJson?: string;
+            failCode?: string;
+            failMsg?: string;
+            costTime?: number;
+            completeTime?: number;
+            createTime?: number;
+            updateTime?: number;
+            progress?: number;
+          };
+        }
+
+        const data: RecordInfoApiResponse = await res.json();
+
+        if (data.code !== 200 || !data.data) {
+          throw new KieError(data.msg || `API error: ${data.code}`, data.code);
+        }
+
+        const record = data.data;
+
+        let result: KieTaskInfo["result"];
+        if (record.resultJson) {
+          try {
+            const parsed: unknown = JSON.parse(record.resultJson);
+            if (typeof parsed === "object" && parsed !== null) {
+              const obj = parsed as Record<string, unknown>;
+              const resultUrls = Array.isArray(obj.resultUrls)
+                ? (obj.resultUrls as string[])
+                : [];
+              const resultObject =
+                typeof obj.resultObject === "object" &&
+                obj.resultObject !== null
+                  ? (obj.resultObject as Record<string, unknown>)
+                  : undefined;
+              result = { resultUrls, resultObject };
+            }
+          } catch {
+            // ignore malformed resultJson
+          }
+        }
+
+        return {
+          taskId: record.taskId ?? taskId,
+          model: record.model ?? "",
+          state: (record.state ?? "waiting") as KieTaskState,
+          param: record.param ?? "",
+          result,
+          failCode: record.failCode ?? "",
+          failMsg: record.failMsg ?? "",
+          costTime: record.costTime ?? 0,
+          completeTime: record.completeTime ?? 0,
+          createTime: record.createTime ?? 0,
+          updateTime: record.updateTime ?? 0,
+          progress: record.progress ?? 0,
+        };
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof KieError) throw error;
+        throw new KieError(`Failed to get task: ${error}`, 500);
       }
     },
 

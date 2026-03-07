@@ -32,6 +32,10 @@ describe("kie provider", () => {
     downloadUrl: string;
   }
 
+  interface DownloadUrlResponse {
+    url: string;
+  }
+
   interface KieProvider {
     createTask(req: MediaGenerationRequest): Promise<TaskResponse>;
     uploadMedia(req: {
@@ -39,6 +43,7 @@ describe("kie provider", () => {
       filename: string;
       mimeType?: string;
     }): Promise<UploadMediaResponse>;
+    getDownloadUrl(url: string): Promise<DownloadUrlResponse>;
     getCredits(): Promise<{
       balance: number;
       totalUsed: number;
@@ -91,6 +96,9 @@ describe("kie provider", () => {
       createTask: vi.fn().mockResolvedValue({ taskId: "test-task-id" }),
       uploadMedia: vi.fn().mockResolvedValue({
         downloadUrl: "https://kieai.redpandaai.co/uploads/test.png",
+      }),
+      getDownloadUrl: vi.fn().mockResolvedValue({
+        url: "https://cdn.kie.ai/tmp/download/test-file.mp4",
       }),
       getCredits: vi.fn().mockResolvedValue({
         balance: 100,
@@ -238,6 +246,14 @@ describe("kie provider", () => {
       messages: [{ role: "user", content: "Hello" }],
     });
     expect(result.content).toBe("Hello!");
+  });
+
+  it("should get a temporary download URL", async () => {
+    const provider = createMockProvider();
+    const result = await provider.getDownloadUrl(
+      "https://cdn.kie.ai/files/test-file.mp4"
+    );
+    expect(result.url).toBe("https://cdn.kie.ai/tmp/download/test-file.mp4");
   });
 
   it("should upload media and return download URL", async () => {

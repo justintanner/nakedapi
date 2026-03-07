@@ -40,6 +40,7 @@ export type {
   KieOptions,
   KieProvider,
   KieCreditsResponse,
+  DownloadUrlResponse,
   UploadMediaRequest,
   UploadMediaResponse,
 } from "./types";

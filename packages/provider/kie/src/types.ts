@@ -330,6 +330,11 @@ export class KieError extends Error {
   }
 }
 
+// Download URL response
+export interface DownloadUrlResponse {
+  url: string;
+}
+
 // Credits response
 export interface KieCreditsResponse {
   balance: number;
@@ -341,6 +346,7 @@ export interface KieCreditsResponse {
 export interface KieProvider {
   createTask(req: MediaGenerationRequest): Promise<TaskResponse>;
   uploadMedia(req: UploadMediaRequest): Promise<UploadMediaResponse>;
+  getDownloadUrl(url: string): Promise<DownloadUrlResponse>;
   getCredits(): Promise<KieCreditsResponse>;
   validateModel(modelId: string): boolean;
   getModels(): string[];

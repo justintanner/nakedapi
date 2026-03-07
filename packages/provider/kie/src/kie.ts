@@ -6,6 +6,7 @@ import {
   MediaType,
   KieError,
   KieCreditsResponse,
+  DownloadUrlResponse,
   UploadMediaRequest,
   UploadMediaResponse,
 } from "./types";
@@ -225,6 +226,61 @@ export function kie(opts: KieOptions): KieProvider {
 
     getModelType(modelId: string): MediaType | null {
       return SUPPORTED_MODELS[modelId]?.type || null;
+    },
+
+    async getDownloadUrl(url: string): Promise<DownloadUrlResponse> {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+      try {
+        const res = await doFetch(`${baseURL}/api/v1/common/download-url`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${opts.apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url }),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          let message = `Kie API error: ${res.status}`;
+          try {
+            const errorData: unknown = await res.json();
+            if (
+              typeof errorData === "object" &&
+              errorData !== null &&
+              "msg" in errorData &&
+              typeof (errorData as { msg?: string }).msg === "string"
+            ) {
+              message = `Kie API error ${res.status}: ${(errorData as { msg: string }).msg}`;
+            }
+          } catch {
+            // ignore parse errors
+          }
+          throw new KieError(message, res.status);
+        }
+
+        interface DownloadUrlApiResponse {
+          code: number;
+          msg: string;
+          data?: string;
+        }
+
+        const data: DownloadUrlApiResponse = await res.json();
+
+        if (data.code !== 200 || !data.data) {
+          throw new KieError(data.msg || `API error: ${data.code}`, data.code);
+        }
+
+        return { url: data.data };
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof KieError) throw error;
+        throw new KieError(`Failed to get download URL: ${error}`, 500);
+      }
     },
 
     async getCredits(): Promise<KieCreditsResponse> {

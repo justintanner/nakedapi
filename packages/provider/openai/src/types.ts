@@ -81,7 +81,10 @@ export interface OpenAiChatRequest {
     | "auto"
     | "none"
     | { type: "function"; function: { name: string } };
-  response_format?: { type: "text" | "json_object" | "json_schema"; json_schema?: Record<string, unknown> };
+  response_format?: {
+    type: "text" | "json_object" | "json_schema";
+    json_schema?: Record<string, unknown>;
+  };
 }
 
 // Chat response

@@ -132,9 +132,11 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
         messages: req.messages,
       };
       if (req.temperature !== undefined) body.temperature = req.temperature;
-      if (req.max_tokens !== undefined) body.max_tokens = req.max_tokens;
+      if (req.max_completion_tokens !== undefined) body.max_completion_tokens = req.max_completion_tokens;
+      else if (req.max_tokens !== undefined) body.max_tokens = req.max_tokens;
       if (req.tools) body.tools = req.tools;
       if (req.tool_choice) body.tool_choice = req.tool_choice;
+      if (req.response_format) body.response_format = req.response_format;
 
       const data = await makeRequest<OpenAIChatCompletion>(
         "/chat/completions",

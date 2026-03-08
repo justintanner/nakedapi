@@ -75,11 +75,13 @@ export interface OpenAiChatRequest {
   messages: OpenAiMessage[];
   temperature?: number;
   max_tokens?: number;
+  max_completion_tokens?: number;
   tools?: OpenAiTool[];
   tool_choice?:
     | "auto"
     | "none"
     | { type: "function"; function: { name: string } };
+  response_format?: { type: "text" | "json_object" | "json_schema"; json_schema?: Record<string, unknown> };
 }
 
 // Chat response

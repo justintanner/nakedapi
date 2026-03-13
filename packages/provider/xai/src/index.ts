@@ -19,5 +19,10 @@ export type {
   XaiImageReference,
   XaiGeneratedImage,
   XaiImageResponse,
+  XaiVideoGenerateRequest,
+  XaiVideoEditRequest,
+  XaiVideoReference,
+  XaiVideoAsyncResponse,
+  XaiVideoResult,
   XaiProvider,
 } from "./types";

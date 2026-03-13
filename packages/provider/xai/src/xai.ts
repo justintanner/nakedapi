@@ -5,6 +5,10 @@ import {
   XaiImageGenerateRequest,
   XaiImageEditRequest,
   XaiImageResponse,
+  XaiVideoGenerateRequest,
+  XaiVideoEditRequest,
+  XaiVideoAsyncResponse,
+  XaiVideoResult,
   XaiProvider,
   XaiError,
 } from "./types";
@@ -174,6 +178,109 @@ export function xai(opts: XaiOptions): XaiProvider {
     }
   }
 
+  async function makeJsonPostRequest<T>(
+    path: string,
+    body: unknown,
+    signal?: AbortSignal
+  ): Promise<T> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    if (signal) {
+      signal.addEventListener("abort", () => controller.abort());
+    }
+
+    try {
+      const res = await doFetch(`${baseURL}${path}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${opts.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        let message = `XAI API error: ${res.status}`;
+        try {
+          const errorData: unknown = await res.json();
+          if (
+            typeof errorData === "object" &&
+            errorData !== null &&
+            "error" in errorData
+          ) {
+            const err = (errorData as { error: { message?: string } }).error;
+            if (err?.message) {
+              message = `XAI API error ${res.status}: ${err.message}`;
+            }
+          }
+        } catch {
+          // ignore parse errors
+        }
+        throw new XaiError(message, res.status);
+      }
+
+      return (await res.json()) as T;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof XaiError) throw error;
+      throw new XaiError(`XAI request failed: ${error}`, 500);
+    }
+  }
+
+  async function makeGetRequest<T>(
+    path: string,
+    signal?: AbortSignal
+  ): Promise<T> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    if (signal) {
+      signal.addEventListener("abort", () => controller.abort());
+    }
+
+    try {
+      const res = await doFetch(`${baseURL}${path}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${opts.apiKey}`,
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        let message = `XAI API error: ${res.status}`;
+        try {
+          const errorData: unknown = await res.json();
+          if (
+            typeof errorData === "object" &&
+            errorData !== null &&
+            "error" in errorData
+          ) {
+            const err = (errorData as { error: { message?: string } }).error;
+            if (err?.message) {
+              message = `XAI API error ${res.status}: ${err.message}`;
+            }
+          }
+        } catch {
+          // ignore parse errors
+        }
+        throw new XaiError(message, res.status);
+      }
+
+      return (await res.json()) as T;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof XaiError) throw error;
+      throw new XaiError(`XAI request failed: ${error}`, 500);
+    }
+  }
+
   return {
     async chat(
       req: XaiChatRequest,
@@ -256,6 +363,39 @@ export function xai(opts: XaiOptions): XaiProvider {
       if (req.aspect_ratio !== undefined) body.aspect_ratio = req.aspect_ratio;
 
       return await makeImageRequest("/images/edits", body, signal);
+    },
+
+    async generateVideo(
+      req: XaiVideoGenerateRequest,
+      signal?: AbortSignal
+    ): Promise<XaiVideoAsyncResponse> {
+      const body: Record<string, unknown> = {
+        model: req.model ?? "grok-imagine-video",
+        prompt: req.prompt,
+      };
+      if (req.duration !== undefined) body.duration = req.duration;
+
+      return await makeJsonPostRequest("/videos/generations", body, signal);
+    },
+
+    async editVideo(
+      req: XaiVideoEditRequest,
+      signal?: AbortSignal
+    ): Promise<XaiVideoAsyncResponse> {
+      const body: Record<string, unknown> = {
+        model: req.model ?? "grok-imagine-video",
+        prompt: req.prompt,
+        video: req.video,
+      };
+
+      return await makeJsonPostRequest("/videos/edits", body, signal);
+    },
+
+    async getVideo(
+      requestId: string,
+      signal?: AbortSignal
+    ): Promise<XaiVideoResult> {
+      return await makeGetRequest(`/videos/${requestId}`, signal);
     },
   };
 }

@@ -103,6 +103,37 @@ export interface XaiImageResponse {
   data: XaiGeneratedImage[];
 }
 
+// Video generation request
+export interface XaiVideoGenerateRequest {
+  prompt: string;
+  model?: string;
+  duration?: number;
+}
+
+// Video reference for editing
+export interface XaiVideoReference {
+  url: string;
+}
+
+// Video editing request
+export interface XaiVideoEditRequest {
+  prompt: string;
+  model?: string;
+  video: XaiVideoReference;
+}
+
+// Video async response (returned from generate/edit)
+export interface XaiVideoAsyncResponse {
+  request_id: string;
+}
+
+// Video result (returned from polling)
+export interface XaiVideoResult {
+  status: string;
+  url?: string;
+  [key: string]: unknown;
+}
+
 // Provider interface
 export interface XaiProvider {
   chat(req: XaiChatRequest, signal?: AbortSignal): Promise<XaiChatResponse>;
@@ -115,6 +146,15 @@ export interface XaiProvider {
     req: XaiImageEditRequest,
     signal?: AbortSignal
   ): Promise<XaiImageResponse>;
+  generateVideo(
+    req: XaiVideoGenerateRequest,
+    signal?: AbortSignal
+  ): Promise<XaiVideoAsyncResponse>;
+  editVideo(
+    req: XaiVideoEditRequest,
+    signal?: AbortSignal
+  ): Promise<XaiVideoAsyncResponse>;
+  getVideo(requestId: string, signal?: AbortSignal): Promise<XaiVideoResult>;
 }
 
 // Error class

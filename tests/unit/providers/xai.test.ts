@@ -47,9 +47,51 @@ describe("xai provider", () => {
       | { type: "function"; function: { name: string } };
   }
 
+  interface XaiImageReference {
+    url: string;
+    type?: "image_url";
+  }
+
+  interface XaiImageGenerateRequest {
+    prompt: string;
+    model?: string;
+    n?: number;
+    response_format?: "url" | "b64_json";
+    aspect_ratio?: string;
+    resolution?: "1k" | "2k";
+  }
+
+  interface XaiImageEditRequest {
+    prompt: string;
+    model?: string;
+    image?: XaiImageReference;
+    images?: XaiImageReference[];
+    n?: number;
+    response_format?: "url" | "b64_json";
+    aspect_ratio?: string;
+  }
+
+  interface XaiGeneratedImage {
+    url?: string;
+    b64_json?: string;
+    revised_prompt?: string;
+  }
+
+  interface XaiImageResponse {
+    data: XaiGeneratedImage[];
+  }
+
   interface XaiProvider {
     chat(req: XaiChatRequest, signal?: AbortSignal): Promise<XaiChatResponse>;
     search(query: string, signal?: AbortSignal): Promise<XaiChatResponse>;
+    generateImage(
+      req: XaiImageGenerateRequest,
+      signal?: AbortSignal
+    ): Promise<XaiImageResponse>;
+    editImage(
+      req: XaiImageEditRequest,
+      signal?: AbortSignal
+    ): Promise<XaiImageResponse>;
   }
 
   function createMockProvider(): XaiProvider {
@@ -73,6 +115,21 @@ describe("xai provider", () => {
           totalTokens: 80,
         },
         finishReason: "stop",
+      }),
+      generateImage: vi.fn().mockResolvedValue({
+        data: [
+          {
+            url: "https://api.x.ai/images/123.jpg",
+            revised_prompt: "A cat in a tree",
+          },
+        ],
+      }),
+      editImage: vi.fn().mockResolvedValue({
+        data: [
+          {
+            url: "https://api.x.ai/images/456.jpg",
+          },
+        ],
       }),
     };
   }
@@ -178,5 +235,120 @@ describe("xai provider", () => {
       ],
     });
     expect(provider.chat).toHaveBeenCalled();
+  });
+
+  describe("image generation", () => {
+    it("should generate an image", async () => {
+      const provider = createMockProvider();
+      const result = await provider.generateImage({
+        prompt: "A cat in a tree",
+      });
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].url).toBe("https://api.x.ai/images/123.jpg");
+      expect(result.data[0].revised_prompt).toBe("A cat in a tree");
+    });
+
+    it("should generate multiple images", async () => {
+      const provider = createMockProvider();
+      (provider.generateImage as ReturnType<typeof vi.fn>).mockResolvedValue({
+        data: [
+          { url: "https://api.x.ai/images/1.jpg" },
+          { url: "https://api.x.ai/images/2.jpg" },
+          { url: "https://api.x.ai/images/3.jpg" },
+        ],
+      });
+      const result = await provider.generateImage({
+        prompt: "A futuristic city",
+        n: 3,
+      });
+      expect(result.data).toHaveLength(3);
+    });
+
+    it("should support custom model for image generation", async () => {
+      const provider = createMockProvider();
+      await provider.generateImage({
+        prompt: "A cat",
+        model: "grok-imagine-image-pro",
+      });
+      expect(provider.generateImage).toHaveBeenCalledWith({
+        prompt: "A cat",
+        model: "grok-imagine-image-pro",
+      });
+    });
+
+    it("should support aspect_ratio and resolution", async () => {
+      const provider = createMockProvider();
+      await provider.generateImage({
+        prompt: "A mountain landscape",
+        aspect_ratio: "16:9",
+        resolution: "2k",
+      });
+      expect(provider.generateImage).toHaveBeenCalledWith({
+        prompt: "A mountain landscape",
+        aspect_ratio: "16:9",
+        resolution: "2k",
+      });
+    });
+
+    it("should support base64 response format", async () => {
+      const provider = createMockProvider();
+      (provider.generateImage as ReturnType<typeof vi.fn>).mockResolvedValue({
+        data: [
+          {
+            b64_json: "base64encodedimagedata...",
+            revised_prompt: "A cat in a tree",
+          },
+        ],
+      });
+      const result = await provider.generateImage({
+        prompt: "A cat in a tree",
+        response_format: "b64_json",
+      });
+      expect(result.data[0].b64_json).toBe("base64encodedimagedata...");
+      expect(result.data[0].url).toBeUndefined();
+    });
+
+    it("should edit an image", async () => {
+      const provider = createMockProvider();
+      const result = await provider.editImage({
+        prompt: "Add a hat to this cat",
+        image: {
+          url: "https://example.com/cat.jpg",
+          type: "image_url",
+        },
+      });
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].url).toBe("https://api.x.ai/images/456.jpg");
+    });
+
+    it("should edit multiple images", async () => {
+      const provider = createMockProvider();
+      await provider.editImage({
+        prompt: "Combine these images",
+        images: [
+          { url: "https://example.com/cat.jpg", type: "image_url" },
+          { url: "https://example.com/dog.jpg", type: "image_url" },
+        ],
+        aspect_ratio: "1:1",
+      });
+      expect(provider.editImage).toHaveBeenCalledWith({
+        prompt: "Combine these images",
+        images: [
+          { url: "https://example.com/cat.jpg", type: "image_url" },
+          { url: "https://example.com/dog.jpg", type: "image_url" },
+        ],
+        aspect_ratio: "1:1",
+      });
+    });
+
+    it("should support AbortSignal", async () => {
+      const provider = createMockProvider();
+      const controller = new AbortController();
+      await provider.generateImage({ prompt: "A cat" }, controller.signal);
+      expect(provider.generateImage).toHaveBeenCalledWith(
+        { prompt: "A cat" },
+        controller.signal
+      );
+    });
   });
 });

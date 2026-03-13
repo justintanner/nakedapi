@@ -114,6 +114,8 @@ const HTML = `<!DOCTYPE html>
   #approve-btn:disabled { opacity: .4; cursor: default; }
   #status-msg { font-size: 12px; color: #a6adc8; }
   .empty { padding: 40px; text-align: center; color: #6c7086; font-size: 14px; }
+  .b64-img-preview { max-width: 320px; max-height: 240px; border-radius: 6px; border: 1px solid #313244; display: block; margin: 4px 0; }
+  .b64-truncated { color: #6c7086; font-style: italic; }
 </style>
 </head>
 <body>
@@ -133,6 +135,14 @@ const HTML = `<!DOCTYPE html>
 let recordings = [];
 let selected = null;
 
+function inferMimeType(b64) {
+  if (b64.startsWith("/9j/")) return "image/jpeg";
+  if (b64.startsWith("iVBOR")) return "image/png";
+  if (b64.startsWith("R0lGOD")) return "image/gif";
+  if (b64.startsWith("UklGR")) return "image/webp";
+  return null;
+}
+
 function syntaxHighlight(json) {
   if (typeof json !== "string") json = JSON.stringify(json, null, 2);
   return json
@@ -142,6 +152,45 @@ function syntaxHighlight(json) {
     .replace(/: (\\d+\\.?\\d*)/g, ': <span class="json-num">$1</span>')
     .replace(/: (true|false)/g, ': <span class="json-bool">$1</span>')
     .replace(/: (null)/g, ': <span class="json-null">$1</span>');
+}
+
+function inlineBase64Images(html) {
+  // b64_json keys (xAI image responses) — always an image
+  html = html.replace(
+    /(<span class="json-key">"b64_json"<\\/span>:\\s*<span class="json-str">")(([A-Za-z0-9+\\/=]{40})([A-Za-z0-9+\\/=]*))"<\\/span>/g,
+    function(match, prefix, fullB64, first40, rest) {
+      var mime = inferMimeType(fullB64) || "image/jpeg";
+      return prefix + first40 + '...<span class="b64-truncated">[' + fullB64.length + ' chars]</span>"</span>' +
+        '<img class="b64-img-preview" src="data:' + mime + ';base64,' + fullB64 + '">';
+    }
+  );
+  // "data" keys with 100+ base64 chars (kimicoding vision)
+  html = html.replace(
+    /(<span class="json-key">"data"<\\/span>:\\s*<span class="json-str">")(([A-Za-z0-9+\\/=]{100,}))"<\\/span>/g,
+    function(match, prefix, fullB64, _unused) {
+      var mime = inferMimeType(fullB64);
+      if (!mime) return match;
+      return prefix + fullB64.substring(0, 40) + '...<span class="b64-truncated">[' + fullB64.length + ' chars]</span>"</span>' +
+        '<img class="b64-img-preview" src="data:' + mime + ';base64,' + fullB64 + '">';
+    }
+  );
+  // "url" keys with data:image URIs (OpenAI vision)
+  html = html.replace(
+    /(<span class="json-key">"url"<\\/span>:\\s*<span class="json-str">")(data:image\\/[a-z+]+;base64,([A-Za-z0-9+\\/=]{40})([A-Za-z0-9+\\/=]*))"<\\/span>/g,
+    function(match, prefix, fullUri, first40, rest) {
+      return prefix + fullUri.substring(0, 40) + '...<span class="b64-truncated">[' + fullUri.length + ' chars]</span>"</span>' +
+        '<img class="b64-img-preview" src="' + fullUri + '">';
+    }
+  );
+  // "url" keys with HTTP image URLs (xAI, OpenAI image generation)
+  html = html.replace(
+    /(<span class="json-key">"url"<\\/span>:\\s*<span class="json-str">")(https?:\\/\\/[^"]*\\.(?:jpe?g|png|gif|webp|svg)(?:[^"]*)?)"<\\/span>/gi,
+    function(match, prefix, fullUrl) {
+      return prefix + fullUrl + '"</span>' +
+        '<img class="b64-img-preview" src="' + fullUrl + '">';
+    }
+  );
+  return html;
 }
 
 function redactAuth(val) { return /^bearer\\s/i.test(val) ? "Bearer ***" : val; }
@@ -165,12 +214,12 @@ function renderEntry(entry) {
     '<div class="pane-label">Request</div>' +
     '<div class="header-line" style="font-size:15px;font-weight:600;margin-bottom:6px">' + req.method + " " + new URL(req.url).pathname + '</div>' +
     renderHeaders(req.headers) +
-    (req.postData?.text ? '<pre class="body">' + syntaxHighlight(tryParseJson(req.postData.text)) + '</pre>' : '');
+    (req.postData?.text ? '<pre class="body">' + inlineBase64Images(syntaxHighlight(tryParseJson(req.postData.text))) + '</pre>' : '');
 
   document.getElementById("res-pane").innerHTML =
     '<div class="pane-label">Response ' + res.status + ' ' + res.statusText + '</div>' +
     renderHeaders(res.headers) +
-    (res.content?.text ? '<pre class="body">' + syntaxHighlight(tryParseJson(res.content.text)) + '</pre>' : '');
+    (res.content?.text ? '<pre class="body">' + inlineBase64Images(syntaxHighlight(tryParseJson(res.content.text))) + '</pre>' : '');
 }
 
 function render() {

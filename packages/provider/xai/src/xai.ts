@@ -2,6 +2,9 @@ import {
   XaiOptions,
   XaiChatRequest,
   XaiChatResponse,
+  XaiImageGenerateRequest,
+  XaiImageEditRequest,
+  XaiImageResponse,
   XaiProvider,
   XaiError,
 } from "./types";
@@ -29,6 +32,14 @@ interface OpenAIChatCompletion {
     total_tokens?: number;
   };
   error?: { message?: string; type?: string };
+}
+
+interface XaiImageGenerationApiResponse {
+  data: Array<{
+    url?: string;
+    b64_json?: string;
+    revised_prompt?: string;
+  }>;
 }
 
 export function xai(opts: XaiOptions): XaiProvider {
@@ -110,6 +121,59 @@ export function xai(opts: XaiOptions): XaiProvider {
     };
   }
 
+  async function makeImageRequest(
+    path: string,
+    body: unknown,
+    signal?: AbortSignal
+  ): Promise<XaiImageGenerationApiResponse> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    if (signal) {
+      signal.addEventListener("abort", () => controller.abort());
+    }
+
+    try {
+      const res = await doFetch(`${baseURL}${path}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${opts.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        let message = `XAI API error: ${res.status}`;
+        try {
+          const errorData: unknown = await res.json();
+          if (
+            typeof errorData === "object" &&
+            errorData !== null &&
+            "error" in errorData
+          ) {
+            const err = (errorData as { error: { message?: string } }).error;
+            if (err?.message) {
+              message = `XAI API error ${res.status}: ${err.message}`;
+            }
+          }
+        } catch {
+          // ignore parse errors
+        }
+        throw new XaiError(message, res.status);
+      }
+
+      return (await res.json()) as XaiImageGenerationApiResponse;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof XaiError) throw error;
+      throw new XaiError(`XAI request failed: ${error}`, 500);
+    }
+  }
+
   return {
     async chat(
       req: XaiChatRequest,
@@ -157,6 +221,41 @@ export function xai(opts: XaiOptions): XaiProvider {
 
       const data = await makeRequest("/chat/completions", body, signal);
       return parseResponse(data);
+    },
+
+    async generateImage(
+      req: XaiImageGenerateRequest,
+      signal?: AbortSignal
+    ): Promise<XaiImageResponse> {
+      const body: Record<string, unknown> = {
+        model: req.model ?? "grok-imagine-image",
+        prompt: req.prompt,
+      };
+      if (req.n !== undefined) body.n = req.n;
+      if (req.response_format !== undefined)
+        body.response_format = req.response_format;
+      if (req.aspect_ratio !== undefined) body.aspect_ratio = req.aspect_ratio;
+      if (req.resolution !== undefined) body.resolution = req.resolution;
+
+      return await makeImageRequest("/images/generations", body, signal);
+    },
+
+    async editImage(
+      req: XaiImageEditRequest,
+      signal?: AbortSignal
+    ): Promise<XaiImageResponse> {
+      const body: Record<string, unknown> = {
+        model: req.model ?? "grok-imagine-image",
+        prompt: req.prompt,
+      };
+      if (req.image) body.image = req.image;
+      if (req.images) body.images = req.images;
+      if (req.n !== undefined) body.n = req.n;
+      if (req.response_format !== undefined)
+        body.response_format = req.response_format;
+      if (req.aspect_ratio !== undefined) body.aspect_ratio = req.aspect_ratio;
+
+      return await makeImageRequest("/images/edits", body, signal);
     },
   };
 }

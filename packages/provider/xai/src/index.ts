@@ -14,5 +14,10 @@ export type {
   XaiUsage,
   XaiChatRequest,
   XaiChatResponse,
+  XaiImageGenerateRequest,
+  XaiImageEditRequest,
+  XaiImageReference,
+  XaiGeneratedImage,
+  XaiImageResponse,
   XaiProvider,
 } from "./types";

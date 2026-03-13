@@ -59,6 +59,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/provider/kimicoding
 
+  packages/provider/fal: {}
+
   packages/provider/kie: {}
 
   packages/provider/kimicoding: {}

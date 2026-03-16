@@ -52,10 +52,30 @@ async function addJsExtensions(dir) {
   }
 }
 
+async function fixSourcemaps(dir) {
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      await fixSourcemaps(fullPath);
+    } else if (entry.name.endsWith(".map")) {
+      const content = await fs.readFile(fullPath, "utf8");
+      const map = JSON.parse(content);
+      if (Array.isArray(map.sources)) {
+        map.sources = map.sources.map((s) =>
+          s.startsWith("../../../") ? s.replace("../../../", "../../") : s
+        );
+        await fs.writeFile(fullPath, JSON.stringify(map));
+      }
+    }
+  }
+}
+
 (async function main() {
   await rmrf(SRC_OUT);
   await moveDir(SRC_IN, SRC_OUT);
   await addJsExtensions(SRC_OUT);
+  await fixSourcemaps(SRC_OUT);
   await rmrf(BUILD);
   console.log("✅ Build completed successfully!");
 })().catch((e) => {

@@ -83,6 +83,23 @@ export function extractFromHar(
         if (typeof data?.taskId === "string") return data.taskId;
         break;
       }
+      case "result_url": {
+        const data = body.data as { resultJson?: string } | undefined;
+        if (typeof data?.resultJson === "string") {
+          try {
+            const parsed: Record<string, unknown> = JSON.parse(data.resultJson);
+            if (
+              Array.isArray(parsed.resultUrls) &&
+              typeof parsed.resultUrls[0] === "string"
+            ) {
+              return parsed.resultUrls[0];
+            }
+          } catch {
+            // ignore parse errors
+          }
+        }
+        break;
+      }
     }
   }
 

@@ -107,7 +107,7 @@ export interface GrokTextToVideoRequest extends MediaRequest {
   input: {
     prompt: string;
     aspect_ratio?: "16:9" | "9:16" | "1:1";
-    duration?: "5" | "10";
+    duration?: "6" | "10";
   };
 }
 

@@ -6,6 +6,7 @@ import {
   workflows,
   resolveTemplate,
   resolveBody,
+  extractByPath,
   extractOutputs,
   collectVars,
   getApiKey,
@@ -205,6 +206,9 @@ const HTML = `<!DOCTYPE html>
   #save-output-btn:hover { background: #b4befe; }
   #save-output-btn:disabled { opacity: .4; cursor: default; }
   #save-output-btn.hidden { display: none; }
+  #reset-btn { background: #45475a; color: #cdd6f4; }
+  #reset-btn:hover { background: #f38ba8; color: #1e1e2e; }
+  #reset-btn.hidden { display: none; }
   #copy-llm-btn { background: #89b4fa; color: #1e1e2e; }
   #copy-llm-btn:hover { background: #74c7ec; }
   #copy-llm-btn:disabled { opacity: .4; cursor: default; }
@@ -247,6 +251,7 @@ const HTML = `<!DOCTYPE html>
   <button id="save-output-btn" class="hidden" disabled>Save Output</button>
   <span id="status-msg"></span>
   <div class="spacer"></div>
+  <button id="reset-btn" class="hidden">Reset</button>
   <button id="copy-llm-btn" disabled>Copy for LLM</button>
 </div>
 <script>
@@ -896,6 +901,7 @@ function render() {
   var refreshBtn = document.getElementById("refresh-btn");
   var runBtn = document.getElementById("run-btn");
   var saveOutputBtn = document.getElementById("save-output-btn");
+  var resetBtn = document.getElementById("reset-btn");
   var copyLlmBtn = document.getElementById("copy-llm-btn");
 
   // Workflow step mode
@@ -921,8 +927,10 @@ function render() {
 
       // Approve button: enabled when step has a response and is not yet completed
       if (step.response && step.status !== "completed") {
-        // For async steps, only enable approve if async is done
-        if (step.hasAsync && !(step.outputs && step.outputs.video_url)) {
+        // For async steps, only enable approve if async outputs have been extracted
+        var asyncKeys = step.asyncOutputKeys || [];
+        var asyncDone = asyncKeys.length === 0 || (step.outputs && asyncKeys.every(function(k) { return k in step.outputs; }));
+        if (step.hasAsync && !asyncDone) {
           btn.disabled = true;
           btn.textContent = "Approve";
         } else {
@@ -962,12 +970,16 @@ function render() {
         statusMsg.textContent = step.error || "Failed";
         statusMsg.style.color = "#f38ba8";
       }
+
+      // Reset button: visible in workflow mode
+      resetBtn.classList.remove("hidden");
     }
     return;
   }
 
   // Recording mode — hide workflow-only buttons
   runBtn.classList.add("hidden");
+  resetBtn.classList.add("hidden");
 
   if (selected !== null && recordings[selected]) {
     var rec = recordings[selected];
@@ -1142,6 +1154,21 @@ document.getElementById("run-btn").addEventListener("click", async () => {
     document.getElementById("status-msg").textContent = "Error: " + err.message;
     document.getElementById("status-msg").style.color = "#f38ba8";
     btn.disabled = false;
+  }
+});
+
+document.getElementById("reset-btn").addEventListener("click", async () => {
+  if (selectedWorkflow === null) return;
+  var res = await fetch("/api/workflow/reset", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ workflowId: selectedWorkflow }),
+  });
+  if (res.ok) {
+    var wfRes = await fetch("/api/workflows");
+    workflowData = await wfRes.json();
+    selectedWfStep = 0;
+    render();
   }
 });
 
@@ -1568,6 +1595,9 @@ const server = http.createServer((req, res) => {
             name: stepDef.name,
             description: stepDef.description,
             hasAsync: !!stepDef.async,
+            asyncOutputKeys: stepDef.async
+              ? Object.keys(stepDef.async.outputExtractors)
+              : [],
             ...steps[String(i)],
           })),
         };
@@ -1647,7 +1677,7 @@ const server = http.createServer((req, res) => {
           body: resolvedBody,
         };
         step.response = { status: apiRes.status, body: responseBody };
-        step.outputs = { ...step.outputs, ...outputs };
+        step.outputs = outputs;
         writeWorkflowState(state);
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(
@@ -1709,11 +1739,8 @@ const server = http.createServer((req, res) => {
           headers: { Authorization: `Bearer ${apiKey}` },
         });
         const responseBody = await apiRes.json();
-        const statusVal = String(
-          (responseBody as Record<string, unknown>)[
-            stepDef.async.completionField
-          ] ?? ""
-        );
+        const statusVal =
+          extractByPath(responseBody, stepDef.async.completionField) ?? "";
         const isDone = stepDef.async.completionValues.includes(statusVal);
         const isFailed = stepDef.async.failureValues.includes(statusVal);
         if (isDone) {
@@ -1731,10 +1758,8 @@ const server = http.createServer((req, res) => {
         }
         let progress: number | undefined;
         if (stepDef.async.progressField) {
-          const raw = (responseBody as Record<string, unknown>)[
-            stepDef.async.progressField
-          ];
-          if (typeof raw === "number") progress = raw;
+          const raw = extractByPath(responseBody, stepDef.async.progressField);
+          if (raw != null) progress = Number(raw);
         }
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(
@@ -1789,6 +1814,33 @@ const server = http.createServer((req, res) => {
             nextStep: nextIdx < wf.steps.length ? nextIdx : null,
           })
         );
+      } catch (err) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: String(err) }));
+      }
+    });
+    return;
+  }
+
+  if (req.method === "POST" && req.url === "/api/workflow/reset") {
+    let body = "";
+    req.on("data", (chunk: Buffer) => {
+      body += chunk.toString();
+    });
+    req.on("end", () => {
+      try {
+        const { workflowId } = JSON.parse(body) as { workflowId: string };
+        const wf = workflows.find((w) => w.id === workflowId);
+        if (!wf) {
+          res.writeHead(404, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Unknown workflow" }));
+          return;
+        }
+        const state = readWorkflowState();
+        delete state[workflowId];
+        writeWorkflowState(state);
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ ok: true }));
       } catch (err) {
         res.writeHead(500, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: String(err) }));

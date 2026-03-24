@@ -77,6 +77,15 @@ export function extractByPath(obj: unknown, dotPath: string): string | null {
   const parts = dotPath.replace(/\[(\d+)\]/g, ".$1").split(".");
   let current: unknown = obj;
   for (const part of parts) {
+    // Auto-parse JSON strings so paths can traverse into encoded values
+    // (e.g. KIE's resultJson field which is a JSON-encoded string)
+    if (typeof current === "string") {
+      try {
+        current = JSON.parse(current);
+      } catch {
+        return null;
+      }
+    }
     if (current == null || typeof current !== "object") return null;
     current = (current as Record<string, unknown>)[part];
   }
@@ -123,7 +132,144 @@ export function getApiKey(provider: "xai" | "kie"): string | undefined {
 
 // --- Workflow definitions ---
 
+const KIE_ASYNC: Omit<WorkflowAsyncConfig, "outputExtractors"> = {
+  pollUrl: "https://api.kie.ai/api/v1/jobs/recordInfo?taskId={{task_id}}",
+  pollMethod: "GET",
+  completionField: "data.state",
+  completionValues: ["success"],
+  failureValues: ["fail"],
+  progressField: "data.progress",
+};
+
 export const workflows: WorkflowDefinition[] = [
+  {
+    id: "kie-motion-control-pipeline",
+    name: "KIE: character motion-control pipeline",
+    steps: [
+      {
+        name: "Generate character image",
+        description:
+          "Create a 9:16 character portrait with nano-banana-pro (1K)",
+        apiProvider: "kie",
+        request: {
+          method: "POST",
+          url: "https://api.kie.ai/api/v1/jobs/createTask",
+          body: {
+            model: "nano-banana-pro",
+            input: {
+              prompt:
+                "A young woman in a bright red hoodie and dark jeans, " +
+                "standing upright facing the camera, full body visible " +
+                "from head to feet, friendly expression, simple solid " +
+                "light gray background, clean studio lighting, sharp " +
+                "details, character design, portrait photography",
+              aspect_ratio: "9:16",
+              resolution: "1K",
+              output_format: "png",
+            },
+          },
+        },
+        outputExtractors: { task_id: "data.taskId" },
+        async: {
+          ...KIE_ASYNC,
+          outputExtractors: {
+            character_image_url: "data.resultJson.resultUrls.0",
+          },
+        },
+      },
+      {
+        name: "Panoramic character video",
+        description:
+          "360-degree panoramic orbit around the character (image-to-video)",
+        apiProvider: "kie",
+        request: {
+          method: "POST",
+          url: "https://api.kie.ai/api/v1/jobs/createTask",
+          body: {
+            model: "grok-imagine/image-to-video",
+            input: {
+              prompt:
+                "Slow 360-degree camera orbit around the character, " +
+                "smooth cinematic rotation, the character remains still " +
+                "while the camera circles them, studio lighting",
+              image_urls: ["{{character_image_url}}"],
+              mode: "normal",
+              duration: "6",
+              resolution: "480p",
+            },
+          },
+        },
+        outputExtractors: { panoramic_task_id: "data.taskId" },
+        async: {
+          ...KIE_ASYNC,
+          pollUrl:
+            "https://api.kie.ai/api/v1/jobs/recordInfo?taskId={{panoramic_task_id}}",
+          outputExtractors: {
+            panoramic_video_url: "data.resultJson.resultUrls.0",
+          },
+        },
+      },
+      {
+        name: "Motion reference video",
+        description:
+          "Generate a video of a regular man dancing (text-to-video)",
+        apiProvider: "kie",
+        request: {
+          method: "POST",
+          url: "https://api.kie.ai/api/v1/jobs/createTask",
+          body: {
+            model: "grok-imagine/text-to-video",
+            input: {
+              prompt:
+                "A regular man in casual clothes dancing energetically " +
+                "in a studio with a plain white background, full body " +
+                "visible, smooth movements, well-lit",
+              duration: "6",
+            },
+          },
+        },
+        outputExtractors: { motion_task_id: "data.taskId" },
+        async: {
+          ...KIE_ASYNC,
+          pollUrl:
+            "https://api.kie.ai/api/v1/jobs/recordInfo?taskId={{motion_task_id}}",
+          outputExtractors: {
+            motion_video_url: "data.resultJson.resultUrls.0",
+          },
+        },
+      },
+      {
+        name: "Apply motion control",
+        description:
+          "Transfer dancing motion onto the character with kling-3.0/motion-control",
+        apiProvider: "kie",
+        request: {
+          method: "POST",
+          url: "https://api.kie.ai/api/v1/jobs/createTask",
+          body: {
+            model: "kling-3.0/motion-control",
+            input: {
+              prompt: "The character is dancing energetically.",
+              input_urls: ["{{character_image_url}}"],
+              video_urls: ["{{motion_video_url}}"],
+              mode: "720p",
+              character_orientation: "video",
+              background_source: "input_video",
+            },
+          },
+        },
+        outputExtractors: { final_task_id: "data.taskId" },
+        async: {
+          ...KIE_ASYNC,
+          pollUrl:
+            "https://api.kie.ai/api/v1/jobs/recordInfo?taskId={{final_task_id}}",
+          outputExtractors: {
+            final_video_url: "data.resultJson.resultUrls.0",
+          },
+        },
+      },
+    ],
+  },
   {
     id: "grok-imagine-astronaut-cliff",
     name: "Grok Imagine: astronaut cliff",

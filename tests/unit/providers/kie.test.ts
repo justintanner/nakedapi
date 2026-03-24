@@ -122,6 +122,7 @@ describe("kie provider", () => {
     "elevenlabs/text-to-dialogue-v3",
     "elevenlabs/sound-effect-v2",
     "elevenlabs/speech-to-text",
+    "qwen2/text-to-image",
     "sora-watermark-remover",
   ];
 
@@ -141,6 +142,7 @@ describe("kie provider", () => {
     "elevenlabs/text-to-dialogue-v3": "audio",
     "elevenlabs/sound-effect-v2": "audio",
     "elevenlabs/speech-to-text": "transcription",
+    "qwen2/text-to-image": "image",
     "sora-watermark-remover": "video",
   };
 
@@ -252,7 +254,7 @@ describe("kie provider", () => {
   it("should return all 16 models", () => {
     const provider = createMockProvider();
     const models = provider.getModels();
-    expect(models).toHaveLength(16);
+    expect(models).toHaveLength(17);
     expect(models).toContain("nano-banana-2");
     expect(models).toContain("bytedance/seedance-1.5-pro");
     expect(models).toContain("sora-watermark-remover");

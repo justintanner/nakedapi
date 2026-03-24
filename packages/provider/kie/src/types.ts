@@ -16,6 +16,7 @@ export type KieMediaModel =
   | "elevenlabs/speech-to-text"
   | "grok-imagine/extend"
   | "grok-imagine/upscale"
+  | "qwen2/text-to-image"
   | "sora-watermark-remover";
 
 // Media generation types
@@ -89,6 +90,17 @@ export interface GrokTextToImageRequest extends MediaRequest {
   input: {
     prompt: string;
     aspect_ratio?: "2:3" | "3:2" | "1:1" | "16:9" | "9:16";
+  };
+}
+
+// Qwen2 text to image request
+export interface Qwen2TextToImageRequest extends MediaRequest {
+  model: "qwen2/text-to-image";
+  input: {
+    prompt: string;
+    image_size?: "1:1" | "4:3" | "3:4" | "16:9" | "9:16";
+    output_format?: "png" | "jpeg";
+    seed?: number;
   };
 }
 
@@ -327,6 +339,7 @@ export type MediaGenerationRequest =
   | ElevenLabsDialogueRequest
   | ElevenLabsSfxRequest
   | ElevenLabsSttRequest
+  | Qwen2TextToImageRequest
   | SoraWatermarkRequest;
 
 // Task creation response

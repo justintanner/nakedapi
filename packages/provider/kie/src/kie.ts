@@ -79,6 +79,7 @@ const SUPPORTED_MODELS: Record<
   "elevenlabs/text-to-dialogue-v3": { type: "audio", supported: true },
   "elevenlabs/sound-effect-v2": { type: "audio", supported: true },
   "elevenlabs/speech-to-text": { type: "transcription", supported: true },
+  "qwen2/text-to-image": { type: "image", supported: true },
   "sora-watermark-remover": { type: "video", supported: true },
 };
 

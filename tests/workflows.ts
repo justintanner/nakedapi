@@ -24,6 +24,7 @@ export interface WorkflowStepDefinition {
 export interface WorkflowDefinition {
   id: string;
   name: string;
+  layout?: "sequential" | "compare";
   steps: WorkflowStepDefinition[];
 }
 
@@ -353,6 +354,121 @@ export const workflows: WorkflowDefinition[] = [
           failureValues: ["failed", "expired"],
           progressField: "progress",
           outputExtractors: { video_url: "video.url" },
+        },
+      },
+    ],
+  },
+  {
+    id: "kie-t2i-compare",
+    name: "KIE: text-to-image model comparison",
+    layout: "compare",
+    steps: [
+      {
+        name: "grok-imagine",
+        description: "Grok Imagine text-to-image (16:9)",
+        apiProvider: "kie",
+        request: {
+          method: "POST",
+          url: "https://api.kie.ai/api/v1/jobs/createTask",
+          body: {
+            model: "grok-imagine/text-to-image",
+            input: {
+              prompt:
+                "A detailed movie set for a science fiction film, " +
+                "practical props and set pieces, volumetric lighting, " +
+                "1920x1080 cinematic widescreen, high detail photography",
+              aspect_ratio: "16:9",
+            },
+          },
+        },
+        outputExtractors: { task_id: "data.taskId" },
+        async: {
+          ...KIE_ASYNC,
+          outputExtractors: {
+            image_url: "data.resultJson.resultUrls.0",
+          },
+        },
+      },
+      {
+        name: "nano-banana-pro",
+        description: "Nano Banana Pro (16:9, 2K, PNG)",
+        apiProvider: "kie",
+        request: {
+          method: "POST",
+          url: "https://api.kie.ai/api/v1/jobs/createTask",
+          body: {
+            model: "nano-banana-pro",
+            input: {
+              prompt:
+                "A detailed movie set for a science fiction film, " +
+                "practical props and set pieces, volumetric lighting, " +
+                "1920x1080 cinematic widescreen, high detail photography",
+              aspect_ratio: "16:9",
+              resolution: "2K",
+              output_format: "png",
+            },
+          },
+        },
+        outputExtractors: { task_id: "data.taskId" },
+        async: {
+          ...KIE_ASYNC,
+          outputExtractors: {
+            image_url: "data.resultJson.resultUrls.0",
+          },
+        },
+      },
+      {
+        name: "nano-banana-2",
+        description: "Nano Banana 2 (16:9, 2K, PNG)",
+        apiProvider: "kie",
+        request: {
+          method: "POST",
+          url: "https://api.kie.ai/api/v1/jobs/createTask",
+          body: {
+            model: "nano-banana-2",
+            input: {
+              prompt:
+                "A detailed movie set for a science fiction film, " +
+                "practical props and set pieces, volumetric lighting, " +
+                "1920x1080 cinematic widescreen, high detail photography",
+              aspect_ratio: "16:9",
+              resolution: "2K",
+              output_format: "png",
+            },
+          },
+        },
+        outputExtractors: { task_id: "data.taskId" },
+        async: {
+          ...KIE_ASYNC,
+          outputExtractors: {
+            image_url: "data.resultJson.resultUrls.0",
+          },
+        },
+      },
+      {
+        name: "qwen2",
+        description: "Qwen2 text-to-image (16:9)",
+        apiProvider: "kie",
+        request: {
+          method: "POST",
+          url: "https://api.kie.ai/api/v1/jobs/createTask",
+          body: {
+            model: "qwen2/text-to-image",
+            input: {
+              prompt:
+                "A detailed movie set for a science fiction film, " +
+                "practical props and set pieces, volumetric lighting, " +
+                "1920x1080 cinematic widescreen, high detail photography",
+              image_size: "16:9",
+            },
+          },
+        },
+        outputExtractors: { task_id: "data.taskId" },
+        async: {
+          ...KIE_ASYNC,
+          outputExtractors: {
+            image_url: "data.resultJson.resultUrls.0",
+          },
         },
       },
     ],

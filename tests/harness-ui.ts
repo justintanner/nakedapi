@@ -44,7 +44,8 @@ function getOrInitWorkflowState(
   const steps = state[workflowId].steps;
   for (let i = 0; i < wf.steps.length; i++) {
     if (!steps[String(i)]) {
-      steps[String(i)] = { status: i === 0 ? "ready" : "locked" };
+      const isReady = wf.layout === "compare" || i === 0;
+      steps[String(i)] = { status: isReady ? "ready" : "locked" };
     }
   }
   return steps;
@@ -209,6 +210,21 @@ const HTML = `<!DOCTYPE html>
   #reset-btn { background: #45475a; color: #cdd6f4; }
   #reset-btn:hover { background: #f38ba8; color: #1e1e2e; }
   #reset-btn.hidden { display: none; }
+  #run-all-btn { background: #f9e2af; color: #1e1e2e; }
+  #run-all-btn:hover { background: #f5c2e7; }
+  #run-all-btn:disabled { opacity: .4; cursor: default; }
+  #run-all-btn.hidden { display: none; }
+  #refresh-all-btn { background: #89b4fa; color: #1e1e2e; }
+  #refresh-all-btn:hover { background: #74c7ec; }
+  #refresh-all-btn:disabled { opacity: .4; cursor: default; }
+  #refresh-all-btn.hidden { display: none; }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 16px; overflow-y: auto; }
+  .compare-cell { background: #181825; border-radius: 8px; padding: 16px; border: 1px solid #313244; display: flex; flex-direction: column; }
+  .compare-cell .model-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .compare-cell .model-name { font-size: 14px; font-weight: 600; color: #cba6f7; }
+  .compare-cell .model-desc { font-size: 11px; color: #6c7086; margin-bottom: 8px; }
+  .compare-cell .compare-image { max-width: 100%; border-radius: 6px; border: 1px solid #313244; margin-top: 8px; }
+  .compare-cell .cell-status { font-size: 12px; color: #a6adc8; margin-top: 4px; }
   #copy-llm-btn { background: #89b4fa; color: #1e1e2e; }
   #copy-llm-btn:hover { background: #74c7ec; }
   #copy-llm-btn:disabled { opacity: .4; cursor: default; }
@@ -246,8 +262,10 @@ const HTML = `<!DOCTYPE html>
 <div class="pane" id="res-pane"></div>
 <div id="actions">
   <button id="run-btn" class="hidden">Run</button>
+  <button id="run-all-btn" class="hidden">Run All</button>
   <button id="approve-btn" disabled>Approve</button>
   <button id="refresh-btn" class="hidden">Refresh</button>
+  <button id="refresh-all-btn" class="hidden">Refresh All</button>
   <button id="save-output-btn" class="hidden" disabled>Save Output</button>
   <span id="status-msg"></span>
   <div class="spacer"></div>
@@ -281,13 +299,16 @@ function renderWorkflowSidebar() {
     var wf = workflowData[w];
     var isCollapsed = collapsedWorkflows[wf.id];
     var arrowClass = isCollapsed ? " collapsed" : "";
+    var layoutBadge = wf.layout === "compare"
+      ? ' <span style="font-size:10px;color:#f9e2af;padding:1px 4px;background:#45475a;border-radius:3px">compare</span>'
+      : '';
     html += '<div class="pipeline-label" data-wf="' + wf.id + '">' +
-      '<span class="arrow' + arrowClass + '">\\u25BE</span> ' + wf.name + '</div>';
+      '<span class="arrow' + arrowClass + '">\\u25BE</span> ' + wf.name + layoutBadge + '</div>';
     for (var s = 0; s < wf.steps.length; s++) {
       var step = wf.steps[s];
       var isActive = selectedWorkflow === wf.id && selectedWfStep === s;
       var hiddenClass = isCollapsed ? " pipeline-hidden" : "";
-      var lockedClass = step.status === "locked" ? " locked" : "";
+      var lockedClass = (wf.layout !== "compare" && step.status === "locked") ? " locked" : "";
       html += '<div class="wf-step' + (isActive ? ' active' : '') + hiddenClass + lockedClass + '" data-wf="' + wf.id + '" data-step="' + s + '">' +
         '<span class="step-num">' + (s + 1) + '.</span>' +
         '<span class="dot ' + step.status + '"></span>' +
@@ -299,7 +320,15 @@ function renderWorkflowSidebar() {
   wfList.querySelectorAll(".pipeline-label").forEach(function(el) {
     el.addEventListener("click", function() {
       var wfId = el.dataset.wf;
-      collapsedWorkflows[wfId] = !collapsedWorkflows[wfId];
+      var wf = workflowData.find(function(w) { return w.id === wfId; });
+      if (wf && wf.layout === "compare") {
+        selectedWorkflow = wfId;
+        selectedWfStep = null;
+        selected = null;
+        selectedEntry = 0;
+      } else {
+        collapsedWorkflows[wfId] = !collapsedWorkflows[wfId];
+      }
       render();
     });
   });
@@ -310,9 +339,9 @@ function renderWorkflowSidebar() {
       var stepIdx = parseInt(el.dataset.step);
       // Find the step status
       var wf = workflowData.find(function(w) { return w.id === wfId; });
-      if (wf && wf.steps[stepIdx] && wf.steps[stepIdx].status === "locked") return;
+      if (wf && wf.layout !== "compare" && wf.steps[stepIdx] && wf.steps[stepIdx].status === "locked") return;
       selectedWorkflow = wfId;
-      selectedWfStep = stepIdx;
+      selectedWfStep = wf && wf.layout === "compare" ? null : stepIdx;
       selected = null;
       selectedEntry = 0;
       render();
@@ -362,6 +391,68 @@ function renderWorkflowStep() {
   } else {
     resPane.innerHTML = '<div class="empty">Click Run to execute this step</div>';
   }
+}
+
+function renderCompareGrid() {
+  var wf = workflowData.find(function(w) { return w.id === selectedWorkflow; });
+  if (!wf) return;
+
+  var reqPane = document.getElementById("req-pane");
+  var resPane = document.getElementById("res-pane");
+
+  // Extract prompt from first step's request body
+  var prompt = "";
+  if (wf.steps[0] && wf.steps[0].request && wf.steps[0].request.body) {
+    var body = wf.steps[0].request.body;
+    prompt = (body.input && body.input.prompt) || "";
+  } else {
+    var stepDef = wf.steps[0];
+    if (stepDef) prompt = "Pending...";
+  }
+
+  var gridHtml = '<div class="pane-label">' + wf.name + '</div>';
+  if (prompt) {
+    gridHtml += '<div style="padding:8px 16px 0;font-size:13px;color:#a6adc8;line-height:1.5">' +
+      '<span style="color:#89b4fa;font-weight:600">Prompt:</span> ' +
+      '<span style="color:#cdd6f4">' + prompt + '</span></div>';
+  }
+  gridHtml += '<div class="compare-grid">';
+
+  for (var s = 0; s < wf.steps.length; s++) {
+    var step = wf.steps[s];
+    gridHtml += '<div class="compare-cell">';
+    gridHtml += '<div class="model-header">';
+    gridHtml += '<span class="dot ' + step.status + '"></span>';
+    gridHtml += '<span class="model-name">' + step.name + '</span>';
+    gridHtml += '</div>';
+    gridHtml += '<div class="model-desc">' + step.description + '</div>';
+
+    if (step.outputs && step.outputs.image_url) {
+      gridHtml += '<img class="compare-image" src="' + step.outputs.image_url + '" onerror="this.style.display=&quot;none&quot;">';
+    } else if (step.status === "failed") {
+      gridHtml += '<div class="cell-status" style="color:#f38ba8">' + (step.error || "Failed") + '</div>';
+    } else if (step.response) {
+      var asyncKeys = step.asyncOutputKeys || [];
+      var asyncDone = asyncKeys.length === 0 || (step.outputs && asyncKeys.every(function(k) { return k in step.outputs; }));
+      if (!asyncDone) {
+        gridHtml += '<div class="cell-status" style="color:#89b4fa">Generating\u2026 click Refresh All</div>';
+      }
+    } else {
+      gridHtml += '<div class="cell-status">Ready</div>';
+    }
+
+    if (step.response) {
+      gridHtml += '<details style="margin-top:8px"><summary style="cursor:pointer;color:#6c7086;font-size:11px">Response JSON</summary>';
+      gridHtml += '<pre class="body" style="font-size:11px;max-height:200px">' + syntaxHighlight(JSON.stringify(step.response.body, null, 2)) + '</pre>';
+      gridHtml += '</details>';
+    }
+
+    gridHtml += '</div>';
+  }
+
+  gridHtml += '</div>';
+  reqPane.innerHTML = gridHtml;
+  resPane.innerHTML = '';
 }
 
 function isE2EStep(recName) {
@@ -900,9 +991,75 @@ function render() {
   var btn = document.getElementById("approve-btn");
   var refreshBtn = document.getElementById("refresh-btn");
   var runBtn = document.getElementById("run-btn");
+  var runAllBtn = document.getElementById("run-all-btn");
+  var refreshAllBtn = document.getElementById("refresh-all-btn");
   var saveOutputBtn = document.getElementById("save-output-btn");
   var resetBtn = document.getElementById("reset-btn");
   var copyLlmBtn = document.getElementById("copy-llm-btn");
+
+  // Compare mode
+  if (selectedWorkflow !== null) {
+    var compareWf = workflowData.find(function(w) { return w.id === selectedWorkflow; });
+    if (compareWf && compareWf.layout === "compare") {
+      renderCompareGrid();
+      var statusMsg = document.getElementById("status-msg");
+
+      runBtn.classList.add("hidden");
+      refreshBtn.classList.add("hidden");
+      saveOutputBtn.classList.add("hidden");
+      resetBtn.classList.remove("hidden");
+      copyLlmBtn.disabled = true;
+
+      // Run All: visible if any step is ready with no response
+      var anyRunnable = compareWf.steps.some(function(s) {
+        return (s.status === "ready" && !s.response) || s.status === "failed";
+      });
+      if (anyRunnable) {
+        runAllBtn.classList.remove("hidden");
+        runAllBtn.disabled = false;
+      } else {
+        runAllBtn.classList.add("hidden");
+      }
+
+      // Refresh All: visible if any step has async pending
+      var anyPending = compareWf.steps.some(function(s) {
+        if (!s.hasAsync || !s.response) return false;
+        var asyncKeys = s.asyncOutputKeys || [];
+        return asyncKeys.length > 0 && !(s.outputs && asyncKeys.every(function(k) { return k in s.outputs; }));
+      });
+      if (anyPending) {
+        refreshAllBtn.classList.remove("hidden");
+        refreshAllBtn.disabled = false;
+      } else {
+        refreshAllBtn.classList.add("hidden");
+      }
+
+      // Approve: enable when all steps have their async outputs
+      var allDone = compareWf.steps.every(function(s) {
+        var asyncKeys = s.asyncOutputKeys || [];
+        return asyncKeys.length === 0 || (s.outputs && asyncKeys.every(function(k) { return k in s.outputs; }));
+      });
+      var allApproved = compareWf.steps.every(function(s) { return s.status === "completed"; });
+      btn.disabled = !allDone || allApproved;
+      btn.textContent = "Approve All";
+
+      if (!compareWf.steps.some(function(s) { return s.response; })) {
+        statusMsg.textContent = "Ready \u2014 click Run All";
+        statusMsg.style.color = "#f9e2af";
+      } else if (anyPending) {
+        statusMsg.textContent = "Generating\u2026 click Refresh All to poll";
+        statusMsg.style.color = "#89b4fa";
+      } else if (allDone && !allApproved) {
+        statusMsg.textContent = "All complete \u2014 review and approve";
+        statusMsg.style.color = "#a6e3a1";
+      } else if (allApproved) {
+        statusMsg.textContent = "All approved";
+        statusMsg.style.color = "#a6e3a1";
+      }
+
+      return;
+    }
+  }
 
   // Workflow step mode
   if (selectedWorkflow !== null && selectedWfStep !== null) {
@@ -979,6 +1136,8 @@ function render() {
 
   // Recording mode — hide workflow-only buttons
   runBtn.classList.add("hidden");
+  runAllBtn.classList.add("hidden");
+  refreshAllBtn.classList.add("hidden");
   resetBtn.classList.add("hidden");
 
   if (selected !== null && recordings[selected]) {
@@ -1170,6 +1329,60 @@ document.getElementById("reset-btn").addEventListener("click", async () => {
     selectedWfStep = 0;
     render();
   }
+});
+
+document.getElementById("run-all-btn").addEventListener("click", async () => {
+  var btn = document.getElementById("run-all-btn");
+  btn.disabled = true;
+  document.getElementById("status-msg").textContent = "Running all models\u2026";
+  document.getElementById("status-msg").style.color = "#89b4fa";
+  try {
+    var res = await fetch("/api/workflow/run-all", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ workflowId: selectedWorkflow }),
+    });
+    if (!res.ok) {
+      var data = await res.json();
+      document.getElementById("status-msg").textContent = data.error || "Run failed";
+      document.getElementById("status-msg").style.color = "#f38ba8";
+      btn.disabled = false;
+      return;
+    }
+    var wfRes = await fetch("/api/workflows");
+    workflowData = await wfRes.json();
+    render();
+  } catch (err) {
+    document.getElementById("status-msg").textContent = "Error: " + err.message;
+    document.getElementById("status-msg").style.color = "#f38ba8";
+    btn.disabled = false;
+  }
+});
+
+document.getElementById("refresh-all-btn").addEventListener("click", async () => {
+  var btn = document.getElementById("refresh-all-btn");
+  btn.disabled = true;
+  document.getElementById("status-msg").textContent = "Polling all models\u2026";
+  document.getElementById("status-msg").style.color = "#89b4fa";
+  try {
+    var res = await fetch("/api/workflow/poll-all", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ workflowId: selectedWorkflow }),
+    });
+    var data = await res.json();
+    if (!res.ok) {
+      document.getElementById("status-msg").textContent = data.error || "Poll failed";
+      document.getElementById("status-msg").style.color = "#f38ba8";
+    }
+    var wfRes = await fetch("/api/workflows");
+    workflowData = await wfRes.json();
+    render();
+  } catch (err) {
+    document.getElementById("status-msg").textContent = "Error: " + err.message;
+    document.getElementById("status-msg").style.color = "#f38ba8";
+  }
+  btn.disabled = false;
 });
 
 document.getElementById("refresh-btn").addEventListener("click", async () => {
@@ -1591,6 +1804,7 @@ const server = http.createServer((req, res) => {
         return {
           id: wf.id,
           name: wf.name,
+          layout: wf.layout || "sequential",
           steps: wf.steps.map((stepDef, i) => ({
             name: stepDef.name,
             description: stepDef.description,
@@ -1803,7 +2017,7 @@ const server = http.createServer((req, res) => {
         step.status = "completed";
         step.completedAt = new Date().toISOString();
         const nextIdx = stepIndex + 1;
-        if (nextIdx < wf.steps.length) {
+        if (wf.layout !== "compare" && nextIdx < wf.steps.length) {
           steps[String(nextIdx)].status = "ready";
         }
         writeWorkflowState(state);
@@ -1812,6 +2026,149 @@ const server = http.createServer((req, res) => {
           JSON.stringify({
             ok: true,
             nextStep: nextIdx < wf.steps.length ? nextIdx : null,
+          })
+        );
+      } catch (err) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: String(err) }));
+      }
+    });
+    return;
+  }
+
+  if (req.method === "POST" && req.url === "/api/workflow/run-all") {
+    let body = "";
+    req.on("data", (chunk: Buffer) => {
+      body += chunk.toString();
+    });
+    req.on("end", async () => {
+      try {
+        const { workflowId } = JSON.parse(body) as { workflowId: string };
+        const wf = workflows.find((w) => w.id === workflowId);
+        if (!wf || wf.layout !== "compare") {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Not a compare workflow" }));
+          return;
+        }
+        const apiKey = getApiKey(wf.steps[0].apiProvider);
+        if (!apiKey) {
+          res.writeHead(500, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "API key not set" }));
+          return;
+        }
+        const state = readWorkflowState();
+        const steps = getOrInitWorkflowState(state, workflowId);
+        const results = await Promise.allSettled(
+          wf.steps.map(async (stepDef, i) => {
+            const step = steps[String(i)];
+            if (step.response) return { skipped: true };
+            const resolvedBody = stepDef.request.body
+              ? resolveBody(stepDef.request.body, {})
+              : undefined;
+            const apiRes = await fetch(stepDef.request.url, {
+              method: stepDef.request.method,
+              headers: {
+                Authorization: `Bearer ${apiKey}`,
+                "Content-Type": "application/json",
+              },
+              body: resolvedBody ? JSON.stringify(resolvedBody) : undefined,
+            });
+            const responseBody = await apiRes.json();
+            const outputs = extractOutputs(
+              responseBody,
+              stepDef.outputExtractors
+            );
+            step.status = "ready";
+            step.request = {
+              method: stepDef.request.method,
+              url: stepDef.request.url,
+              body: resolvedBody,
+            };
+            step.response = { status: apiRes.status, body: responseBody };
+            step.outputs = outputs;
+            return { ok: true, outputs };
+          })
+        );
+        writeWorkflowState(state);
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ ok: true, results }));
+      } catch (err) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: String(err) }));
+      }
+    });
+    return;
+  }
+
+  if (req.method === "POST" && req.url === "/api/workflow/poll-all") {
+    let body = "";
+    req.on("data", (chunk: Buffer) => {
+      body += chunk.toString();
+    });
+    req.on("end", async () => {
+      try {
+        const { workflowId } = JSON.parse(body) as { workflowId: string };
+        const wf = workflows.find((w) => w.id === workflowId);
+        if (!wf) {
+          res.writeHead(404, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Unknown workflow" }));
+          return;
+        }
+        const state = readWorkflowState();
+        const steps = getOrInitWorkflowState(state, workflowId);
+        const results = await Promise.allSettled(
+          wf.steps.map(async (stepDef, i) => {
+            if (!stepDef.async) return { skipped: true };
+            const step = steps[String(i)];
+            if (!step.response || !step.outputs) return { skipped: true };
+            const asyncKeys = Object.keys(stepDef.async.outputExtractors);
+            const alreadyDone = asyncKeys.every(
+              (k) => k in (step.outputs ?? {})
+            );
+            if (alreadyDone) return { skipped: true, isDone: true };
+            const apiKey = getApiKey(stepDef.apiProvider);
+            if (!apiKey) return { error: "API key not set" };
+            const vars = { ...step.outputs };
+            const pollUrl = resolveTemplate(stepDef.async.pollUrl, vars);
+            const apiRes = await fetch(pollUrl, {
+              method: stepDef.async.pollMethod,
+              headers: { Authorization: `Bearer ${apiKey}` },
+            });
+            const responseBody = await apiRes.json();
+            const statusVal =
+              extractByPath(responseBody, stepDef.async.completionField) ?? "";
+            const isDone = stepDef.async.completionValues.includes(statusVal);
+            const isFailed = stepDef.async.failureValues.includes(statusVal);
+            if (isDone) {
+              const asyncOutputs = extractOutputs(
+                responseBody,
+                stepDef.async.outputExtractors
+              );
+              step.outputs = { ...step.outputs, ...asyncOutputs };
+            }
+            if (isFailed) {
+              step.status = "failed";
+              step.error = `Async operation ${statusVal}`;
+            }
+            let progress: number | undefined;
+            if (stepDef.async.progressField) {
+              const raw = extractByPath(
+                responseBody,
+                stepDef.async.progressField
+              );
+              if (raw != null) progress = Number(raw);
+            }
+            return { isDone, isFailed, progress, status: statusVal };
+          })
+        );
+        writeWorkflowState(state);
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            ok: true,
+            results: results.map((r) =>
+              r.status === "fulfilled" ? r.value : { error: String(r.reason) }
+            ),
           })
         );
       } catch (err) {

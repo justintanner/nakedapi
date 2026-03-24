@@ -18,10 +18,11 @@ Standalone-first TypeScript AI provider packages. Each is self-contained with ze
 
 ```
 packages/provider/
-├── kimicoding/  – @nakedapi/kimicoding (Anthropic Messages API)
+├── fal/         – @nakedapi/fal (model registry, pricing, analytics)
 ├── kie/         – @nakedapi/kie (media generation, chat, audio)
+├── kimicoding/  – @nakedapi/kimicoding (Anthropic Messages API)
 ├── openai/      – @nakedapi/openai (chat, transcription)
-└── xai/         – @nakedapi/xai (Grok chat and search)
+└── xai/         – @nakedapi/xai (Grok chat, search, images, video)
 ```
 
 ## Quick Start
@@ -37,7 +38,7 @@ import { kimicoding, type ChatRequest } from "@nakedapi/kimicoding";
 
 const provider = kimicoding({ apiKey: process.env.KIMI_CODING_API_KEY! });
 
-for await (const chunk of provider.streamChat({
+for await (const chunk of provider.coding.v1.messages.stream({
   model: "k2p5",
   messages: [{ role: "user", content: "Hello!" }],
 })) {
@@ -56,18 +57,18 @@ import { kie } from "@nakedapi/kie";
 
 const provider = kie({ apiKey: process.env.KIE_API_KEY! });
 
-const { taskId } = await provider.createTask({
+const { taskId } = await provider.api.v1.jobs.createTask({
   model: "nano-banana-pro",
   input: { prompt: "A serene mountain landscape", aspect_ratio: "16:9" },
 });
 
 // Upload media for generation endpoints
-const upload = await provider.uploadMedia({
+const upload = await provider.api.fileStreamUpload({
   file: new Blob([fileBuffer]),
   filename: "photo.png",
 });
 
-const video = await provider.createTask({
+const video = await provider.api.v1.jobs.createTask({
   model: "grok-imagine/image-to-video",
   input: { image_urls: [upload.downloadUrl] },
 });
@@ -85,13 +86,13 @@ import { openai } from "@nakedapi/openai";
 const provider = openai({ apiKey: process.env.OPENAI_API_KEY! });
 
 // Chat with tool support
-const response = await provider.chat({
+const response = await provider.v1.chat.completions({
   messages: [{ role: "user", content: "Hello!" }],
 });
 console.log(response.content);
 
 // Transcribe audio
-const result = await provider.transcribe({
+const result = await provider.v1.audio.transcriptions({
   file: new Blob([mp3Buffer], { type: "audio/mp3" }),
 });
 console.log(result.text);
@@ -108,22 +109,41 @@ import { xai } from "@nakedapi/xai";
 
 const provider = xai({ apiKey: process.env.XAI_API_KEY! });
 
-const response = await provider.chat({
+const response = await provider.v1.chat.completions({
   model: "grok-4-fast",
   messages: [{ role: "user", content: "Hello!" }],
 });
 
-const searchResult = await provider.search("latest TypeScript news");
+const searchResult = await provider.v1.chat.completions.search(
+  "latest TypeScript news"
+);
+```
+
+### Fal (Model Registry & Analytics)
+
+```bash
+npm install @nakedapi/fal
+```
+
+```typescript
+import { fal } from "@nakedapi/fal";
+
+const provider = fal({ apiKey: process.env.FAL_API_KEY! });
+
+const models = await provider.v1.models({ search: "flux" });
+const pricing = await provider.v1.models.pricing({ appId: "fal-ai/flux" });
+const usage = await provider.v1.models.usage();
 ```
 
 ## Providers
 
-| Package | Endpoints | Models |
-|---------|-----------|--------|
-| [@nakedapi/kimicoding](packages/provider/kimicoding) | `chat`, `streamChat` | `k2p5` (262K context) |
-| [@nakedapi/kie](packages/provider/kie) | `createTask`, `getTask`, `uploadMedia`, `chat`, `veo`, `suno` | Kling 3.0, Grok Imagine, Nano Banana, GPT Image, ElevenLabs |
-| [@nakedapi/openai](packages/provider/openai) | `chat`, `transcribe` | `gpt-5.4-2026-03-05`, `gpt-4o-mini-transcribe` |
-| [@nakedapi/xai](packages/provider/xai) | `chat`, `search` | `grok-4-fast` |
+| Package | Methods | Models |
+|---------|---------|--------|
+| [@nakedapi/fal](packages/provider/fal) | `v1.models()`, `.pricing()`, `.usage()`, `.analytics()`, `.requests` | Model registry/marketplace |
+| [@nakedapi/kie](packages/provider/kie) | `api.v1.jobs.createTask()`, `.recordInfo()`, `api.fileStreamUpload()`, sub-providers (chat, veo, suno) | Kling 3.0, Grok Imagine, Nano Banana, GPT Image, Seedance, ElevenLabs |
+| [@nakedapi/kimicoding](packages/provider/kimicoding) | `coding.v1.messages()`, `.stream()` | `k2p5` (32K max tokens) |
+| [@nakedapi/openai](packages/provider/openai) | `v1.chat.completions()`, `v1.audio.transcriptions()` | `gpt-5.4-2026-03-05`, `gpt-4o-mini-transcribe` |
+| [@nakedapi/xai](packages/provider/xai) | `v1.chat.completions()`, `.search()`, `v1.images.generations()`, `.edits()`, `v1.videos.generations()`, `.edits()` | `grok-4-fast`, `grok-imagine-image`, `grok-imagine-video` |
 
 ## Middleware
 

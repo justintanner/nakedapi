@@ -11,7 +11,7 @@ NakedAPI is a TypeScript monorepo of standalone AI provider packages (`@nakedapi
 ```bash
 pnpm install                    # Install dependencies
 pnpm run build                  # Build all packages
-pnpm run build:kimicoding       # Build single package (also: build:kie, build:xai)
+pnpm run build:kimicoding       # Build single package (also: build:kie, build:xai, build:openai, build:fal)
 pnpm run lint                   # Lint (runs build first via prelint)
 pnpm run lint:fix               # Auto-fix lint issues
 pnpm run format                 # Format with Prettier

@@ -20,6 +20,8 @@ pnpm run build
 pnpm run build:kimicoding  # Build specific package
 pnpm run build:kie
 pnpm run build:xai
+pnpm run build:openai
+pnpm run build:fal
 
 # Linting
 pnpm run lint            # Check linting
@@ -32,6 +34,8 @@ pnpm run format          # Format with Prettier
 pnpm run test            # Run tests in watch mode
 pnpm run test:run        # Run tests once
 pnpm run test:ui         # Run tests with UI
+pnpm run test:integration       # Integration tests (Polly.js replay)
+pnpm run test:integration:record  # Re-record fixtures (needs API keys)
 
 # Run single test file
 pnpm run test:run tests/unit/providers/kimicoding.test.ts
@@ -132,7 +136,7 @@ packages/provider/<name>/
 
 ## CI/CD
 
-GitHub Actions runs: lint -> build -> test on every PR.
+GitHub Actions runs: install → build → verify artifacts → lint → test (unit only) on push/PR to main.
 All checks must pass before merging.
 
 ## Claude Code Tooling (`.claude/`)

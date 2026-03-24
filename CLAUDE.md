@@ -64,6 +64,22 @@ Both configs alias `@nakedapi/*` to source directories so tests run against sour
 
 Integration tests use `setupPolly(recordingName)` / `teardownPolly(ctx)` from `tests/harness.ts`. Recordings stored as HAR files in `tests/recordings/`. Auth headers are auto-redacted before persisting.
 
+**Integration test recording workflow — NEVER skip this when adding/modifying integration tests:**
+
+1. Write the test file in `tests/integration/`.
+2. Record fixtures for **only** the new/changed file:
+   ```bash
+   POLLY_MODE=record pnpm vitest run --config tests/vitest.integration.ts tests/integration/<file>.test.ts
+   ```
+   This sends real API requests (requires API keys in env) and writes HAR files to `tests/recordings/`.
+3. Verify the test passes in replay mode:
+   ```bash
+   pnpm vitest run --config tests/vitest.integration.ts tests/integration/<file>.test.ts
+   ```
+4. Stop and tell the user recordings are ready for review.
+
+**CRITICAL: Do NOT `git add`, stage, approve, or commit any files under `tests/recordings/`.** The user reviews recordings in the harness UI (`pnpm run harness` → localhost:3475), manually approves them, and commits them to git. This is a human review gate — Claude must never bypass it.
+
 ### CI
 
 GitHub Actions (`ci.yml`): install → build → verify artifacts → lint → test (unit only). Runs on push/PR to main.

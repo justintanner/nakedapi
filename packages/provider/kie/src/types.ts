@@ -13,6 +13,8 @@ export type KieMediaModel =
   | "elevenlabs/text-to-dialogue-v3"
   | "elevenlabs/sound-effect-v2"
   | "elevenlabs/speech-to-text"
+  | "grok-imagine/extend"
+  | "grok-imagine/upscale"
   | "sora-watermark-remover";
 
 // Media generation types
@@ -104,8 +106,27 @@ export interface GrokImageToVideoRequest extends MediaRequest {
     task_id?: string;
     index?: number;
     mode?: "fun" | "normal" | "spicy";
-    duration?: "6" | "10" | "15";
+    duration?: "6" | "10";
     resolution?: "480p" | "720p";
+  };
+}
+
+// Grok Imagine video extend request
+export interface GrokVideoExtendRequest extends MediaRequest {
+  model: "grok-imagine/extend";
+  input: {
+    task_id: string;
+    prompt: string;
+    extend_at: number;
+    extend_times: "6" | "10";
+  };
+}
+
+// Grok Imagine video upscale request
+export interface GrokVideoUpscaleRequest extends MediaRequest {
+  model: "grok-imagine/upscale";
+  input: {
+    task_id: string;
   };
 }
 
@@ -281,6 +302,8 @@ export type MediaGenerationRequest =
   | GrokImageToImageRequest
   | GrokTextToVideoRequest
   | GrokImageToVideoRequest
+  | GrokVideoExtendRequest
+  | GrokVideoUpscaleRequest
   | NanoBananaProRequest
   | SeedanceVideoRequest
   | NanoBanana2Request

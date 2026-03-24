@@ -221,6 +221,15 @@ function inlineBase64Images(html) {
         '<video class="video-preview" controls src="' + fullUrl + '"></video>';
     }
   );
+  // "task_id" keys — add clickable preview link for KIE tasks
+  html = html.replace(
+    /(<span class="json-key">"task_id"<\\/span>:\\s*<span class="json-str">")(([a-f0-9]{20,}))"<\\/span>/gi,
+    function(match, prefix, taskId) {
+      return prefix + taskId + '"</span>' +
+        ' <a href="#" class="task-id-preview" data-taskid="' + taskId + '" style="color:#89b4fa;font-size:11px;text-decoration:none" title="Preview source task">[preview]</a>' +
+        '<div class="task-id-result" data-for="' + taskId + '"></div>';
+    }
+  );
   return html;
 }
 
@@ -251,6 +260,20 @@ function getVideoRequestId(rec) {
   return null;
 }
 
+function getKieTaskId(rec) {
+  for (var i = rec.entries.length - 1; i >= 0; i--) {
+    var entry = rec.entries[i];
+    var url = entry.request.url || "";
+    if (url.includes("/api/v1/jobs/createTask")) {
+      try {
+        var body = JSON.parse(entry.response.content.text || "{}");
+        if (body.data && body.data.taskId) return body.data.taskId;
+      } catch {}
+    }
+  }
+  return null;
+}
+
 function renderCheckResult(data) {
   var html = '<div class="pane-label">Video Status</div>';
   html += '<span class="status-badge ' + data.status + '">' + data.status + '</span>';
@@ -265,6 +288,53 @@ function renderCheckResult(data) {
   }
   html += '<pre class="body">' + syntaxHighlight(JSON.stringify(data, null, 2)) + '</pre>';
   return html;
+}
+
+function renderKieCheckResult(data) {
+  var rec = data.data || data;
+  var html = '<div class="pane-label">KIE Task Status</div>';
+  var state = rec.state || "unknown";
+  var badgeClass = state === "success" ? "done" : state === "fail" ? "failed" : "pending";
+  html += '<span class="status-badge ' + badgeClass + '">' + state + '</span>';
+  if (typeof rec.progress === "number") {
+    html += '<span style="font-size:13px;color:#a6adc8"> ' + rec.progress + '%</span>';
+    html += '<div class="progress-bar"><div class="progress-fill" style="width:' + rec.progress + '%"></div></div>';
+  }
+  if (rec.resultJson) {
+    try {
+      var result = JSON.parse(rec.resultJson);
+      if (result.resultUrls && result.resultUrls.length) {
+        for (var i = 0; i < result.resultUrls.length; i++) {
+          var u = result.resultUrls[i];
+          if (/\\.mp4|video/i.test(u)) {
+            html += '<video controls autoplay src="' + u + '" style="max-width:100%;max-height:360px;border-radius:6px;border:1px solid #313244;display:block;margin:8px 0"></video>';
+          } else if (/\\.png|.\\.jpg|\\.jpeg|\\.webp|image/i.test(u)) {
+            html += '<img class="b64-img-preview" src="' + u + '">';
+          }
+          html += '<div style="margin-top:4px"><a href="' + u + '" target="_blank" style="color:#89b4fa;font-size:12px">Open in new tab</a></div>';
+        }
+      }
+    } catch {}
+  }
+  html += '<pre class="body">' + syntaxHighlight(JSON.stringify(data, null, 2)) + '</pre>';
+  return html;
+}
+
+function checkKieTask(taskId, targetEl) {
+  targetEl.innerHTML = '<span style="color:#a6adc8;font-size:12px">Loading...</span>';
+  fetch("/api/check-kie-task", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ task_id: taskId }),
+  }).then(function(r) { return r.json(); }).then(function(data) {
+    if (data.error) {
+      targetEl.innerHTML = '<span style="color:#f38ba8;font-size:12px">' + data.error + '</span>';
+    } else {
+      targetEl.innerHTML = renderKieCheckResult(data);
+    }
+  }).catch(function(err) {
+    targetEl.innerHTML = '<span style="color:#f38ba8;font-size:12px">Error: ' + err.message + '</span>';
+  });
 }
 
 function renderEntry(entry) {
@@ -306,9 +376,15 @@ function render() {
     btn.disabled = rec.gitStatus === "clean";
     document.getElementById("status-msg").textContent = rec.gitStatus === "clean" ? "Already approved" : "";
     var reqId = getVideoRequestId(rec);
+    var kieTaskId = getKieTaskId(rec);
     if (reqId) {
       checkBtn.classList.remove("hidden");
       checkBtn.dataset.requestId = reqId;
+      checkBtn.dataset.provider = "xai";
+    } else if (kieTaskId) {
+      checkBtn.classList.remove("hidden");
+      checkBtn.dataset.requestId = kieTaskId;
+      checkBtn.dataset.provider = "kie";
     } else {
       checkBtn.classList.add("hidden");
     }
@@ -339,21 +415,30 @@ document.getElementById("approve-btn").addEventListener("click", async () => {
 document.getElementById("check-btn").addEventListener("click", async () => {
   var btn = document.getElementById("check-btn");
   var requestId = btn.dataset.requestId;
+  var provider = btn.dataset.provider;
   if (!requestId) return;
   var statusMsg = document.getElementById("status-msg");
   var resultDiv = document.getElementById("check-result");
   btn.disabled = true;
   statusMsg.textContent = "Checking...";
   try {
-    var res = await fetch("/api/check-video", {
+    var endpoint = provider === "kie" ? "/api/check-kie-task" : "/api/check-video";
+    var bodyKey = provider === "kie" ? "task_id" : "request_id";
+    var payload = {};
+    payload[bodyKey] = requestId;
+    var res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ request_id: requestId }),
+      body: JSON.stringify(payload),
     });
     var data = await res.json();
     if (!res.ok) {
       statusMsg.textContent = data.error || "Check failed";
       if (resultDiv) resultDiv.innerHTML = "";
+    } else if (provider === "kie") {
+      var rec = data.data || data;
+      statusMsg.textContent = "State: " + (rec.state || "unknown");
+      if (resultDiv) resultDiv.innerHTML = renderKieCheckResult(data);
     } else {
       statusMsg.textContent = "Status: " + data.status;
       if (resultDiv) resultDiv.innerHTML = renderCheckResult(data);
@@ -362,6 +447,17 @@ document.getElementById("check-btn").addEventListener("click", async () => {
     statusMsg.textContent = "Error: " + err.message;
   }
   btn.disabled = false;
+});
+
+document.addEventListener("click", function(e) {
+  var link = e.target.closest(".task-id-preview");
+  if (!link) return;
+  e.preventDefault();
+  var taskId = link.dataset.taskid;
+  var resultDiv = document.querySelector('.task-id-result[data-for="' + taskId + '"]');
+  if (!resultDiv) return;
+  if (resultDiv.innerHTML) { resultDiv.innerHTML = ""; return; }
+  checkKieTask(taskId, resultDiv);
 });
 
 fetch("/api/recordings").then(r => r.json()).then(data => {
@@ -435,6 +531,42 @@ const server = http.createServer((req, res) => {
         const apiRes = await fetch(`https://api.x.ai/v1/videos/${request_id}`, {
           headers: { Authorization: `Bearer ${apiKey}` },
         });
+        const data = await apiRes.json();
+        res.writeHead(apiRes.status, {
+          "Content-Type": "application/json",
+        });
+        res.end(JSON.stringify(data));
+      } catch (err) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: String(err) }));
+      }
+    });
+    return;
+  }
+
+  if (req.method === "POST" && req.url === "/api/check-kie-task") {
+    let body = "";
+    req.on("data", (chunk: Buffer) => {
+      body += chunk.toString();
+    });
+    req.on("end", async () => {
+      try {
+        const { task_id } = JSON.parse(body) as { task_id: string };
+        const apiKey = process.env.KIE_API_KEY;
+        if (!apiKey) {
+          res.writeHead(500, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "KIE_API_KEY not set" }));
+          return;
+        }
+        if (!task_id) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Missing task_id" }));
+          return;
+        }
+        const apiRes = await fetch(
+          `https://api.kie.ai/api/v1/jobs/recordInfo?taskId=${encodeURIComponent(task_id)}`,
+          { headers: { Authorization: `Bearer ${apiKey}` } }
+        );
         const data = await apiRes.json();
         res.writeHead(apiRes.status, {
           "Content-Type": "application/json",

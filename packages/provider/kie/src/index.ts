@@ -28,6 +28,8 @@ export type {
   GrokImageToImageRequest,
   GrokTextToVideoRequest,
   GrokImageToVideoRequest,
+  GrokVideoExtendRequest,
+  GrokVideoUpscaleRequest,
   NanoBananaProRequest,
   SeedanceVideoRequest,
   NanoBanana2Request,

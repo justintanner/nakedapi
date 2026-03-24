@@ -112,6 +112,8 @@ describe("kie provider", () => {
     "grok-imagine/image-to-image",
     "grok-imagine/text-to-video",
     "grok-imagine/image-to-video",
+    "grok-imagine/extend",
+    "grok-imagine/upscale",
     "nano-banana-pro",
     "bytedance/seedance-1.5-pro",
     "nano-banana-2",
@@ -129,6 +131,8 @@ describe("kie provider", () => {
     "grok-imagine/image-to-image": "image",
     "grok-imagine/text-to-video": "video",
     "grok-imagine/image-to-video": "video",
+    "grok-imagine/extend": "video",
+    "grok-imagine/upscale": "video",
     "nano-banana-pro": "image",
     "bytedance/seedance-1.5-pro": "video",
     "nano-banana-2": "image",
@@ -240,13 +244,15 @@ describe("kie provider", () => {
       "transcription"
     );
     expect(provider.getModelType("sora-watermark-remover")).toBe("video");
+    expect(provider.getModelType("grok-imagine/extend")).toBe("video");
+    expect(provider.getModelType("grok-imagine/upscale")).toBe("video");
     expect(provider.getModelType("unknown")).toBe(null);
   });
 
-  it("should return all 14 models", () => {
+  it("should return all 16 models", () => {
     const provider = createMockProvider();
     const models = provider.getModels();
-    expect(models).toHaveLength(14);
+    expect(models).toHaveLength(16);
     expect(models).toContain("nano-banana-2");
     expect(models).toContain("bytedance/seedance-1.5-pro");
     expect(models).toContain("sora-watermark-remover");
@@ -306,6 +312,35 @@ describe("kie provider", () => {
           { text: "Hi there!", voice: "Alice" },
         ],
         stability: 0.5,
+      },
+    };
+
+    const result = await provider.api.v1.jobs.createTask(req);
+    expect(result.taskId).toBe("test-task-id");
+  });
+
+  it("should create task with grok-imagine/extend", async () => {
+    const provider = createMockProvider();
+    const req: MediaGenerationRequest = {
+      model: "grok-imagine/extend",
+      input: {
+        task_id: "task_grok_12345678",
+        prompt: "The camera slowly pans forward through the forest",
+        extend_at: 0,
+        extend_times: "6",
+      },
+    };
+
+    const result = await provider.api.v1.jobs.createTask(req);
+    expect(result.taskId).toBe("test-task-id");
+  });
+
+  it("should create task with grok-imagine/upscale", async () => {
+    const provider = createMockProvider();
+    const req: MediaGenerationRequest = {
+      model: "grok-imagine/upscale",
+      input: {
+        task_id: "task_grok_12345678",
       },
     };
 

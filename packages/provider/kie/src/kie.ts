@@ -68,6 +68,8 @@ const SUPPORTED_MODELS: Record<
   "grok-imagine/image-to-image": { type: "image", supported: true },
   "grok-imagine/text-to-video": { type: "video", supported: true },
   "grok-imagine/image-to-video": { type: "video", supported: true },
+  "grok-imagine/extend": { type: "video", supported: true },
+  "grok-imagine/upscale": { type: "video", supported: true },
   "nano-banana-pro": { type: "image", supported: true },
   "bytedance/seedance-1.5-pro": { type: "video", supported: true },
   "nano-banana-2": { type: "image", supported: true },

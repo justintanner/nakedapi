@@ -109,10 +109,10 @@ const HTML = `<!DOCTYPE html>
   .dot.new { background: #f38ba8; }
   .pane { height: 100vh; overflow-y: auto; padding: 16px; min-width: 0; }
   .pane-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #a6adc8; margin-bottom: 8px; }
-  .header-line { font-size: 13px; color: #bac2de; margin: 2px 0; }
-  .header-name { color: #89b4fa; }
-  .header-val { color: #cdd6f4; }
-  pre.body { background: #11111b; border-radius: 6px; padding: 12px; margin-top: 8px; overflow: auto; font-size: 12px; line-height: 1.5; white-space: pre-wrap; word-break: break-all; }
+  .body-wrap { position: relative; margin: 8px -16px 0; }
+  .body-wrap .copy-btn { position: absolute; top: 6px; right: 6px; background: #313244; border: none; border-radius: 4px; color: #a6adc8; cursor: pointer; padding: 5px 6px; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+  .body-wrap .copy-btn:hover { background: #45475a; color: #cdd6f4; }
+  pre.body { background: #11111b; border-radius: 0; padding: 12px 16px; margin: 0; overflow: auto; font-size: 12px; line-height: 1.5; white-space: pre-wrap; word-break: break-all; }
   .json-key { color: #89b4fa; }
   .json-str { color: #a6e3a1; }
   .json-num { color: #fab387; }
@@ -281,11 +281,26 @@ function inlineMediaPreviews(html) {
 
 function redactAuth(val) { return /^bearer\\s/i.test(val) ? "Bearer ***" : val; }
 
+function wrapBody(rawText, highlightedHtml) {
+  var escaped = rawText.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+  return '<div class="body-wrap"><button class="copy-btn" data-raw="' + escaped + '"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button><pre class="body">' + highlightedHtml + '</pre></div>';
+}
+
+function titleCaseHeader(name) {
+  return name.replace(/\\b[a-z]/g, function(c) { return c.toUpperCase(); });
+}
+
 function renderHeaders(headers) {
-  return headers.map(h =>
-    '<div class="header-line"><span class="header-name">' + h.name + '</span>: <span class="header-val">' +
-    (h.name.toLowerCase() === "authorization" ? redactAuth(h.value) : h.value) + '</span></div>'
-  ).join("");
+  var lines = [];
+  var raw = [];
+  for (var i = 0; i < headers.length; i++) {
+    var h = headers[i];
+    var name = titleCaseHeader(h.name);
+    var val = h.name.toLowerCase() === "authorization" ? redactAuth(h.value) : h.value;
+    lines.push('<span class="json-key">' + name + '</span>: <span class="json-str">' + val + '</span>');
+    raw.push(name + ": " + val);
+  }
+  return wrapBody(raw.join("\\n"), lines.join("\\n"));
 }
 
 function tryParseJson(text) {
@@ -345,7 +360,7 @@ function renderCheckResult(data) {
     html += '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div>';
   }
   if (data.video && data.video.url) {
-    html += '<video controls autoplay src="' + data.video.url + '"></video>';
+    html += '<video controls src="' + data.video.url + '"></video>';
     html += '<div style="margin-top:4px"><a href="' + data.video.url + '" target="_blank" style="color:#89b4fa;font-size:12px">Open in new tab</a></div>';
   }
   html += '<pre class="body">' + syntaxHighlight(JSON.stringify(data, null, 2)) + '</pre>';
@@ -369,7 +384,7 @@ function renderKieCheckResult(data) {
         for (var i = 0; i < result.resultUrls.length; i++) {
           var u = result.resultUrls[i];
           if (/\\.mp4|video/i.test(u)) {
-            html += '<video controls autoplay src="' + u + '" style="max-width:100%;max-height:360px;border-radius:6px;border:1px solid #313244;display:block;margin:8px 0"></video>';
+            html += '<video controls src="' + u + '" style="max-width:100%;max-height:360px;border-radius:6px;border:1px solid #313244;display:block;margin:8px 0"></video>';
           } else if (/\\.png|.\\.jpg|\\.jpeg|\\.webp|image/i.test(u)) {
             html += '<img class="b64-img-preview" src="' + u + '">';
           } else if (/\\.mp3|\\.wav|\\.flac|\\.aac|audio/i.test(u)) {
@@ -457,12 +472,12 @@ function renderEntry(entry) {
     '<div class="pane-label">Request</div>' +
     '<div class="header-line" style="font-size:15px;font-weight:600;margin-bottom:6px">' + req.method + " " + new URL(req.url).pathname + '</div>' +
     renderHeaders(req.headers) +
-    (req.postData?.text ? '<pre class="body">' + inlineMediaPreviews(syntaxHighlight(tryParseJson(req.postData.text))) + '</pre>' : '');
+    (req.postData?.text ? wrapBody(tryParseJson(req.postData.text), inlineMediaPreviews(syntaxHighlight(tryParseJson(req.postData.text)))) : '');
 
   document.getElementById("res-pane").innerHTML =
     '<div class="pane-label">Response ' + res.status + ' ' + res.statusText + '</div>' +
     renderHeaders(res.headers) +
-    (res.content?.text ? '<pre class="body">' + inlineMediaPreviews(syntaxHighlight(tryParseJson(res.content.text))) + '</pre>' : '') +
+    (res.content?.text ? wrapBody(tryParseJson(res.content.text), inlineMediaPreviews(syntaxHighlight(tryParseJson(res.content.text)))) : '') +
     '<div id="check-result"></div>';
 }
 
@@ -607,6 +622,15 @@ document.getElementById("refresh-btn").addEventListener("click", async () => {
 });
 
 document.addEventListener("click", function(e) {
+  var copyBtn = e.target.closest(".copy-btn");
+  if (copyBtn) {
+    var raw = copyBtn.dataset.raw;
+    navigator.clipboard.writeText(raw).then(function() {
+      copyBtn.textContent = "\\u2713";
+      setTimeout(function() { copyBtn.innerHTML = "\\u2398"; }, 1200);
+    });
+    return;
+  }
   var link = e.target.closest(".task-id-preview");
   if (!link) return;
   e.preventDefault();

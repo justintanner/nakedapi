@@ -119,6 +119,7 @@ const HTML = `<!DOCTYPE html>
   #status-msg { font-size: 12px; color: #a6adc8; }
   .empty { padding: 40px; text-align: center; color: #6c7086; font-size: 14px; }
   .b64-img-preview { max-width: 320px; max-height: 240px; border-radius: 6px; border: 1px solid #313244; display: block; margin: 4px 0; }
+  .video-preview { max-width: 480px; max-height: 320px; border-radius: 6px; border: 1px solid #313244; display: block; margin: 4px 0; }
   .b64-truncated { color: #6c7086; font-style: italic; }
   #check-result { margin-top: 12px; }
   #check-result video { max-width: 100%; max-height: 360px; border-radius: 6px; border: 1px solid #313244; display: block; margin: 8px 0; }
@@ -202,6 +203,22 @@ function inlineBase64Images(html) {
     function(match, prefix, fullUrl) {
       return prefix + fullUrl + '"</span>' +
         '<img class="b64-img-preview" src="' + fullUrl + '">';
+    }
+  );
+  // "url" keys with HTTP video URLs (mp4, webm, mov, ogg)
+  html = html.replace(
+    /(<span class="json-key">"url"<\\/span>:\\s*<span class="json-str">")(https?:\\/\\/[^"]*\\.(?:mp4|webm|mov|ogg)(?:[^"]*)?)"<\\/span>/gi,
+    function(match, prefix, fullUrl) {
+      return prefix + fullUrl + '"</span>' +
+        '<video class="video-preview" controls src="' + fullUrl + '"></video>';
+    }
+  );
+  // "video_url" keys with HTTP URLs
+  html = html.replace(
+    /(<span class="json-key">"video_url"<\\/span>:\\s*<span class="json-str">")(https?:\\/\\/[^"]*)"<\\/span>/gi,
+    function(match, prefix, fullUrl) {
+      return prefix + fullUrl + '"</span>' +
+        '<video class="video-preview" controls src="' + fullUrl + '"></video>';
     }
   );
   return html;

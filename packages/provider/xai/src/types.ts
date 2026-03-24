@@ -140,10 +140,11 @@ export interface XaiVideoData {
 
 // Video result (returned from polling)
 export interface XaiVideoResult {
-  request_id: string;
   status: "pending" | "done" | "expired" | "failed";
+  progress?: number;
+  request_id?: string;
   video?: XaiVideoData;
-  model: string;
+  model?: string;
 }
 
 // Namespace types

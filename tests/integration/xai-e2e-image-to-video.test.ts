@@ -5,10 +5,10 @@ import { xai } from "@nakedapi/xai";
 
 const PIPELINE = "xai/e2e-image-to-video";
 
-describe("xai E2E: image → video → extend", () => {
+describe("xai E2E: astronaut cliff — image → video → extend", () => {
   let ctx: PollyContext;
 
-  describe("step 1: generate image", () => {
+  describe("step 1: establish the scene", () => {
     beforeEach(() => {
       ctx = setupPolly(`${PIPELINE}/step-1-generate-image`);
     });
@@ -17,13 +17,18 @@ describe("xai E2E: image → video → extend", () => {
       await teardownPolly(ctx);
     });
 
-    it("should generate an image from a prompt", async () => {
+    it("should generate the opening image", async () => {
       const provider = xai({
         apiKey: process.env.XAI_API_KEY ?? "sk-test-key",
       });
 
       const result = await provider.v1.images.generations({
-        prompt: "A red sports car parked in a desert landscape at golden hour",
+        prompt:
+          "A lone astronaut in a white spacesuit standing at the edge of a " +
+          "towering basalt cliff, overlooking a vast bioluminescent alien " +
+          "ocean at sunset. Two pale moons hang low on the horizon, casting " +
+          "long purple shadows across the rock. Cinematic wide shot, 4K, " +
+          "sci-fi concept art style.",
         model: "grok-imagine-image",
         n: 1,
         response_format: "url",
@@ -35,7 +40,7 @@ describe("xai E2E: image → video → extend", () => {
     });
   });
 
-  describe("step 2: image to video", () => {
+  describe("step 2: animate the scene", () => {
     let imageUrl: string;
 
     beforeEach(() => {
@@ -50,13 +55,18 @@ describe("xai E2E: image → video → extend", () => {
       await teardownPolly(ctx);
     });
 
-    it("should generate a video using the image as first frame", async () => {
+    it("should bring the image to life as video", async () => {
       const provider = xai({
         apiKey: process.env.XAI_API_KEY ?? "sk-test-key",
       });
 
       const result = await provider.v1.videos.generations({
-        prompt: "The car drives across the desert, kicking up dust behind it",
+        prompt:
+          "The astronaut takes a cautious step toward the cliff edge and " +
+          "looks down. Bioluminescent waves crash against the rocks far " +
+          "below, sending up faint glowing spray. The two moons drift " +
+          "higher, their light intensifying. Camera slowly pushes in " +
+          "toward the astronaut from behind. Cinematic, slow motion.",
         model: "grok-imagine-video",
         image_url: imageUrl,
       });
@@ -66,7 +76,7 @@ describe("xai E2E: image → video → extend", () => {
     });
   });
 
-  describe("step 3: extend video", () => {
+  describe("step 3: the leap", () => {
     let videoUrl: string;
 
     beforeEach(() => {
@@ -81,14 +91,19 @@ describe("xai E2E: image → video → extend", () => {
       await teardownPolly(ctx);
     });
 
-    it("should extend the video with a new prompt", async () => {
+    it("should extend the video with the astronaut leaping", async () => {
       const provider = xai({
         apiKey: process.env.XAI_API_KEY ?? "sk-test-key",
       });
 
       const result = await provider.v1.videos.generations({
         prompt:
-          "The car accelerates and disappears over the horizon in a cloud of dust",
+          "The astronaut crouches and leaps off the cliff into the void. " +
+          "A jetpack ignites with a bright blue flame and the astronaut " +
+          "soars out over the glowing ocean, banking left between the two " +
+          "moons. The bioluminescent water below ripples in response to " +
+          "the engine wash. Camera follows in a sweeping aerial tracking " +
+          "shot. Cinematic, epic scale.",
         model: "grok-imagine-video",
         video_url: videoUrl,
       });

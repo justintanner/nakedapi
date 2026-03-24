@@ -2,9 +2,52 @@ import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
+import {
+  workflows,
+  resolveTemplate,
+  resolveBody,
+  extractOutputs,
+  collectVars,
+  getApiKey,
+  type WorkflowState,
+  type StepState,
+} from "./workflows.js";
 
 const PORT = 3475;
 const RECORDINGS_DIR = path.resolve(import.meta.dirname, "recordings");
+const WORKFLOW_STATE_PATH = path.resolve(
+  import.meta.dirname,
+  "workflow-state.json"
+);
+
+function readWorkflowState(): WorkflowState {
+  if (fs.existsSync(WORKFLOW_STATE_PATH)) {
+    return JSON.parse(fs.readFileSync(WORKFLOW_STATE_PATH, "utf-8"));
+  }
+  return {};
+}
+
+function writeWorkflowState(state: WorkflowState): void {
+  fs.writeFileSync(WORKFLOW_STATE_PATH, JSON.stringify(state, null, 2) + "\n");
+}
+
+function getOrInitWorkflowState(
+  state: WorkflowState,
+  workflowId: string
+): Record<string, StepState> {
+  const wf = workflows.find((w) => w.id === workflowId);
+  if (!wf) throw new Error(`Unknown workflow: ${workflowId}`);
+  if (!state[workflowId]) {
+    state[workflowId] = { steps: {} };
+  }
+  const steps = state[workflowId].steps;
+  for (let i = 0; i < wf.steps.length; i++) {
+    if (!steps[String(i)]) {
+      steps[String(i)] = { status: i === 0 ? "ready" : "locked" };
+    }
+  }
+  return steps;
+}
 
 interface HarEntry {
   request: {
@@ -117,6 +160,19 @@ const HTML = `<!DOCTYPE html>
   .dot.clean { background: #a6e3a1; }
   .dot.modified { background: #f9e2af; }
   .dot.new { background: #f38ba8; }
+  .dot.locked { background: #585b70; }
+  .dot.ready { background: #f9e2af; }
+  .dot.running { background: #89b4fa; animation: pulse 1.5s infinite; }
+  .dot.completed { background: #a6e3a1; }
+  .dot.failed { background: #f38ba8; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+  .section-label { padding: 8px 16px; font-size: 14px; color: #a6adc8; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #313244; }
+  .wf-step { padding: 6px 16px 6px 32px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 8px; border-left: 3px solid transparent; }
+  .wf-step:hover { background: #313244; }
+  .wf-step.active { background: #313244; border-left-color: #cba6f7; }
+  .wf-step .step-num { color: #6c7086; font-size: 11px; min-width: 16px; }
+  .wf-step.locked { opacity: 0.5; cursor: default; }
+  .step-description { color: #a6adc8; font-size: 12px; font-style: italic; margin-bottom: 12px; }
   .review-badge { font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 600; margin-left: auto; flex-shrink: 0; }
   .review-badge.needs-review { background: #f38ba8; color: #1e1e2e; }
   .review-badge.approved { background: #a6e3a1; color: #1e1e2e; }
@@ -137,6 +193,10 @@ const HTML = `<!DOCTYPE html>
   #approve-btn { background: #a6e3a1; color: #1e1e2e; }
   #approve-btn:hover { background: #94e2d5; }
   #approve-btn:disabled { opacity: .4; cursor: default; }
+  #run-btn { background: #f9e2af; color: #1e1e2e; }
+  #run-btn:hover { background: #f5c2e7; }
+  #run-btn:disabled { opacity: .4; cursor: default; }
+  #run-btn.hidden { display: none; }
   #refresh-btn { background: #89b4fa; color: #1e1e2e; }
   #refresh-btn:hover { background: #74c7ec; }
   #refresh-btn:disabled { opacity: .4; cursor: default; }
@@ -171,7 +231,9 @@ const HTML = `<!DOCTYPE html>
 </head>
 <body>
 <div id="sidebar">
-  <h2>Generations</h2>
+  <div class="section-label">Workflows</div>
+  <div id="workflow-list"></div>
+  <h2>Recordings</h2>
   <div id="rec-list"></div>
 </div>
 <div class="resize-handle" id="resize-1"></div>
@@ -179,6 +241,7 @@ const HTML = `<!DOCTYPE html>
 <div class="resize-handle" id="resize-2"></div>
 <div class="pane" id="res-pane"></div>
 <div id="actions">
+  <button id="run-btn" class="hidden">Run</button>
   <button id="approve-btn" disabled>Approve</button>
   <button id="refresh-btn" class="hidden">Refresh</button>
   <button id="save-output-btn" class="hidden" disabled>Save Output</button>
@@ -194,6 +257,107 @@ let renderGeneration = 0;
 let collapsedPipelines = {};
 let e2eOutputs = {};
 let lastRefreshResult = null;
+let workflowData = [];
+let selectedWorkflow = null;
+let selectedWfStep = null;
+let collapsedWorkflows = {};
+
+function loadWorkflows() {
+  fetch("/api/workflows").then(function(r) { return r.json(); }).then(function(data) {
+    workflowData = data || [];
+    render();
+  }).catch(function() { workflowData = []; });
+}
+
+function renderWorkflowSidebar() {
+  var wfList = document.getElementById("workflow-list");
+  var html = "";
+  for (var w = 0; w < workflowData.length; w++) {
+    var wf = workflowData[w];
+    var isCollapsed = collapsedWorkflows[wf.id];
+    var arrowClass = isCollapsed ? " collapsed" : "";
+    html += '<div class="pipeline-label" data-wf="' + wf.id + '">' +
+      '<span class="arrow' + arrowClass + '">\\u25BE</span> ' + wf.name + '</div>';
+    for (var s = 0; s < wf.steps.length; s++) {
+      var step = wf.steps[s];
+      var isActive = selectedWorkflow === wf.id && selectedWfStep === s;
+      var hiddenClass = isCollapsed ? " pipeline-hidden" : "";
+      var lockedClass = step.status === "locked" ? " locked" : "";
+      html += '<div class="wf-step' + (isActive ? ' active' : '') + hiddenClass + lockedClass + '" data-wf="' + wf.id + '" data-step="' + s + '">' +
+        '<span class="step-num">' + (s + 1) + '.</span>' +
+        '<span class="dot ' + step.status + '"></span>' +
+        step.name + '</div>';
+    }
+  }
+  wfList.innerHTML = html;
+
+  wfList.querySelectorAll(".pipeline-label").forEach(function(el) {
+    el.addEventListener("click", function() {
+      var wfId = el.dataset.wf;
+      collapsedWorkflows[wfId] = !collapsedWorkflows[wfId];
+      render();
+    });
+  });
+
+  wfList.querySelectorAll(".wf-step").forEach(function(el) {
+    el.addEventListener("click", function() {
+      var wfId = el.dataset.wf;
+      var stepIdx = parseInt(el.dataset.step);
+      // Find the step status
+      var wf = workflowData.find(function(w) { return w.id === wfId; });
+      if (wf && wf.steps[stepIdx] && wf.steps[stepIdx].status === "locked") return;
+      selectedWorkflow = wfId;
+      selectedWfStep = stepIdx;
+      selected = null;
+      selectedEntry = 0;
+      render();
+    });
+  });
+}
+
+function renderWorkflowStep() {
+  var wf = workflowData.find(function(w) { return w.id === selectedWorkflow; });
+  if (!wf) return;
+  var step = wf.steps[selectedWfStep];
+  if (!step) return;
+
+  var reqPane = document.getElementById("req-pane");
+  var resPane = document.getElementById("res-pane");
+
+  // Request pane
+  var reqHtml = '<div class="pane-label">' + wf.name + '</div>';
+  reqHtml += '<div style="font-size:15px;font-weight:600;margin-bottom:4px">Step ' + (selectedWfStep + 1) + ': ' + step.name + '</div>';
+  reqHtml += '<div class="step-description">' + step.description + '</div>';
+  if (step.request) {
+    reqHtml += '<div style="font-size:13px;font-weight:600;margin-bottom:6px">' + step.request.method + ' ' + step.request.url + '</div>';
+    if (step.request.body) {
+      var bodyStr = JSON.stringify(step.request.body, null, 2);
+      reqHtml += wrapBody(bodyStr, inlineMediaPreviews(syntaxHighlight(bodyStr)));
+    }
+  } else {
+    reqHtml += '<div style="color:#6c7086;margin-top:16px">Click <strong>Run</strong> to execute this step</div>';
+  }
+  reqPane.innerHTML = reqHtml;
+
+  // Response pane
+  if (step.response) {
+    var resBody = JSON.stringify(step.response.body, null, 2);
+    var resHtml = '<div class="pane-label">Response ' + step.response.status + '</div>' +
+      wrapBody(resBody, inlineMediaPreviews(syntaxHighlight(resBody)));
+
+    // Show resolved outputs (image_url, video_url) with media previews
+    if (step.outputs && Object.keys(step.outputs).length) {
+      resHtml += '<div class="pane-label" style="margin-top:16px">Outputs</div>';
+      var outStr = JSON.stringify(step.outputs, null, 2);
+      resHtml += wrapBody(outStr, inlineMediaPreviews(syntaxHighlight(outStr)));
+    }
+
+    resHtml += '<div id="check-result"></div>';
+    resPane.innerHTML = resHtml;
+  } else {
+    resPane.innerHTML = '<div class="empty">Click Run to execute this step</div>';
+  }
+}
 
 function isE2EStep(recName) {
   return /\\/e2e-[^/]+\\/step-\\d+/.test(recName);
@@ -605,6 +769,9 @@ function renderEntry(entry) {
 function render() {
   renderGeneration++;
   var gen = renderGeneration;
+
+  renderWorkflowSidebar();
+
   var list = document.getElementById("rec-list");
 
   // Group recordings by provider, separating E2E pipelines
@@ -689,6 +856,8 @@ function render() {
         selected = idx;
         selectedEntry = 0;
       }
+      selectedWorkflow = null;
+      selectedWfStep = null;
       render();
     });
   });
@@ -708,6 +877,8 @@ function render() {
         selected = idx;
         selectedEntry = 0;
       }
+      selectedWorkflow = null;
+      selectedWfStep = null;
       render();
     });
   });
@@ -723,8 +894,81 @@ function render() {
 
   var btn = document.getElementById("approve-btn");
   var refreshBtn = document.getElementById("refresh-btn");
+  var runBtn = document.getElementById("run-btn");
   var saveOutputBtn = document.getElementById("save-output-btn");
   var copyLlmBtn = document.getElementById("copy-llm-btn");
+
+  // Workflow step mode
+  if (selectedWorkflow !== null && selectedWfStep !== null) {
+    var wf = workflowData.find(function(w) { return w.id === selectedWorkflow; });
+    if (wf) {
+      var step = wf.steps[selectedWfStep];
+      renderWorkflowStep();
+
+      var statusMsg = document.getElementById("status-msg");
+      saveOutputBtn.classList.add("hidden");
+      copyLlmBtn.disabled = !step.response;
+
+      // Run button: visible when step is ready and not yet run (no response), or failed
+      if (step.status === "ready" && !step.response || step.status === "failed") {
+        runBtn.classList.remove("hidden");
+        runBtn.disabled = false;
+        runBtn.dataset.wf = selectedWorkflow;
+        runBtn.dataset.step = String(selectedWfStep);
+      } else {
+        runBtn.classList.add("hidden");
+      }
+
+      // Approve button: enabled when step has a response and is not yet completed
+      if (step.response && step.status !== "completed") {
+        // For async steps, only enable approve if async is done
+        if (step.hasAsync && !(step.outputs && step.outputs.video_url)) {
+          btn.disabled = true;
+          btn.textContent = "Approve";
+        } else {
+          btn.disabled = false;
+          btn.textContent = selectedWfStep < wf.steps.length - 1 ? "Approve & Continue" : "Approve";
+        }
+      } else if (step.status === "completed") {
+        btn.disabled = true;
+        btn.textContent = "Approve";
+        statusMsg.textContent = "Completed";
+        statusMsg.style.color = "#a6e3a1";
+      } else {
+        btn.disabled = true;
+        btn.textContent = "Approve";
+      }
+
+      // Refresh button: visible for async steps that have been run but not yet done
+      if (step.hasAsync && step.response && step.status !== "completed") {
+        refreshBtn.classList.remove("hidden");
+        refreshBtn.dataset.wfMode = "true";
+        refreshBtn.dataset.wf = selectedWorkflow;
+        refreshBtn.dataset.step = String(selectedWfStep);
+      } else {
+        refreshBtn.classList.add("hidden");
+      }
+
+      if (step.status === "ready" && !step.response) {
+        statusMsg.textContent = "Ready — click Run";
+        statusMsg.style.color = "#f9e2af";
+      } else if (step.status === "ready" && step.response && step.hasAsync) {
+        statusMsg.textContent = "Running — click Refresh to poll";
+        statusMsg.style.color = "#89b4fa";
+      } else if (step.status === "ready" && step.response) {
+        statusMsg.textContent = "Review and approve";
+        statusMsg.style.color = "#f9e2af";
+      } else if (step.status === "failed") {
+        statusMsg.textContent = step.error || "Failed";
+        statusMsg.style.color = "#f38ba8";
+      }
+    }
+    return;
+  }
+
+  // Recording mode — hide workflow-only buttons
+  runBtn.classList.add("hidden");
+
   if (selected !== null && recordings[selected]) {
     var rec = recordings[selected];
     var parsed = parseE2EStep(rec.name);
@@ -778,6 +1022,7 @@ function render() {
     var kieTaskId = getKieTaskId(rec);
     if (reqId || kieTaskId) {
       refreshBtn.classList.remove("hidden");
+      refreshBtn.dataset.wfMode = "false";
       refreshBtn.dataset.requestId = reqId || kieTaskId;
       refreshBtn.dataset.provider = reqId ? "xai" : "kie";
     } else {
@@ -821,15 +1066,42 @@ function render() {
 }
 
 document.getElementById("approve-btn").addEventListener("click", async () => {
+  // Workflow approve
+  if (selectedWorkflow !== null && selectedWfStep !== null) {
+    document.getElementById("status-msg").textContent = "Approving...";
+    var res = await fetch("/api/workflow/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ workflowId: selectedWorkflow, stepIndex: selectedWfStep }),
+    });
+    if (res.ok) {
+      var data = await res.json();
+      // Reload workflow state and advance to next step
+      await new Promise(function(resolve) {
+        fetch("/api/workflows").then(function(r) { return r.json(); }).then(function(wfs) {
+          workflowData = wfs || [];
+          if (data.nextStep !== null) {
+            selectedWfStep = data.nextStep;
+          }
+          resolve();
+        });
+      });
+      render();
+    } else {
+      document.getElementById("status-msg").textContent = "Failed to approve";
+    }
+    return;
+  }
+  // Recording approve
   if (selected === null) return;
   const rec = recordings[selected];
   document.getElementById("status-msg").textContent = "Approving...";
-  const res = await fetch("/api/approve", {
+  const res2 = await fetch("/api/approve", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ path: rec.path }),
   });
-  if (res.ok) {
+  if (res2.ok) {
     rec.gitStatus = "clean";
     var msg = document.getElementById("status-msg");
     msg.textContent = "Approved";
@@ -841,8 +1113,86 @@ document.getElementById("approve-btn").addEventListener("click", async () => {
   }
 });
 
+document.getElementById("run-btn").addEventListener("click", async () => {
+  var btn = document.getElementById("run-btn");
+  var wfId = btn.dataset.wf;
+  var stepIdx = parseInt(btn.dataset.step);
+  if (!wfId) return;
+  btn.disabled = true;
+  document.getElementById("status-msg").textContent = "Running...";
+  document.getElementById("status-msg").style.color = "#89b4fa";
+  try {
+    var res = await fetch("/api/workflow/run", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ workflowId: wfId, stepIndex: stepIdx }),
+    });
+    var data = await res.json();
+    if (!res.ok) {
+      document.getElementById("status-msg").textContent = data.error || "Run failed";
+      document.getElementById("status-msg").style.color = "#f38ba8";
+      btn.disabled = false;
+      return;
+    }
+    // Reload workflow state
+    var wfRes = await fetch("/api/workflows");
+    workflowData = await wfRes.json();
+    render();
+  } catch (err) {
+    document.getElementById("status-msg").textContent = "Error: " + err.message;
+    document.getElementById("status-msg").style.color = "#f38ba8";
+    btn.disabled = false;
+  }
+});
+
 document.getElementById("refresh-btn").addEventListener("click", async () => {
   var btn = document.getElementById("refresh-btn");
+
+  // Workflow poll mode
+  if (btn.dataset.wfMode === "true") {
+    var wfId = btn.dataset.wf;
+    var stepIdx = parseInt(btn.dataset.step);
+    btn.disabled = true;
+    document.getElementById("status-msg").textContent = "Polling...";
+    document.getElementById("status-msg").style.color = "#89b4fa";
+    try {
+      var pollRes = await fetch("/api/workflow/poll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ workflowId: wfId, stepIndex: stepIdx }),
+      });
+      var pollData = await pollRes.json();
+      if (!pollRes.ok) {
+        document.getElementById("status-msg").textContent = pollData.error || "Poll failed";
+        document.getElementById("status-msg").style.color = "#f38ba8";
+      } else {
+        var pct = typeof pollData.progress === "number" ? Math.round(pollData.progress > 1 ? pollData.progress : pollData.progress * 100) : "";
+        document.getElementById("status-msg").textContent = "Status: " + pollData.status + (pct ? " (" + pct + "%)" : "");
+        document.getElementById("status-msg").style.color = pollData.isDone ? "#a6e3a1" : pollData.isFailed ? "#f38ba8" : "#f9e2af";
+        // Show poll result in check-result div
+        var resultDiv = document.getElementById("check-result");
+        if (resultDiv) {
+          var pollBodyStr = JSON.stringify(pollData.body, null, 2);
+          resultDiv.innerHTML = '<div class="pane-label">Poll Result</div>' +
+            wrapBody(pollBodyStr, inlineMediaPreviews(syntaxHighlight(pollBodyStr)));
+        }
+        if (pollData.isDone || pollData.isFailed) {
+          // Reload workflow state to get updated outputs
+          var wfRes = await fetch("/api/workflows");
+          workflowData = await wfRes.json();
+          render();
+          return;
+        }
+      }
+    } catch (err) {
+      document.getElementById("status-msg").textContent = "Error: " + err.message;
+      document.getElementById("status-msg").style.color = "#f38ba8";
+    }
+    btn.disabled = false;
+    return;
+  }
+
+  // Recording refresh mode
   var requestId = btn.dataset.requestId;
   var provider = btn.dataset.provider;
   if (!requestId) return;
@@ -969,9 +1319,19 @@ document.addEventListener("click", function(e) {
   checkKieTask(taskId, resultDiv);
 });
 
-fetch("/api/recordings").then(r => r.json()).then(data => {
-  recordings = data;
-  if (recordings.length) { selected = 0; }
+Promise.all([
+  fetch("/api/recordings").then(r => r.json()),
+  fetch("/api/workflows").then(r => r.json()),
+]).then(function(results) {
+  recordings = results[0];
+  workflowData = results[1] || [];
+  // Default: select first workflow step if available, else first recording
+  if (workflowData.length && workflowData[0].steps.length) {
+    selectedWorkflow = workflowData[0].id;
+    selectedWfStep = 0;
+  } else if (recordings.length) {
+    selected = 0;
+  }
   loadE2EOutputs();
   render();
 });
@@ -1186,6 +1546,249 @@ const server = http.createServer((req, res) => {
         fs.writeFileSync(outputsPath, JSON.stringify(existing, null, 2) + "\n");
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ ok: true }));
+      } catch (err) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: String(err) }));
+      }
+    });
+    return;
+  }
+
+  // --- Workflow endpoints ---
+
+  if (req.method === "GET" && req.url === "/api/workflows") {
+    try {
+      const state = readWorkflowState();
+      const result = workflows.map((wf) => {
+        const steps = getOrInitWorkflowState(state, wf.id);
+        return {
+          id: wf.id,
+          name: wf.name,
+          steps: wf.steps.map((stepDef, i) => ({
+            name: stepDef.name,
+            description: stepDef.description,
+            hasAsync: !!stepDef.async,
+            ...steps[String(i)],
+          })),
+        };
+      });
+      writeWorkflowState(state);
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(result));
+    } catch (err) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: String(err) }));
+    }
+    return;
+  }
+
+  if (req.method === "POST" && req.url === "/api/workflow/run") {
+    let body = "";
+    req.on("data", (chunk: Buffer) => {
+      body += chunk.toString();
+    });
+    req.on("end", async () => {
+      try {
+        const { workflowId, stepIndex } = JSON.parse(body) as {
+          workflowId: string;
+          stepIndex: number;
+        };
+        const wf = workflows.find((w) => w.id === workflowId);
+        if (!wf) {
+          res.writeHead(404, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Unknown workflow" }));
+          return;
+        }
+        const stepDef = wf.steps[stepIndex];
+        if (!stepDef) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Invalid step index" }));
+          return;
+        }
+        const apiKey = getApiKey(stepDef.apiProvider);
+        if (!apiKey) {
+          res.writeHead(500, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({
+              error: `${stepDef.apiProvider.toUpperCase()}_API_KEY not set`,
+            })
+          );
+          return;
+        }
+        const state = readWorkflowState();
+        const steps = getOrInitWorkflowState(state, workflowId);
+        const step = steps[String(stepIndex)];
+        if (step.status !== "ready" && step.status !== "failed") {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({ error: `Step is ${step.status}, not ready` })
+          );
+          return;
+        }
+        const vars = collectVars(steps, stepIndex);
+        const resolvedUrl = resolveTemplate(stepDef.request.url, vars);
+        const resolvedBody = stepDef.request.body
+          ? resolveBody(stepDef.request.body, vars)
+          : undefined;
+        const apiRes = await fetch(resolvedUrl, {
+          method: stepDef.request.method,
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: resolvedBody ? JSON.stringify(resolvedBody) : undefined,
+        });
+        const responseBody = await apiRes.json();
+        const outputs = extractOutputs(responseBody, stepDef.outputExtractors);
+        step.status = "ready";
+        step.request = {
+          method: stepDef.request.method,
+          url: resolvedUrl,
+          body: resolvedBody,
+        };
+        step.response = { status: apiRes.status, body: responseBody };
+        step.outputs = { ...step.outputs, ...outputs };
+        writeWorkflowState(state);
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            ok: true,
+            request: step.request,
+            response: step.response,
+            outputs: step.outputs,
+          })
+        );
+      } catch (err) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: String(err) }));
+      }
+    });
+    return;
+  }
+
+  if (req.method === "POST" && req.url === "/api/workflow/poll") {
+    let body = "";
+    req.on("data", (chunk: Buffer) => {
+      body += chunk.toString();
+    });
+    req.on("end", async () => {
+      try {
+        const { workflowId, stepIndex } = JSON.parse(body) as {
+          workflowId: string;
+          stepIndex: number;
+        };
+        const wf = workflows.find((w) => w.id === workflowId);
+        if (!wf) {
+          res.writeHead(404, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Unknown workflow" }));
+          return;
+        }
+        const stepDef = wf.steps[stepIndex];
+        if (!stepDef?.async) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Step has no async config" }));
+          return;
+        }
+        const apiKey = getApiKey(stepDef.apiProvider);
+        if (!apiKey) {
+          res.writeHead(500, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({
+              error: `${stepDef.apiProvider.toUpperCase()}_API_KEY not set`,
+            })
+          );
+          return;
+        }
+        const state = readWorkflowState();
+        const steps = getOrInitWorkflowState(state, workflowId);
+        const step = steps[String(stepIndex)];
+        const vars = { ...collectVars(steps, stepIndex), ...step.outputs };
+        const pollUrl = resolveTemplate(stepDef.async.pollUrl, vars);
+        const apiRes = await fetch(pollUrl, {
+          method: stepDef.async.pollMethod,
+          headers: { Authorization: `Bearer ${apiKey}` },
+        });
+        const responseBody = await apiRes.json();
+        const statusVal = String(
+          (responseBody as Record<string, unknown>)[
+            stepDef.async.completionField
+          ] ?? ""
+        );
+        const isDone = stepDef.async.completionValues.includes(statusVal);
+        const isFailed = stepDef.async.failureValues.includes(statusVal);
+        if (isDone) {
+          const asyncOutputs = extractOutputs(
+            responseBody,
+            stepDef.async.outputExtractors
+          );
+          step.outputs = { ...step.outputs, ...asyncOutputs };
+          writeWorkflowState(state);
+        }
+        if (isFailed) {
+          step.status = "failed";
+          step.error = `Async operation ${statusVal}`;
+          writeWorkflowState(state);
+        }
+        let progress: number | undefined;
+        if (stepDef.async.progressField) {
+          const raw = (responseBody as Record<string, unknown>)[
+            stepDef.async.progressField
+          ];
+          if (typeof raw === "number") progress = raw;
+        }
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            status: statusVal,
+            isDone,
+            isFailed,
+            progress,
+            body: responseBody,
+            outputs: step.outputs,
+          })
+        );
+      } catch (err) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: String(err) }));
+      }
+    });
+    return;
+  }
+
+  if (req.method === "POST" && req.url === "/api/workflow/approve") {
+    let body = "";
+    req.on("data", (chunk: Buffer) => {
+      body += chunk.toString();
+    });
+    req.on("end", () => {
+      try {
+        const { workflowId, stepIndex } = JSON.parse(body) as {
+          workflowId: string;
+          stepIndex: number;
+        };
+        const wf = workflows.find((w) => w.id === workflowId);
+        if (!wf) {
+          res.writeHead(404, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Unknown workflow" }));
+          return;
+        }
+        const state = readWorkflowState();
+        const steps = getOrInitWorkflowState(state, workflowId);
+        const step = steps[String(stepIndex)];
+        step.status = "completed";
+        step.completedAt = new Date().toISOString();
+        const nextIdx = stepIndex + 1;
+        if (nextIdx < wf.steps.length) {
+          steps[String(nextIdx)].status = "ready";
+        }
+        writeWorkflowState(state);
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            ok: true,
+            nextStep: nextIdx < wf.steps.length ? nextIdx : null,
+          })
+        );
       } catch (err) {
         res.writeHead(500, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: String(err) }));

@@ -1,3 +1,6 @@
+# Workflow state (ephemeral, harness-generated)
+tests/workflow-state.json
+
 # Logs
 logs
 *.log

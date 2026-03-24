@@ -85,18 +85,29 @@ const HTML = `<!DOCTYPE html>
 <title>Polly.js Test Harness</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; background: #1e1e2e; color: #cdd6f4; height: 100vh; display: grid; grid-template-columns: 260px 1fr; }
-  #sidebar { background: #181825; border-right: 1px solid #313244; overflow-y: auto; padding: 12px 0; }
-  #sidebar h2 { padding: 8px 16px; font-size: 14px; color: #a6adc8; text-transform: uppercase; letter-spacing: 1px; }
-  .rec-item { padding: 10px 16px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; border-left: 3px solid transparent; }
+  ::-webkit-scrollbar { width: 12px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; margin: 4px 0; }
+  ::-webkit-scrollbar-thumb { background: #45475a; border-radius: 6px; border: 3px solid transparent; background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background: #585b70; }
+  ::-webkit-scrollbar-corner { background: #11111b; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; background: #1e1e2e; color: #cdd6f4; height: 100vh; display: grid; grid-template-columns: 240px 4px 1fr 4px 1fr; }
+  #sidebar { background: #181825; display: flex; flex-direction: column; height: 100vh; }
+  #sidebar h2 { padding: 8px 16px; font-size: 14px; color: #a6adc8; text-transform: uppercase; letter-spacing: 1px; flex-shrink: 0; }
+  #rec-list { flex: 1; overflow-y: auto; }
+  .resize-handle { background: #313244; cursor: col-resize; position: relative; transition: background 0.15s; }
+  .resize-handle:hover, .resize-handle.dragging { background: #89b4fa; }
+  .provider-label { padding: 6px 16px; font-size: 11px; color: #6c7086; text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; }
+  .rec-item { padding: 8px 16px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; border-left: 3px solid transparent; }
   .rec-item:hover { background: #313244; }
   .rec-item.active { background: #313244; border-left-color: #89b4fa; }
+  .entry-item { padding: 5px 16px 5px 32px; font-size: 12px; color: #6c7086; cursor: pointer; border-left: 3px solid transparent; }
+  .entry-item:hover { background: #313244; color: #a6adc8; }
+  .entry-item.active { background: #313244; color: #cdd6f4; border-left-color: #cba6f7; }
   .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .dot.clean { background: #a6e3a1; }
   .dot.modified { background: #f9e2af; }
   .dot.new { background: #f38ba8; }
-  #main { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-  .pane { flex: 1; overflow: auto; padding: 16px; border-bottom: 1px solid #313244; }
+  .pane { height: 100vh; overflow-y: auto; padding: 16px; min-width: 0; }
   .pane-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #a6adc8; margin-bottom: 8px; }
   .header-line { font-size: 13px; color: #bac2de; margin: 2px 0; }
   .header-name { color: #89b4fa; }
@@ -107,19 +118,20 @@ const HTML = `<!DOCTYPE html>
   .json-num { color: #fab387; }
   .json-bool { color: #cba6f7; }
   .json-null { color: #6c7086; }
-  #actions { padding: 12px 16px; background: #181825; border-top: 1px solid #313244; display: flex; gap: 12px; align-items: center; }
+  #actions { padding: 12px 16px; background: #181825; border-top: 1px solid #313244; display: flex; gap: 12px; align-items: center; flex-shrink: 0; flex-wrap: wrap; }
   #actions button { padding: 8px 20px; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 600; }
   #approve-btn { background: #a6e3a1; color: #1e1e2e; }
   #approve-btn:hover { background: #94e2d5; }
   #approve-btn:disabled { opacity: .4; cursor: default; }
-  #check-btn { background: #89b4fa; color: #1e1e2e; }
-  #check-btn:hover { background: #74c7ec; }
-  #check-btn:disabled { opacity: .4; cursor: default; }
-  #check-btn.hidden { display: none; }
+  #refresh-btn { background: #89b4fa; color: #1e1e2e; }
+  #refresh-btn:hover { background: #74c7ec; }
+  #refresh-btn:disabled { opacity: .4; cursor: default; }
+  #refresh-btn.hidden { display: none; }
   #status-msg { font-size: 12px; color: #a6adc8; }
   .empty { padding: 40px; text-align: center; color: #6c7086; font-size: 14px; }
   .b64-img-preview { max-width: 320px; max-height: 240px; border-radius: 6px; border: 1px solid #313244; display: block; margin: 4px 0; }
   .video-preview { max-width: 480px; max-height: 320px; border-radius: 6px; border: 1px solid #313244; display: block; margin: 4px 0; }
+  .audio-preview { max-width: 320px; border-radius: 6px; display: block; margin: 4px 0; }
   .b64-truncated { color: #6c7086; font-style: italic; }
   #check-result { margin-top: 12px; }
   #check-result video { max-width: 100%; max-height: 360px; border-radius: 6px; border: 1px solid #313244; display: block; margin: 8px 0; }
@@ -134,21 +146,23 @@ const HTML = `<!DOCTYPE html>
 </head>
 <body>
 <div id="sidebar">
-  <h2>Recordings</h2>
+  <h2>Generations</h2>
   <div id="rec-list"></div>
-</div>
-<div id="main">
-  <div class="pane" id="req-pane"><div class="empty">Select a recording</div></div>
-  <div class="pane" id="res-pane"></div>
   <div id="actions">
     <button id="approve-btn" disabled>Approve</button>
-    <button id="check-btn" class="hidden">Check Result</button>
+    <button id="refresh-btn" class="hidden">Refresh</button>
     <span id="status-msg"></span>
   </div>
 </div>
+<div class="resize-handle" id="resize-1"></div>
+<div class="pane" id="req-pane"><div class="empty">Select a recording</div></div>
+<div class="resize-handle" id="resize-2"></div>
+<div class="pane" id="res-pane"></div>
 <script>
 let recordings = [];
 let selected = null;
+let selectedEntry = 0;
+let renderGeneration = 0;
 
 function inferMimeType(b64) {
   if (b64.startsWith("/9j/")) return "image/jpeg";
@@ -169,7 +183,7 @@ function syntaxHighlight(json) {
     .replace(/: (null)/g, ': <span class="json-null">$1</span>');
 }
 
-function inlineBase64Images(html) {
+function inlineMediaPreviews(html) {
   // b64_json keys (xAI image responses) — always an image
   html = html.replace(
     /(<span class="json-key">"b64_json"<\\/span>:\\s*<span class="json-str">")(([A-Za-z0-9+\\/=]{40})([A-Za-z0-9+\\/=]*))"<\\/span>/g,
@@ -221,9 +235,41 @@ function inlineBase64Images(html) {
         '<video class="video-preview" controls src="' + fullUrl + '"></video>';
     }
   );
-  // "task_id" keys — add clickable preview link for KIE tasks
+  // "url" keys with HTTP audio URLs (mp3, wav, flac, aac, ogg)
   html = html.replace(
-    /(<span class="json-key">"task_id"<\\/span>:\\s*<span class="json-str">")(([a-f0-9]{20,}))"<\\/span>/gi,
+    /(<span class="json-key">"url"<\\/span>:\\s*<span class="json-str">")(https?:\\/\\/[^"]*\\.(?:mp3|wav|flac|aac)(?:[^"]*)?)"<\\/span>/gi,
+    function(match, prefix, fullUrl) {
+      return prefix + fullUrl + '"</span>' +
+        '<audio class="audio-preview" controls src="' + fullUrl + '"></audio>';
+    }
+  );
+  // Generic image URLs in any string value (catch-all after key-specific rules)
+  html = html.replace(
+    /(<span class="json-str">")(https?:\\/\\/[^"]*\\.(?:jpe?g|png|gif|webp|svg)(?:\\?[^"]*)?)"<\\/span>(?!<img)/gi,
+    function(match, prefix, fullUrl) {
+      return prefix + fullUrl + '"</span>' +
+        '<img class="b64-img-preview" src="' + fullUrl + '">';
+    }
+  );
+  // Generic video URLs in any string value (catch-all)
+  html = html.replace(
+    /(<span class="json-str">")(https?:\\/\\/[^"]*\\.(?:mp4|webm|mov)(?:\\?[^"]*)?)"<\\/span>(?!<video)/gi,
+    function(match, prefix, fullUrl) {
+      return prefix + fullUrl + '"</span>' +
+        '<video class="video-preview" controls src="' + fullUrl + '"></video>';
+    }
+  );
+  // Generic audio URLs in any string value (catch-all)
+  html = html.replace(
+    /(<span class="json-str">")(https?:\\/\\/[^"]*\\.(?:mp3|wav|flac|aac)(?:\\?[^"]*)?)"<\\/span>(?!<audio)/gi,
+    function(match, prefix, fullUrl) {
+      return prefix + fullUrl + '"</span>' +
+        '<audio class="audio-preview" controls src="' + fullUrl + '"></audio>';
+    }
+  );
+  // "task_id" / "taskId" keys — add clickable preview link for KIE tasks
+  html = html.replace(
+    /(<span class="json-key">"task_?[iI]d"<\\/span>:\\s*<span class="json-str">")(([a-f0-9]{20,}))"<\\/span>/gi,
     function(match, prefix, taskId) {
       return prefix + taskId + '"</span>' +
         ' <a href="#" class="task-id-preview" data-taskid="' + taskId + '" style="color:#89b4fa;font-size:11px;text-decoration:none" title="Preview source task">[preview]</a>' +
@@ -244,6 +290,22 @@ function renderHeaders(headers) {
 
 function tryParseJson(text) {
   try { return JSON.stringify(JSON.parse(text), null, 2); } catch { return text; }
+}
+
+function displayName(recName) {
+  var parts = recName.split("/");
+  var provider = parts[0].replace(/_\\d+$/, "");
+  var test = parts.length > 1 ? parts[1].replace(/_\\d+$/, "") : parts[0];
+  return { provider: provider, test: test };
+}
+
+function entryLabel(entry) {
+  try {
+    var u = new URL(entry.request.url);
+    var segments = u.pathname.split("/").filter(Boolean);
+    var last = segments[segments.length - 1] || u.pathname;
+    return entry.request.method + " /" + last;
+  } catch { return entry.request.method; }
 }
 
 function getVideoRequestId(rec) {
@@ -310,6 +372,8 @@ function renderKieCheckResult(data) {
             html += '<video controls autoplay src="' + u + '" style="max-width:100%;max-height:360px;border-radius:6px;border:1px solid #313244;display:block;margin:8px 0"></video>';
           } else if (/\\.png|.\\.jpg|\\.jpeg|\\.webp|image/i.test(u)) {
             html += '<img class="b64-img-preview" src="' + u + '">';
+          } else if (/\\.mp3|\\.wav|\\.flac|\\.aac|audio/i.test(u)) {
+            html += '<audio class="audio-preview" controls src="' + u + '"></audio>';
           }
           html += '<div style="margin-top:4px"><a href="' + u + '" target="_blank" style="color:#89b4fa;font-size:12px">Open in new tab</a></div>';
         }
@@ -320,20 +384,68 @@ function renderKieCheckResult(data) {
   return html;
 }
 
-function checkKieTask(taskId, targetEl) {
+function checkKieTask(taskId, targetEl, gen) {
   targetEl.innerHTML = '<span style="color:#a6adc8;font-size:12px">Loading...</span>';
   fetch("/api/check-kie-task", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ task_id: taskId }),
   }).then(function(r) { return r.json(); }).then(function(data) {
+    if (gen !== undefined && renderGeneration !== gen) return;
     if (data.error) {
       targetEl.innerHTML = '<span style="color:#f38ba8;font-size:12px">' + data.error + '</span>';
     } else {
       targetEl.innerHTML = renderKieCheckResult(data);
     }
   }).catch(function(err) {
+    if (gen !== undefined && renderGeneration !== gen) return;
     targetEl.innerHTML = '<span style="color:#f38ba8;font-size:12px">Error: ' + err.message + '</span>';
+  });
+}
+
+function autoEvalKieTaskIds(gen) {
+  var taskLinks = document.querySelectorAll(".task-id-preview");
+  taskLinks.forEach(function(link) {
+    var taskId = link.dataset.taskid;
+    var resultDiv = document.querySelector('.task-id-result[data-for="' + taskId + '"]');
+    if (resultDiv && !resultDiv.innerHTML) {
+      checkKieTask(taskId, resultDiv, gen);
+    }
+  });
+}
+
+function autoEvalFromResponse(rec, entryIdx, gen) {
+  var entry = rec.entries[entryIdx];
+  if (!entry) return;
+  try {
+    var body = JSON.parse(entry.response.content.text || "{}");
+    var taskId = body.data && body.data.taskId;
+    if (!taskId) return;
+    var resultDiv = document.getElementById("check-result");
+    if (resultDiv) checkKieTask(taskId, resultDiv, gen);
+  } catch {}
+}
+
+function autoEvalXaiVideo(rec, gen) {
+  var reqId = getVideoRequestId(rec);
+  if (!reqId) return;
+  var resultDiv = document.getElementById("check-result");
+  if (!resultDiv) return;
+  resultDiv.innerHTML = '<span style="color:#a6adc8;font-size:12px">Loading video status...</span>';
+  fetch("/api/check-video", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ request_id: reqId }),
+  }).then(function(r) { return r.json(); }).then(function(data) {
+    if (renderGeneration !== gen) return;
+    if (data.error) {
+      resultDiv.innerHTML = '<span style="color:#f38ba8;font-size:12px">' + data.error + '</span>';
+    } else {
+      resultDiv.innerHTML = renderCheckResult(data);
+    }
+  }).catch(function(err) {
+    if (renderGeneration !== gen) return;
+    resultDiv.innerHTML = '<span style="color:#f38ba8;font-size:12px">Error: ' + err.message + '</span>';
   });
 }
 
@@ -345,51 +457,96 @@ function renderEntry(entry) {
     '<div class="pane-label">Request</div>' +
     '<div class="header-line" style="font-size:15px;font-weight:600;margin-bottom:6px">' + req.method + " " + new URL(req.url).pathname + '</div>' +
     renderHeaders(req.headers) +
-    (req.postData?.text ? '<pre class="body">' + inlineBase64Images(syntaxHighlight(tryParseJson(req.postData.text))) + '</pre>' : '');
+    (req.postData?.text ? '<pre class="body">' + inlineMediaPreviews(syntaxHighlight(tryParseJson(req.postData.text))) + '</pre>' : '');
 
   document.getElementById("res-pane").innerHTML =
     '<div class="pane-label">Response ' + res.status + ' ' + res.statusText + '</div>' +
     renderHeaders(res.headers) +
-    (res.content?.text ? '<pre class="body">' + inlineBase64Images(syntaxHighlight(tryParseJson(res.content.text))) + '</pre>' : '') +
+    (res.content?.text ? '<pre class="body">' + inlineMediaPreviews(syntaxHighlight(tryParseJson(res.content.text))) + '</pre>' : '') +
     '<div id="check-result"></div>';
 }
 
 function render() {
-  const list = document.getElementById("rec-list");
-  list.innerHTML = recordings.map((r, i) =>
-    '<div class="rec-item' + (selected === i ? ' active' : '') + '" data-idx="' + i + '">' +
-    '<span class="dot ' + r.gitStatus + '"></span>' + r.name + '</div>'
-  ).join("");
+  renderGeneration++;
+  var gen = renderGeneration;
+  var list = document.getElementById("rec-list");
 
-  list.querySelectorAll(".rec-item").forEach(el => {
-    el.addEventListener("click", () => {
-      selected = parseInt(el.dataset.idx);
+  // Group recordings by provider
+  var groups = {};
+  var groupOrder = [];
+  for (var i = 0; i < recordings.length; i++) {
+    var dn = displayName(recordings[i].name);
+    if (!groups[dn.provider]) {
+      groups[dn.provider] = [];
+      groupOrder.push(dn.provider);
+    }
+    groups[dn.provider].push({ idx: i, test: dn.test, rec: recordings[i] });
+  }
+
+  var html = "";
+  for (var g = 0; g < groupOrder.length; g++) {
+    var provider = groupOrder[g];
+    var items = groups[provider];
+    html += '<div class="provider-label">' + provider + '</div>';
+    for (var j = 0; j < items.length; j++) {
+      var item = items[j];
+      var isActive = selected === item.idx;
+      html += '<div class="rec-item' + (isActive ? ' active' : '') + '" data-idx="' + item.idx + '">' +
+        '<span class="dot ' + item.rec.gitStatus + '"></span>' + item.test + '</div>';
+      if (isActive && item.rec.entries.length > 1) {
+        for (var e = 0; e < item.rec.entries.length; e++) {
+          html += '<div class="entry-item' + (selectedEntry === e ? ' active' : '') + '" data-idx="' + item.idx + '" data-entry="' + e + '">' +
+            entryLabel(item.rec.entries[e]) + '</div>';
+        }
+      }
+    }
+  }
+  list.innerHTML = html;
+
+  list.querySelectorAll(".rec-item").forEach(function(el) {
+    el.addEventListener("click", function() {
+      var idx = parseInt(el.dataset.idx);
+      if (selected !== idx) {
+        selected = idx;
+        selectedEntry = 0;
+      }
       render();
     });
   });
 
-  const btn = document.getElementById("approve-btn");
-  const checkBtn = document.getElementById("check-btn");
+  list.querySelectorAll(".entry-item").forEach(function(el) {
+    el.addEventListener("click", function(e) {
+      e.stopPropagation();
+      selected = parseInt(el.dataset.idx);
+      selectedEntry = parseInt(el.dataset.entry);
+      render();
+    });
+  });
+
+  var btn = document.getElementById("approve-btn");
+  var refreshBtn = document.getElementById("refresh-btn");
   if (selected !== null && recordings[selected]) {
-    const rec = recordings[selected];
-    renderEntry(rec.entries[0] || { request: { method: "", url: "about:blank", headers: [] }, response: { status: 0, statusText: "", headers: [], content: {} } });
+    var rec = recordings[selected];
+    renderEntry(rec.entries[selectedEntry] || { request: { method: "", url: "about:blank", headers: [] }, response: { status: 0, statusText: "", headers: [], content: {} } });
     btn.disabled = rec.gitStatus === "clean";
     document.getElementById("status-msg").textContent = rec.gitStatus === "clean" ? "Already approved" : "";
+
     var reqId = getVideoRequestId(rec);
     var kieTaskId = getKieTaskId(rec);
-    if (reqId) {
-      checkBtn.classList.remove("hidden");
-      checkBtn.dataset.requestId = reqId;
-      checkBtn.dataset.provider = "xai";
-    } else if (kieTaskId) {
-      checkBtn.classList.remove("hidden");
-      checkBtn.dataset.requestId = kieTaskId;
-      checkBtn.dataset.provider = "kie";
+    if (reqId || kieTaskId) {
+      refreshBtn.classList.remove("hidden");
+      refreshBtn.dataset.requestId = reqId || kieTaskId;
+      refreshBtn.dataset.provider = reqId ? "xai" : "kie";
     } else {
-      checkBtn.classList.add("hidden");
+      refreshBtn.classList.add("hidden");
     }
+
+    // Auto-eval: resolve task_ids and video statuses
+    autoEvalKieTaskIds(gen);
+    autoEvalFromResponse(rec, selectedEntry, gen);
+    autoEvalXaiVideo(rec, gen);
   } else {
-    checkBtn.classList.add("hidden");
+    refreshBtn.classList.add("hidden");
   }
 }
 
@@ -412,8 +569,8 @@ document.getElementById("approve-btn").addEventListener("click", async () => {
   }
 });
 
-document.getElementById("check-btn").addEventListener("click", async () => {
-  var btn = document.getElementById("check-btn");
+document.getElementById("refresh-btn").addEventListener("click", async () => {
+  var btn = document.getElementById("refresh-btn");
   var requestId = btn.dataset.requestId;
   var provider = btn.dataset.provider;
   if (!requestId) return;
@@ -465,6 +622,55 @@ fetch("/api/recordings").then(r => r.json()).then(data => {
   if (recordings.length) { selected = 0; }
   render();
 });
+
+// Resizable columns
+(function() {
+  var cols = [240, 4, 0, 4, 0]; // sidebar, handle, req, handle, res
+  function applyGrid() {
+    document.body.style.gridTemplateColumns =
+      cols[0] + "px " + cols[1] + "px " + cols[2] + "px " + cols[3] + "px " + cols[4] + "px";
+  }
+  function initCols() {
+    var w = window.innerWidth;
+    var fixed = cols[0] + cols[1] + cols[3];
+    var remaining = w - fixed;
+    cols[2] = Math.floor(remaining / 2);
+    cols[4] = remaining - cols[2];
+    applyGrid();
+  }
+  initCols();
+  window.addEventListener("resize", initCols);
+
+  function setupHandle(handleId, leftIdx, rightIdx) {
+    var handle = document.getElementById(handleId);
+    handle.addEventListener("mousedown", function(e) {
+      e.preventDefault();
+      handle.classList.add("dragging");
+      var startX = e.clientX;
+      var startLeft = cols[leftIdx];
+      var startRight = cols[rightIdx];
+      var total = startLeft + startRight;
+      var minW = leftIdx === 0 ? 160 : 200;
+
+      function onMove(e) {
+        var dx = e.clientX - startX;
+        var newLeft = Math.max(minW, Math.min(total - 200, startLeft + dx));
+        cols[leftIdx] = newLeft;
+        cols[rightIdx] = total - newLeft;
+        applyGrid();
+      }
+      function onUp() {
+        handle.classList.remove("dragging");
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+      }
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+    });
+  }
+  setupHandle("resize-1", 0, 2);
+  setupHandle("resize-2", 2, 4);
+})();
 </script>
 </body>
 </html>`;

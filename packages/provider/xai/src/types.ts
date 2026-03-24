@@ -108,6 +108,10 @@ export interface XaiVideoGenerateRequest {
   prompt: string;
   model?: string;
   duration?: number;
+  aspect_ratio?: "1:1" | "16:9" | "9:16" | "4:3" | "3:4" | "3:2" | "2:3";
+  resolution?: "480p" | "720p";
+  image_url?: string;
+  video_url?: string;
 }
 
 // Video reference for editing
@@ -127,11 +131,19 @@ export interface XaiVideoAsyncResponse {
   request_id: string;
 }
 
+// Video data in poll response
+export interface XaiVideoData {
+  url: string;
+  duration: number;
+  respect_moderation: boolean;
+}
+
 // Video result (returned from polling)
 export interface XaiVideoResult {
-  status: string;
-  url?: string;
-  [key: string]: unknown;
+  request_id: string;
+  status: "pending" | "done" | "expired" | "failed";
+  video?: XaiVideoData;
+  model: string;
 }
 
 // Namespace types

@@ -349,6 +349,11 @@ export function xai(opts: XaiOptions): XaiProvider {
           prompt: req.prompt,
         };
         if (req.duration !== undefined) body.duration = req.duration;
+        if (req.aspect_ratio !== undefined)
+          body.aspect_ratio = req.aspect_ratio;
+        if (req.resolution !== undefined) body.resolution = req.resolution;
+        if (req.image_url !== undefined) body.image_url = req.image_url;
+        if (req.video_url !== undefined) body.video_url = req.video_url;
 
         return await makeJsonPostRequest("/videos/generations", body, signal);
       },

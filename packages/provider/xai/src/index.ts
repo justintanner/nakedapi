@@ -27,6 +27,7 @@ export type {
   XaiVideoEditRequest,
   XaiVideoReference,
   XaiVideoAsyncResponse,
+  XaiVideoData,
   XaiVideoResult,
   XaiProvider,
 } from "./types";

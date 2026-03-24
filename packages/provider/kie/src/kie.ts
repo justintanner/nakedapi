@@ -64,6 +64,7 @@ const SUPPORTED_MODELS: Record<
   { type: MediaType; supported: boolean }
 > = {
   "kling-3.0/video": { type: "video", supported: true },
+  "kling-3.0/motion-control": { type: "video", supported: true },
   "grok-imagine/text-to-image": { type: "image", supported: true },
   "grok-imagine/image-to-image": { type: "image", supported: true },
   "grok-imagine/text-to-video": { type: "video", supported: true },

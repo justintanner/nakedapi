@@ -1,6 +1,7 @@
 // Supported Kie media models
 export type KieMediaModel =
   | "kling-3.0/video"
+  | "kling-3.0/motion-control"
   | "grok-imagine/text-to-image"
   | "grok-imagine/image-to-image"
   | "grok-imagine/text-to-video"
@@ -66,6 +67,19 @@ export interface KlingVideoRequest extends MediaRequest {
     multi_shots: boolean;
     multi_prompt?: MultiShotPrompt[];
     kling_elements?: KlingElement[];
+  };
+}
+
+// Kling 3.0 motion control request
+export interface KlingMotionControlRequest extends MediaRequest {
+  model: "kling-3.0/motion-control";
+  input: {
+    prompt?: string;
+    input_urls: string[];
+    video_urls: string[];
+    mode?: "std" | "pro";
+    character_orientation?: "video" | "image";
+    background_source?: "input_video" | "input_image";
   };
 }
 
@@ -298,6 +312,7 @@ export interface SoraWatermarkRequest extends MediaRequest {
 // Union type for all media requests
 export type MediaGenerationRequest =
   | KlingVideoRequest
+  | KlingMotionControlRequest
   | GrokTextToImageRequest
   | GrokImageToImageRequest
   | GrokTextToVideoRequest

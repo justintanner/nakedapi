@@ -24,6 +24,7 @@ export type {
   MultiShotPrompt,
   MediaRequest,
   KlingVideoRequest,
+  KlingMotionControlRequest,
   GrokTextToImageRequest,
   GrokImageToImageRequest,
   GrokTextToVideoRequest,

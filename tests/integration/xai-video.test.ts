@@ -109,7 +109,7 @@ describe("xai video integration", () => {
       const result = await provider.v1.videos.generations({
         prompt: "Add dramatic lighting to the scene",
         model: "grok-imagine-video",
-        video_url: "https://example.com/source-video.mp4",
+        video_url: "https://data.x.ai/docs/video-generation/portrait-wave.mp4",
       });
 
       expect(result.request_id).toBeTruthy();
@@ -152,7 +152,7 @@ describe("xai video integration", () => {
       });
       const result = await provider.v1.videos.generations({
         prompt: "Make the colors more vibrant and saturated",
-        video_url: "https://example.com/clip.mp4",
+        video_url: "https://data.x.ai/docs/video-generation/portrait-wave.mp4",
         aspect_ratio: "16:9",
       });
 

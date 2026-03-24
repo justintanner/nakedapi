@@ -97,6 +97,16 @@ const HTML = `<!DOCTYPE html>
   .resize-handle { background: #313244; cursor: col-resize; position: relative; transition: background 0.15s; }
   .resize-handle:hover, .resize-handle.dragging { background: #89b4fa; }
   .provider-label { padding: 6px 16px; font-size: 11px; color: #6c7086; text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; }
+  .pipeline-label { padding: 6px 16px 6px 24px; font-size: 12px; color: #cba6f7; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .pipeline-label:hover { background: #313244; }
+  .pipeline-label .arrow { font-size: 10px; transition: transform 0.15s; }
+  .pipeline-label .arrow.collapsed { transform: rotate(-90deg); }
+  .pipeline-step { padding: 6px 16px 6px 40px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 8px; border-left: 3px solid transparent; }
+  .pipeline-step:hover { background: #313244; }
+  .pipeline-step.active { background: #313244; border-left-color: #cba6f7; }
+  .pipeline-step .step-num { color: #6c7086; font-size: 11px; min-width: 16px; }
+  .pipeline-step .step-arrow { color: #45475a; font-size: 10px; margin: 0 2px; }
+  .pipeline-hidden { display: none; }
   .rec-item { padding: 8px 16px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; border-left: 3px solid transparent; }
   .rec-item:hover { background: #313244; }
   .rec-item.active { background: #313244; border-left-color: #89b4fa; }
@@ -131,9 +141,17 @@ const HTML = `<!DOCTYPE html>
   #refresh-btn:hover { background: #74c7ec; }
   #refresh-btn:disabled { opacity: .4; cursor: default; }
   #refresh-btn.hidden { display: none; }
+  #save-output-btn { background: #cba6f7; color: #1e1e2e; }
+  #save-output-btn:hover { background: #b4befe; }
+  #save-output-btn:disabled { opacity: .4; cursor: default; }
+  #save-output-btn.hidden { display: none; }
   #copy-llm-btn { background: #89b4fa; color: #1e1e2e; }
   #copy-llm-btn:hover { background: #74c7ec; }
   #copy-llm-btn:disabled { opacity: .4; cursor: default; }
+  .pipeline-context { padding: 8px 12px; background: #181825; border-radius: 6px; margin-bottom: 12px; font-size: 12px; color: #a6adc8; display: flex; gap: 12px; align-items: center; }
+  .pipeline-context .pipe-name { color: #cba6f7; font-weight: 600; }
+  .pipeline-context .pipe-step { color: #89b4fa; }
+  .pipeline-context .pipe-input { color: #a6e3a1; }
   #status-msg { font-size: 12px; color: #a6adc8; }
   .empty { padding: 40px; text-align: center; color: #6c7086; font-size: 14px; }
   .b64-img-preview { max-width: 320px; max-height: 240px; border-radius: 6px; border: 1px solid #313244; display: block; margin: 4px 0; }
@@ -163,6 +181,7 @@ const HTML = `<!DOCTYPE html>
 <div id="actions">
   <button id="approve-btn" disabled>Approve</button>
   <button id="refresh-btn" class="hidden">Refresh</button>
+  <button id="save-output-btn" class="hidden" disabled>Save Output</button>
   <span id="status-msg"></span>
   <div class="spacer"></div>
   <button id="copy-llm-btn" disabled>Copy for LLM</button>
@@ -172,6 +191,63 @@ let recordings = [];
 let selected = null;
 let selectedEntry = 0;
 let renderGeneration = 0;
+let collapsedPipelines = {};
+let e2eOutputs = {};
+let lastRefreshResult = null;
+
+function isE2EStep(recName) {
+  return /\\/e2e-[^/]+\\/step-\\d+/.test(recName);
+}
+
+function parseE2EStep(recName) {
+  var m = recName.match(/^([^/]+)\\/e2e-([^/]+)\\/step-(\\d+)-(.+?)(?:_\\d+)?$/);
+  if (!m) {
+    m = recName.match(/^([^/]+)_\\d+\\/e2e-([^/]+)_\\d+\\/step-(\\d+)-(.+?)(?:_\\d+)?$/);
+  }
+  if (!m) return null;
+  return { provider: m[1].replace(/_\\d+$/, ""), pipeline: m[2].replace(/_\\d+$/, ""), stepNum: parseInt(m[3]), stepName: m[4].replace(/_\\d+$/, "") };
+}
+
+function getE2ERecordingName(rec) {
+  var rn = "";
+  try { var har = rec.entries[0]; rn = ""; } catch {}
+  var dn = displayName(rec.name);
+  // Reconstruct: provider/e2e-pipeline/step-N-name
+  var parts = rec.name.split("/");
+  var clean = parts.map(function(p) { return p.replace(/_\\d+$/, ""); });
+  return clean.join("/");
+}
+
+function detectStepOutputs(rec) {
+  // Determine what outputs this E2E step can provide
+  var outputs = {};
+  for (var i = 0; i < rec.entries.length; i++) {
+    var text = rec.entries[i].response?.content?.text;
+    if (!text) continue;
+    try {
+      var body = JSON.parse(text);
+      if (body.data && Array.isArray(body.data) && body.data[0] && body.data[0].url) {
+        outputs.image_url = body.data[0].url;
+      }
+      if (body.request_id) {
+        outputs.request_id = body.request_id;
+      }
+      if (body.video && body.video.url) {
+        outputs.video_url = body.video.url;
+      }
+      if (body.data && body.data.taskId) {
+        outputs.task_id = body.data.taskId;
+      }
+    } catch {}
+  }
+  return outputs;
+}
+
+function loadE2EOutputs() {
+  fetch("/api/e2e-outputs").then(function(r) { return r.json(); }).then(function(data) {
+    e2eOutputs = data || {};
+  }).catch(function() { e2eOutputs = {}; });
+}
 
 function inferMimeType(b64) {
   if (b64.startsWith("/9j/")) return "image/jpeg";
@@ -283,6 +359,14 @@ function inlineMediaPreviews(html) {
       return prefix + taskId + '"</span>' +
         ' <a href="#" class="task-id-preview" data-taskid="' + taskId + '" style="color:#89b4fa;font-size:11px;text-decoration:none" title="Preview source task">[preview]</a>' +
         '<div class="task-id-result" data-for="' + taskId + '"></div>';
+    }
+  );
+  // "url" keys with HTTP URLs that have no recognized media extension — try as image with graceful fallback
+  html = html.replace(
+    /(<span class="json-key">"url"<\\/span>:\\s*<span class="json-str">")(https?:\\/\\/[^"]+)"<\\/span>(?!<img|<video|<audio)/gi,
+    function(match, prefix, fullUrl) {
+      return prefix + fullUrl + '"</span>' +
+        '<img class="b64-img-preview" src="' + fullUrl + '" onerror="this.style.display=\\x27none\\x27">';
     }
   );
   return html;
@@ -523,25 +607,36 @@ function render() {
   var gen = renderGeneration;
   var list = document.getElementById("rec-list");
 
-  // Group recordings by provider
+  // Group recordings by provider, separating E2E pipelines
   var groups = {};
   var groupOrder = [];
   for (var i = 0; i < recordings.length; i++) {
     var dn = displayName(recordings[i].name);
     if (!groups[dn.provider]) {
-      groups[dn.provider] = [];
+      groups[dn.provider] = { regular: [], pipelines: {} };
       groupOrder.push(dn.provider);
     }
-    groups[dn.provider].push({ idx: i, test: dn.test, rec: recordings[i] });
+    var parsed = parseE2EStep(recordings[i].name);
+    if (parsed) {
+      var pipeKey = parsed.pipeline;
+      if (!groups[dn.provider].pipelines[pipeKey]) {
+        groups[dn.provider].pipelines[pipeKey] = [];
+      }
+      groups[dn.provider].pipelines[pipeKey].push({ idx: i, stepNum: parsed.stepNum, stepName: parsed.stepName, rec: recordings[i] });
+    } else {
+      groups[dn.provider].regular.push({ idx: i, test: dn.test, rec: recordings[i] });
+    }
   }
 
   var html = "";
   for (var g = 0; g < groupOrder.length; g++) {
     var provider = groupOrder[g];
-    var items = groups[provider];
+    var group = groups[provider];
     html += '<div class="provider-label">' + provider + '</div>';
-    for (var j = 0; j < items.length; j++) {
-      var item = items[j];
+
+    // Regular recordings
+    for (var j = 0; j < group.regular.length; j++) {
+      var item = group.regular[j];
       var isActive = selected === item.idx;
       var badge = item.rec.gitStatus === "clean"
         ? ''
@@ -555,10 +650,58 @@ function render() {
         }
       }
     }
+
+    // E2E pipelines
+    var pipeKeys = Object.keys(group.pipelines);
+    for (var p = 0; p < pipeKeys.length; p++) {
+      var pipeKey = pipeKeys[p];
+      var steps = group.pipelines[pipeKey].sort(function(a, b) { return a.stepNum - b.stepNum; });
+      var isCollapsed = collapsedPipelines[provider + "/" + pipeKey];
+      var arrowClass = isCollapsed ? " collapsed" : "";
+      html += '<div class="pipeline-label" data-pipe="' + provider + '/' + pipeKey + '">' +
+        '<span class="arrow' + arrowClass + '">\\u25BE</span> e2e-' + pipeKey + '</div>';
+      for (var s = 0; s < steps.length; s++) {
+        var step = steps[s];
+        var stepActive = selected === step.idx;
+        var stepBadge = step.rec.gitStatus === "clean"
+          ? ''
+          : '<span class="review-badge needs-review">review</span>';
+        var hiddenClass = isCollapsed ? " pipeline-hidden" : "";
+        html += '<div class="pipeline-step' + (stepActive ? ' active' : '') + hiddenClass + '" data-idx="' + step.idx + '" data-pipe="' + provider + '/' + pipeKey + '">' +
+          '<span class="step-num">' + step.stepNum + '.</span>' +
+          '<span class="dot ' + step.rec.gitStatus + '"></span>' +
+          step.stepName + stepBadge + '</div>';
+        if (stepActive && step.rec.entries.length > 1) {
+          for (var e = 0; e < step.rec.entries.length; e++) {
+            html += '<div class="entry-item' + (selectedEntry === e ? ' active' : '') + hiddenClass + '" data-idx="' + step.idx + '" data-entry="' + e + '">' +
+              entryLabel(step.rec.entries[e]) + '</div>';
+          }
+        }
+      }
+    }
   }
   list.innerHTML = html;
 
   list.querySelectorAll(".rec-item").forEach(function(el) {
+    el.addEventListener("click", function() {
+      var idx = parseInt(el.dataset.idx);
+      if (selected !== idx) {
+        selected = idx;
+        selectedEntry = 0;
+      }
+      render();
+    });
+  });
+
+  list.querySelectorAll(".pipeline-label").forEach(function(el) {
+    el.addEventListener("click", function() {
+      var pipe = el.dataset.pipe;
+      collapsedPipelines[pipe] = !collapsedPipelines[pipe];
+      render();
+    });
+  });
+
+  list.querySelectorAll(".pipeline-step").forEach(function(el) {
     el.addEventListener("click", function() {
       var idx = parseInt(el.dataset.idx);
       if (selected !== idx) {
@@ -580,10 +723,46 @@ function render() {
 
   var btn = document.getElementById("approve-btn");
   var refreshBtn = document.getElementById("refresh-btn");
+  var saveOutputBtn = document.getElementById("save-output-btn");
   var copyLlmBtn = document.getElementById("copy-llm-btn");
   if (selected !== null && recordings[selected]) {
     var rec = recordings[selected];
-    renderEntry(rec.entries[selectedEntry] || { request: { method: "", url: "about:blank", headers: [] }, response: { status: 0, statusText: "", headers: [], content: {} } });
+    var parsed = parseE2EStep(rec.name);
+
+    // Pipeline context header above response pane
+    if (parsed) {
+      var recKey = getE2ERecordingName(rec);
+      var pipeSteps = [];
+      for (var pi = 0; pi < recordings.length; pi++) {
+        var pp = parseE2EStep(recordings[pi].name);
+        if (pp && pp.pipeline === parsed.pipeline && pp.provider === parsed.provider) pipeSteps.push(pp);
+      }
+      var totalSteps = pipeSteps.length;
+      var ctxHtml = '<div class="pipeline-context">' +
+        '<span class="pipe-name">e2e-' + parsed.pipeline + '</span>' +
+        '<span class="pipe-step">Step ' + parsed.stepNum + ' of ' + totalSteps + ': ' + parsed.stepName + '</span>';
+      // Show input from previous step
+      if (parsed.stepNum > 1) {
+        var prevKey = parsed.provider + '/e2e-' + parsed.pipeline + '/step-' + (parsed.stepNum - 1);
+        // Find the actual previous step recording name
+        for (var pk in e2eOutputs) {
+          if (pk.indexOf(prevKey) === 0 || pk === prevKey) {
+            var prevOut = e2eOutputs[pk];
+            var inputKeys = Object.keys(prevOut);
+            if (inputKeys.length) {
+              ctxHtml += '<span class="pipe-input">Input: ' + inputKeys.join(", ") + ' from step ' + (parsed.stepNum - 1) + '</span>';
+            }
+            break;
+          }
+        }
+      }
+      ctxHtml += '</div>';
+      renderEntry(rec.entries[selectedEntry] || { request: { method: "", url: "about:blank", headers: [] }, response: { status: 0, statusText: "", headers: [], content: {} } });
+      document.getElementById("res-pane").innerHTML = ctxHtml + document.getElementById("res-pane").innerHTML;
+    } else {
+      renderEntry(rec.entries[selectedEntry] || { request: { method: "", url: "about:blank", headers: [] }, response: { status: 0, statusText: "", headers: [], content: {} } });
+    }
+
     btn.disabled = rec.gitStatus === "clean";
     copyLlmBtn.disabled = false;
     var statusMsg = document.getElementById("status-msg");
@@ -605,12 +784,38 @@ function render() {
       refreshBtn.classList.add("hidden");
     }
 
+    // Save Output button — visible for E2E steps
+    if (parsed) {
+      saveOutputBtn.classList.remove("hidden");
+      var outputs = detectStepOutputs(rec);
+      // Also check if refresh resolved a video URL
+      if (lastRefreshResult && lastRefreshResult.video && lastRefreshResult.video.url) {
+        outputs.video_url = lastRefreshResult.video.url;
+      }
+      if (lastRefreshResult && lastRefreshResult.request_id) {
+        outputs.request_id = lastRefreshResult.request_id;
+      }
+      var outKeys = Object.keys(outputs);
+      if (outKeys.length > 0) {
+        saveOutputBtn.disabled = false;
+        saveOutputBtn.textContent = "Save " + outKeys.join(", ");
+        saveOutputBtn.dataset.recording = getE2ERecordingName(rec);
+        saveOutputBtn.dataset.outputs = JSON.stringify(outputs);
+      } else {
+        saveOutputBtn.disabled = true;
+        saveOutputBtn.textContent = "Save Output";
+      }
+    } else {
+      saveOutputBtn.classList.add("hidden");
+    }
+
     // Auto-eval: resolve task_ids and video statuses
     autoEvalKieTaskIds(gen);
     autoEvalFromResponse(rec, selectedEntry, gen);
     autoEvalXaiVideo(rec, gen);
   } else {
     refreshBtn.classList.add("hidden");
+    saveOutputBtn.classList.add("hidden");
     copyLlmBtn.disabled = true;
   }
 }
@@ -663,14 +868,72 @@ document.getElementById("refresh-btn").addEventListener("click", async () => {
       var rec = data.data || data;
       statusMsg.textContent = "State: " + (rec.state || "unknown");
       if (resultDiv) resultDiv.innerHTML = renderKieCheckResult(data);
+      lastRefreshResult = data;
     } else {
       statusMsg.textContent = "Status: " + data.status;
       if (resultDiv) resultDiv.innerHTML = renderCheckResult(data);
+      lastRefreshResult = data;
+    }
+    // Update Save Output button if we got new data
+    if (selected !== null && recordings[selected]) {
+      var selRec = recordings[selected];
+      var selParsed = parseE2EStep(selRec.name);
+      if (selParsed) {
+        var saveBtn = document.getElementById("save-output-btn");
+        var outputs = detectStepOutputs(selRec);
+        if (lastRefreshResult && lastRefreshResult.video && lastRefreshResult.video.url) {
+          outputs.video_url = lastRefreshResult.video.url;
+        }
+        if (lastRefreshResult && lastRefreshResult.request_id) {
+          outputs.request_id = lastRefreshResult.request_id;
+        }
+        var outKeys = Object.keys(outputs);
+        if (outKeys.length > 0) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = "Save " + outKeys.join(", ");
+          saveBtn.dataset.recording = getE2ERecordingName(selRec);
+          saveBtn.dataset.outputs = JSON.stringify(outputs);
+        }
+      }
     }
   } catch (err) {
     statusMsg.textContent = "Error: " + err.message;
   }
   btn.disabled = false;
+});
+
+document.getElementById("save-output-btn").addEventListener("click", async function() {
+  var btn = document.getElementById("save-output-btn");
+  var recording = btn.dataset.recording;
+  var outputs = btn.dataset.outputs;
+  if (!recording || !outputs) return;
+  btn.disabled = true;
+  var statusMsg = document.getElementById("status-msg");
+  statusMsg.textContent = "Saving outputs...";
+  try {
+    var res = await fetch("/api/save-step-output", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recording: recording, outputs: JSON.parse(outputs) }),
+    });
+    if (res.ok) {
+      statusMsg.textContent = "Outputs saved";
+      statusMsg.style.color = "#a6e3a1";
+      btn.textContent = "Saved!";
+      // Refresh e2e outputs cache
+      loadE2EOutputs();
+      setTimeout(function() { btn.textContent = "Save Output"; }, 1200);
+    } else {
+      var data = await res.json();
+      statusMsg.textContent = data.error || "Failed to save";
+      statusMsg.style.color = "#f38ba8";
+      btn.disabled = false;
+    }
+  } catch (err) {
+    statusMsg.textContent = "Error: " + err.message;
+    statusMsg.style.color = "#f38ba8";
+    btn.disabled = false;
+  }
 });
 
 document.getElementById("copy-llm-btn").addEventListener("click", function() {
@@ -709,6 +972,7 @@ document.addEventListener("click", function(e) {
 fetch("/api/recordings").then(r => r.json()).then(data => {
   recordings = data;
   if (recordings.length) { selected = 0; }
+  loadE2EOutputs();
   render();
 });
 
@@ -867,6 +1131,61 @@ const server = http.createServer((req, res) => {
           "Content-Type": "application/json",
         });
         res.end(JSON.stringify(data));
+      } catch (err) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: String(err) }));
+      }
+    });
+    return;
+  }
+
+  if (req.method === "GET" && req.url === "/api/e2e-outputs") {
+    const outputsPath = path.resolve(RECORDINGS_DIR, "..", "e2e-outputs.json");
+    try {
+      if (fs.existsSync(outputsPath)) {
+        const data = fs.readFileSync(outputsPath, "utf-8");
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(data);
+      } else {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end("{}");
+      }
+    } catch (err) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: String(err) }));
+    }
+    return;
+  }
+
+  if (req.method === "POST" && req.url === "/api/save-step-output") {
+    let body = "";
+    req.on("data", (chunk: Buffer) => {
+      body += chunk.toString();
+    });
+    req.on("end", () => {
+      try {
+        const { recording, outputs } = JSON.parse(body) as {
+          recording: string;
+          outputs: Record<string, string>;
+        };
+        if (!recording || !outputs || typeof outputs !== "object") {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Invalid request" }));
+          return;
+        }
+        const outputsPath = path.resolve(
+          RECORDINGS_DIR,
+          "..",
+          "e2e-outputs.json"
+        );
+        let existing: Record<string, Record<string, string>> = {};
+        if (fs.existsSync(outputsPath)) {
+          existing = JSON.parse(fs.readFileSync(outputsPath, "utf-8"));
+        }
+        existing[recording] = { ...existing[recording], ...outputs };
+        fs.writeFileSync(outputsPath, JSON.stringify(existing, null, 2) + "\n");
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ ok: true }));
       } catch (err) {
         res.writeHead(500, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: String(err) }));

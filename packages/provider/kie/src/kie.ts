@@ -10,28 +10,10 @@ import {
   UploadMediaRequest,
   UploadMediaResponse,
   KieTaskInfo,
-  KieTaskState,
 } from "./types";
 import { createVeoProvider } from "./veo";
 import { createSunoProvider } from "./suno";
 import { createChatProvider } from "./chat";
-
-interface KieApiResponse {
-  code: number;
-  msg: string;
-  data?: {
-    taskId?: string;
-    [key: string]: unknown;
-  };
-}
-
-interface KieUploadApiResponse {
-  success: boolean;
-  code: number;
-  data?: {
-    downloadUrl?: string;
-  };
-}
 
 const MIME_TYPES: Record<string, string> = {
   jpg: "image/jpeg",
@@ -143,13 +125,13 @@ export function kie(opts: KieOptions): KieProvider {
         throw new KieError(message, res.status);
       }
 
-      const data: KieApiResponse = await res.json();
+      const data: TaskResponse = await res.json();
 
       if (data.code !== 200 || !data.data?.taskId) {
         throw new KieError(data.msg || `API error: ${data.code}`, data.code);
       }
 
-      return { taskId: data.data.taskId };
+      return data;
     } catch (error) {
       clearTimeout(timeoutId);
       if (error instanceof KieError) throw error;
@@ -194,67 +176,13 @@ export function kie(opts: KieOptions): KieProvider {
         throw new KieError(message, res.status);
       }
 
-      interface RecordInfoApiResponse {
-        code: number;
-        msg: string;
-        data?: {
-          taskId?: string;
-          model?: string;
-          state?: string;
-          param?: string;
-          resultJson?: string;
-          failCode?: string;
-          failMsg?: string;
-          costTime?: number;
-          completeTime?: number;
-          createTime?: number;
-          updateTime?: number;
-          progress?: number;
-        };
-      }
-
-      const data: RecordInfoApiResponse = await res.json();
+      const data: KieTaskInfo = await res.json();
 
       if (data.code !== 200 || !data.data) {
         throw new KieError(data.msg || `API error: ${data.code}`, data.code);
       }
 
-      const record = data.data;
-
-      let result: KieTaskInfo["result"];
-      if (record.resultJson) {
-        try {
-          const parsed: unknown = JSON.parse(record.resultJson);
-          if (typeof parsed === "object" && parsed !== null) {
-            const obj = parsed as Record<string, unknown>;
-            const resultUrls = Array.isArray(obj.resultUrls)
-              ? (obj.resultUrls as string[])
-              : [];
-            const resultObject =
-              typeof obj.resultObject === "object" && obj.resultObject !== null
-                ? (obj.resultObject as Record<string, unknown>)
-                : undefined;
-            result = { resultUrls, resultObject };
-          }
-        } catch {
-          // ignore malformed resultJson
-        }
-      }
-
-      return {
-        taskId: record.taskId ?? taskId,
-        model: record.model ?? "",
-        state: (record.state ?? "waiting") as KieTaskState,
-        param: record.param ?? "",
-        result,
-        failCode: record.failCode ?? "",
-        failMsg: record.failMsg ?? "",
-        costTime: record.costTime ?? 0,
-        completeTime: record.completeTime ?? 0,
-        createTime: record.createTime ?? 0,
-        updateTime: record.updateTime ?? 0,
-        progress: record.progress ?? 0,
-      };
+      return data;
     } catch (error) {
       clearTimeout(timeoutId);
       if (error instanceof KieError) throw error;
@@ -325,13 +253,13 @@ export function kie(opts: KieOptions): KieProvider {
         throw new KieError(message, res.status);
       }
 
-      const data: KieUploadApiResponse = await res.json();
+      const data: UploadMediaResponse = await res.json();
 
       if (!data.success || !data.data?.downloadUrl) {
         throw new KieError(`Upload failed: code ${data.code}`, data.code);
       }
 
-      return { downloadUrl: data.data.downloadUrl };
+      return data;
     } catch (error) {
       clearTimeout(timeoutId);
       if (error instanceof KieError) throw error;
@@ -374,19 +302,13 @@ export function kie(opts: KieOptions): KieProvider {
         throw new KieError(message, res.status);
       }
 
-      interface DownloadUrlApiResponse {
-        code: number;
-        msg: string;
-        data?: string;
-      }
-
-      const data: DownloadUrlApiResponse = await res.json();
+      const data: DownloadUrlResponse = await res.json();
 
       if (data.code !== 200 || !data.data) {
         throw new KieError(data.msg || `API error: ${data.code}`, data.code);
       }
 
-      return { url: data.data };
+      return data;
     } catch (error) {
       clearTimeout(timeoutId);
       if (error instanceof KieError) throw error;
@@ -407,13 +329,7 @@ export function kie(opts: KieOptions): KieProvider {
       throw new KieError(`Failed to get credits: ${res.status}`, res.status);
     }
 
-    interface CreditsApiResponse {
-      code: number;
-      msg: string;
-      data?: number;
-    }
-
-    const response: CreditsApiResponse = await res.json();
+    const response: KieCreditsResponse = await res.json();
 
     if (response.code !== 200 || response.data === undefined) {
       throw new KieError(
@@ -422,11 +338,7 @@ export function kie(opts: KieOptions): KieProvider {
       );
     }
 
-    return {
-      balance: response.data,
-      totalUsed: 0,
-      currency: "credits",
-    };
+    return response;
   }
 
   return {

@@ -1,4 +1,3 @@
-import { KieError } from "./types";
 import { kieRequest } from "./request";
 
 export type VeoModel = "veo3" | "veo3_fast";
@@ -27,9 +26,16 @@ export interface VeoExtendRequest {
   watermark?: string;
 }
 
+interface VeoSubmitResponse {
+  code: number;
+  data?: {
+    taskId?: string;
+  };
+}
+
 interface VeoVeoNamespace {
-  generate(req: VeoGenerateRequest): Promise<{ taskId: string }>;
-  extend(req: VeoExtendRequest): Promise<{ taskId: string }>;
+  generate(req: VeoGenerateRequest): Promise<VeoSubmitResponse>;
+  extend(req: VeoExtendRequest): Promise<VeoSubmitResponse>;
 }
 
 interface VeoV1Namespace {
@@ -44,13 +50,6 @@ export interface VeoProvider {
   api: VeoApiNamespace;
 }
 
-interface VeoSubmitResponse {
-  code: number;
-  data?: {
-    taskId?: string;
-  };
-}
-
 export function createVeoProvider(
   baseURL: string,
   apiKey: string,
@@ -61,50 +60,22 @@ export function createVeoProvider(
 
   async function submitGenerate(
     req: VeoGenerateRequest
-  ): Promise<{ taskId: string }> {
-    const body: Record<string, unknown> = { prompt: req.prompt };
-    if (req.model) body.model = req.model;
-    if (req.aspectRatio) body.aspectRatio = req.aspectRatio;
-    if (req.generationType) body.generationType = req.generationType;
-    if (req.imageUrls) body.imageUrls = req.imageUrls;
-    if (req.seeds !== undefined) body.seeds = req.seeds;
-    if (req.watermark) body.watermark = req.watermark;
-    if (req.enableTranslation !== undefined)
-      body.enableTranslation = req.enableTranslation;
-
-    const res = await kieRequest<VeoSubmitResponse>(
-      `${baseURL}/api/v1/veo/generate`,
-      { method: "POST", body, ...requestOpts }
-    );
-
-    if (!res.data?.taskId) {
-      throw new KieError("No taskId in Veo generate response", 500);
-    }
-
-    return { taskId: res.data.taskId };
+  ): Promise<VeoSubmitResponse> {
+    return kieRequest<VeoSubmitResponse>(`${baseURL}/api/v1/veo/generate`, {
+      method: "POST",
+      body: req,
+      ...requestOpts,
+    });
   }
 
   async function submitExtend(
     req: VeoExtendRequest
-  ): Promise<{ taskId: string }> {
-    const body: Record<string, unknown> = {
-      taskId: req.taskId,
-      prompt: req.prompt,
-    };
-    if (req.model) body.model = req.model;
-    if (req.seeds !== undefined) body.seeds = req.seeds;
-    if (req.watermark) body.watermark = req.watermark;
-
-    const res = await kieRequest<VeoSubmitResponse>(
-      `${baseURL}/api/v1/veo/extend`,
-      { method: "POST", body, ...requestOpts }
-    );
-
-    if (!res.data?.taskId) {
-      throw new KieError("No taskId in Veo extend response", 500);
-    }
-
-    return { taskId: res.data.taskId };
+  ): Promise<VeoSubmitResponse> {
+    return kieRequest<VeoSubmitResponse>(`${baseURL}/api/v1/veo/extend`, {
+      method: "POST",
+      body: req,
+      ...requestOpts,
+    });
   }
 
   return {

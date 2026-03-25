@@ -342,10 +342,15 @@ export type MediaGenerationRequest =
   | Qwen2TextToImageRequest
   | SoraWatermarkRequest;
 
-// Task creation response
-export interface TaskResponse {
-  taskId: string;
+// Raw API envelope response
+export interface KieApiEnvelope<T = Record<string, unknown>> {
+  code: number;
+  msg: string;
+  data?: T;
 }
+
+// Task creation response (raw envelope)
+export type TaskResponse = KieApiEnvelope<{ taskId: string }>;
 
 // Upload media request
 export interface UploadMediaRequest {
@@ -354,9 +359,11 @@ export interface UploadMediaRequest {
   mimeType?: string;
 }
 
-// Upload media response
+// Upload media response (raw envelope)
 export interface UploadMediaResponse {
-  downloadUrl: string;
+  success: boolean;
+  code: number;
+  data?: { downloadUrl: string };
 }
 
 // Provider options
@@ -381,10 +388,8 @@ export class KieError extends Error {
   }
 }
 
-// Download URL response
-export interface DownloadUrlResponse {
-  url: string;
-}
+// Download URL response (raw envelope)
+export type DownloadUrlResponse = KieApiEnvelope<string>;
 
 // Task states
 export type KieTaskState =
@@ -394,34 +399,26 @@ export type KieTaskState =
   | "success"
   | "fail";
 
-// Task result (present when state === "success" and resultJson parses)
-export interface KieTaskResult {
-  resultUrls: string[];
-  resultObject?: Record<string, unknown>;
+// Raw task info from GET /api/v1/jobs/recordInfo (raw envelope)
+export interface KieTaskInfoData {
+  taskId?: string;
+  model?: string;
+  state?: string;
+  param?: string;
+  resultJson?: string;
+  failCode?: string;
+  failMsg?: string;
+  costTime?: number;
+  completeTime?: number;
+  createTime?: number;
+  updateTime?: number;
+  progress?: number;
 }
 
-// Task info from GET /api/v1/jobs/recordInfo
-export interface KieTaskInfo {
-  taskId: string;
-  model: string;
-  state: KieTaskState;
-  param: string;
-  result?: KieTaskResult;
-  failCode: string;
-  failMsg: string;
-  costTime: number;
-  completeTime: number;
-  createTime: number;
-  updateTime: number;
-  progress: number;
-}
+export type KieTaskInfo = KieApiEnvelope<KieTaskInfoData>;
 
-// Credits response
-export interface KieCreditsResponse {
-  balance: number;
-  totalUsed: number;
-  currency: string;
-}
+// Credits response (raw envelope)
+export type KieCreditsResponse = KieApiEnvelope<number>;
 
 // Namespace types
 interface KieJobsNamespace {

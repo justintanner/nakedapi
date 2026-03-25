@@ -19,6 +19,7 @@ export type {
   OpenAiTool,
   OpenAiToolCall,
   OpenAiUsage,
+  OpenAiChatChoice,
   OpenAiChatRequest,
   OpenAiChatResponse,
   OpenAiTranscribeRequest,

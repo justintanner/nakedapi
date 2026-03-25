@@ -2,9 +2,13 @@
 import { describe, it, expect, vi } from "vitest";
 
 describe("kie provider", () => {
-  interface TaskResponse {
-    taskId: string;
+  interface KieApiEnvelope<T = Record<string, unknown>> {
+    code: number;
+    msg: string;
+    data?: T;
   }
+
+  type TaskResponse = KieApiEnvelope<{ taskId: string }>;
 
   interface MediaGenerationRequest {
     model: string;
@@ -13,11 +17,22 @@ describe("kie provider", () => {
 
   type MediaType = "image" | "video" | "audio" | "transcription";
 
+  interface VeoSubmitResponse {
+    code: number;
+    data?: { taskId?: string };
+  }
+
+  interface SunoSubmitResponse {
+    code: number;
+    msg?: string;
+    data?: { taskId?: string };
+  }
+
   interface VeoProvider {
     api: {
       v1: {
         veo: {
-          generate(req: Record<string, unknown>): Promise<{ taskId: string }>;
+          generate(req: Record<string, unknown>): Promise<VeoSubmitResponse>;
         };
       };
     };
@@ -26,7 +41,7 @@ describe("kie provider", () => {
   interface SunoProvider {
     api: {
       v1: {
-        generate(req: Record<string, unknown>): Promise<{ taskId: string }>;
+        generate(req: Record<string, unknown>): Promise<SunoSubmitResponse>;
       };
     };
   }
@@ -36,8 +51,8 @@ describe("kie provider", () => {
       v1: {
         chat: {
           completions(req: Record<string, unknown>): Promise<{
-            content: string;
-            model: string;
+            choices?: Array<{ message?: { content?: string } }>;
+            model?: string;
           }>;
         };
       };
@@ -45,34 +60,31 @@ describe("kie provider", () => {
   }
 
   interface UploadMediaResponse {
-    downloadUrl: string;
+    success: boolean;
+    code: number;
+    data?: { downloadUrl: string };
   }
 
-  interface DownloadUrlResponse {
-    url: string;
+  type DownloadUrlResponse = KieApiEnvelope<string>;
+
+  interface KieTaskInfoData {
+    taskId?: string;
+    model?: string;
+    state?: string;
+    param?: string;
+    resultJson?: string;
+    failCode?: string;
+    failMsg?: string;
+    costTime?: number;
+    completeTime?: number;
+    createTime?: number;
+    updateTime?: number;
+    progress?: number;
   }
 
-  type KieTaskState = "waiting" | "queuing" | "generating" | "success" | "fail";
+  type KieTaskInfo = KieApiEnvelope<KieTaskInfoData>;
 
-  interface KieTaskResult {
-    resultUrls: string[];
-    resultObject?: Record<string, unknown>;
-  }
-
-  interface KieTaskInfo {
-    taskId: string;
-    model: string;
-    state: KieTaskState;
-    param: string;
-    result?: KieTaskResult;
-    failCode: string;
-    failMsg: string;
-    costTime: number;
-    completeTime: number;
-    createTime: number;
-    updateTime: number;
-    progress: number;
-  }
+  type KieCreditsResponse = KieApiEnvelope<number>;
 
   interface KieProvider {
     api: {
@@ -85,11 +97,7 @@ describe("kie provider", () => {
           downloadUrl(url: string): Promise<DownloadUrlResponse>;
         };
         chat: {
-          credit(): Promise<{
-            balance: number;
-            totalUsed: number;
-            currency: string;
-          }>;
+          credit(): Promise<KieCreditsResponse>;
         };
       };
       fileStreamUpload(req: {
@@ -151,40 +159,53 @@ describe("kie provider", () => {
       api: {
         v1: {
           jobs: {
-            createTask: vi.fn().mockResolvedValue({ taskId: "test-task-id" }),
+            createTask: vi.fn().mockResolvedValue({
+              code: 200,
+              msg: "success",
+              data: { taskId: "test-task-id" },
+            } satisfies TaskResponse),
             recordInfo: vi.fn().mockResolvedValue({
-              taskId: "test-task-id",
-              model: "nano-banana-pro",
-              state: "success",
-              param: '{"prompt":"A sunset"}',
-              result: {
-                resultUrls: ["https://cdn.kie.ai/files/result.png"],
+              code: 200,
+              msg: "success",
+              data: {
+                taskId: "test-task-id",
+                model: "nano-banana-pro",
+                state: "success",
+                param: '{"prompt":"A sunset"}',
+                resultJson:
+                  '{"resultUrls":["https://cdn.kie.ai/files/result.png"]}',
+                failCode: "",
+                failMsg: "",
+                costTime: 12000,
+                completeTime: 1700000000000,
+                createTime: 1700000000000,
+                updateTime: 1700000000000,
+                progress: 100,
               },
-              failCode: "",
-              failMsg: "",
-              costTime: 12000,
-              completeTime: 1700000000000,
-              createTime: 1700000000000,
-              updateTime: 1700000000000,
-              progress: 100,
             } satisfies KieTaskInfo),
           },
           common: {
             downloadUrl: vi.fn().mockResolvedValue({
-              url: "https://cdn.kie.ai/tmp/download/test-file.mp4",
-            }),
+              code: 200,
+              msg: "success",
+              data: "https://cdn.kie.ai/tmp/download/test-file.mp4",
+            } satisfies DownloadUrlResponse),
           },
           chat: {
             credit: vi.fn().mockResolvedValue({
-              balance: 100,
-              totalUsed: 50,
-              currency: "credits",
-            }),
+              code: 200,
+              msg: "success",
+              data: 100,
+            } satisfies KieCreditsResponse),
           },
         },
         fileStreamUpload: vi.fn().mockResolvedValue({
-          downloadUrl: "https://kieai.redpandaai.co/uploads/test.png",
-        }),
+          success: true,
+          code: 200,
+          data: {
+            downloadUrl: "https://kieai.redpandaai.co/uploads/test.png",
+          },
+        } satisfies UploadMediaResponse),
       },
       validateModel: vi
         .fn()
@@ -197,7 +218,10 @@ describe("kie provider", () => {
         api: {
           v1: {
             veo: {
-              generate: vi.fn().mockResolvedValue({ taskId: "veo-task-id" }),
+              generate: vi.fn().mockResolvedValue({
+                code: 200,
+                data: { taskId: "veo-task-id" },
+              }),
             },
           },
         },
@@ -205,7 +229,10 @@ describe("kie provider", () => {
       suno: {
         api: {
           v1: {
-            generate: vi.fn().mockResolvedValue({ taskId: "suno-task-id" }),
+            generate: vi.fn().mockResolvedValue({
+              code: 200,
+              data: { taskId: "suno-task-id" },
+            }),
           },
         },
       },
@@ -214,7 +241,9 @@ describe("kie provider", () => {
           v1: {
             chat: {
               completions: vi.fn().mockResolvedValue({
-                content: "Hello!",
+                choices: [
+                  { message: { role: "assistant", content: "Hello!" } },
+                ],
                 model: "gpt-5.2",
               }),
             },
@@ -251,7 +280,7 @@ describe("kie provider", () => {
     expect(provider.getModelType("unknown")).toBe(null);
   });
 
-  it("should return all 16 models", () => {
+  it("should return all 17 models", () => {
     const provider = createMockProvider();
     const models = provider.getModels();
     expect(models).toHaveLength(17);
@@ -264,14 +293,10 @@ describe("kie provider", () => {
     const provider = createMockProvider();
     const req: MediaGenerationRequest = {
       model: "nano-banana-pro",
-      input: {
-        prompt: "A sunset",
-        aspect_ratio: "16:9",
-      },
+      input: { prompt: "A sunset", aspect_ratio: "16:9" },
     };
-
     const result = await provider.api.v1.jobs.createTask(req);
-    expect(result.taskId).toBe("test-task-id");
+    expect(result.data?.taskId).toBe("test-task-id");
   });
 
   it("should create task with seedance model", async () => {
@@ -284,70 +309,8 @@ describe("kie provider", () => {
         duration: "8",
       },
     };
-
     const result = await provider.api.v1.jobs.createTask(req);
-    expect(result.taskId).toBe("test-task-id");
-  });
-
-  it("should create task with nano-banana-2", async () => {
-    const provider = createMockProvider();
-    const req: MediaGenerationRequest = {
-      model: "nano-banana-2",
-      input: {
-        prompt: "A beautiful landscape",
-        google_search: true,
-        resolution: "4K",
-      },
-    };
-
-    const result = await provider.api.v1.jobs.createTask(req);
-    expect(result.taskId).toBe("test-task-id");
-  });
-
-  it("should create task with elevenlabs dialogue", async () => {
-    const provider = createMockProvider();
-    const req: MediaGenerationRequest = {
-      model: "elevenlabs/text-to-dialogue-v3",
-      input: {
-        dialogue: [
-          { text: "Hello!", voice: "Adam" },
-          { text: "Hi there!", voice: "Alice" },
-        ],
-        stability: 0.5,
-      },
-    };
-
-    const result = await provider.api.v1.jobs.createTask(req);
-    expect(result.taskId).toBe("test-task-id");
-  });
-
-  it("should create task with grok-imagine/extend", async () => {
-    const provider = createMockProvider();
-    const req: MediaGenerationRequest = {
-      model: "grok-imagine/extend",
-      input: {
-        task_id: "task_grok_12345678",
-        prompt: "The camera slowly pans forward through the forest",
-        extend_at: 0,
-        extend_times: "6",
-      },
-    };
-
-    const result = await provider.api.v1.jobs.createTask(req);
-    expect(result.taskId).toBe("test-task-id");
-  });
-
-  it("should create task with grok-imagine/upscale", async () => {
-    const provider = createMockProvider();
-    const req: MediaGenerationRequest = {
-      model: "grok-imagine/upscale",
-      input: {
-        task_id: "task_grok_12345678",
-      },
-    };
-
-    const result = await provider.api.v1.jobs.createTask(req);
-    expect(result.taskId).toBe("test-task-id");
+    expect(result.data?.taskId).toBe("test-task-id");
   });
 
   it("should access veo sub-provider", async () => {
@@ -356,7 +319,7 @@ describe("kie provider", () => {
       prompt: "A rocket launch",
       model: "veo3_fast",
     });
-    expect(result.taskId).toBe("veo-task-id");
+    expect(result.data?.taskId).toBe("veo-task-id");
   });
 
   it("should access suno sub-provider", async () => {
@@ -364,8 +327,10 @@ describe("kie provider", () => {
     const result = await provider.suno.api.v1.generate({
       prompt: "A jazz ballad",
       model: "V4_5",
+      instrumental: true,
+      customMode: true,
     });
-    expect(result.taskId).toBe("suno-task-id");
+    expect(result.data?.taskId).toBe("suno-task-id");
   });
 
   it("should access chat sub-provider", async () => {
@@ -373,19 +338,16 @@ describe("kie provider", () => {
     const result = await provider.chat.gpt52.v1.chat.completions({
       messages: [{ role: "user", content: "Hello" }],
     });
-    expect(result.content).toBe("Hello!");
+    expect(result.choices?.[0].message?.content).toBe("Hello!");
   });
 
   it("should get task info", async () => {
     const provider = createMockProvider();
     const result = await provider.api.v1.jobs.recordInfo("test-task-id");
-    expect(result.taskId).toBe("test-task-id");
-    expect(result.state).toBe("success");
-    expect(result.model).toBe("nano-banana-pro");
-    expect(result.progress).toBe(100);
-    expect(result.result?.resultUrls).toContain(
-      "https://cdn.kie.ai/files/result.png"
-    );
+    expect(result.data?.taskId).toBe("test-task-id");
+    expect(result.data?.state).toBe("success");
+    expect(result.data?.model).toBe("nano-banana-pro");
+    expect(result.data?.progress).toBe(100);
   });
 
   it("should get a temporary download URL", async () => {
@@ -393,7 +355,7 @@ describe("kie provider", () => {
     const result = await provider.api.v1.common.downloadUrl(
       "https://cdn.kie.ai/files/test-file.mp4"
     );
-    expect(result.url).toBe("https://cdn.kie.ai/tmp/download/test-file.mp4");
+    expect(result.data).toBe("https://cdn.kie.ai/tmp/download/test-file.mp4");
   });
 
   it("should upload media and return download URL", async () => {
@@ -403,7 +365,7 @@ describe("kie provider", () => {
       file,
       filename: "test.png",
     });
-    expect(result.downloadUrl).toBe(
+    expect(result.data?.downloadUrl).toBe(
       "https://kieai.redpandaai.co/uploads/test.png"
     );
   });

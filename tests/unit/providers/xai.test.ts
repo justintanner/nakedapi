@@ -16,16 +16,27 @@ describe("xai provider", () => {
     };
   }
 
-  interface XaiChatResponse {
-    content: string;
-    model: string;
-    usage: {
-      promptTokens: number;
-      completionTokens: number;
-      totalTokens: number;
+  interface XaiChatChoice {
+    index: number;
+    message: {
+      role: string;
+      content: string | null;
+      tool_calls?: XaiToolCall[];
     };
-    finishReason: string;
-    toolCalls?: XaiToolCall[];
+    finish_reason: string;
+  }
+
+  interface XaiChatResponse {
+    id: string;
+    object: string;
+    created: number;
+    model: string;
+    choices: XaiChatChoice[];
+    usage?: {
+      prompt_tokens: number;
+      completion_tokens: number;
+      total_tokens: number;
+    };
   }
 
   interface XaiChatRequest {
@@ -81,15 +92,13 @@ describe("xai provider", () => {
     data: XaiGeneratedImage[];
   }
 
-  interface XaiChatCompletions {
-    (req: XaiChatRequest, signal?: AbortSignal): Promise<XaiChatResponse>;
-    search(query: string, signal?: AbortSignal): Promise<XaiChatResponse>;
-  }
-
   interface XaiProvider {
     v1: {
       chat: {
-        completions: XaiChatCompletions;
+        completions(
+          req: XaiChatRequest,
+          signal?: AbortSignal
+        ): Promise<XaiChatResponse>;
       };
       images: {
         generations(
@@ -105,34 +114,30 @@ describe("xai provider", () => {
   }
 
   function createMockProvider(): XaiProvider {
-    const completions = Object.assign(
-      vi.fn().mockResolvedValue({
-        content: "I'm Grok, nice to meet you!",
-        model: "grok-4-fast",
-        usage: {
-          promptTokens: 12,
-          completionTokens: 8,
-          totalTokens: 20,
-        },
-        finishReason: "stop",
-      }),
-      {
-        search: vi.fn().mockResolvedValue({
-          content: '{"urls": ["https://x.com/user/status/123"]}',
-          model: "grok-4-fast",
-          usage: {
-            promptTokens: 50,
-            completionTokens: 30,
-            totalTokens: 80,
-          },
-          finishReason: "stop",
-        }),
-      }
-    );
     return {
       v1: {
         chat: {
-          completions,
+          completions: vi.fn().mockResolvedValue({
+            id: "chatcmpl-test",
+            object: "chat.completion",
+            created: 1700000000,
+            model: "grok-4-fast",
+            choices: [
+              {
+                index: 0,
+                message: {
+                  role: "assistant",
+                  content: "I'm Grok, nice to meet you!",
+                },
+                finish_reason: "stop",
+              },
+            ],
+            usage: {
+              prompt_tokens: 12,
+              completion_tokens: 8,
+              total_tokens: 20,
+            },
+          }),
         },
         images: {
           generations: vi.fn().mockResolvedValue({
@@ -160,7 +165,9 @@ describe("xai provider", () => {
     const result = await provider.v1.chat.completions({
       messages: [{ role: "user", content: "Hello Grok!" }],
     });
-    expect(result.content).toBe("I'm Grok, nice to meet you!");
+    expect(result.choices[0].message.content).toBe(
+      "I'm Grok, nice to meet you!"
+    );
     expect(result.model).toBe("grok-4-fast");
   });
 
@@ -169,9 +176,9 @@ describe("xai provider", () => {
     const result = await provider.v1.chat.completions({
       messages: [{ role: "user", content: "Hello" }],
     });
-    expect(result.usage.promptTokens).toBe(12);
-    expect(result.usage.completionTokens).toBe(8);
-    expect(result.usage.totalTokens).toBe(20);
+    expect(result.usage?.prompt_tokens).toBe(12);
+    expect(result.usage?.completion_tokens).toBe(8);
+    expect(result.usage?.total_tokens).toBe(20);
   });
 
   it("should support custom model selection", async () => {
@@ -200,34 +207,40 @@ describe("xai provider", () => {
     });
   });
 
-  it("should perform a search", async () => {
-    const provider = createMockProvider();
-    const result = await provider.v1.chat.completions.search(
-      "latest SpaceX launch videos"
-    );
-    expect(result.content).toContain("urls");
-    expect(result.model).toBe("grok-4-fast");
-  });
-
   it("should support tool calls in response", async () => {
     const provider = createMockProvider();
     (
       provider.v1.chat.completions as ReturnType<typeof vi.fn>
     ).mockResolvedValue({
-      content: "",
+      id: "chatcmpl-tool",
+      object: "chat.completion",
+      created: 1700000000,
       model: "grok-4-fast",
-      usage: { promptTokens: 20, completionTokens: 15, totalTokens: 35 },
-      finishReason: "tool_calls",
-      toolCalls: [
+      choices: [
         {
-          id: "call_123",
-          type: "function",
-          function: {
-            name: "get_weather",
-            arguments: '{"location": "San Francisco"}',
+          index: 0,
+          message: {
+            role: "assistant",
+            content: null,
+            tool_calls: [
+              {
+                id: "call_123",
+                type: "function",
+                function: {
+                  name: "get_weather",
+                  arguments: '{"location": "San Francisco"}',
+                },
+              },
+            ],
           },
+          finish_reason: "tool_calls",
         },
       ],
+      usage: {
+        prompt_tokens: 20,
+        completion_tokens: 15,
+        total_tokens: 35,
+      },
     });
 
     const result = await provider.v1.chat.completions({
@@ -246,9 +259,11 @@ describe("xai provider", () => {
         },
       ],
     });
-    expect(result.finishReason).toBe("tool_calls");
-    expect(result.toolCalls).toHaveLength(1);
-    expect(result.toolCalls?.[0].function.name).toBe("get_weather");
+    expect(result.choices[0].finish_reason).toBe("tool_calls");
+    expect(result.choices[0].message.tool_calls).toHaveLength(1);
+    expect(result.choices[0].message.tool_calls?.[0].function.name).toBe(
+      "get_weather"
+    );
   });
 
   it("should support system messages", async () => {

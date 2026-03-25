@@ -16,8 +16,9 @@ export { sseToIterable } from "./sse";
 export type {
   ChatRequest,
   ChatMessage,
-  ChatStreamChunk,
-  ChatResponse,
+  AnthropicMessage,
+  AnthropicStreamEvent,
+  AnthropicContentBlock,
   Provider,
   KimiCodingOptions,
   KimiCodingProvider,
@@ -28,4 +29,5 @@ export type {
   Base64ImageSource,
   UrlImageSource,
   MessageContent,
+  Role,
 } from "./types";

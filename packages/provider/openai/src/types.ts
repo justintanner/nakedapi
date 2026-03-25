@@ -28,7 +28,7 @@ export interface OpenAiMessage {
 // Transcription request
 export interface OpenAiTranscribeRequest {
   file: Blob;
-  model?: string;
+  model: string;
   language?: string;
   prompt?: string;
   temperature?: number;
@@ -62,11 +62,11 @@ export interface OpenAiToolCall {
   };
 }
 
-// Usage info
+// Usage info (raw API shape)
 export interface OpenAiUsage {
-  promptTokens: number;
-  completionTokens: number;
-  totalTokens: number;
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
 }
 
 // Chat request
@@ -87,13 +87,25 @@ export interface OpenAiChatRequest {
   };
 }
 
-// Chat response
+// Chat response (raw API shape)
+export interface OpenAiChatChoice {
+  index: number;
+  message: {
+    role: string;
+    content: string | null;
+    tool_calls?: OpenAiToolCall[];
+  };
+  finish_reason: string;
+}
+
 export interface OpenAiChatResponse {
-  content: string;
+  id: string;
+  object: string;
+  created: number;
   model: string;
-  usage: OpenAiUsage;
-  finishReason: string;
-  toolCalls?: OpenAiToolCall[];
+  choices: OpenAiChatChoice[];
+  usage?: OpenAiUsage;
+  error?: { message?: string; type?: string };
 }
 
 // Namespace types

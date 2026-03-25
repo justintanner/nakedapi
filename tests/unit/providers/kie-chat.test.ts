@@ -23,15 +23,26 @@ describe("kie chat provider", () => {
     };
   }
 
-  interface KieChatResponse {
-    content: string;
-    model: string;
-    usage: {
-      promptTokens: number;
-      completionTokens: number;
-      totalTokens: number;
+  interface KieChatChoice {
+    index?: number;
+    message?: {
+      role?: string;
+      content?: string;
     };
-    finishReason: string;
+    finish_reason?: string;
+  }
+
+  interface KieChatResponse {
+    id?: string;
+    object?: string;
+    created?: number;
+    model?: string;
+    choices?: KieChatChoice[];
+    usage?: {
+      prompt_tokens?: number;
+      completion_tokens?: number;
+      total_tokens?: number;
+    };
   }
 
   interface KieChatProvider {
@@ -53,14 +64,25 @@ describe("kie chat provider", () => {
         v1: {
           chat: {
             completions: vi.fn().mockResolvedValue({
-              content: "Hello! How can I help you today?",
+              id: "chatcmpl-test",
+              object: "chat.completion",
+              created: 1700000000,
               model: "gpt-5.2",
+              choices: [
+                {
+                  index: 0,
+                  message: {
+                    role: "assistant",
+                    content: "Hello! How can I help you today?",
+                  },
+                  finish_reason: "stop",
+                },
+              ],
               usage: {
-                promptTokens: 10,
-                completionTokens: 8,
-                totalTokens: 18,
+                prompt_tokens: 10,
+                completion_tokens: 8,
+                total_tokens: 18,
               },
-              finishReason: "stop",
             }),
           },
         },
@@ -73,9 +95,11 @@ describe("kie chat provider", () => {
     const result = await chat.gpt52.v1.chat.completions({
       messages: [{ role: "user", content: "Hello" }],
     });
-    expect(result.content).toBe("Hello! How can I help you today?");
+    expect(result.choices?.[0].message?.content).toBe(
+      "Hello! How can I help you today?"
+    );
     expect(result.model).toBe("gpt-5.2");
-    expect(result.finishReason).toBe("stop");
+    expect(result.choices?.[0].finish_reason).toBe("stop");
   });
 
   it("should track usage tokens", async () => {
@@ -83,9 +107,9 @@ describe("kie chat provider", () => {
     const result = await chat.gpt52.v1.chat.completions({
       messages: [{ role: "user", content: "Hello" }],
     });
-    expect(result.usage.promptTokens).toBe(10);
-    expect(result.usage.completionTokens).toBe(8);
-    expect(result.usage.totalTokens).toBe(18);
+    expect(result.usage?.prompt_tokens).toBe(10);
+    expect(result.usage?.completion_tokens).toBe(8);
+    expect(result.usage?.total_tokens).toBe(18);
   });
 
   it("should support system messages", async () => {
@@ -142,17 +166,24 @@ describe("kie chat provider", () => {
     (
       chat.gpt52.v1.chat.completions as ReturnType<typeof vi.fn>
     ).mockResolvedValue({
-      content: '{"name": "test", "value": 42}',
       model: "gpt-5.2",
-      usage: { promptTokens: 15, completionTokens: 10, totalTokens: 25 },
-      finishReason: "stop",
+      choices: [
+        {
+          message: {
+            role: "assistant",
+            content: '{"name": "test", "value": 42}',
+          },
+          finish_reason: "stop",
+        },
+      ],
+      usage: { prompt_tokens: 15, completion_tokens: 10, total_tokens: 25 },
     });
 
     const result = await chat.gpt52.v1.chat.completions({
       messages: [{ role: "user", content: "Return JSON" }],
       response_format: { type: "json_object" },
     });
-    expect(result.content).toContain('"name"');
+    expect(result.choices?.[0].message?.content).toContain('"name"');
   });
 
   it("should support multi-turn conversations", async () => {

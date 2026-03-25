@@ -18,10 +18,11 @@ describe("openai integration", () => {
       apiKey: process.env.OPENAI_API_KEY ?? "sk-test-key",
     });
     const result = await provider.v1.chat.completions({
+      model: "gpt-5.4-2026-03-05",
       messages: [{ role: "user", content: "Say hello in one sentence." }],
       temperature: 0,
     });
-    expect(result.content).toBeTruthy();
-    expect(result.usage.totalTokens).toBeGreaterThan(0);
+    expect(result.choices[0].message.content).toBeTruthy();
+    expect(result.usage?.total_tokens).toBeGreaterThan(0);
   });
 });

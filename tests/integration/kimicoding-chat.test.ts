@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { setupPolly, teardownPolly, type PollyContext } from "../harness";
-import { kimicoding, type ChatStreamChunk } from "@nakedapi/kimicoding";
+import { kimicoding, type AnthropicStreamEvent } from "@nakedapi/kimicoding";
 
 describe("kimicoding integration", () => {
   let ctx: PollyContext;
@@ -16,13 +16,16 @@ describe("kimicoding integration", () => {
     });
     const result = await provider.coding.v1.messages({
       model: "k2p5",
+      max_tokens: 32768,
       messages: [{ role: "user", content: "hi" }],
       temperature: 0,
     });
     expect(result.content).toBeTruthy();
     expect(result.model).toBeTruthy();
-    expect(result.usage.totalTokens).toBeGreaterThan(0);
-    expect(result.finishReason).toBe("stop");
+    expect(
+      result.usage.input_tokens + result.usage.output_tokens
+    ).toBeGreaterThan(0);
+    expect(result.stop_reason).toBeTruthy();
   });
 
   it("should stream a chat response with k2p5", async () => {
@@ -30,19 +33,20 @@ describe("kimicoding integration", () => {
     const provider = kimicoding({
       apiKey: process.env.KIMI_CODING_API_KEY ?? "sk-test-key",
     });
-    const chunks: string[] = [];
-    let gotDone = false;
-    for await (const chunk of provider.coding.v1.messages.stream({
+    const deltas: string[] = [];
+    let gotStopReason = false;
+    for await (const event of provider.coding.v1.messages.stream({
       model: "k2p5",
+      max_tokens: 32768,
       messages: [{ role: "user", content: "hi" }],
       temperature: 0,
     })) {
-      if (chunk.delta) chunks.push(chunk.delta);
-      if (chunk.done) gotDone = true;
+      if (event.delta?.text) deltas.push(event.delta.text);
+      if (event.delta?.stop_reason) gotStopReason = true;
     }
-    expect(chunks.length).toBeGreaterThan(0);
-    expect(chunks.join("")).toBeTruthy();
-    expect(gotDone).toBe(true);
+    expect(deltas.length).toBeGreaterThan(0);
+    expect(deltas.join("")).toBeTruthy();
+    expect(gotStopReason).toBe(true);
   });
 
   it("should analyze a base64 image with k2p5", async () => {
@@ -54,6 +58,7 @@ describe("kimicoding integration", () => {
       "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
     const result = await provider.coding.v1.messages({
       model: "k2p5",
+      max_tokens: 32768,
       messages: [
         {
           role: "user",
@@ -73,8 +78,10 @@ describe("kimicoding integration", () => {
       temperature: 0,
     });
     expect(result.content).toBeTruthy();
-    expect(result.usage.totalTokens).toBeGreaterThan(0);
-    expect(result.finishReason).toBe("stop");
+    expect(
+      result.usage.input_tokens + result.usage.output_tokens
+    ).toBeGreaterThan(0);
+    expect(result.stop_reason).toBeTruthy();
   });
 
   it("should stream image analysis with k2p5", async () => {
@@ -84,9 +91,10 @@ describe("kimicoding integration", () => {
     });
     const redPixel =
       "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
-    const chunks: ChatStreamChunk[] = [];
-    for await (const chunk of provider.coding.v1.messages.stream({
+    const events: AnthropicStreamEvent[] = [];
+    for await (const event of provider.coding.v1.messages.stream({
       model: "k2p5",
+      max_tokens: 32768,
       messages: [
         {
           role: "user",
@@ -105,10 +113,13 @@ describe("kimicoding integration", () => {
       ],
       temperature: 0,
     })) {
-      chunks.push(chunk);
+      events.push(event);
     }
-    const text = chunks.map((c) => c.delta).join("");
+    const text = events
+      .filter((e) => e.delta?.text)
+      .map((e) => e.delta!.text)
+      .join("");
     expect(text).toBeTruthy();
-    expect(chunks.some((c) => c.done)).toBe(true);
+    expect(events.some((e) => e.delta?.stop_reason)).toBe(true);
   });
 });

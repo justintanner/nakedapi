@@ -3,17 +3,17 @@ import { describe, it, expect, vi } from "vitest";
 
 describe("fal provider", () => {
   interface FalModel {
-    endpointId: string;
+    endpoint_id: string;
     metadata?: {
-      displayName: string;
+      display_name: string;
       category: string;
       description: string;
       status: "active" | "deprecated";
       tags: string[];
-      updatedAt: string;
-      isFavorited: boolean | null;
-      thumbnailUrl: string;
-      modelUrl: string;
+      updated_at: string;
+      is_favorited: boolean | null;
+      thumbnail_url: string;
+      model_url: string;
       date: string;
       highlighted: boolean;
       pinned: boolean;
@@ -22,37 +22,37 @@ describe("fal provider", () => {
 
   interface FalModelSearchResponse {
     models: FalModel[];
-    nextCursor: string | null;
-    hasMore: boolean;
+    next_cursor: string | null;
+    has_more: boolean;
   }
 
   interface FalPricingResponse {
     prices: Array<{
-      endpointId: string;
-      unitPrice: number;
+      endpoint_id: string;
+      unit_price: number;
       unit: string;
       currency: string;
     }>;
-    nextCursor: string | null;
-    hasMore: boolean;
+    next_cursor: string | null;
+    has_more: boolean;
   }
 
   interface FalEstimateResponse {
-    estimateType: "historical_api_price" | "unit_price";
-    totalCost: number;
+    estimate_type: "historical_api_price" | "unit_price";
+    total_cost: number;
     currency: string;
   }
 
   interface FalUsageResponse {
-    nextCursor: string | null;
-    hasMore: boolean;
-    timeSeries?: Array<{
+    next_cursor: string | null;
+    has_more: boolean;
+    time_series?: Array<{
       bucket: string;
       results: Array<{
-        endpointId: string;
+        endpoint_id: string;
         unit: string;
         quantity: number;
-        unitPrice: number;
+        unit_price: number;
         cost: number;
         currency: string;
       }>;
@@ -60,34 +60,34 @@ describe("fal provider", () => {
   }
 
   interface FalAnalyticsResponse {
-    nextCursor: string | null;
-    hasMore: boolean;
-    timeSeries?: Array<{
+    next_cursor: string | null;
+    has_more: boolean;
+    time_series?: Array<{
       bucket: string;
       results: Array<{
-        endpointId: string;
-        requestCount?: number;
-        successCount?: number;
+        endpoint_id: string;
+        request_count?: number;
+        success_count?: number;
       }>;
     }>;
   }
 
   interface FalRequestsResponse {
-    nextCursor: string | null;
-    hasMore: boolean;
+    next_cursor: string | null;
+    has_more: boolean;
     items: Array<{
-      requestId: string;
-      endpointId: string;
-      startedAt: string;
-      sentAt: string;
-      endedAt?: string;
-      statusCode?: number;
+      request_id: string;
+      endpoint_id: string;
+      started_at: string;
+      sent_at: string;
+      ended_at?: string;
+      status_code?: number;
       duration?: number;
     }>;
   }
 
   interface FalDeletePayloadsResponse {
-    cdnDeleteResults: Array<{
+    cdn_delete_results: Array<{
       link: string;
       exception: string | null;
     }>;
@@ -98,19 +98,19 @@ describe("fal provider", () => {
     pricing: FalPricingCallable;
     usage(params?: unknown, signal?: AbortSignal): Promise<FalUsageResponse>;
     analytics(
-      params: { endpointId: string | string[] },
+      params: { endpoint_id: string | string[] },
       signal?: AbortSignal
     ): Promise<FalAnalyticsResponse>;
     requests: {
       byEndpoint(
         params: {
-          endpointId: string;
+          endpoint_id: string;
           status?: "success" | "error" | "user_error";
         },
         signal?: AbortSignal
       ): Promise<FalRequestsResponse>;
       payloads(
-        params: { requestId: string; idempotencyKey?: string },
+        params: { request_id: string; idempotency_key?: string },
         signal?: AbortSignal
       ): Promise<FalDeletePayloadsResponse>;
     };
@@ -118,7 +118,7 @@ describe("fal provider", () => {
 
   interface FalPricingCallable {
     (
-      params: { endpointId: string | string[] },
+      params: { endpoint_id: string | string[] },
       signal?: AbortSignal
     ): Promise<FalPricingResponse>;
     estimate(req: unknown, signal?: AbortSignal): Promise<FalEstimateResponse>;
@@ -135,19 +135,19 @@ describe("fal provider", () => {
       vi.fn().mockResolvedValue({
         prices: [
           {
-            endpointId: "fal-ai/flux/dev",
-            unitPrice: 0.025,
+            endpoint_id: "fal-ai/flux/dev",
+            unit_price: 0.025,
             unit: "image",
             currency: "USD",
           },
         ],
-        nextCursor: null,
-        hasMore: false,
+        next_cursor: null,
+        has_more: false,
       }),
       {
         estimate: vi.fn().mockResolvedValue({
-          estimateType: "unit_price",
-          totalCost: 1.25,
+          estimate_type: "unit_price",
+          total_cost: 1.25,
           currency: "USD",
         }),
       }
@@ -156,40 +156,40 @@ describe("fal provider", () => {
       vi.fn().mockResolvedValue({
         models: [
           {
-            endpointId: "fal-ai/flux/dev",
+            endpoint_id: "fal-ai/flux/dev",
             metadata: {
-              displayName: "FLUX.1 [dev]",
+              display_name: "FLUX.1 [dev]",
               category: "text-to-image",
               description: "Fast text-to-image generation",
               status: "active",
               tags: ["fast", "pro"],
-              updatedAt: "2025-01-15T12:00:00Z",
-              isFavorited: false,
-              thumbnailUrl: "https://fal.media/files/example.jpg",
-              modelUrl: "https://fal.run/fal-ai/flux/dev",
+              updated_at: "2025-01-15T12:00:00Z",
+              is_favorited: false,
+              thumbnail_url: "https://fal.media/files/example.jpg",
+              model_url: "https://fal.run/fal-ai/flux/dev",
               date: "2024-08-01T00:00:00Z",
               highlighted: true,
               pinned: false,
             },
           },
         ],
-        nextCursor: null,
-        hasMore: false,
+        next_cursor: null,
+        has_more: false,
       }),
       {
         pricing,
         usage: vi.fn().mockResolvedValue({
-          nextCursor: null,
-          hasMore: false,
-          timeSeries: [
+          next_cursor: null,
+          has_more: false,
+          time_series: [
             {
               bucket: "2025-01-15T00:00:00-05:00",
               results: [
                 {
-                  endpointId: "fal-ai/flux/dev",
+                  endpoint_id: "fal-ai/flux/dev",
                   unit: "image",
                   quantity: 4,
-                  unitPrice: 0.1,
+                  unit_price: 0.1,
                   cost: 0.4,
                   currency: "USD",
                 },
@@ -198,16 +198,16 @@ describe("fal provider", () => {
           ],
         }),
         analytics: vi.fn().mockResolvedValue({
-          nextCursor: null,
-          hasMore: false,
-          timeSeries: [
+          next_cursor: null,
+          has_more: false,
+          time_series: [
             {
               bucket: "2025-01-15T12:00:00-05:00",
               results: [
                 {
-                  endpointId: "fal-ai/flux/dev",
-                  requestCount: 1500,
-                  successCount: 1450,
+                  endpoint_id: "fal-ai/flux/dev",
+                  request_count: 1500,
+                  success_count: 1450,
                 },
               ],
             },
@@ -215,22 +215,22 @@ describe("fal provider", () => {
         }),
         requests: {
           byEndpoint: vi.fn().mockResolvedValue({
-            nextCursor: "Mg==",
-            hasMore: true,
+            next_cursor: "Mg==",
+            has_more: true,
             items: [
               {
-                requestId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-                endpointId: "fal-ai/flux/dev",
-                startedAt: "2025-01-01T00:00:05Z",
-                sentAt: "2025-01-01T00:00:01Z",
-                endedAt: "2025-01-01T00:00:08Z",
-                statusCode: 200,
+                request_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                endpoint_id: "fal-ai/flux/dev",
+                started_at: "2025-01-01T00:00:05Z",
+                sent_at: "2025-01-01T00:00:01Z",
+                ended_at: "2025-01-01T00:00:08Z",
+                status_code: 200,
                 duration: 7.8,
               },
             ],
           }),
           payloads: vi.fn().mockResolvedValue({
-            cdnDeleteResults: [
+            cdn_delete_results: [
               {
                 link: "https://v3.fal.media/files/abc123/output.png",
                 exception: null,
@@ -253,9 +253,9 @@ describe("fal provider", () => {
       const result = await provider.v1.models();
 
       expect(result.models).toHaveLength(1);
-      expect(result.models[0].endpointId).toBe("fal-ai/flux/dev");
-      expect(result.models[0].metadata?.displayName).toBe("FLUX.1 [dev]");
-      expect(result.hasMore).toBe(false);
+      expect(result.models[0].endpoint_id).toBe("fal-ai/flux/dev");
+      expect(result.models[0].metadata?.display_name).toBe("FLUX.1 [dev]");
+      expect(result.has_more).toBe(false);
     });
 
     it("should support pagination", async () => {
@@ -267,10 +267,10 @@ describe("fal provider", () => {
 
     it("should support searching by endpoint ID", async () => {
       const provider = createMockProvider();
-      await provider.v1.models({ endpointId: "fal-ai/flux/dev" });
+      await provider.v1.models({ endpoint_id: "fal-ai/flux/dev" });
 
       expect(provider.v1.models).toHaveBeenCalledWith({
-        endpointId: "fal-ai/flux/dev",
+        endpoint_id: "fal-ai/flux/dev",
       });
     });
 
@@ -288,11 +288,11 @@ describe("fal provider", () => {
     it("should return pricing for a specific endpoint", async () => {
       const provider = createMockProvider();
       const result = await provider.v1.models.pricing({
-        endpointId: "fal-ai/flux/dev",
+        endpoint_id: "fal-ai/flux/dev",
       });
 
       expect(result.prices).toHaveLength(1);
-      expect(result.prices[0].unitPrice).toBe(0.025);
+      expect(result.prices[0].unit_price).toBe(0.025);
       expect(result.prices[0].unit).toBe("image");
       expect(result.prices[0].currency).toBe("USD");
     });
@@ -300,11 +300,11 @@ describe("fal provider", () => {
     it("should support multiple endpoint IDs", async () => {
       const provider = createMockProvider();
       await provider.v1.models.pricing({
-        endpointId: ["fal-ai/flux/dev", "fal-ai/flux/schnell"],
+        endpoint_id: ["fal-ai/flux/dev", "fal-ai/flux/schnell"],
       });
 
       expect(provider.v1.models.pricing).toHaveBeenCalledWith({
-        endpointId: ["fal-ai/flux/dev", "fal-ai/flux/schnell"],
+        endpoint_id: ["fal-ai/flux/dev", "fal-ai/flux/schnell"],
       });
     });
   });
@@ -313,14 +313,14 @@ describe("fal provider", () => {
     it("should estimate cost using unit price", async () => {
       const provider = createMockProvider();
       const result = await provider.v1.models.pricing.estimate({
-        estimateType: "unit_price",
+        estimate_type: "unit_price",
         endpoints: {
-          "fal-ai/flux/dev": { unitQuantity: 50 },
+          "fal-ai/flux/dev": { unit_quantity: 50 },
         },
       });
 
-      expect(result.estimateType).toBe("unit_price");
-      expect(result.totalCost).toBe(1.25);
+      expect(result.estimate_type).toBe("unit_price");
+      expect(result.total_cost).toBe(1.25);
       expect(result.currency).toBe("USD");
     });
 
@@ -329,19 +329,19 @@ describe("fal provider", () => {
       (
         provider.v1.models.pricing.estimate as ReturnType<typeof vi.fn>
       ).mockResolvedValueOnce({
-        estimateType: "historical_api_price",
-        totalCost: 3.75,
+        estimate_type: "historical_api_price",
+        total_cost: 3.75,
         currency: "USD",
       });
 
       const result = await provider.v1.models.pricing.estimate({
-        estimateType: "historical_api_price",
+        estimate_type: "historical_api_price",
         endpoints: {
-          "fal-ai/flux/dev": { callQuantity: 100 },
+          "fal-ai/flux/dev": { call_quantity: 100 },
         },
       });
 
-      expect(result.estimateType).toBe("historical_api_price");
+      expect(result.estimate_type).toBe("historical_api_price");
     });
   });
 
@@ -350,9 +350,9 @@ describe("fal provider", () => {
       const provider = createMockProvider();
       const result = await provider.v1.models.usage();
 
-      expect(result.timeSeries).toBeDefined();
-      expect(result.timeSeries?.[0].results[0].quantity).toBe(4);
-      expect(result.timeSeries?.[0].results[0].cost).toBe(0.4);
+      expect(result.time_series).toBeDefined();
+      expect(result.time_series?.[0].results[0].quantity).toBe(4);
+      expect(result.time_series?.[0].results[0].cost).toBe(0.4);
     });
 
     it("should support date range filtering", async () => {
@@ -370,10 +370,10 @@ describe("fal provider", () => {
 
     it("should support endpoint filtering", async () => {
       const provider = createMockProvider();
-      await provider.v1.models.usage({ endpointId: "fal-ai/flux/dev" });
+      await provider.v1.models.usage({ endpoint_id: "fal-ai/flux/dev" });
 
       expect(provider.v1.models.usage).toHaveBeenCalledWith({
-        endpointId: "fal-ai/flux/dev",
+        endpoint_id: "fal-ai/flux/dev",
       });
     });
   });
@@ -382,20 +382,22 @@ describe("fal provider", () => {
     it("should return analytics data", async () => {
       const provider = createMockProvider();
       const result = await provider.v1.models.analytics({
-        endpointId: "fal-ai/flux/dev",
+        endpoint_id: "fal-ai/flux/dev",
       });
 
-      expect(result.timeSeries).toBeDefined();
-      expect(result.timeSeries?.[0].results[0].requestCount).toBe(1500);
-      expect(result.timeSeries?.[0].results[0].successCount).toBe(1450);
+      expect(result.time_series).toBeDefined();
+      expect(result.time_series?.[0].results[0].request_count).toBe(1500);
+      expect(result.time_series?.[0].results[0].success_count).toBe(1450);
     });
 
     it("should require endpoint ID", async () => {
       const provider = createMockProvider();
-      await provider.v1.models.analytics({ endpointId: "fal-ai/flux/dev" });
+      await provider.v1.models.analytics({
+        endpoint_id: "fal-ai/flux/dev",
+      });
 
       expect(provider.v1.models.analytics).toHaveBeenCalledWith({
-        endpointId: "fal-ai/flux/dev",
+        endpoint_id: "fal-ai/flux/dev",
       });
     });
   });
@@ -404,25 +406,25 @@ describe("fal provider", () => {
     it("should return request history", async () => {
       const provider = createMockProvider();
       const result = await provider.v1.models.requests.byEndpoint({
-        endpointId: "fal-ai/flux/dev",
+        endpoint_id: "fal-ai/flux/dev",
       });
 
       expect(result.items).toHaveLength(1);
-      expect(result.items[0].requestId).toBe(
+      expect(result.items[0].request_id).toBe(
         "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
       );
-      expect(result.hasMore).toBe(true);
+      expect(result.has_more).toBe(true);
     });
 
     it("should support status filtering", async () => {
       const provider = createMockProvider();
       await provider.v1.models.requests.byEndpoint({
-        endpointId: "fal-ai/flux/dev",
+        endpoint_id: "fal-ai/flux/dev",
         status: "success",
       });
 
       expect(provider.v1.models.requests.byEndpoint).toHaveBeenCalledWith({
-        endpointId: "fal-ai/flux/dev",
+        endpoint_id: "fal-ai/flux/dev",
         status: "success",
       });
     });
@@ -432,23 +434,23 @@ describe("fal provider", () => {
     it("should delete request payloads", async () => {
       const provider = createMockProvider();
       const result = await provider.v1.models.requests.payloads({
-        requestId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        request_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       });
 
-      expect(result.cdnDeleteResults).toHaveLength(1);
-      expect(result.cdnDeleteResults[0].exception).toBeNull();
+      expect(result.cdn_delete_results).toHaveLength(1);
+      expect(result.cdn_delete_results[0].exception).toBeNull();
     });
 
     it("should support idempotency key", async () => {
       const provider = createMockProvider();
       await provider.v1.models.requests.payloads({
-        requestId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        idempotencyKey: "unique-key-123",
+        request_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        idempotency_key: "unique-key-123",
       });
 
       expect(provider.v1.models.requests.payloads).toHaveBeenCalledWith({
-        requestId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        idempotencyKey: "unique-key-123",
+        request_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        idempotency_key: "unique-key-123",
       });
     });
   });

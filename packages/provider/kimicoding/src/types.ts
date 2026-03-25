@@ -1,4 +1,4 @@
-export type Role = "user" | "assistant" | "system" | "tool";
+export type Role = "user" | "assistant";
 
 export interface Base64ImageSource {
   type: "base64";
@@ -31,55 +31,64 @@ export interface ChatMessage {
   content: MessageContent;
 }
 
+// Raw Anthropic Messages API request shape
 export interface ChatRequest {
   model: string;
   messages: ChatMessage[];
+  max_tokens: number;
+  system?: string;
   temperature?: number;
-  maxTokens?: number;
-  topP?: number;
-  frequencyPenalty?: number;
-  presencePenalty?: number;
-  stop?: string | string[];
-  systemPrompt?: string;
-  responseFormat?: "text" | "json_object";
-  user?: string;
-  metadata?: Record<string, unknown>;
-  seed?: number;
-  logprobs?: boolean;
-  logitBias?: Record<string, number>;
+  top_p?: number;
+  stop_sequences?: string[];
+  stream?: boolean;
   [key: string]: unknown;
 }
 
-export interface ChatStreamChunk {
-  delta: string;
-  done?: boolean;
-  finishReason?: "stop" | "length" | "content_filter" | "tool_calls";
-  usage?: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
+// Raw Anthropic content block in response
+export interface AnthropicContentBlock {
+  type: "text" | "thinking";
+  text?: string;
+  thinking?: string;
+}
+
+// Raw Anthropic Messages API response
+export interface AnthropicMessage {
+  id: string;
+  type: string;
+  role: string;
+  content: AnthropicContentBlock[];
+  model: string;
+  stop_reason: string | null;
+  usage: {
+    input_tokens: number;
+    output_tokens: number;
   };
 }
 
-export interface ChatResponse {
-  content: string;
-  model: string;
-  usage: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
+// Raw Anthropic SSE event
+export interface AnthropicStreamEvent {
+  type: string;
+  index?: number;
+  delta?: {
+    type?: string;
+    text?: string;
+    stop_reason?: string;
   };
-  finishReason: "stop" | "length" | "content_filter" | "tool_calls";
-  metadata?: Record<string, unknown>;
+  content_block?: AnthropicContentBlock;
+  message?: AnthropicMessage;
+  usage?: {
+    input_tokens?: number;
+    output_tokens?: number;
+  };
 }
 
 // Namespace types
 interface KimiCodingMessagesNamespace {
-  (req: ChatRequest, signal?: AbortSignal): Promise<ChatResponse>;
+  (req: ChatRequest, signal?: AbortSignal): Promise<AnthropicMessage>;
   stream(
     req: ChatRequest,
     signal?: AbortSignal
-  ): AsyncIterable<ChatStreamChunk>;
+  ): AsyncIterable<AnthropicStreamEvent>;
 }
 
 interface KimiCodingV1Namespace {
@@ -115,38 +124,3 @@ export class KimiCodingError extends Error {
 }
 
 export interface KimiCodingProvider extends Provider {}
-
-export interface AnthropicContentBlock {
-  type: "text" | "thinking";
-  text?: string;
-  thinking?: string;
-}
-
-export interface AnthropicMessage {
-  id: string;
-  type: string;
-  role: string;
-  content: AnthropicContentBlock[];
-  model: string;
-  stop_reason: string | null;
-  usage: {
-    input_tokens: number;
-    output_tokens: number;
-  };
-}
-
-export interface AnthropicStreamEvent {
-  type: string;
-  index?: number;
-  delta?: {
-    type?: string;
-    text?: string;
-    stop_reason?: string;
-  };
-  content_block?: AnthropicContentBlock;
-  message?: AnthropicMessage;
-  usage?: {
-    input_tokens?: number;
-    output_tokens?: number;
-  };
-}

@@ -37,13 +37,13 @@ describe("kie E2E: character image → motion-control", () => {
         },
       });
 
-      expect(task.taskId).toBeTruthy();
-      expect(typeof task.taskId).toBe("string");
+      expect(task.data?.taskId).toBeTruthy();
+      expect(typeof task.data?.taskId).toBe("string");
 
-      const info = await provider.api.v1.jobs.recordInfo(task.taskId);
-      expect(info.taskId).toBe(task.taskId);
+      const info = await provider.api.v1.jobs.recordInfo(task.data?.taskId);
+      expect(info.data?.taskId).toBe(task.data?.taskId);
       expect(["waiting", "queuing", "generating", "success", "fail"]).toContain(
-        info.state
+        info.data?.state
       );
     });
   });
@@ -82,13 +82,13 @@ describe("kie E2E: character image → motion-control", () => {
         },
       });
 
-      expect(task.taskId).toBeTruthy();
-      expect(typeof task.taskId).toBe("string");
+      expect(task.data?.taskId).toBeTruthy();
+      expect(typeof task.data?.taskId).toBe("string");
 
-      const info = await provider.api.v1.jobs.recordInfo(task.taskId);
-      expect(info.taskId).toBe(task.taskId);
+      const info = await provider.api.v1.jobs.recordInfo(task.data?.taskId);
+      expect(info.data?.taskId).toBe(task.data?.taskId);
       expect(["waiting", "queuing", "generating", "success", "fail"]).toContain(
-        info.state
+        info.data?.state
       );
     });
   });
@@ -118,13 +118,13 @@ describe("kie E2E: character image → motion-control", () => {
         },
       });
 
-      expect(task.taskId).toBeTruthy();
-      expect(typeof task.taskId).toBe("string");
+      expect(task.data?.taskId).toBeTruthy();
+      expect(typeof task.data?.taskId).toBe("string");
 
-      const info = await provider.api.v1.jobs.recordInfo(task.taskId);
-      expect(info.taskId).toBe(task.taskId);
+      const info = await provider.api.v1.jobs.recordInfo(task.data?.taskId);
+      expect(info.data?.taskId).toBe(task.data?.taskId);
       expect(["waiting", "queuing", "generating", "success", "fail"]).toContain(
-        info.state
+        info.data?.state
       );
     });
   });
@@ -166,13 +166,13 @@ describe("kie E2E: character image → motion-control", () => {
         },
       });
 
-      expect(task.taskId).toBeTruthy();
-      expect(typeof task.taskId).toBe("string");
+      expect(task.data?.taskId).toBeTruthy();
+      expect(typeof task.data?.taskId).toBe("string");
 
-      const info = await provider.api.v1.jobs.recordInfo(task.taskId);
-      expect(info.taskId).toBe(task.taskId);
+      const info = await provider.api.v1.jobs.recordInfo(task.data?.taskId);
+      expect(info.data?.taskId).toBe(task.data?.taskId);
       expect(["waiting", "queuing", "generating", "success", "fail"]).toContain(
-        info.state
+        info.data?.state
       );
     });
   });

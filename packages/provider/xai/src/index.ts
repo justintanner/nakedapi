@@ -16,6 +16,7 @@ export type {
   XaiTool,
   XaiToolCall,
   XaiUsage,
+  XaiChatChoice,
   XaiChatRequest,
   XaiChatResponse,
   XaiImageGenerateRequest,

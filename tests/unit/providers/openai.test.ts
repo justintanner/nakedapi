@@ -16,16 +16,27 @@ describe("openai provider", () => {
     };
   }
 
-  interface OpenAiChatResponse {
-    content: string;
-    model: string;
-    usage: {
-      promptTokens: number;
-      completionTokens: number;
-      totalTokens: number;
+  interface OpenAiChatChoice {
+    index: number;
+    message: {
+      role: string;
+      content: string | null;
+      tool_calls?: OpenAiToolCall[];
     };
-    finishReason: string;
-    toolCalls?: OpenAiToolCall[];
+    finish_reason: string;
+  }
+
+  interface OpenAiChatResponse {
+    id: string;
+    object: string;
+    created: number;
+    model: string;
+    choices: OpenAiChatChoice[];
+    usage?: {
+      prompt_tokens: number;
+      completion_tokens: number;
+      total_tokens: number;
+    };
   }
 
   interface OpenAiChatRequest {
@@ -61,7 +72,7 @@ describe("openai provider", () => {
       };
       audio: {
         transcriptions(
-          req: { file: Blob; model?: string; language?: string },
+          req: { file: Blob; model: string; language?: string },
           signal?: AbortSignal
         ): Promise<OpenAiTranscribeResponse>;
       };
@@ -73,14 +84,25 @@ describe("openai provider", () => {
       v1: {
         chat: {
           completions: vi.fn().mockResolvedValue({
-            content: "Hello! How can I help you today?",
+            id: "chatcmpl-test",
+            object: "chat.completion",
+            created: 1700000000,
             model: "gpt-5.4-2026-03-05",
+            choices: [
+              {
+                index: 0,
+                message: {
+                  role: "assistant",
+                  content: "Hello! How can I help you today?",
+                },
+                finish_reason: "stop",
+              },
+            ],
             usage: {
-              promptTokens: 12,
-              completionTokens: 8,
-              totalTokens: 20,
+              prompt_tokens: 12,
+              completion_tokens: 8,
+              total_tokens: 20,
             },
-            finishReason: "stop",
           }),
         },
         audio: {
@@ -97,7 +119,9 @@ describe("openai provider", () => {
     const result = await provider.v1.chat.completions({
       messages: [{ role: "user", content: "Hello!" }],
     });
-    expect(result.content).toBe("Hello! How can I help you today?");
+    expect(result.choices[0].message.content).toBe(
+      "Hello! How can I help you today?"
+    );
     expect(result.model).toBe("gpt-5.4-2026-03-05");
   });
 
@@ -106,9 +130,9 @@ describe("openai provider", () => {
     const result = await provider.v1.chat.completions({
       messages: [{ role: "user", content: "Hello" }],
     });
-    expect(result.usage.promptTokens).toBe(12);
-    expect(result.usage.completionTokens).toBe(8);
-    expect(result.usage.totalTokens).toBe(20);
+    expect(result.usage?.prompt_tokens).toBe(12);
+    expect(result.usage?.completion_tokens).toBe(8);
+    expect(result.usage?.total_tokens).toBe(20);
   });
 
   it("should support custom model selection", async () => {
@@ -142,20 +166,35 @@ describe("openai provider", () => {
     (
       provider.v1.chat.completions as ReturnType<typeof vi.fn>
     ).mockResolvedValue({
-      content: "",
+      id: "chatcmpl-tool",
+      object: "chat.completion",
+      created: 1700000000,
       model: "gpt-5.4-2026-03-05",
-      usage: { promptTokens: 20, completionTokens: 15, totalTokens: 35 },
-      finishReason: "tool_calls",
-      toolCalls: [
+      choices: [
         {
-          id: "call_123",
-          type: "function",
-          function: {
-            name: "get_weather",
-            arguments: '{"location": "San Francisco"}',
+          index: 0,
+          message: {
+            role: "assistant",
+            content: null,
+            tool_calls: [
+              {
+                id: "call_123",
+                type: "function",
+                function: {
+                  name: "get_weather",
+                  arguments: '{"location": "San Francisco"}',
+                },
+              },
+            ],
           },
+          finish_reason: "tool_calls",
         },
       ],
+      usage: {
+        prompt_tokens: 20,
+        completion_tokens: 15,
+        total_tokens: 35,
+      },
     });
 
     const result = await provider.v1.chat.completions({
@@ -174,9 +213,11 @@ describe("openai provider", () => {
         },
       ],
     });
-    expect(result.finishReason).toBe("tool_calls");
-    expect(result.toolCalls).toHaveLength(1);
-    expect(result.toolCalls?.[0].function.name).toBe("get_weather");
+    expect(result.choices[0].finish_reason).toBe("tool_calls");
+    expect(result.choices[0].message.tool_calls).toHaveLength(1);
+    expect(result.choices[0].message.tool_calls?.[0].function.name).toBe(
+      "get_weather"
+    );
   });
 
   it("should support system messages", async () => {
@@ -193,7 +234,10 @@ describe("openai provider", () => {
   it("should transcribe audio", async () => {
     const provider = createMockProvider();
     const file = new Blob(["fake-audio"], { type: "audio/mp3" });
-    const result = await provider.v1.audio.transcriptions({ file });
+    const result = await provider.v1.audio.transcriptions({
+      file,
+      model: "gpt-4o-mini-transcribe",
+    });
     expect(result.text).toBe("Hello world, this is a test transcription.");
   });
 

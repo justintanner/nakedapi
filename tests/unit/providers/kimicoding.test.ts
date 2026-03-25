@@ -6,23 +6,39 @@ import {
 } from "../../../packages/provider/kimicoding/src";
 import type {
   ChatRequest,
-  ChatStreamChunk,
+  AnthropicMessage,
+  AnthropicStreamEvent,
   KimiCodingProvider,
 } from "../../../packages/provider/kimicoding/src";
 
 function createMockProvider(): KimiCodingProvider {
   const messages = Object.assign(
     vi.fn().mockResolvedValue({
-      content: "Hello! How can I help you today?",
+      id: "msg-test",
+      type: "message",
+      role: "assistant",
+      content: [{ type: "text", text: "Hello! How can I help you today?" }],
       model: "k2p5",
-      usage: { promptTokens: 10, completionTokens: 8, totalTokens: 18 },
-      finishReason: "stop",
-    }),
+      stop_reason: "end_turn",
+      usage: { input_tokens: 10, output_tokens: 8 },
+    } satisfies AnthropicMessage),
     {
       stream: vi.fn().mockImplementation(async function* (_req: ChatRequest) {
-        yield { delta: "Hello", done: false };
-        yield { delta: " world", done: false };
-        yield { delta: "", done: true };
+        yield {
+          type: "content_block_delta",
+          index: 0,
+          delta: { type: "text_delta", text: "Hello" },
+        } satisfies AnthropicStreamEvent;
+        yield {
+          type: "content_block_delta",
+          index: 0,
+          delta: { type: "text_delta", text: " world" },
+        } satisfies AnthropicStreamEvent;
+        yield {
+          type: "message_delta",
+          delta: { stop_reason: "end_turn" },
+          usage: { output_tokens: 8 },
+        } satisfies AnthropicStreamEvent;
       }),
     }
   );
@@ -59,32 +75,34 @@ describe("kimicoding provider", () => {
     const provider = createMockProvider();
     const req: ChatRequest = {
       model: "k2p5",
+      max_tokens: 32768,
       messages: [{ role: "user", content: "Hello!" }],
     };
 
-    const chunks: ChatStreamChunk[] = [];
+    const chunks: AnthropicStreamEvent[] = [];
     for await (const chunk of provider.coding.v1.messages.stream(req)) {
       chunks.push(chunk);
     }
 
     expect(chunks).toHaveLength(3);
-    expect(chunks[0].delta).toBe("Hello");
-    expect(chunks[1].delta).toBe(" world");
-    expect(chunks[2].done).toBe(true);
+    expect(chunks[0].delta?.text).toBe("Hello");
+    expect(chunks[1].delta?.text).toBe(" world");
+    expect(chunks[2].delta?.stop_reason).toBe("end_turn");
   });
 
   it("should return non-streaming chat response", async () => {
     const provider = createMockProvider();
     const req: ChatRequest = {
       model: "k2p5",
+      max_tokens: 32768,
       messages: [{ role: "user", content: "Hello!" }],
     };
 
     const response = await provider.coding.v1.messages(req);
 
-    expect(response.content).toBe("Hello! How can I help you today?");
+    expect(response.content[0].text).toBe("Hello! How can I help you today?");
     expect(response.model).toBe("k2p5");
-    expect(response.usage.totalTokens).toBe(18);
+    expect(response.usage.input_tokens + response.usage.output_tokens).toBe(18);
   });
 
   it("should return available models", async () => {
@@ -97,6 +115,7 @@ describe("kimicoding provider", () => {
     const provider = createMockProvider();
     const req: ChatRequest = {
       model: "k2p5",
+      max_tokens: 32768,
       messages: [
         {
           role: "user",
@@ -118,14 +137,15 @@ describe("kimicoding provider", () => {
     expect(response.content).toBeTruthy();
   });
 
-  it("should accept string content for backward compatibility", async () => {
+  it("should accept string content", async () => {
     const provider = createMockProvider();
     const req: ChatRequest = {
       model: "k2p5",
+      max_tokens: 32768,
       messages: [{ role: "user", content: "Hello!" }],
     };
     const response = await provider.coding.v1.messages(req);
-    expect(response.content).toBe("Hello! How can I help you today?");
+    expect(response.content[0].text).toBe("Hello! How can I help you today?");
   });
 
   it("textBlock should return a text content block", () => {

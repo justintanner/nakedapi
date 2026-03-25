@@ -18,7 +18,7 @@ describe("fal integration", () => {
     expect(result.models).toBeDefined();
     expect(Array.isArray(result.models)).toBe(true);
     expect(result.models.length).toBeGreaterThan(0);
-    expect(result.models[0].endpointId).toBeTruthy();
+    expect(result.models[0].endpoint_id).toBeTruthy();
   });
 
   it("should search models by query", async () => {
@@ -37,7 +37,7 @@ describe("fal integration", () => {
       apiKey: process.env.FAL_API_KEY ?? "fal-test-key",
     });
     const result = await provider.v1.models.pricing({
-      endpointId: "fal-ai/flux/dev",
+      endpoint_id: "fal-ai/flux/dev",
     });
     expect(result.prices).toBeDefined();
     expect(Array.isArray(result.prices)).toBe(true);
@@ -51,13 +51,13 @@ describe("fal integration", () => {
       apiKey: process.env.FAL_API_KEY ?? "fal-test-key",
     });
     const result = await provider.v1.models.pricing.estimate({
-      estimateType: "unit_price",
+      estimate_type: "unit_price",
       endpoints: {
-        "fal-ai/flux/dev": { unitQuantity: 100 },
+        "fal-ai/flux/dev": { unit_quantity: 100 },
       },
     });
-    expect(result.totalCost).toBeDefined();
-    expect(typeof result.totalCost).toBe("number");
+    expect(result.total_cost).toBeDefined();
+    expect(typeof result.total_cost).toBe("number");
     expect(result.currency).toBeTruthy();
   });
 
@@ -69,10 +69,10 @@ describe("fal integration", () => {
       apiKey: process.env.FAL_API_KEY ?? "fal-test-key",
     });
     const result = await provider.v1.models.analytics({
-      endpointId: "fal-ai/flux/dev",
+      endpoint_id: "fal-ai/flux/dev",
     });
     expect(result).toBeDefined();
-    expect(result.hasMore).toBeDefined();
+    expect(result.has_more).toBeDefined();
   });
 
   it("should get requests for an endpoint", async () => {
@@ -81,11 +81,11 @@ describe("fal integration", () => {
       apiKey: process.env.FAL_API_KEY ?? "fal-test-key",
     });
     const result = await provider.v1.models.requests.byEndpoint({
-      endpointId: "fal-ai/flux/dev",
+      endpoint_id: "fal-ai/flux/dev",
       limit: 5,
     });
     expect(result).toBeDefined();
-    expect(result.hasMore).toBeDefined();
+    expect(result.has_more).toBeDefined();
     expect(Array.isArray(result.items)).toBe(true);
   });
 });

@@ -4,18 +4,24 @@ import { describe, it, expect, vi } from "vitest";
 describe("kie suno provider", () => {
   interface SunoGenerateRequest {
     prompt: string;
+    model: "V4" | "V4_5" | "V4_5PLUS" | "V4_5ALL" | "V5";
+    instrumental: boolean;
+    customMode: boolean;
     style?: string;
-    instrumental?: boolean;
-    model?: "V4" | "V4_5" | "V4_5PLUS" | "V4_5ALL" | "V5";
-    customMode?: boolean;
     negativeTags?: string;
     title?: string;
+  }
+
+  interface SunoSubmitResponse {
+    code: number;
+    msg?: string;
+    data?: { taskId?: string };
   }
 
   interface SunoProvider {
     api: {
       v1: {
-        generate(req: SunoGenerateRequest): Promise<{ taskId: string }>;
+        generate(req: SunoGenerateRequest): Promise<SunoSubmitResponse>;
       };
     };
   }
@@ -24,18 +30,24 @@ describe("kie suno provider", () => {
     return {
       api: {
         v1: {
-          generate: vi.fn().mockResolvedValue({ taskId: "suno-task-123" }),
+          generate: vi.fn().mockResolvedValue({
+            code: 200,
+            data: { taskId: "suno-task-123" },
+          }),
         },
       },
     };
   }
 
-  it("should generate music with default model", async () => {
+  it("should generate music", async () => {
     const suno = createMockSunoProvider();
     const result = await suno.api.v1.generate({
       prompt: "A smooth jazz ballad with piano and saxophone",
+      model: "V4_5",
+      instrumental: true,
+      customMode: true,
     });
-    expect(result.taskId).toBe("suno-task-123");
+    expect(result.data?.taskId).toBe("suno-task-123");
   });
 
   it("should generate instrumental music", async () => {
@@ -44,8 +56,9 @@ describe("kie suno provider", () => {
       prompt: "An upbeat electronic dance track",
       instrumental: true,
       model: "V4_5",
+      customMode: true,
     });
-    expect(result.taskId).toBe("suno-task-123");
+    expect(result.data?.taskId).toBe("suno-task-123");
   });
 
   it("should generate with custom mode options", async () => {
@@ -54,18 +67,22 @@ describe("kie suno provider", () => {
       prompt: "Verse 1: Walking down the street...",
       style: "pop rock",
       customMode: true,
+      instrumental: false,
+      model: "V4_5",
       title: "City Walk",
       negativeTags: "heavy metal",
     });
-    expect(result.taskId).toBe("suno-task-123");
+    expect(result.data?.taskId).toBe("suno-task-123");
   });
 
   it("should generate a task and return taskId", async () => {
     const suno = createMockSunoProvider();
-    const { taskId } = await suno.api.v1.generate({
+    const result = await suno.api.v1.generate({
       prompt: "A lullaby",
       model: "V5",
+      instrumental: false,
+      customMode: false,
     });
-    expect(taskId).toBe("suno-task-123");
+    expect(result.data?.taskId).toBe("suno-task-123");
   });
 });

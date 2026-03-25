@@ -45,8 +45,8 @@ describe("openai vision", () => {
       temperature: 0,
     });
 
-    expect(result.content).toBeTruthy();
-    expect(result.content.toLowerCase()).toMatch(/red/);
-    expect(result.usage.totalTokens).toBeGreaterThan(0);
+    expect(result.choices[0].message.content).toBeTruthy();
+    expect(result.choices[0].message.content!.toLowerCase()).toMatch(/red/);
+    expect(result.usage?.total_tokens).toBeGreaterThan(0);
   });
 });

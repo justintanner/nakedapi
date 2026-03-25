@@ -21,12 +21,17 @@ describe("kie veo provider", () => {
     watermark?: string;
   }
 
+  interface VeoSubmitResponse {
+    code: number;
+    data?: { taskId?: string };
+  }
+
   interface VeoProvider {
     api: {
       v1: {
         veo: {
-          generate(req: VeoGenerateRequest): Promise<{ taskId: string }>;
-          extend(req: VeoExtendRequest): Promise<{ taskId: string }>;
+          generate(req: VeoGenerateRequest): Promise<VeoSubmitResponse>;
+          extend(req: VeoExtendRequest): Promise<VeoSubmitResponse>;
         };
       };
     };
@@ -37,8 +42,14 @@ describe("kie veo provider", () => {
       api: {
         v1: {
           veo: {
-            generate: vi.fn().mockResolvedValue({ taskId: "veo-task-123" }),
-            extend: vi.fn().mockResolvedValue({ taskId: "veo-extend-456" }),
+            generate: vi.fn().mockResolvedValue({
+              code: 200,
+              data: { taskId: "veo-task-123" },
+            }),
+            extend: vi.fn().mockResolvedValue({
+              code: 200,
+              data: { taskId: "veo-extend-456" },
+            }),
           },
         },
       },
@@ -52,7 +63,7 @@ describe("kie veo provider", () => {
       model: "veo3_fast",
       aspectRatio: "16:9",
     });
-    expect(result.taskId).toBe("veo-task-123");
+    expect(result.data?.taskId).toBe("veo-task-123");
   });
 
   it("should generate with reference images", async () => {
@@ -63,7 +74,7 @@ describe("kie veo provider", () => {
       generationType: "REFERENCE_2_VIDEO",
       imageUrls: ["https://example.com/ref1.jpg"],
     });
-    expect(result.taskId).toBe("veo-task-123");
+    expect(result.data?.taskId).toBe("veo-task-123");
   });
 
   it("should extend a completed video", async () => {
@@ -73,14 +84,14 @@ describe("kie veo provider", () => {
       prompt: "Continue the scene with a zoom out",
       model: "fast",
     });
-    expect(result.taskId).toBe("veo-extend-456");
+    expect(result.data?.taskId).toBe("veo-extend-456");
   });
 
   it("should generate a task and return taskId", async () => {
     const veo = createMockVeoProvider();
-    const { taskId } = await veo.api.v1.veo.generate({
+    const result = await veo.api.v1.veo.generate({
       prompt: "A beautiful sunset",
     });
-    expect(taskId).toBe("veo-task-123");
+    expect(result.data?.taskId).toBe("veo-task-123");
   });
 });

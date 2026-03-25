@@ -35,11 +35,11 @@ export interface XaiToolCall {
   };
 }
 
-// Usage info
+// Usage info (raw API shape)
 export interface XaiUsage {
-  promptTokens: number;
-  completionTokens: number;
-  totalTokens: number;
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
 }
 
 // Chat request
@@ -55,13 +55,25 @@ export interface XaiChatRequest {
     | { type: "function"; function: { name: string } };
 }
 
-// Chat response
+// Chat response (raw API shape)
+export interface XaiChatChoice {
+  index: number;
+  message: {
+    role: string;
+    content: string | null;
+    tool_calls?: XaiToolCall[];
+  };
+  finish_reason: string;
+}
+
 export interface XaiChatResponse {
-  content: string;
+  id: string;
+  object: string;
+  created: number;
   model: string;
-  usage: XaiUsage;
-  finishReason: string;
-  toolCalls?: XaiToolCall[];
+  choices: XaiChatChoice[];
+  usage?: XaiUsage;
+  error?: { message?: string; type?: string };
 }
 
 // Image generation request
@@ -152,7 +164,6 @@ export interface XaiVideoResult {
 // Namespace types
 interface XaiChatCompletionsMethod {
   (req: XaiChatRequest, signal?: AbortSignal): Promise<XaiChatResponse>;
-  search(query: string, signal?: AbortSignal): Promise<XaiChatResponse>;
 }
 
 interface XaiChatNamespace {

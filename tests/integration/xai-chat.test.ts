@@ -19,7 +19,7 @@ describe("xai integration", () => {
       messages: [{ role: "user", content: "Say hello in one sentence." }],
       temperature: 0,
     });
-    expect(result.content).toBeTruthy();
-    expect(result.usage.totalTokens).toBeGreaterThan(0);
+    expect(result.choices[0].message.content).toBeTruthy();
+    expect(result.usage?.total_tokens).toBeGreaterThan(0);
   });
 });

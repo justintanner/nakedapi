@@ -18,8 +18,8 @@ describe("kie integration", () => {
       messages: [{ role: "user", content: "Say hello in one sentence." }],
       temperature: 0,
     });
-    expect(result.content).toBeTruthy();
-    expect(result.usage.totalTokens).toBeGreaterThan(0);
+    expect(result.choices?.[0].message?.content).toBeTruthy();
+    expect(result.usage?.total_tokens).toBeGreaterThan(0);
   });
 
   it("should return credit balance", async () => {
@@ -28,7 +28,6 @@ describe("kie integration", () => {
       apiKey: process.env.KIE_API_KEY ?? "sk-test-key",
     });
     const credits = await provider.api.v1.chat.credit();
-    expect(credits.balance).toBeGreaterThanOrEqual(0);
-    expect(credits.currency).toBe("credits");
+    expect(credits.data).toBeGreaterThanOrEqual(0);
   });
 });

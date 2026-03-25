@@ -19,54 +19,11 @@ import {
   FalDeletePayloadsResponse,
 } from "./types";
 
-// Convert camelCase to snake_case for API requests
-function toSnakeCase(str: string): string {
-  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
-}
-
-function convertToSnakeCase(
-  obj: Record<string, unknown>
-): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (value === undefined) continue;
-    const snakeKey = toSnakeCase(key);
-    if (Array.isArray(value)) {
-      result[snakeKey] = value;
-    } else if (value !== null && typeof value === "object") {
-      result[snakeKey] = convertToSnakeCase(value as Record<string, unknown>);
-    } else {
-      result[snakeKey] = value;
-    }
-  }
-  return result;
-}
-
-// Convert snake_case to camelCase for API responses
-function toCamelCase(str: string): string {
-  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-}
-
-function convertToCamelCase(obj: unknown): unknown {
-  if (obj === null || typeof obj !== "object") {
-    return obj;
-  }
-  if (Array.isArray(obj)) {
-    return obj.map(convertToCamelCase);
-  }
-  const result: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(obj)) {
-    result[toCamelCase(key)] = convertToCamelCase(value);
-  }
-  return result;
-}
-
-// Build query string from parameters
+// Build query string from parameters (no case conversion)
 function buildQueryString(params: Record<string, unknown>): string {
   const searchParams = new URLSearchParams();
-  const snakeParams = convertToSnakeCase(params);
 
-  for (const [key, value] of Object.entries(snakeParams)) {
+  for (const [key, value] of Object.entries(params)) {
     if (value === undefined) continue;
     if (Array.isArray(value)) {
       for (const item of value) {
@@ -136,7 +93,7 @@ export function fal(opts: FalOptions): FalProvider {
     };
 
     if (method !== "GET" && paramsOrBody) {
-      requestInit.body = JSON.stringify(convertToSnakeCase(paramsOrBody));
+      requestInit.body = JSON.stringify(paramsOrBody);
     }
 
     try {
@@ -168,8 +125,7 @@ export function fal(opts: FalOptions): FalProvider {
         );
       }
 
-      const data = (await res.json()) as unknown;
-      return convertToCamelCase(data) as T;
+      return (await res.json()) as T;
     } catch (error) {
       clearTimeout(timeoutId);
       if (error instanceof FalError) throw error;
@@ -222,12 +178,12 @@ export function fal(opts: FalOptions): FalProvider {
       signal?: AbortSignal
     ): Promise<FalDeletePayloadsResponse> {
       const headers: Record<string, string> = {};
-      if (params.idempotencyKey) {
-        headers["Idempotency-Key"] = params.idempotencyKey;
+      if (params.idempotency_key) {
+        headers["Idempotency-Key"] = params.idempotency_key;
       }
       return makeRequest<FalDeletePayloadsResponse>(
         "DELETE",
-        `/models/requests/${params.requestId}/payloads`,
+        `/models/requests/${params.request_id}/payloads`,
         undefined,
         signal,
         headers

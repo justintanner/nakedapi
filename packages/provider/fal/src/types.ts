@@ -19,22 +19,22 @@ export type FalErrorType =
 export class FalError extends Error {
   readonly status: number;
   readonly type: FalErrorType;
-  readonly requestId?: string;
-  readonly docsUrl?: string;
+  readonly request_id?: string;
+  readonly docs_url?: string;
 
   constructor(
     message: string,
     status: number,
     type: FalErrorType,
-    requestId?: string,
-    docsUrl?: string
+    request_id?: string,
+    docs_url?: string
   ) {
     super(message);
     this.name = "FalError";
     this.status = status;
     this.type = type;
-    this.requestId = requestId;
-    this.docsUrl = docsUrl;
+    this.request_id = request_id;
+    this.docs_url = docs_url;
   }
 }
 
@@ -50,14 +50,14 @@ export interface FalTimeRangeParams {
   end?: string;
   timezone?: string;
   timeframe?: "minute" | "hour" | "day" | "week" | "month";
-  boundToTimeframe?: boolean;
+  bound_to_timeframe?: boolean;
 }
 
 // ==================== Models ====================
 
 // Model search parameters
 export interface FalModelSearchParams extends FalPaginatedParams {
-  endpointId?: string | string[];
+  endpoint_id?: string | string[];
   q?: string;
   category?: string;
   status?: "active" | "deprecated";
@@ -72,26 +72,26 @@ export interface FalModelGroup {
 
 // Model metadata
 export interface FalModelMetadata {
-  displayName: string;
+  display_name: string;
   category: string;
   description: string;
   status: "active" | "deprecated";
   tags: string[];
-  updatedAt: string;
-  isFavorited: boolean | null;
-  thumbnailUrl: string;
-  thumbnailAnimatedUrl?: string;
-  modelUrl: string;
-  githubUrl?: string;
-  licenseType?: "commercial" | "research" | "private";
+  updated_at: string;
+  is_favorited: boolean | null;
+  thumbnail_url: string;
+  thumbnail_animated_url?: string;
+  model_url: string;
+  github_url?: string;
+  license_type?: "commercial" | "research" | "private";
   date: string;
   group?: FalModelGroup;
   highlighted: boolean;
   kind?: "inference" | "training";
-  trainingEndpointIds?: string[];
-  inferenceEndpointIds?: string[];
-  streamUrl?: string;
-  durationEstimate?: number;
+  training_endpoint_ids?: string[];
+  inference_endpoint_ids?: string[];
+  stream_url?: string;
+  duration_estimate?: number;
   pinned: boolean;
 }
 
@@ -110,7 +110,7 @@ export interface FalOpenApiError {
 
 // Model information
 export interface FalModel {
-  endpointId: string;
+  endpoint_id: string;
   metadata?: FalModelMetadata;
   openapi?: FalOpenApiSpec | FalOpenApiError;
 }
@@ -118,21 +118,21 @@ export interface FalModel {
 // Model search response
 export interface FalModelSearchResponse {
   models: FalModel[];
-  nextCursor: string | null;
-  hasMore: boolean;
+  next_cursor: string | null;
+  has_more: boolean;
 }
 
 // ==================== Pricing ====================
 
 // Pricing parameters
 export interface FalPricingParams {
-  endpointId: string | string[];
+  endpoint_id: string | string[];
 }
 
 // Price information for a model
 export interface FalPrice {
-  endpointId: string;
-  unitPrice: number;
+  endpoint_id: string;
+  unit_price: number;
   unit: string;
   currency: string;
 }
@@ -140,22 +140,22 @@ export interface FalPrice {
 // Pricing response
 export interface FalPricingResponse {
   prices: FalPrice[];
-  nextCursor: string | null;
-  hasMore: boolean;
+  next_cursor: string | null;
+  has_more: boolean;
 }
 
 // ==================== Cost Estimation ====================
 
 // Historical API price estimate request
 export interface FalHistoricalApiPriceEstimate {
-  estimateType: "historical_api_price";
-  endpoints: Record<string, { callQuantity: number }>;
+  estimate_type: "historical_api_price";
+  endpoints: Record<string, { call_quantity: number }>;
 }
 
 // Unit price estimate request
 export interface FalUnitPriceEstimate {
-  estimateType: "unit_price";
-  endpoints: Record<string, { unitQuantity: number }>;
+  estimate_type: "unit_price";
+  endpoints: Record<string, { unit_quantity: number }>;
 }
 
 // Estimate request (discriminated union)
@@ -165,8 +165,8 @@ export type FalEstimateRequest =
 
 // Estimate response
 export interface FalEstimateResponse {
-  estimateType: "historical_api_price" | "unit_price";
-  totalCost: number;
+  estimate_type: "historical_api_price" | "unit_price";
+  total_cost: number;
   currency: string;
 }
 
@@ -174,19 +174,19 @@ export interface FalEstimateResponse {
 
 // Usage parameters
 export interface FalUsageParams extends FalPaginatedParams, FalTimeRangeParams {
-  endpointId?: string | string[];
+  endpoint_id?: string | string[];
   expand?: string[];
 }
 
 // Usage record
 export interface FalUsageRecord {
-  endpointId: string;
+  endpoint_id: string;
   unit: string;
   quantity: number;
-  unitPrice: number;
+  unit_price: number;
   cost: number;
   currency: string;
-  authMethod?: string;
+  auth_method?: string;
 }
 
 // Usage time bucket
@@ -197,9 +197,9 @@ export interface FalUsageBucket {
 
 // Usage response
 export interface FalUsageResponse {
-  nextCursor: string | null;
-  hasMore: boolean;
-  timeSeries?: FalUsageBucket[];
+  next_cursor: string | null;
+  has_more: boolean;
+  time_series?: FalUsageBucket[];
   summary?: FalUsageRecord[];
 }
 
@@ -208,23 +208,23 @@ export interface FalUsageResponse {
 // Analytics parameters
 export interface FalAnalyticsParams
   extends FalPaginatedParams, FalTimeRangeParams {
-  endpointId: string | string[];
+  endpoint_id: string | string[];
   expand?: string[];
 }
 
 // Analytics record
 export interface FalAnalyticsRecord {
-  endpointId: string;
-  requestCount?: number;
-  successCount?: number;
-  userErrorCount?: number;
-  errorCount?: number;
-  p50Duration?: number;
-  p75Duration?: number;
-  p90Duration?: number;
-  p50PrepareDuration?: number;
-  p75PrepareDuration?: number;
-  p90PrepareDuration?: number;
+  endpoint_id: string;
+  request_count?: number;
+  success_count?: number;
+  user_error_count?: number;
+  error_count?: number;
+  p50_duration?: number;
+  p75_duration?: number;
+  p90_duration?: number;
+  p50_prepare_duration?: number;
+  p75_prepare_duration?: number;
+  p90_prepare_duration?: number;
 }
 
 // Analytics time bucket
@@ -235,9 +235,9 @@ export interface FalAnalyticsBucket {
 
 // Analytics response
 export interface FalAnalyticsResponse {
-  nextCursor: string | null;
-  hasMore: boolean;
-  timeSeries?: FalAnalyticsBucket[];
+  next_cursor: string | null;
+  has_more: boolean;
+  time_series?: FalAnalyticsBucket[];
   summary?: FalAnalyticsRecord[];
 }
 
@@ -245,32 +245,32 @@ export interface FalAnalyticsResponse {
 
 // Requests parameters
 export interface FalRequestsParams extends FalPaginatedParams {
-  endpointId: string;
+  endpoint_id: string;
   start?: string;
   end?: string;
   status?: "success" | "error" | "user_error";
-  requestId?: string;
+  request_id?: string;
   expand?: string[];
-  sortBy?: "ended_at" | "duration";
+  sort_by?: "ended_at" | "duration";
 }
 
 // Request item
 export interface FalRequestItem {
-  requestId: string;
-  endpointId: string;
-  startedAt: string;
-  sentAt: string;
-  endedAt?: string;
-  statusCode?: number;
+  request_id: string;
+  endpoint_id: string;
+  started_at: string;
+  sent_at: string;
+  ended_at?: string;
+  status_code?: number;
   duration?: number;
-  jsonInput?: unknown;
-  jsonOutput?: unknown;
+  json_input?: unknown;
+  json_output?: unknown;
 }
 
 // Requests response
 export interface FalRequestsResponse {
-  nextCursor: string | null;
-  hasMore: boolean;
+  next_cursor: string | null;
+  has_more: boolean;
   items: FalRequestItem[];
 }
 
@@ -278,8 +278,8 @@ export interface FalRequestsResponse {
 
 // Delete payloads parameters
 export interface FalDeletePayloadsParams {
-  requestId: string;
-  idempotencyKey?: string;
+  request_id: string;
+  idempotency_key?: string;
 }
 
 // CDN delete result
@@ -290,7 +290,7 @@ export interface FalCdnDeleteResult {
 
 // Delete payloads response
 export interface FalDeletePayloadsResponse {
-  cdnDeleteResults: FalCdnDeleteResult[];
+  cdn_delete_results: FalCdnDeleteResult[];
 }
 
 // ==================== Provider ====================

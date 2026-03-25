@@ -27,14 +27,14 @@ describe("kie grok-imagine video integration", () => {
         },
       });
 
-      expect(task.taskId).toBeTruthy();
-      expect(typeof task.taskId).toBe("string");
+      expect(task.data?.taskId).toBeTruthy();
+      expect(typeof task.data?.taskId).toBe("string");
 
-      const info = await provider.api.v1.jobs.recordInfo(task.taskId);
+      const info = await provider.api.v1.jobs.recordInfo(task.data?.taskId);
 
-      expect(info.taskId).toBe(task.taskId);
+      expect(info.data?.taskId).toBe(task.data?.taskId);
       expect(["waiting", "queuing", "generating", "success", "fail"]).toContain(
-        info.state
+        info.data?.state
       );
     });
   });
@@ -65,8 +65,8 @@ describe("kie grok-imagine video integration", () => {
         },
       });
 
-      expect(extend.taskId).toBeTruthy();
-      expect(typeof extend.taskId).toBe("string");
+      expect(extend.data?.taskId).toBeTruthy();
+      expect(typeof extend.data?.taskId).toBe("string");
     });
   });
 
@@ -93,8 +93,8 @@ describe("kie grok-imagine video integration", () => {
         },
       });
 
-      expect(upscale.taskId).toBeTruthy();
-      expect(typeof upscale.taskId).toBe("string");
+      expect(upscale.data?.taskId).toBeTruthy();
+      expect(typeof upscale.data?.taskId).toBe("string");
     });
   });
 });

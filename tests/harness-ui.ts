@@ -141,7 +141,8 @@ const HTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Polly.js Test Harness</title>
+<title>NakedAPI Harness</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   ::-webkit-scrollbar { width: 12px; height: 8px; }
@@ -2105,10 +2106,21 @@ const server = http.createServer((req, res) => {
           res.end(JSON.stringify({ error: "Not a compare workflow" }));
           return;
         }
-        const apiKey = getApiKey(wf.steps[0].apiProvider);
-        if (!apiKey) {
+        // Check all required API keys (per-step + KIE for uploads)
+        const requiredProviders = new Set(wf.steps.map((s) => s.apiProvider));
+        if (wf.setup?.uploads && Object.keys(wf.setup.uploads).length > 0) {
+          requiredProviders.add("kie");
+        }
+        const missingKeys = Array.from(requiredProviders).filter(
+          (p) => !getApiKey(p)
+        );
+        if (missingKeys.length > 0) {
           res.writeHead(500, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ error: "API key not set" }));
+          res.end(
+            JSON.stringify({
+              error: `API keys not set for: ${missingKeys.join(", ")}`,
+            })
+          );
           return;
         }
         const state = readWorkflowState();
@@ -2190,7 +2202,9 @@ const server = http.createServer((req, res) => {
                   "https://kieai.redpandaai.co/api/file-stream-upload",
                   {
                     method: "POST",
-                    headers: { Authorization: `Bearer ${apiKey}` },
+                    headers: {
+                      Authorization: `Bearer ${getApiKey("kie")}`,
+                    },
                     body: formData,
                   }
                 );
@@ -2237,10 +2251,11 @@ const server = http.createServer((req, res) => {
             const resolvedBody = stepDef.request.body
               ? resolveBody(stepDef.request.body, setupVars)
               : undefined;
+            const stepApiKey = getApiKey(stepDef.apiProvider);
             const apiRes = await fetch(stepDef.request.url, {
               method: stepDef.request.method,
               headers: {
-                Authorization: `Bearer ${apiKey}`,
+                Authorization: `Bearer ${stepApiKey}`,
                 "Content-Type": "application/json",
               },
               body: resolvedBody ? JSON.stringify(resolvedBody) : undefined,
@@ -2318,15 +2333,16 @@ const server = http.createServer((req, res) => {
               );
               step.outputs = { ...step.outputs, ...asyncOutputs };
               // Cache media files locally
-              const taskId = step.outputs?.task_id;
-              if (taskId) {
+              const cacheId = step.outputs?.task_id ?? step.outputs?.request_id;
+              if (cacheId) {
                 for (const [key, url] of Object.entries(step.outputs ?? {})) {
                   if (
                     key !== "task_id" &&
+                    key !== "request_id" &&
                     typeof url === "string" &&
                     url.startsWith("http")
                   ) {
-                    step.outputs[key] = await cacheMedia(taskId, url);
+                    step.outputs[key] = await cacheMedia(cacheId, url);
                   }
                 }
               }

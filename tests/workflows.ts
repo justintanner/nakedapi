@@ -484,25 +484,48 @@ export const workflows: WorkflowDefinition[] = [
     ],
   },
   {
-    id: "kie-video-compare",
-    name: "KIE: first-frame video model comparison",
+    id: "ref-character-compare",
+    name: "Reference character: Grok Imagine (xAI) vs Kling 3.0 (KIE)",
     layout: "compare",
     setup: {
-      fromWorkflows: {
-        background_url: {
-          workflowId: "kie-t2i-compare",
-          stepIndex: 0,
-          outputKey: "image_url",
-        },
-      },
       uploads: {
         cat_url: "public/cat.png",
+        background_url: "public/studio-bg.jpg",
       },
     },
     steps: [
       {
+        name: "grok-imagine-video",
+        description: "Grok Imagine video (xAI, image-to-video, 720p, 6s)",
+        apiProvider: "xai",
+        request: {
+          method: "POST",
+          url: "https://api.x.ai/v1/videos/generations",
+          body: {
+            model: "grok-imagine-video",
+            prompt:
+              "An orange tabby cat walks onto a science fiction movie " +
+              "set, sniffing at props and exploring the scene, " +
+              "cinematic lighting, smooth natural motion",
+            image_url: "{{background_url}}",
+            duration: 6,
+            resolution: "720p",
+          },
+        },
+        outputExtractors: { request_id: "request_id" },
+        async: {
+          pollUrl: "https://api.x.ai/v1/videos/{{request_id}}",
+          pollMethod: "GET",
+          completionField: "status",
+          completionValues: ["done"],
+          failureValues: ["failed", "expired"],
+          progressField: "progress",
+          outputExtractors: { video_url: "video.url" },
+        },
+      },
+      {
         name: "kling-3.0",
-        description: "Kling 3.0 Video Pro (elements, 16:9, 5s)",
+        description: "Kling 3.0 Video Pro (KIE, elements, 16:9, 5s)",
         apiProvider: "kie",
         request: {
           method: "POST",
@@ -518,7 +541,7 @@ export const workflows: WorkflowDefinition[] = [
               kling_elements: [
                 {
                   name: "element_cat",
-                  description: "orange cat",
+                  description: "orange tabby cat",
                   element_input_urls: ["{{cat_url}}", "{{cat_url}}"],
                 },
               ],
@@ -528,34 +551,6 @@ export const workflows: WorkflowDefinition[] = [
               sound: false,
               multi_shots: false,
               multi_prompt: [],
-            },
-          },
-        },
-        outputExtractors: { task_id: "data.taskId" },
-        async: {
-          ...KIE_ASYNC,
-          outputExtractors: {
-            video_url: "data.resultJson.resultUrls.0",
-          },
-        },
-      },
-      {
-        name: "grok-imagine",
-        description: "Grok Imagine image-to-video (720p, 6s)",
-        apiProvider: "kie",
-        request: {
-          method: "POST",
-          url: "https://api.kie.ai/api/v1/jobs/createTask",
-          body: {
-            model: "grok-imagine/image-to-video",
-            input: {
-              prompt:
-                "An orange cat walks onto the scene, exploring the " +
-                "props and set pieces, cinematic lighting, smooth motion",
-              image_urls: ["{{background_url}}"],
-              mode: "normal",
-              duration: "6",
-              resolution: "720p",
             },
           },
         },

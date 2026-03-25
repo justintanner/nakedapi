@@ -390,6 +390,11 @@ export class KieError extends Error {
   }
 }
 
+// Download URL request
+export interface DownloadUrlRequest {
+  url: string;
+}
+
 // Download URL response (raw envelope)
 export type DownloadUrlResponse = KieApiEnvelope<string>;
 
@@ -429,7 +434,7 @@ interface KieJobsNamespace {
 }
 
 interface KieCommonNamespace {
-  downloadUrl(url: string): Promise<DownloadUrlResponse>;
+  downloadUrl(req: DownloadUrlRequest): Promise<DownloadUrlResponse>;
 }
 
 interface KieCreditNamespace {

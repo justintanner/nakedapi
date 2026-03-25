@@ -94,7 +94,7 @@ describe("kie provider", () => {
           recordInfo(taskId: string): Promise<KieTaskInfo>;
         };
         common: {
-          downloadUrl(url: string): Promise<DownloadUrlResponse>;
+          downloadUrl(req: { url: string }): Promise<DownloadUrlResponse>;
         };
         chat: {
           credit(): Promise<KieCreditsResponse>;
@@ -352,9 +352,9 @@ describe("kie provider", () => {
 
   it("should get a temporary download URL", async () => {
     const provider = createMockProvider();
-    const result = await provider.api.v1.common.downloadUrl(
-      "https://cdn.kie.ai/files/test-file.mp4"
-    );
+    const result = await provider.api.v1.common.downloadUrl({
+      url: "https://cdn.kie.ai/files/test-file.mp4",
+    });
     expect(result.data).toBe("https://cdn.kie.ai/tmp/download/test-file.mp4");
   });
 

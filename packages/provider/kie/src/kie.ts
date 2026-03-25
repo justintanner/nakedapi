@@ -6,6 +6,7 @@ import {
   MediaType,
   KieError,
   KieCreditsResponse,
+  DownloadUrlRequest,
   DownloadUrlResponse,
   UploadMediaRequest,
   UploadMediaResponse,
@@ -237,7 +238,9 @@ export function kie(opts: KieOptions): KieProvider {
     }
   }
 
-  async function downloadUrl(url: string): Promise<DownloadUrlResponse> {
+  async function downloadUrl(
+    req: DownloadUrlRequest
+  ): Promise<DownloadUrlResponse> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
@@ -248,7 +251,7 @@ export function kie(opts: KieOptions): KieProvider {
           Authorization: `Bearer ${opts.apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify(req),
         signal: controller.signal,
       });
 

@@ -51,6 +51,7 @@ export type {
   KieTaskInfoData,
   KieTaskInfo,
   KieCreditsResponse,
+  DownloadUrlRequest,
   DownloadUrlResponse,
   UploadMediaRequest,
   UploadMediaResponse,

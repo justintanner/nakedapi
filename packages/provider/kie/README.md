@@ -105,9 +105,9 @@ console.log("Uploaded to:", downloadUrl);
 Convert a kie.ai file URL into a temporary downloadable link (valid 20 minutes):
 
 ```typescript
-const { url } = await provider.api.v1.common.downloadUrl(
-  "https://cdn.kie.ai/files/some-generated-video.mp4"
-);
+const { url } = await provider.api.v1.common.downloadUrl({
+  url: "https://cdn.kie.ai/files/some-generated-video.mp4",
+});
 
 console.log("Download from:", url);
 ```
@@ -180,7 +180,7 @@ Creates a Kie provider instance.
 - `provider.api.v1.jobs.createTask(req)`: Creates a media generation task
 - `provider.api.v1.jobs.recordInfo(taskId)`: Returns current task state, progress, and results
 - `provider.api.fileStreamUpload(req)`: Uploads a file and returns a hosted URL
-- `provider.api.v1.common.downloadUrl(url)`: Converts a kie.ai file URL to a temporary download link (20 min)
+- `provider.api.v1.common.downloadUrl(req)`: Converts a kie.ai file URL to a temporary download link (20 min)
 - `provider.api.v1.chat.credit()`: Returns account credit balance
 
 **Local methods:**

@@ -272,6 +272,18 @@ pnpm run build # Build all packages
 pnpm run lint  # Lint
 ```
 
+## Data Shaping Exceptions
+
+Most methods are pure pass-through — your request params are sent as-is and the API response is returned as-is. The following methods shape data on the **input** side before sending. No method shapes data on the output side.
+
+| Transformation | Provider | Method | What happens |
+|---|---|---|---|
+| FormData construction | OpenAI | `v1.audio.transcriptions()` | Builds FormData from params; converts `temperature` to string |
+| FormData construction | xAI | `v1.files.upload()` | Builds FormData from `file` Blob + `filename` |
+| FormData construction | KIE | `api.fileStreamUpload()` | Infers MIME type from filename, generates timestamped upload path, wraps in FormData |
+| Query string | Fal | `v1.models()`, `.pricing()`, `.usage()`, `.analytics()`, `.requests.byEndpoint()` | Converts param objects to URL query strings |
+| Header promotion | Fal | `v1.models.requests.payloads()` | Moves `idempotency_key` from params to `Idempotency-Key` header |
+
 ## License
 
 MIT — See [LICENSE](LICENSE)

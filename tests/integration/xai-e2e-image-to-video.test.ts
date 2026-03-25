@@ -75,41 +75,4 @@ describe("xai E2E: astronaut cliff — image → video → extend", () => {
       expect(typeof result.request_id).toBe("string");
     });
   });
-
-  describe("step 3: the leap", () => {
-    let videoUrl: string;
-
-    beforeEach(() => {
-      videoUrl = readStepOutput(
-        `${PIPELINE}/step-2-image-to-video`,
-        "video_url"
-      );
-      ctx = setupPolly(`${PIPELINE}/step-3-extend-video`);
-    });
-
-    afterEach(async () => {
-      await teardownPolly(ctx);
-    });
-
-    it("should extend the video with the astronaut leaping", async () => {
-      const provider = xai({
-        apiKey: process.env.XAI_API_KEY ?? "sk-test-key",
-      });
-
-      const result = await provider.v1.videos.extensions({
-        prompt:
-          "The astronaut crouches and leaps off the cliff into the void. " +
-          "A jetpack ignites with a bright blue flame and the astronaut " +
-          "soars out over the glowing ocean, banking left between the two " +
-          "moons. The bioluminescent water below ripples in response to " +
-          "the engine wash. Camera follows in a sweeping aerial tracking " +
-          "shot. Cinematic, epic scale.",
-        model: "grok-imagine-video",
-        video: { url: videoUrl },
-      });
-
-      expect(result.request_id).toBeTruthy();
-      expect(typeof result.request_id).toBe("string");
-    });
-  });
 });

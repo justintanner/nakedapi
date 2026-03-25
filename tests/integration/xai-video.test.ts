@@ -165,12 +165,10 @@ describe("xai video integration", () => {
           apiKey: process.env.XAI_API_KEY ?? "sk-test-key",
         });
         const gen = await provider.v1.videos.generations({
-          prompt:
-            "Transform the flowers into glowing neon colors, " +
-            "cyberpunk style with electric blue and pink highlights",
+          prompt: "Change the color of the woman's outfit to red",
           model: "grok-imagine-video",
           video: {
-            url: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+            url: "https://data.x.ai/docs/video-generation/portrait-wave.mp4",
           },
         });
 
@@ -251,10 +249,12 @@ describe("xai video integration", () => {
           apiKey: process.env.XAI_API_KEY ?? "sk-test-key",
         });
         const gen = await provider.v1.videos.extensions({
-          prompt: "The camera pans to reveal a mountain range in the distance",
+          prompt:
+            "The shot pans to an over the shoulder perspective. " +
+            "Calm controlled scene.",
           model: "grok-imagine-video",
           video: {
-            url: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+            url: "https://data.x.ai/docs/video-generation/portrait-wave.mp4",
           },
           duration: 10,
         });

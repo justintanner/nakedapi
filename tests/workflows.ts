@@ -322,7 +322,7 @@ export const workflows: WorkflowDefinition[] = [
               "far below, sending up faint glowing spray. The two moons " +
               "drift higher, their light intensifying. Camera slowly pushes " +
               "in toward the astronaut from behind. Cinematic, slow motion.",
-            image_url: "{{image_url}}",
+            image: { url: "{{image_url}}" },
           },
         },
         outputExtractors: { request_id: "request_id" },
@@ -342,7 +342,7 @@ export const workflows: WorkflowDefinition[] = [
         apiProvider: "xai",
         request: {
           method: "POST",
-          url: "https://api.x.ai/v1/videos/generations",
+          url: "https://api.x.ai/v1/videos/extensions",
           body: {
             model: "grok-imagine-video",
             prompt:
@@ -352,7 +352,7 @@ export const workflows: WorkflowDefinition[] = [
               "two moons. The bioluminescent water below ripples in response " +
               "to the engine wash. Camera follows in a sweeping aerial " +
               "tracking shot. Cinematic, epic scale.",
-            video_url: "{{video_url}}",
+            video: { url: "{{video_url}}" },
           },
         },
         outputExtractors: { request_id: "request_id" },
@@ -478,91 +478,6 @@ export const workflows: WorkflowDefinition[] = [
           ...KIE_ASYNC,
           outputExtractors: {
             image_url: "data.resultJson.resultUrls.0",
-          },
-        },
-      },
-    ],
-  },
-  {
-    id: "ref-character-compare",
-    name: "Reference character: Grok Imagine (xAI) vs Kling 3.0 (KIE)",
-    layout: "compare",
-    setup: {
-      uploads: {
-        cat_url: "public/cat.png",
-        background_url: "public/studio-bg.jpg",
-      },
-    },
-    steps: [
-      {
-        name: "grok-imagine-video",
-        description: "Grok Imagine video (xAI, reference images, 720p, 6s)",
-        apiProvider: "xai",
-        request: {
-          method: "POST",
-          url: "https://api.x.ai/v1/videos/generations",
-          body: {
-            model: "grok-imagine-video",
-            prompt:
-              "The orange tabby cat from <IMAGE_1> jumps onto a " +
-              "monitor on the science fiction movie set from " +
-              "<IMAGE_2>, fixed camera, cinematic lighting",
-            reference_images: [
-              { url: "{{cat_url}}" },
-              { url: "{{background_url}}" },
-            ],
-            duration: 6,
-            aspect_ratio: "16:9",
-            resolution: "720p",
-          },
-        },
-        outputExtractors: { request_id: "request_id" },
-        async: {
-          pollUrl: "https://api.x.ai/v1/videos/{{request_id}}",
-          pollMethod: "GET",
-          completionField: "status",
-          completionValues: ["done"],
-          failureValues: ["failed", "expired"],
-          progressField: "progress",
-          outputExtractors: { video_url: "video.url" },
-        },
-      },
-      {
-        name: "kling-3.0",
-        description: "Kling 3.0 Video Pro (KIE, elements, 16:9, 5s)",
-        apiProvider: "kie",
-        request: {
-          method: "POST",
-          url: "https://api.kie.ai/api/v1/jobs/createTask",
-          body: {
-            model: "kling-3.0/video",
-            input: {
-              prompt:
-                "An orange cat jumps onto a monitor on a science " +
-                "fiction movie set, fixed camera, " +
-                "cinematic lighting@element_cat",
-              image_urls: ["{{background_url}}"],
-              kling_elements: [
-                {
-                  name: "element_cat",
-                  description: "orange tabby cat",
-                  element_input_urls: ["{{cat_url}}", "{{cat_url}}"],
-                },
-              ],
-              mode: "pro",
-              duration: "3",
-              aspect_ratio: "16:9",
-              sound: false,
-              multi_shots: false,
-              multi_prompt: [],
-            },
-          },
-        },
-        outputExtractors: { task_id: "data.taskId" },
-        async: {
-          ...KIE_ASYNC,
-          outputExtractors: {
-            video_url: "data.resultJson.resultUrls.0",
           },
         },
       },

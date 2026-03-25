@@ -103,26 +103,28 @@ export interface XaiImageResponse {
   data: XaiGeneratedImage[];
 }
 
-// Video generation request
+// Video reference (image-to-video, editing, extension, reference images)
+export interface XaiVideoReference {
+  url: string;
+}
+
+// Video generation request — matches API body for /v1/videos/generations
 export interface XaiVideoGenerateRequest {
   prompt: string;
   model?: string;
   duration?: number;
   aspect_ratio?: "1:1" | "16:9" | "9:16" | "4:3" | "3:4" | "3:2" | "2:3";
   resolution?: "480p" | "720p";
-  image_url?: string;
-  video_url?: string;
+  image?: XaiVideoReference;
+  video?: XaiVideoReference;
+  reference_images?: XaiVideoReference[];
 }
 
-// Video reference for editing
-export interface XaiVideoReference {
-  url: string;
-}
-
-// Video editing request
-export interface XaiVideoEditRequest {
+// Video extension request — matches API body for /v1/videos/extensions
+export interface XaiVideoExtendRequest {
   prompt: string;
   model?: string;
+  duration?: number;
   video: XaiVideoReference;
 }
 
@@ -174,8 +176,8 @@ interface XaiVideosNamespace {
     req: XaiVideoGenerateRequest,
     signal?: AbortSignal
   ): Promise<XaiVideoAsyncResponse>;
-  edits(
-    req: XaiVideoEditRequest,
+  extensions(
+    req: XaiVideoExtendRequest,
     signal?: AbortSignal
   ): Promise<XaiVideoAsyncResponse>;
 }

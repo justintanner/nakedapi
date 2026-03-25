@@ -68,7 +68,7 @@ describe("xai E2E: astronaut cliff — image → video → extend", () => {
           "higher, their light intensifying. Camera slowly pushes in " +
           "toward the astronaut from behind. Cinematic, slow motion.",
         model: "grok-imagine-video",
-        image_url: imageUrl,
+        image: { url: imageUrl },
       });
 
       expect(result.request_id).toBeTruthy();
@@ -96,7 +96,7 @@ describe("xai E2E: astronaut cliff — image → video → extend", () => {
         apiKey: process.env.XAI_API_KEY ?? "sk-test-key",
       });
 
-      const result = await provider.v1.videos.generations({
+      const result = await provider.v1.videos.extensions({
         prompt:
           "The astronaut crouches and leaps off the cliff into the void. " +
           "A jetpack ignites with a bright blue flame and the astronaut " +
@@ -105,7 +105,7 @@ describe("xai E2E: astronaut cliff — image → video → extend", () => {
           "the engine wash. Camera follows in a sweeping aerial tracking " +
           "shot. Cinematic, epic scale.",
         model: "grok-imagine-video",
-        video_url: videoUrl,
+        video: { url: videoUrl },
       });
 
       expect(result.request_id).toBeTruthy();

@@ -496,7 +496,7 @@ export const workflows: WorkflowDefinition[] = [
     steps: [
       {
         name: "grok-imagine-video",
-        description: "Grok Imagine video (xAI, image-to-video, 720p, 6s)",
+        description: "Grok Imagine video (xAI, reference images, 720p, 6s)",
         apiProvider: "xai",
         request: {
           method: "POST",
@@ -504,11 +504,16 @@ export const workflows: WorkflowDefinition[] = [
           body: {
             model: "grok-imagine-video",
             prompt:
-              "An orange tabby cat walks onto a science fiction movie " +
-              "set, sniffing at props and exploring the scene, " +
-              "cinematic lighting, smooth natural motion",
-            image_url: "{{background_url}}",
+              "The orange tabby cat from <IMAGE_1> walks onto the " +
+              "science fiction movie set from <IMAGE_2>, sniffing at " +
+              "props and exploring the scene, cinematic lighting, " +
+              "smooth natural motion",
+            reference_images: [
+              { url: "{{cat_url}}" },
+              { url: "{{background_url}}" },
+            ],
             duration: 6,
+            aspect_ratio: "16:9",
             resolution: "720p",
           },
         },

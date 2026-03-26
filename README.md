@@ -12,6 +12,7 @@ Standalone-first TypeScript AI provider packages. Each is self-contained with ze
 - **Middleware** — retry with backoff, multi-provider fallback
 - **Edge Compatible** — Node.js, Cloudflare Workers, Deno
 - **Strict TypeScript** — 100% typed, zero `any`
+- **Payload Validation** — per-endpoint schema and runtime validation
 - **Polly.js Harness** — record/replay integration tests with review UI
 
 ## Architecture
@@ -338,6 +339,93 @@ const response = await chat({
   messages: [{ role: "user", content: "Summarize this repo." }],
   maxTokens: 1024,
 });
+```
+
+## Payload Schema & Validation
+
+Every POST endpoint exposes `.payloadSchema` and `.validatePayload(data)` directly on the endpoint function. Schemas are hardcoded and describe the expected request body fields, types, and constraints.
+
+### Inspecting the Schema
+
+```typescript
+import { xai as createXai } from "@nakedapi/xai";
+
+const xai = createXai({ apiKey: process.env.XAI_API_KEY! });
+
+const schema = xai.v1.chat.completions.payloadSchema;
+// => {
+//   method: "POST",
+//   path: "/chat/completions",
+//   contentType: "application/json",
+//   fields: {
+//     messages: { type: "array", required: true, ... },
+//     model: { type: "string", ... },
+//     temperature: { type: "number", ... },
+//     ...
+//   }
+// }
+```
+
+### Validating Before Calling
+
+```typescript
+const result = xai.v1.chat.completions.validatePayload({
+  messages: [{ role: "user", content: "Hello!" }],
+});
+// => { valid: true, errors: [] }
+
+const bad = xai.v1.chat.completions.validatePayload({});
+// => { valid: false, errors: ["messages is required"] }
+```
+
+### Works on Every POST Endpoint
+
+```typescript
+// OpenAI
+openai.v1.chat.completions.payloadSchema;
+openai.v1.audio.transcriptions.validatePayload(data);
+
+// xAI
+xai.v1.images.generations.payloadSchema;
+xai.v1.videos.extensions.validatePayload(data);
+
+// Fal
+fal.v1.models.pricing.estimate.payloadSchema;
+
+// KimiCoding (messages + stream share the same schema)
+kimicoding.coding.v1.messages.payloadSchema;
+kimicoding.coding.v1.messages.stream.validatePayload(data);
+
+// KIE (core + sub-providers)
+kie.api.v1.jobs.createTask.payloadSchema;
+kie.api.v1.common.downloadUrl.validatePayload(data);
+kie.veo.api.v1.veo.generate.payloadSchema;
+kie.suno.api.v1.generate.payloadSchema;
+kie.chat.gpt52.v1.chat.completions.payloadSchema;
+```
+
+### Validation Checks
+
+The validator performs the following checks recursively:
+
+- **Required fields** — reports missing fields marked `required: true`
+- **Type checking** — verifies `string`, `number`, `boolean`, `array`, `object`
+- **Enum values** — rejects values not in the allowed list
+- **Nested objects** — validates `properties` within object fields
+- **Array items** — validates each element against `items` schema
+
+GET-only endpoints (e.g. `xai.v1.models()`, `fal.v1.models()`) do not carry `.payloadSchema` or `.validatePayload` since they have no request body.
+
+### Types
+
+Each package exports `PayloadSchema`, `PayloadFieldSchema`, and `ValidationResult`:
+
+```typescript
+import type {
+  PayloadSchema,
+  PayloadFieldSchema,
+  ValidationResult,
+} from "@nakedapi/xai";
 ```
 
 ## Testing

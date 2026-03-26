@@ -11,7 +11,7 @@
   ::-webkit-scrollbar-thumb { background: #45475a; border-radius: 6px; border: 3px solid transparent; background-clip: padding-box; }
   ::-webkit-scrollbar-thumb:hover { background: #585b70; }
   ::-webkit-scrollbar-corner { background: #11111b; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; background: #1e1e2e; color: #cdd6f4; height: 100vh; display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; background: #1e1e2e; color: #cdd6f4; height: 100vh; display: grid; grid-template-rows: auto auto 1fr; overflow: hidden; }
 
   /* Topbar */
   #topbar { display: flex; align-items: center; padding: 8px 16px; background: #181825; border-bottom: 1px solid #313244; gap: 8px; flex-shrink: 0; z-index: 100; }
@@ -25,31 +25,23 @@
   #test-selector-btn:hover { background: #45475a; }
   #test-selector-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; text-align: left; }
   .selector-arrow { font-size: 10px; flex-shrink: 0; }
-  #test-selector-dropdown { position: absolute; top: 100%; left: 0; margin-top: 4px; background: #181825; border: 1px solid #45475a; border-radius: 8px; min-width: 340px; max-width: 520px; max-height: 70vh; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 200; }
+  #test-selector-dropdown { position: absolute; top: 100%; left: 0; margin-top: 4px; background: #181825; border: 1px solid #45475a; border-radius: 8px; min-width: 480px; max-width: 680px; max-height: 70vh; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 200; }
   #test-selector-dropdown.hidden { display: none; }
   .dd-section { padding: 6px 12px; font-size: 11px; color: #6c7086; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
-  .dd-item { padding: 6px 12px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; border-left: 3px solid transparent; flex-wrap: wrap; }
+  .dd-item { padding: 6px 12px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; border-left: 3px solid transparent; flex-wrap: wrap; white-space: nowrap; }
   .dd-endpoint { font-size: 11px; color: #6c7086; width: 100%; padding-left: 14px; margin-top: -2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .dd-item:hover { background: #313244; }
   .dd-item.active { background: #313244; border-left-color: #89b4fa; }
-  .dd-pipe-label { padding: 6px 12px 6px 20px; font-size: 12px; color: #cba6f7; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-  .dd-pipe-label:hover { background: #313244; }
-  .dd-pipe-step { padding: 6px 12px 6px 36px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 8px; border-left: 3px solid transparent; flex-wrap: wrap; }
-  .dd-pipe-step:hover { background: #313244; }
-  .dd-pipe-step.active { background: #313244; border-left-color: #cba6f7; }
-  .dd-pipe-hidden { display: none; }
-  .dd-wf-item { padding: 6px 12px 6px 28px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 8px; border-left: 3px solid transparent; flex-wrap: wrap; }
-  .dd-wf-item:hover { background: #313244; }
-  .dd-wf-item.active { background: #313244; border-left-color: #cba6f7; }
-  .dd-wf-item.locked { opacity: 0.5; cursor: default; }
-  .dd-arrow { font-size: 10px; transition: transform 0.15s; display: inline-block; }
-  .dd-arrow.collapsed { transform: rotate(-90deg); }
+  .dd-item.locked { opacity: 0.5; cursor: default; }
 
-  /* Columns */
-  #columns { display: grid; overflow: hidden; min-height: 0; }
-  .column { overflow-y: auto; padding: 16px; min-width: 0; }
-  .resize-handle { background: #313244; cursor: col-resize; position: relative; transition: background 0.15s; }
-  .resize-handle:hover, .resize-handle.dragging { background: #89b4fa; }
+  /* Metadata bar */
+  #rec-meta { padding: 6px 16px; background: #181825; border-bottom: 1px solid #313244; font-size: 12px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  #rec-meta.hidden { display: none; }
+
+  /* Columns — horizontal flex of transaction columns */
+  #columns { display: flex; overflow-x: auto; overflow-y: hidden; min-height: 0; gap: 1px; background: #313244; }
+  .txn-col { flex: 1 0 600px; max-width: 100%; overflow-y: auto; padding: 16px; background: #1e1e2e; min-width: 0; }
+  .txn-col:only-child { flex: 1 0 0; max-width: none; }
 
   /* Dots */
   .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
@@ -71,7 +63,6 @@
   /* Entry cards */
   .entry-card { background: #181825; border: 1px solid #313244; border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
   .entry-header { padding: 8px 12px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #313244; background: #11111b; font-size: 13px; }
-  .entry-num { background: #89b4fa; color: #1e1e2e; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
   .entry-label { color: #cdd6f4; font-weight: 600; }
   .entry-status { margin-left: auto; color: #a6adc8; font-size: 12px; }
   .headers-details { margin: 0; }
@@ -137,48 +128,19 @@
   .progress-bar { background: #313244; border-radius: 4px; height: 8px; margin: 8px 0; overflow: hidden; }
   .progress-fill { background: #89b4fa; height: 100%; transition: width 0.3s; }
 
-  /* Info column */
-  .info-section { margin-bottom: 16px; }
-  .info-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #6c7086; margin-bottom: 4px; }
-  .info-model { display: inline-block; background: #cba6f7; color: #1e1e2e; padding: 2px 10px; border-radius: 4px; font-size: 13px; font-weight: 600; }
-  .info-endpoint { font-family: monospace; font-size: 12px; color: #89b4fa; margin-top: 4px; }
-  .info-prompt { font-size: 14px; line-height: 1.6; color: #cdd6f4; background: #11111b; padding: 12px; border-radius: 6px; white-space: pre-wrap; word-break: break-word; }
-  .info-prompt .role-tag { display: inline-block; background: #313244; color: #a6adc8; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
-  .info-params { display: flex; flex-wrap: wrap; gap: 6px; }
-  .info-param { background: #313244; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
-  .info-param .pk { color: #6c7086; }
-  .info-param .pv { color: #cdd6f4; }
-  .info-asset { max-width: 100%; max-height: 200px; border-radius: 6px; border: 1px solid #313244; margin: 4px 0; display: block; }
-  .info-entries-note { font-size: 11px; color: #6c7086; margin-top: 4px; }
+  /* Info model badge */
+  .info-model { display: inline-block; background: #cba6f7; color: #1e1e2e; padding: 1px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
 
-  /* Compare grid */
-  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .compare-cell { background: #181825; border-radius: 8px; padding: 16px; border: 1px solid #313244; display: flex; flex-direction: column; }
+  /* Compare cell */
+  .compare-cell { margin-bottom: 12px; }
   .compare-cell .model-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
   .compare-cell .model-name { font-size: 14px; font-weight: 600; color: #cba6f7; }
   .compare-cell .model-desc { font-size: 11px; color: #6c7086; margin-bottom: 8px; }
   .compare-cell .compare-image { max-width: 100%; border-radius: 6px; border: 1px solid #313244; margin-top: 8px; }
   .compare-cell .cell-status { font-size: 12px; color: #a6adc8; margin-top: 4px; }
-  #columns.compare-mode #col-responses { display: none; }
-  #columns.compare-mode #resize-2 { display: none; }
 
-  /* Alignment spacer */
-  .alignment-spacer { flex-shrink: 0; }
-
-  /* Pipeline context */
-  .pipeline-context { padding: 8px 12px; background: #11111b; border: 1px solid #313244; border-radius: 6px; margin-bottom: 12px; font-size: 12px; color: #a6adc8; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-  .pipeline-context .pipe-name { color: #cba6f7; font-weight: 600; }
-  .pipeline-context .pipe-step { color: #89b4fa; }
-  .pipeline-context .pipe-input { color: #a6e3a1; }
-
-  /* Workflow step list in info column */
-  .wf-step-list { list-style: none; padding: 0; }
-  .wf-step-item { padding: 6px 8px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 8px; border-radius: 4px; border-left: 3px solid transparent; }
-  .wf-step-item:hover { background: #313244; }
-  .wf-step-item.active { background: #313244; border-left-color: #cba6f7; }
-  .wf-step-item.locked { opacity: 0.5; cursor: default; }
-  .wf-step-item .step-num { color: #6c7086; font-size: 11px; min-width: 16px; }
-  .step-description { color: #a6adc8; font-size: 12px; font-style: italic; margin-bottom: 12px; }
+  /* Poll entry within poll history */
+  .poll-entry { border-top: 1px solid #313244; padding: 8px 12px; }
 
   /* Empty state */
   .empty { padding: 40px; text-align: center; color: #6c7086; font-size: 14px; }
@@ -209,27 +171,19 @@
     <span id="branding">NakedAPI</span>
   </div>
 </header>
-<div id="columns">
-  <div id="col-info" class="column"><div class="empty">Select a recording</div></div>
-  <div class="resize-handle" id="resize-1"></div>
-  <div id="col-requests" class="column"></div>
-  <div class="resize-handle" id="resize-2"></div>
-  <div id="col-responses" class="column"></div>
-</div>
+<div id="rec-meta" class="hidden"></div>
+<div id="columns"></div>
 <script>
 /* === State === */
 var recordings = [];
 var selected = null;
 var renderGeneration = 0;
-var collapsedPipelines = {};
 var e2eOutputs = {};
 var lastRefreshResult = null;
 var workflowData = [];
 var selectedWorkflow = null;
 var selectedWfStep = null;
-var collapsedWorkflows = {};
 var dropdownOpen = false;
-var alignObserver = null;
 
 /* === Data Loading === */
 function loadE2EOutputs() {
@@ -301,6 +255,26 @@ function entryLabel(entry) {
   } catch(e) { return entry.request.method; }
 }
 
+function groupTransactions(entries) {
+  var groups = [];
+  for (var i = 0; i < entries.length; i++) {
+    var entry = entries[i];
+    var key;
+    try {
+      var u = new URL(entry.request.url);
+      key = entry.request.method + " " + u.pathname;
+    } catch(e) {
+      key = entry.request.method + " " + entry.request.url;
+    }
+    if (groups.length > 0 && groups[groups.length - 1].key === key) {
+      groups[groups.length - 1].entries.push(entry);
+    } else {
+      groups.push({ key: key, entries: [entry] });
+    }
+  }
+  return groups;
+}
+
 function getVideoRequestId(rec) {
   for (var i = 0; i < rec.entries.length; i++) {
     var entry = rec.entries[i];
@@ -354,7 +328,6 @@ function syntaxHighlight(json) {
 }
 
 function inlineMediaPreviews(html) {
-  // b64_json keys (xAI image responses)
   html = html.replace(
     /(<span class="json-key">"b64_json"<\/span>:\s*<span class="json-str">")(([A-Za-z0-9+\/=]{40})([A-Za-z0-9+\/=]*))"<\/span>/g,
     function(match, prefix, fullB64, first40) {
@@ -363,7 +336,6 @@ function inlineMediaPreviews(html) {
         '<img class="b64-img-preview" src="data:' + mime + ';base64,' + fullB64 + '">';
     }
   );
-  // "data" keys with 100+ base64 chars
   html = html.replace(
     /(<span class="json-key">"data"<\/span>:\s*<span class="json-str">")(([A-Za-z0-9+\/=]{100,}))"<\/span>/g,
     function(match, prefix, fullB64) {
@@ -373,7 +345,6 @@ function inlineMediaPreviews(html) {
         '<img class="b64-img-preview" src="data:' + mime + ';base64,' + fullB64 + '">';
     }
   );
-  // "url" keys with data:image URIs
   html = html.replace(
     /(<span class="json-key">"url"<\/span>:\s*<span class="json-str">")(data:image\/[a-z+]+;base64,([A-Za-z0-9+\/=]{40})([A-Za-z0-9+\/=]*))"<\/span>/g,
     function(match, prefix, fullUri) {
@@ -381,56 +352,48 @@ function inlineMediaPreviews(html) {
         '<img class="b64-img-preview" src="' + fullUri + '">';
     }
   );
-  // "url" keys with HTTP image URLs
   html = html.replace(
     /(<span class="json-key">"url"<\/span>:\s*<span class="json-str">")(https?:\/\/[^"]*\.(?:jpe?g|png|gif|webp|svg)(?:[^"]*)?)"<\/span>/gi,
     function(match, prefix, fullUrl) {
       return prefix + fullUrl + '"</span><img class="b64-img-preview" src="' + fullUrl + '">';
     }
   );
-  // "url" keys with HTTP video URLs
   html = html.replace(
     /(<span class="json-key">"url"<\/span>:\s*<span class="json-str">")(https?:\/\/[^"]*\.(?:mp4|webm|mov|ogg)(?:[^"]*)?)"<\/span>/gi,
     function(match, prefix, fullUrl) {
       return prefix + fullUrl + '"</span><video class="video-preview" controls src="' + fullUrl + '"></video>';
     }
   );
-  // "video_url" keys with HTTP URLs
   html = html.replace(
     /(<span class="json-key">"video_url"<\/span>:\s*<span class="json-str">")(https?:\/\/[^"]*)"<\/span>/gi,
     function(match, prefix, fullUrl) {
       return prefix + fullUrl + '"</span><video class="video-preview" controls src="' + fullUrl + '"></video>';
     }
   );
-  // "url" keys with HTTP audio URLs
   html = html.replace(
     /(<span class="json-key">"url"<\/span>:\s*<span class="json-str">")(https?:\/\/[^"]*\.(?:mp3|wav|flac|aac)(?:[^"]*)?)"<\/span>/gi,
     function(match, prefix, fullUrl) {
       return prefix + fullUrl + '"</span><audio class="audio-preview" controls src="' + fullUrl + '"></audio>';
     }
   );
-  // Generic image URLs in any string value
   html = html.replace(
     /(<span class="json-str">")(https?:\/\/[^"]*\.(?:jpe?g|png|gif|webp|svg)(?:\?[^"]*)?)"<\/span>(?!<img)/gi,
     function(match, prefix, fullUrl) {
       return prefix + fullUrl + '"</span><img class="b64-img-preview" src="' + fullUrl + '">';
     }
   );
-  // Generic video URLs in any string value
   html = html.replace(
     /(<span class="json-str">")(https?:\/\/[^"]*\.(?:mp4|webm|mov)(?:\?[^"]*)?)"<\/span>(?!<video)/gi,
     function(match, prefix, fullUrl) {
       return prefix + fullUrl + '"</span><video class="video-preview" controls src="' + fullUrl + '"></video>';
     }
   );
-  // Generic audio URLs in any string value
   html = html.replace(
     /(<span class="json-str">")(https?:\/\/[^"]*\.(?:mp3|wav|flac|aac)(?:\?[^"]*)?)"<\/span>(?!<audio)/gi,
     function(match, prefix, fullUrl) {
       return prefix + fullUrl + '"</span><audio class="audio-preview" controls src="' + fullUrl + '"></audio>';
     }
   );
-  // "task_id" / "taskId" keys — clickable preview
   html = html.replace(
     /(<span class="json-key">"task_?[iI]d"<\/span>:\s*<span class="json-str">")(([a-f0-9]{20,}))"<\/span>/gi,
     function(match, prefix, taskId) {
@@ -439,7 +402,6 @@ function inlineMediaPreviews(html) {
         '<div class="task-id-result" data-for="' + taskId + '"></div>';
     }
   );
-  // "url" keys with HTTP URLs, no recognized extension — try as image
   html = html.replace(
     /(<span class="json-key">"url"<\/span>:\s*<span class="json-str">")(https?:\/\/[^"]+)"<\/span>(?!<img|<video|<audio)/gi,
     function(match, prefix, fullUrl) {
@@ -584,29 +546,34 @@ function autoEvalKieTaskIds(gen) {
   });
 }
 
-function autoEvalFromResponse(rec, entryIdx, gen) {
-  var entry = rec.entries[entryIdx];
-  if (!entry) return;
-  try {
-    var body = JSON.parse(entry.response.content.text || "{}");
-    var taskId = body.data && body.data.taskId;
-    if (!taskId) return;
-    var resultDiv = document.getElementById("check-result-" + entryIdx);
-    if (resultDiv) checkKieTask(taskId, resultDiv, gen);
-  } catch(e) {}
+function autoEvalFromGroups(groups, gen) {
+  for (var g = 0; g < groups.length; g++) {
+    var lastEntry = groups[g].entries[groups[g].entries.length - 1];
+    try {
+      var body = JSON.parse(lastEntry.response.content.text || "{}");
+      var taskId = body.data && body.data.taskId;
+      if (!taskId) continue;
+      var resultDiv = document.getElementById("check-result-" + g);
+      if (resultDiv) checkKieTask(taskId, resultDiv, gen);
+    } catch(e) {}
+  }
 }
 
-function autoEvalXaiVideo(rec, gen) {
+function autoEvalXaiVideo(rec, groups, gen) {
   var reqId = getVideoRequestId(rec);
   if (!reqId) return;
-  var targetIdx = rec.entries.length - 1;
-  for (var i = 0; i < rec.entries.length; i++) {
-    var url = rec.entries[i].request.url || "";
-    if (url.indexOf("/videos/generations") !== -1 || url.indexOf("/videos/edits") !== -1) {
-      targetIdx = i; break;
+  // Find which group contains the video generation request
+  var targetGroup = 0;
+  for (var g = 0; g < groups.length; g++) {
+    for (var i = 0; i < groups[g].entries.length; i++) {
+      var url = groups[g].entries[i].request.url || "";
+      if (url.indexOf("/videos/generations") !== -1 || url.indexOf("/videos/edits") !== -1) {
+        targetGroup = g;
+        break;
+      }
     }
   }
-  var resultDiv = document.getElementById("check-result-" + targetIdx);
+  var resultDiv = document.getElementById("check-result-" + targetGroup);
   if (!resultDiv) return;
   resultDiv.innerHTML = '<span style="color:#a6adc8;font-size:12px">Loading video status...</span>';
   fetch("/api/check-video", {
@@ -650,8 +617,6 @@ function extractInfo(rec) {
   try {
     var body = JSON.parse(entry.request.postData.text);
     info.model = body.model || null;
-
-    // Messages (OpenAI/Anthropic format)
     if (body.messages && Array.isArray(body.messages)) {
       for (var i = 0; i < body.messages.length; i++) {
         var msg = body.messages[i];
@@ -676,17 +641,12 @@ function extractInfo(rec) {
         }
       }
     }
-
-    // Top-level prompt
     if (body.prompt && typeof body.prompt === "string") {
       info.prompts.push({ role: "prompt", text: body.prompt });
     }
-    // input.prompt (KIE)
     if (body.input && body.input.prompt) {
       info.prompts.push({ role: "prompt", text: body.input.prompt });
     }
-
-    // Assets
     if (body.image && body.image.url) info.assets.push(body.image.url);
     if (body.reference_images && Array.isArray(body.reference_images)) {
       for (var k = 0; k < body.reference_images.length; k++) {
@@ -698,8 +658,6 @@ function extractInfo(rec) {
         info.assets.push(body.input.image_urls[k2]);
       }
     }
-
-    // Params
     var skipKeys = { messages: 1, prompt: 1, model: 1, image: 1, input: 1, reference_images: 1 };
     for (var pk in body) {
       if (!skipKeys[pk] && body.hasOwnProperty(pk)) info.params[pk] = body[pk];
@@ -715,241 +673,103 @@ function extractInfo(rec) {
 }
 
 /* === Column Renderers === */
-function renderInfoColumn(rec) {
-  var col = document.getElementById("col-info");
-  var info = extractInfo(rec);
-  var dn = displayName(rec.name);
-  var html = "";
+function renderTransactionColumn(group, groupIdx) {
+  var first = group.entries[0];
+  var last = group.entries[group.entries.length - 1];
+  var req = first.request;
+  var label = entryLabel(first);
+  var html = '';
 
-  // Title & status
-  html += '<div class="info-section">';
-  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">';
-  html += '<span class="dot ' + rec.gitStatus + '"></span>';
-  html += '<span style="font-size:14px;font-weight:600">' + escapeHtml(dn.test) + '</span>';
-  if (rec.gitStatus !== "clean") html += '<span class="review-badge needs-review">review</span>';
+  // Request section
+  html += '<div class="pane-label">Request</div>';
+  html += '<div class="entry-card">';
+  html += '<div class="entry-header">';
+  html += '<span class="entry-label">' + escapeHtml(label) + '</span>';
   html += '</div>';
+  html += '<details class="headers-details"><summary>Headers (' + req.headers.length + ')</summary>';
+  html += renderHeaders(req.headers);
+  html += '</details>';
+  if (req.postData && req.postData.text) {
+    var bodyText = tryParseJson(req.postData.text);
+    html += wrapBody(bodyText, inlineMediaPreviews(syntaxHighlight(bodyText)));
+  }
   html += '</div>';
 
-  // Model & endpoint
-  if (info.model || info.endpoint) {
-    html += '<div class="info-section">';
-    if (info.model) {
-      html += '<div class="info-label">Model</div>';
-      html += '<span class="info-model">' + escapeHtml(info.model) + '</span>';
-    }
-    if (info.endpoint) html += '<div class="info-endpoint">' + escapeHtml(info.endpoint) + '</div>';
-    html += '</div>';
-  }
+  // Response section
+  html += '<div class="pane-label" style="margin-top:16px">Response</div>';
 
-  // Prompts
-  if (info.prompts.length) {
-    html += '<div class="info-section">';
-    html += '<div class="info-label">Prompt</div>';
-    for (var i = 0; i < info.prompts.length; i++) {
-      var p = info.prompts[i];
-      html += '<div class="info-prompt"><div class="role-tag">' + escapeHtml(p.role) + '</div><br>' + escapeHtml(p.text) + '</div>';
-      if (i < info.prompts.length - 1) html += '<div style="height:8px"></div>';
-    }
-    html += '</div>';
-  }
-
-  // Assets
-  if (info.assets.length) {
-    html += '<div class="info-section">';
-    html += '<div class="info-label">Assets (' + info.assets.length + ')</div>';
-    for (var a = 0; a < info.assets.length; a++) {
-      html += '<img class="info-asset" src="' + info.assets[a] + '" onerror="this.style.display=&apos;none&apos;">';
-    }
-    html += '</div>';
-  }
-
-  // Params
-  var paramKeys = Object.keys(info.params);
-  if (paramKeys.length) {
-    html += '<div class="info-section">';
-    html += '<div class="info-label">Parameters</div>';
-    html += '<div class="info-params">';
-    for (var pi = 0; pi < paramKeys.length; pi++) {
-      var pKey = paramKeys[pi];
-      var pVal = info.params[pKey];
-      var pStr = typeof pVal === "object" ? JSON.stringify(pVal) : String(pVal);
-      if (pStr.length > 60) pStr = pStr.substring(0, 57) + "...";
-      html += '<span class="info-param"><span class="pk">' + escapeHtml(pKey) + ':</span> <span class="pv">' + escapeHtml(pStr) + '</span></span>';
-    }
-    html += '</div></div>';
-  }
-
-  // Entry count
-  if (rec.entries.length > 1) {
-    html += '<div class="info-entries-note">' + rec.entries.length + ' HTTP entries in this recording</div>';
-  }
-
-  // Pipeline context for E2E
-  var parsed = parseE2EStep(rec.name);
-  if (parsed) {
-    var pipeSteps = [];
-    for (var si = 0; si < recordings.length; si++) {
-      var pp = parseE2EStep(recordings[si].name);
-      if (pp && pp.pipeline === parsed.pipeline && pp.provider === parsed.provider) pipeSteps.push(pp);
-    }
-    html += '<div class="pipeline-context">';
-    html += '<span class="pipe-name">e2e-' + escapeHtml(parsed.pipeline) + '</span>';
-    html += '<span class="pipe-step">Step ' + parsed.stepNum + ' of ' + pipeSteps.length + ': ' + escapeHtml(parsed.stepName) + '</span>';
-    if (parsed.stepNum > 1) {
-      var prevKey = parsed.provider + "/e2e-" + parsed.pipeline + "/step-" + (parsed.stepNum - 1);
-      for (var epk in e2eOutputs) {
-        if (epk.indexOf(prevKey) === 0 || epk === prevKey) {
-          var prevOut = e2eOutputs[epk];
-          var inputKeys = Object.keys(prevOut);
-          if (inputKeys.length) {
-            html += '<span class="pipe-input">Input: ' + inputKeys.join(", ") + ' from step ' + (parsed.stepNum - 1) + '</span>';
-          }
-          break;
-        }
-      }
-    }
-    html += '</div>';
-  }
-
-  col.innerHTML = html;
-}
-
-function renderRequestColumn(rec) {
-  var col = document.getElementById("col-requests");
-  var html = '<div class="pane-label">Requests (' + rec.entries.length + ')</div>';
-
-  for (var i = 0; i < rec.entries.length; i++) {
-    var entry = rec.entries[i];
-    var req = entry.request;
-    var label = entryLabel(entry);
-    var status = entry.response.status + " " + entry.response.statusText;
-
-    html += '<div class="entry-card" id="entry-req-' + i + '">';
+  if (group.entries.length === 1) {
+    var res = first.response;
+    html += '<div class="entry-card">';
     html += '<div class="entry-header">';
-    html += '<span class="entry-num">' + (i + 1) + '</span>';
-    html += '<span class="entry-label">' + escapeHtml(label) + '</span>';
-    html += '<span class="entry-status">' + escapeHtml(status) + '</span>';
-    html += '</div>';
-
-    html += '<details class="headers-details"><summary>Headers (' + req.headers.length + ')</summary>';
-    html += renderHeaders(req.headers);
-    html += '</details>';
-
-    if (req.postData && req.postData.text) {
-      var bodyText = tryParseJson(req.postData.text);
-      html += wrapBody(bodyText, inlineMediaPreviews(syntaxHighlight(bodyText)));
-    }
-
-    html += '</div>';
-  }
-
-  col.innerHTML = html;
-}
-
-function renderResponseColumn(rec) {
-  var col = document.getElementById("col-responses");
-  var html = '<div class="pane-label">Responses (' + rec.entries.length + ')</div>';
-
-  for (var i = 0; i < rec.entries.length; i++) {
-    var entry = rec.entries[i];
-    var res = entry.response;
-
-    html += '<div class="alignment-spacer" id="spacer-res-' + i + '"></div>';
-    html += '<div class="entry-card" id="entry-res-' + i + '">';
-    html += '<div class="entry-header">';
-    html += '<span class="entry-num" style="background:#a6e3a1">' + (i + 1) + '</span>';
     html += '<span class="entry-label">' + res.status + ' ' + escapeHtml(res.statusText) + '</span>';
     html += '</div>';
-
     html += '<details class="headers-details"><summary>Headers (' + res.headers.length + ')</summary>';
     html += renderHeaders(res.headers);
     html += '</details>';
-
     if (res.content && res.content.text) {
-      var bodyText = tryParseJson(res.content.text);
-      html += wrapBody(bodyText, inlineMediaPreviews(syntaxHighlight(bodyText)));
+      var resBodyText = tryParseJson(res.content.text);
+      html += wrapBody(resBodyText, inlineMediaPreviews(syntaxHighlight(resBodyText)));
     }
-
-    html += '<div id="check-result-' + i + '"></div>';
+    html += '<div id="check-result-' + groupIdx + '"></div>';
+    html += '</div>';
+  } else {
+    // Polling: show final response prominently, poll history collapsed
+    var finalRes = last.response;
+    html += '<div class="entry-card">';
+    html += '<div class="entry-header">';
+    html += '<span class="entry-label">' + finalRes.status + ' ' + escapeHtml(finalRes.statusText) + '</span>';
+    html += '<span class="entry-status">' + group.entries.length + ' polls</span>';
+    html += '</div>';
+    html += '<details class="headers-details"><summary>Headers (' + finalRes.headers.length + ')</summary>';
+    html += renderHeaders(finalRes.headers);
+    html += '</details>';
+    if (finalRes.content && finalRes.content.text) {
+      var finalBodyText = tryParseJson(finalRes.content.text);
+      html += wrapBody(finalBodyText, inlineMediaPreviews(syntaxHighlight(finalBodyText)));
+    }
+    html += '<div id="check-result-' + groupIdx + '"></div>';
+    html += '<details class="headers-details"><summary>Poll History (' + (group.entries.length - 1) + ' intermediate)</summary>';
+    for (var p = 0; p < group.entries.length - 1; p++) {
+      var pollRes = group.entries[p].response;
+      html += '<div class="poll-entry">';
+      html += '<span style="color:#6c7086;font-size:11px">Poll ' + (p + 1) + ': ' + pollRes.status + ' ' + escapeHtml(pollRes.statusText) + '</span>';
+      if (pollRes.content && pollRes.content.text) {
+        var pBody = tryParseJson(pollRes.content.text);
+        html += '<pre class="body" style="font-size:11px;max-height:100px">' + syntaxHighlight(pBody) + '</pre>';
+      }
+      html += '</div>';
+    }
+    html += '</details>';
     html += '</div>';
   }
 
-  col.innerHTML = html;
+  return html;
 }
 
-function alignResponses(entryCount) {
-  requestAnimationFrame(function() {
-    for (var i = 0; i < entryCount; i++) {
-      var sp = document.getElementById("spacer-res-" + i);
-      if (sp) sp.style.height = "0px";
-    }
-    for (var i = 0; i < entryCount; i++) {
-      var reqCard = document.getElementById("entry-req-" + i);
-      var resCard = document.getElementById("entry-res-" + i);
-      var spacer = document.getElementById("spacer-res-" + i);
-      if (!reqCard || !resCard || !spacer) continue;
-      var diff = reqCard.offsetTop - resCard.offsetTop;
-      if (diff > 0) spacer.style.height = diff + "px";
-    }
-  });
+function renderRecMeta(rec) {
+  var meta = document.getElementById("rec-meta");
+  var info = extractInfo(rec);
+  var dn = displayName(rec.name);
+  var html = '';
+  html += '<span class="dot ' + rec.gitStatus + '"></span>';
+  html += '<span style="font-weight:600">' + escapeHtml(dn.provider + ': ' + dn.test) + '</span>';
+  if (info.model) html += '<span class="info-model">' + escapeHtml(info.model) + '</span>';
+  if (info.endpoint) html += '<span style="color:#6c7086;font-size:11px">' + escapeHtml(info.endpoint) + '</span>';
+  if (rec.gitStatus !== "clean") html += '<span class="review-badge needs-review">review</span>';
+  meta.innerHTML = html;
+  meta.classList.remove("hidden");
 }
 
 /* === Workflow Renderers === */
-function renderWorkflowInfo(wf, stepIdx) {
-  var col = document.getElementById("col-info");
+function renderWorkflowStep(wf, stepIdx) {
   var step = wf.steps[stepIdx];
   var html = '';
 
-  html += '<div class="info-section">';
-  html += '<div class="info-label">Workflow</div>';
-  html += '<div style="font-size:15px;font-weight:600;color:#cba6f7;margin-bottom:8px">' + escapeHtml(wf.name) + '</div>';
-  html += '</div>';
-
-  html += '<div class="info-section">';
-  html += '<div class="info-label">Steps</div>';
-  html += '<div class="wf-step-list">';
-  for (var i = 0; i < wf.steps.length; i++) {
-    var s = wf.steps[i];
-    var isActive = i === stepIdx;
-    var isLocked = wf.layout !== "compare" && s.status === "locked";
-    html += '<div class="wf-step-item' + (isActive ? " active" : "") + (isLocked ? " locked" : "") + '" data-wf="' + wf.id + '" data-step="' + i + '">';
-    html += '<span class="step-num">' + (i + 1) + '.</span>';
-    html += '<span class="dot ' + s.status + '"></span>';
-    html += escapeHtml(s.name);
-    html += '</div>';
-  }
-  html += '</div></div>';
-
-  if (step) {
-    html += '<div class="info-section">';
-    html += '<div class="info-label">Step ' + (stepIdx + 1) + '</div>';
-    html += '<div class="step-description">' + escapeHtml(step.description) + '</div>';
-    html += '</div>';
-  }
-
-  col.innerHTML = html;
-
-  col.querySelectorAll(".wf-step-item").forEach(function(el) {
-    el.addEventListener("click", function() {
-      var wfId = el.dataset.wf;
-      var si = parseInt(el.dataset.step);
-      var w = workflowData.find(function(ww) { return ww.id === wfId; });
-      if (w && w.steps[si] && w.steps[si].status === "locked") return;
-      selectedWfStep = si;
-      render();
-    });
-  });
-}
-
-function renderWorkflowRequest(wf, stepIdx) {
-  var col = document.getElementById("col-requests");
-  var step = wf.steps[stepIdx];
-  var html = '<div class="pane-label">Request</div>';
-
+  html += '<div class="pane-label">Request</div>';
   if (step && step.request) {
     html += '<div class="entry-card">';
     html += '<div class="entry-header">';
-    html += '<span class="entry-num">1</span>';
     html += '<span class="entry-label">' + escapeHtml(step.request.method + ' ' + step.request.url) + '</span>';
     html += '</div>';
     if (step.request.body) {
@@ -961,18 +781,10 @@ function renderWorkflowRequest(wf, stepIdx) {
     html += '<div class="empty">Click <strong>Run</strong> to execute this step</div>';
   }
 
-  col.innerHTML = html;
-}
-
-function renderWorkflowResponse(wf, stepIdx) {
-  var col = document.getElementById("col-responses");
-  var step = wf.steps[stepIdx];
-  var html = '<div class="pane-label">Response</div>';
-
+  html += '<div class="pane-label" style="margin-top:16px">Response</div>';
   if (step && step.response) {
     html += '<div class="entry-card">';
     html += '<div class="entry-header">';
-    html += '<span class="entry-num" style="background:#a6e3a1">1</span>';
     html += '<span class="entry-label">' + step.response.status + '</span>';
     html += '</div>';
     var resBody = JSON.stringify(step.response.body, null, 2);
@@ -989,106 +801,44 @@ function renderWorkflowResponse(wf, stepIdx) {
     html += '<div class="empty">Click Run to execute this step</div>';
   }
 
-  col.innerHTML = html;
+  return html;
 }
 
-function renderCompareInfo(wf) {
-  var col = document.getElementById("col-info");
-  var html = '';
+function renderCompareCell(step) {
+  var html = '<div class="compare-cell">';
+  html += '<div class="model-header"><span class="dot ' + step.status + '"></span><span class="model-name">' + escapeHtml(step.name) + '</span></div>';
+  html += '<div class="model-desc">' + escapeHtml(step.description) + '</div>';
 
-  html += '<div class="info-section">';
-  html += '<div class="info-label">Workflow</div>';
-  html += '<div style="font-size:15px;font-weight:600;color:#cba6f7;margin-bottom:8px">' + escapeHtml(wf.name) + '</div>';
-  html += '</div>';
-
-  var setupInfo = wf.setupOutputs || {};
-  if (Object.keys(setupInfo).length > 0) {
-    html += '<div class="info-section">';
-    html += '<div class="info-label">Setup</div>';
-    for (var sk in setupInfo) {
-      var sv = setupInfo[sk];
-      var isImg = /\.(png|jpg|jpeg|gif|webp)$/i.test(sv);
-      html += '<div style="margin:4px 0;font-size:12px"><span style="color:#cba6f7">' + escapeHtml(sk) + ':</span> ';
-      if (isImg) {
-        html += '<img src="' + sv + '" style="max-height:80px;border-radius:4px;vertical-align:middle;margin-left:4px">';
-      } else {
-        html += '<span style="color:#a6adc8">' + escapeHtml(sv.substring(0, 80)) + (sv.length > 80 ? "\u2026" : "") + '</span>';
-      }
-      html += '</div>';
+  var mediaUrl = (step.outputs && (step.outputs.video_url || step.outputs.image_url)) || "";
+  var isVideo = /\.(mp4|webm|mov)$/i.test(mediaUrl) || (step.outputs && step.outputs.video_url);
+  if (mediaUrl && isVideo) {
+    html += '<video class="compare-image" src="' + mediaUrl + '" controls muted style="max-width:100%"></video>';
+  } else if (mediaUrl) {
+    html += '<img class="compare-image" src="' + mediaUrl + '" onerror="this.style.display=&apos;none&apos;">';
+  } else if (step.status === "failed") {
+    html += '<div class="cell-status" style="color:#f38ba8">' + escapeHtml(step.error || "Failed") + '</div>';
+  } else if (step.response) {
+    var asyncKeys = step.asyncOutputKeys || [];
+    var asyncDone = asyncKeys.length === 0 || (step.outputs && asyncKeys.every(function(k) { return k in step.outputs; }));
+    if (!asyncDone) {
+      html += '<div class="cell-status" style="color:#89b4fa">Generating\u2026 click Refresh All</div>';
     }
-    html += '</div>';
+  } else {
+    html += '<div class="cell-status">Ready</div>';
   }
 
-  var prompt = "";
-  if (wf.steps[0] && wf.steps[0].request && wf.steps[0].request.body) {
-    var body = wf.steps[0].request.body;
-    prompt = (body.input && body.input.prompt) || "";
+  if (step.request && step.request.body) {
+    html += '<details style="margin-top:8px"><summary style="cursor:pointer;color:#6c7086;font-size:11px">Request Payload</summary>';
+    html += '<pre class="body" style="font-size:11px;max-height:200px">' + syntaxHighlight(JSON.stringify(step.request.body, null, 2)) + '</pre>';
+    html += '</details>';
   }
-  if (prompt) {
-    html += '<div class="info-section">';
-    html += '<div class="info-label">Prompt</div>';
-    html += '<div class="info-prompt">' + escapeHtml(prompt) + '</div>';
-    html += '</div>';
-  }
-
-  html += '<div class="info-section">';
-  html += '<div class="info-label">Models (' + wf.steps.length + ')</div>';
-  for (var s = 0; s < wf.steps.length; s++) {
-    var step = wf.steps[s];
-    html += '<div style="display:flex;align-items:center;gap:8px;margin:4px 0;font-size:12px">';
-    html += '<span class="dot ' + step.status + '"></span>';
-    html += '<span style="color:#cba6f7;font-weight:600">' + escapeHtml(step.name) + '</span>';
-    html += '</div>';
+  if (step.response) {
+    html += '<details style="margin-top:8px"><summary style="cursor:pointer;color:#6c7086;font-size:11px">Response JSON</summary>';
+    html += '<pre class="body" style="font-size:11px;max-height:200px">' + syntaxHighlight(JSON.stringify(step.response.body, null, 2)) + '</pre>';
+    html += '</details>';
   }
   html += '</div>';
-
-  col.innerHTML = html;
-}
-
-function renderCompareGrid(wf) {
-  var col = document.getElementById("col-requests");
-  var html = '<div class="pane-label">Comparison</div>';
-  html += '<div class="compare-grid">';
-
-  for (var s = 0; s < wf.steps.length; s++) {
-    var step = wf.steps[s];
-    html += '<div class="compare-cell">';
-    html += '<div class="model-header"><span class="dot ' + step.status + '"></span><span class="model-name">' + escapeHtml(step.name) + '</span></div>';
-    html += '<div class="model-desc">' + escapeHtml(step.description) + '</div>';
-
-    var mediaUrl = (step.outputs && (step.outputs.video_url || step.outputs.image_url)) || "";
-    var isVideo = /\.(mp4|webm|mov)$/i.test(mediaUrl) || (step.outputs && step.outputs.video_url);
-    if (mediaUrl && isVideo) {
-      html += '<video class="compare-image" src="' + mediaUrl + '" controls muted style="max-width:100%"></video>';
-    } else if (mediaUrl) {
-      html += '<img class="compare-image" src="' + mediaUrl + '" onerror="this.style.display=&apos;none&apos;">';
-    } else if (step.status === "failed") {
-      html += '<div class="cell-status" style="color:#f38ba8">' + escapeHtml(step.error || "Failed") + '</div>';
-    } else if (step.response) {
-      var asyncKeys = step.asyncOutputKeys || [];
-      var asyncDone = asyncKeys.length === 0 || (step.outputs && asyncKeys.every(function(k) { return k in step.outputs; }));
-      if (!asyncDone) {
-        html += '<div class="cell-status" style="color:#89b4fa">Generating\u2026 click Refresh All</div>';
-      }
-    } else {
-      html += '<div class="cell-status">Ready</div>';
-    }
-
-    if (step.request && step.request.body) {
-      html += '<details style="margin-top:8px"><summary style="cursor:pointer;color:#6c7086;font-size:11px">Request Payload</summary>';
-      html += '<pre class="body" style="font-size:11px;max-height:200px">' + syntaxHighlight(JSON.stringify(step.request.body, null, 2)) + '</pre>';
-      html += '</details>';
-    }
-    if (step.response) {
-      html += '<details style="margin-top:8px"><summary style="cursor:pointer;color:#6c7086;font-size:11px">Response JSON</summary>';
-      html += '<pre class="body" style="font-size:11px;max-height:200px">' + syntaxHighlight(JSON.stringify(step.response.body, null, 2)) + '</pre>';
-      html += '</details>';
-    }
-    html += '</div>';
-  }
-
-  html += '</div>';
-  col.innerHTML = html;
+  return html;
 }
 
 /* === Dropdown === */
@@ -1097,7 +847,7 @@ function getSelectionLabel() {
     var wf = workflowData.find(function(w) { return w.id === selectedWorkflow; });
     if (wf) {
       if (selectedWfStep !== null && wf.steps[selectedWfStep]) {
-        return wf.name + " \u2014 Step " + (selectedWfStep + 1) + ": " + wf.steps[selectedWfStep].name;
+        return wf.name + " \u2014 " + wf.steps[selectedWfStep].name;
       }
       return wf.name;
     }
@@ -1115,77 +865,47 @@ function populateDropdown() {
   var dd = document.getElementById("test-selector-dropdown");
   var html = "";
 
-  // Workflows
-  if (workflowData.length) {
-    html += '<div class="dd-section">Workflows</div>';
-    for (var w = 0; w < workflowData.length; w++) {
-      var wf = workflowData[w];
-      var isCollapsed = collapsedWorkflows[wf.id];
-      var arrowClass = isCollapsed ? " collapsed" : "";
-      var layoutBadge = wf.layout === "compare"
-        ? ' <span style="font-size:10px;color:#f9e2af;padding:1px 4px;background:#45475a;border-radius:3px">compare</span>'
-        : '';
-      html += '<div class="dd-pipe-label" data-wf="' + wf.id + '"><span class="dd-arrow' + arrowClass + '">\u25BE</span> ' + escapeHtml(wf.name) + layoutBadge + '</div>';
-      if (wf.layout !== "compare") {
-        for (var s = 0; s < wf.steps.length; s++) {
-          var step = wf.steps[s];
-          var isActive = selectedWorkflow === wf.id && selectedWfStep === s;
-          var hiddenClass = isCollapsed ? " dd-pipe-hidden" : "";
-          var lockedClass = step.status === "locked" ? " locked" : "";
-          var wfEp = step.request ? step.request.method + ' ' + step.request.url : '';
-          html += '<div class="dd-wf-item' + (isActive ? " active" : "") + hiddenClass + lockedClass + '" data-wf="' + wf.id + '" data-step="' + s + '">';
-          html += '<span style="color:#6c7086;font-size:11px;min-width:16px">' + (s + 1) + '.</span>';
-          html += '<span class="dot ' + step.status + '"></span>';
-          html += escapeHtml(step.name);
-          if (wfEp) html += '<div class="dd-endpoint">' + escapeHtml(wfEp) + '</div>';
-          html += '</div>';
-        }
+  // Workflows as flat items
+  for (var w = 0; w < workflowData.length; w++) {
+    var wf = workflowData[w];
+    if (wf.layout === "compare") {
+      var isActive = selectedWorkflow === wf.id && selectedWfStep === null;
+      var firstUrl = (wf.steps[0] && wf.steps[0].request) ? wf.steps[0].request.method + ' ' + wf.steps[0].request.url : '';
+      html += '<div class="dd-item' + (isActive ? " active" : "") + '" data-wf="' + wf.id + '">';
+      html += '<span class="dot ' + (wf.steps[0] ? wf.steps[0].status : 'ready') + '"></span>';
+      html += escapeHtml(wf.name);
+      if (firstUrl) html += '<div class="dd-endpoint">' + escapeHtml(firstUrl) + '</div>';
+      html += '</div>';
+    } else {
+      for (var s = 0; s < wf.steps.length; s++) {
+        var step = wf.steps[s];
+        var stepActive = selectedWorkflow === wf.id && selectedWfStep === s;
+        var stepUrl = step.request ? step.request.method + ' ' + step.request.url : '';
+        html += '<div class="dd-item' + (stepActive ? " active" : "") + (step.status === "locked" ? " locked" : "") + '" data-wf="' + wf.id + '" data-step="' + s + '">';
+        html += '<span class="dot ' + step.status + '"></span>';
+        html += escapeHtml(wf.name + ' \u2014 ' + step.name);
+        if (stepUrl) html += '<div class="dd-endpoint">' + escapeHtml(stepUrl) + '</div>';
+        html += '</div>';
       }
     }
   }
 
-  // Recordings — flat list with title + endpoint URL
+  // All recordings as flat items
   for (var i = 0; i < recordings.length; i++) {
-    if (isE2EStep(recordings[i].name)) continue;
     var dn = displayName(recordings[i].name);
-    var isActive = selected === i;
-    var badge = recordings[i].gitStatus === "clean" ? "" : '<span class="review-badge needs-review">review</span>';
+    var recActive = selected === i;
     var ep = recEndpoint(recordings[i]);
-    html += '<div class="dd-item' + (isActive ? " active" : "") + '" data-idx="' + i + '">';
-    html += '<span class="dot ' + recordings[i].gitStatus + '"></span>' + escapeHtml(dn.provider + ": " + dn.test) + badge;
+    var title = dn.provider + ": " + dn.test;
+    var parsed = parseE2EStep(recordings[i].name);
+    if (parsed) {
+      title = dn.provider + ": e2e-" + parsed.pipeline + " / " + parsed.stepName;
+    }
+    html += '<div class="dd-item' + (recActive ? " active" : "") + '" data-idx="' + i + '">';
+    html += '<span class="dot ' + recordings[i].gitStatus + '"></span>';
+    html += escapeHtml(title);
+    if (recordings[i].gitStatus !== "clean") html += '<span class="review-badge needs-review">review</span>';
     if (ep) html += '<div class="dd-endpoint">' + escapeHtml(ep) + '</div>';
     html += '</div>';
-  }
-
-  // E2E pipelines — grouped under collapsible headers
-  var pipes = {};
-  var pipeOrder = [];
-  for (var ei = 0; ei < recordings.length; ei++) {
-    var parsed = parseE2EStep(recordings[ei].name);
-    if (!parsed) continue;
-    var pKey = parsed.provider + "/" + parsed.pipeline;
-    if (!pipes[pKey]) { pipes[pKey] = []; pipeOrder.push(pKey); }
-    pipes[pKey].push({ idx: ei, stepNum: parsed.stepNum, stepName: parsed.stepName, rec: recordings[ei] });
-  }
-  for (var pi = 0; pi < pipeOrder.length; pi++) {
-    var pk = pipeOrder[pi];
-    var steps = pipes[pk].sort(function(a, b) { return a.stepNum - b.stepNum; });
-    var isColl = collapsedPipelines[pk];
-    var arrCls = isColl ? " collapsed" : "";
-    html += '<div class="dd-pipe-label" data-pipe="' + pk + '"><span class="dd-arrow' + arrCls + '">&#x25BE;</span> e2e-' + escapeHtml(pk.split("/")[1]) + '</div>';
-    for (var si = 0; si < steps.length; si++) {
-      var st = steps[si];
-      var stActive = selected === st.idx;
-      var stBadge = st.rec.gitStatus === "clean" ? "" : '<span class="review-badge needs-review">review</span>';
-      var hidCls = isColl ? " dd-pipe-hidden" : "";
-      var stEp = recEndpoint(st.rec);
-      html += '<div class="dd-pipe-step' + (stActive ? " active" : "") + hidCls + '" data-idx="' + st.idx + '">';
-      html += '<span style="color:#6c7086;font-size:11px;min-width:16px">' + st.stepNum + '.</span>';
-      html += '<span class="dot ' + st.rec.gitStatus + '"></span>';
-      html += escapeHtml(st.stepName) + stBadge;
-      if (stEp) html += '<div class="dd-endpoint">' + escapeHtml(stEp) + '</div>';
-      html += '</div>';
-    }
   }
 
   dd.innerHTML = html;
@@ -1194,51 +914,18 @@ function populateDropdown() {
   dd.querySelectorAll(".dd-item").forEach(function(el) {
     el.addEventListener("click", function(e) {
       e.stopPropagation();
-      selected = parseInt(el.dataset.idx);
-      selectedWorkflow = null; selectedWfStep = null;
-      dropdownOpen = false; dd.classList.add("hidden");
-      render();
-    });
-  });
-  dd.querySelectorAll(".dd-pipe-step").forEach(function(el) {
-    el.addEventListener("click", function(e) {
-      e.stopPropagation();
-      selected = parseInt(el.dataset.idx);
-      selectedWorkflow = null; selectedWfStep = null;
-      dropdownOpen = false; dd.classList.add("hidden");
-      render();
-    });
-  });
-  dd.querySelectorAll(".dd-pipe-label").forEach(function(el) {
-    el.addEventListener("click", function(e) {
-      e.stopPropagation();
-      var wfId = el.dataset.wf;
-      var pipe = el.dataset.pipe;
-      if (wfId) {
-        var wf = workflowData.find(function(w) { return w.id === wfId; });
-        if (wf && wf.layout === "compare") {
-          selectedWorkflow = wfId; selectedWfStep = null; selected = null;
-          dropdownOpen = false; dd.classList.add("hidden");
-          render();
-        } else {
-          collapsedWorkflows[wfId] = !collapsedWorkflows[wfId];
-          populateDropdown();
-        }
-      } else if (pipe) {
-        collapsedPipelines[pipe] = !collapsedPipelines[pipe];
-        populateDropdown();
+      if (el.classList.contains("locked")) return;
+      if (el.dataset.wf) {
+        selectedWorkflow = el.dataset.wf;
+        selectedWfStep = el.dataset.step !== undefined ? parseInt(el.dataset.step) : null;
+        selected = null;
+      } else {
+        selected = parseInt(el.dataset.idx);
+        selectedWorkflow = null;
+        selectedWfStep = null;
       }
-    });
-  });
-  dd.querySelectorAll(".dd-wf-item").forEach(function(el) {
-    el.addEventListener("click", function(e) {
-      e.stopPropagation();
-      var wfId = el.dataset.wf;
-      var stepIdx = parseInt(el.dataset.step);
-      var wf = workflowData.find(function(w) { return w.id === wfId; });
-      if (wf && wf.steps[stepIdx] && wf.steps[stepIdx].status === "locked") return;
-      selectedWorkflow = wfId; selectedWfStep = stepIdx; selected = null;
-      dropdownOpen = false; dd.classList.add("hidden");
+      dropdownOpen = false;
+      dd.classList.add("hidden");
       render();
     });
   });
@@ -1252,6 +939,7 @@ function render() {
   populateDropdown();
 
   var columnsEl = document.getElementById("columns");
+  var metaEl = document.getElementById("rec-meta");
   var btn = document.getElementById("approve-btn");
   var refreshBtn = document.getElementById("refresh-btn");
   var runBtn = document.getElementById("run-btn");
@@ -1274,18 +962,21 @@ function render() {
   copyLlmBtn.disabled = true;
   statusMsg.textContent = "";
   statusMsg.style.color = "#a6adc8";
-
-  // Disconnect previous alignment observer
-  if (alignObserver) { alignObserver.disconnect(); alignObserver = null; }
+  metaEl.classList.add("hidden");
 
   // Compare workflow mode
   if (selectedWorkflow !== null) {
     var compareWf = workflowData.find(function(w) { return w.id === selectedWorkflow; });
     if (compareWf && compareWf.layout === "compare" && selectedWfStep === null) {
-      columnsEl.classList.add("compare-mode");
-      renderCompareInfo(compareWf);
-      renderCompareGrid(compareWf);
-      document.getElementById("col-responses").innerHTML = "";
+      metaEl.innerHTML = '<span style="color:#cba6f7;font-weight:600">' + escapeHtml(compareWf.name) + '</span>' +
+        '<span style="color:#6c7086">' + compareWf.steps.length + ' models</span>';
+      metaEl.classList.remove("hidden");
+
+      var colHtml = '';
+      for (var s = 0; s < compareWf.steps.length; s++) {
+        colHtml += '<div class="txn-col">' + renderCompareCell(compareWf.steps[s]) + '</div>';
+      }
+      columnsEl.innerHTML = colHtml;
 
       resetBtn.classList.remove("hidden");
 
@@ -1320,16 +1011,17 @@ function render() {
     }
   }
 
-  columnsEl.classList.remove("compare-mode");
-
   // Sequential workflow step mode
   if (selectedWorkflow !== null && selectedWfStep !== null) {
     var wf = workflowData.find(function(w) { return w.id === selectedWorkflow; });
     if (wf) {
       var step = wf.steps[selectedWfStep];
-      renderWorkflowInfo(wf, selectedWfStep);
-      renderWorkflowRequest(wf, selectedWfStep);
-      renderWorkflowResponse(wf, selectedWfStep);
+
+      metaEl.innerHTML = '<span style="color:#cba6f7;font-weight:600">' + escapeHtml(wf.name) + '</span>' +
+        '<span style="color:#6c7086">Step ' + (selectedWfStep + 1) + ' of ' + wf.steps.length + ': ' + escapeHtml(step.name) + '</span>';
+      metaEl.classList.remove("hidden");
+
+      columnsEl.innerHTML = '<div class="txn-col">' + renderWorkflowStep(wf, selectedWfStep) + '</div>';
 
       copyLlmBtn.disabled = !step.response;
       resetBtn.classList.remove("hidden");
@@ -1373,23 +1065,14 @@ function render() {
   // Recording mode
   if (selected !== null && recordings[selected]) {
     var rec = recordings[selected];
+    renderRecMeta(rec);
 
-    renderInfoColumn(rec);
-    renderRequestColumn(rec);
-    renderResponseColumn(rec);
-
-    // Alignment
-    var entryCount = rec.entries.length;
-    alignResponses(entryCount);
-    if (typeof ResizeObserver !== "undefined" && entryCount > 1) {
-      alignObserver = new ResizeObserver(function() { alignResponses(entryCount); });
-      for (var oi = 0; oi < entryCount; oi++) {
-        var rc = document.getElementById("entry-req-" + oi);
-        var rsc = document.getElementById("entry-res-" + oi);
-        if (rc) alignObserver.observe(rc);
-        if (rsc) alignObserver.observe(rsc);
-      }
+    var groups = groupTransactions(rec.entries);
+    var recHtml = '';
+    for (var g = 0; g < groups.length; g++) {
+      recHtml += '<div class="txn-col">' + renderTransactionColumn(groups[g], g) + '</div>';
     }
+    columnsEl.innerHTML = recHtml;
 
     btn.disabled = rec.gitStatus === "clean";
     copyLlmBtn.disabled = false;
@@ -1428,12 +1111,10 @@ function render() {
     }
 
     autoEvalKieTaskIds(gen);
-    for (var ei = 0; ei < rec.entries.length; ei++) { autoEvalFromResponse(rec, ei, gen); }
-    autoEvalXaiVideo(rec, gen);
+    autoEvalFromGroups(groups, gen);
+    autoEvalXaiVideo(rec, groups, gen);
   } else {
-    document.getElementById("col-info").innerHTML = '<div class="empty">Select a recording</div>';
-    document.getElementById("col-requests").innerHTML = '';
-    document.getElementById("col-responses").innerHTML = '';
+    columnsEl.innerHTML = '<div class="txn-col"><div class="empty">Select a recording</div></div>';
   }
 }
 
@@ -1744,13 +1425,20 @@ document.getElementById("reset-btn").addEventListener("click", async function() 
   }
 });
 
-// Copy for LLM (all entries)
+// Copy for LLM
 document.getElementById("copy-llm-btn").addEventListener("click", function() {
   var texts = [];
   if (selected !== null && recordings[selected]) {
     var rec = recordings[selected];
-    for (var i = 0; i < rec.entries.length; i++) {
-      texts.push(buildTransactionText(rec.entries[i]));
+    var groups = groupTransactions(rec.entries);
+    for (var g = 0; g < groups.length; g++) {
+      var first = groups[g].entries[0];
+      var last = groups[g].entries[groups[g].entries.length - 1];
+      if (groups[g].entries.length === 1) {
+        texts.push(buildTransactionText(first));
+      } else {
+        texts.push(buildTransactionText({ request: first.request, response: last.response }));
+      }
     }
   }
   if (!texts.length) return;
@@ -1782,72 +1470,6 @@ document.addEventListener("click", function(e) {
   if (resultDiv.innerHTML) { resultDiv.innerHTML = ""; return; }
   checkKieTask(taskId, resultDiv);
 });
-
-/* === Resize Handles === */
-(function() {
-  var cols = [300, 4, 0, 4, 0];
-  function applyGrid() {
-    document.getElementById("columns").style.gridTemplateColumns =
-      cols[0] + "px " + cols[1] + "px " + cols[2] + "px " + cols[3] + "px " + cols[4] + "px";
-  }
-  function initCols() {
-    var w = window.innerWidth;
-    var fixed = cols[0] + cols[1] + cols[3];
-    var remaining = w - fixed;
-    cols[2] = Math.floor(remaining / 2);
-    cols[4] = remaining - cols[2];
-    applyGrid();
-  }
-  initCols();
-  window.addEventListener("resize", initCols);
-
-  function setupHandle(handleId, leftIdx, rightIdx) {
-    var handle = document.getElementById(handleId);
-    handle.addEventListener("mousedown", function(e) {
-      e.preventDefault();
-      handle.classList.add("dragging");
-      var startX = e.clientX;
-      var startLeft = cols[leftIdx];
-      var startRight = cols[rightIdx];
-      var total = startLeft + startRight;
-      function onMove(ev) {
-        var dx = ev.clientX - startX;
-        var newLeft = Math.max(200, Math.min(total - 200, startLeft + dx));
-        cols[leftIdx] = newLeft;
-        cols[rightIdx] = total - newLeft;
-        applyGrid();
-      }
-      function onUp() {
-        handle.classList.remove("dragging");
-        document.removeEventListener("mousemove", onMove);
-        document.removeEventListener("mouseup", onUp);
-      }
-      document.addEventListener("mousemove", onMove);
-      document.addEventListener("mouseup", onUp);
-    });
-  }
-  setupHandle("resize-1", 0, 2);
-  setupHandle("resize-2", 2, 4);
-})();
-
-/* === Linked Scrolling === */
-(function() {
-  var reqCol = document.getElementById("col-requests");
-  var resCol = document.getElementById("col-responses");
-  var syncing = false;
-  reqCol.addEventListener("scroll", function() {
-    if (syncing) return;
-    syncing = true;
-    resCol.scrollTop = reqCol.scrollTop;
-    requestAnimationFrame(function() { syncing = false; });
-  });
-  resCol.addEventListener("scroll", function() {
-    if (syncing) return;
-    syncing = true;
-    reqCol.scrollTop = resCol.scrollTop;
-    requestAnimationFrame(function() { syncing = false; });
-  });
-})();
 
 /* === Init === */
 Promise.all([

@@ -505,4 +505,5 @@ export interface KieProvider {
   suno: import("./suno").SunoProvider;
   chat: import("./chat").KieChatProvider;
   claude: import("./claude").KieClaudeProvider["claude"];
+  claudeHaiku: import("./claude-haiku").KieClaudeHaikuProvider["claudeHaiku"];
 }

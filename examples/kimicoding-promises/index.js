@@ -1,6 +1,6 @@
-import { kimicoding, textBlock, imageBase64 } from "@nakedapi/kimicoding";
+import { kimicoding as createKimicoding, textBlock, imageBase64 } from "@nakedapi/kimicoding";
 
-const provider = kimicoding({
+const kimicoding = createKimicoding({
   apiKey: process.env.KIMI_CODING_API_KEY || "your-api-key-here",
   timeout: 60000,
 });
@@ -18,7 +18,7 @@ function makeRedPixelPng() {
 const redPixel = makeRedPixelPng();
 
 // Simple text chat using promises
-provider
+kimicoding
   .chat({
     model: "k2p5",
     messages: [{ role: "user", content: "What is the capital of France?" }],
@@ -31,7 +31,7 @@ provider
     console.log();
 
     // Analyze an image using vision (base64)
-    return provider.chat({
+    return kimicoding.chat({
       model: "k2p5",
       messages: [
         {
@@ -52,7 +52,7 @@ provider
     console.log();
 
     // Multi-turn conversation with an image
-    return provider.chat({
+    return kimicoding.chat({
       model: "k2p5",
       systemPrompt: "You are a helpful image analyst.",
       messages: [

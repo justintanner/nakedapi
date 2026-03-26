@@ -17,20 +17,18 @@ pnpm add @nakedapi/kimicoding
 ## Quick Start
 
 ```typescript
-import { kimicoding, type ChatRequest } from "@nakedapi/kimicoding";
+import { kimicoding as createKimicoding, type ChatRequest } from "@nakedapi/kimicoding";
 
-// Create provider
-const provider = kimicoding({
+const kimicoding = createKimicoding({
   apiKey: process.env.KIMI_CODING_API_KEY!,
 });
 
-// Use it
 const request: ChatRequest = {
   model: "k2p5",
   messages: [{ role: "user", content: "Hello!" }],
 };
 
-for await (const chunk of provider.coding.v1.messages.stream(request)) {
+for await (const chunk of kimicoding.coding.v1.messages.stream(request)) {
   if (chunk.delta) {
     process.stdout.write(chunk.delta);
   }
@@ -50,9 +48,9 @@ for await (const chunk of provider.coding.v1.messages.stream(request)) {
 ### Streaming
 
 ```typescript
-import { kimicoding } from "@nakedapi/kimicoding";
+import { kimicoding as createKimicoding } from "@nakedapi/kimicoding";
 
-const provider = kimicoding({ apiKey: "your-api-key" });
+const kimicoding = createKimicoding({ apiKey: "your-api-key" });
 
 const request = {
   model: "k2p5",
@@ -61,7 +59,7 @@ const request = {
   maxTokens: 8192,
 };
 
-for await (const chunk of provider.coding.v1.messages.stream(request)) {
+for await (const chunk of kimicoding.coding.v1.messages.stream(request)) {
   if (chunk.delta) {
     process.stdout.write(chunk.delta);
   }
@@ -71,7 +69,7 @@ for await (const chunk of provider.coding.v1.messages.stream(request)) {
 ### Non-Streaming
 
 ```typescript
-const response = await provider.coding.v1.messages(request);
+const response = await kimicoding.coding.v1.messages(request);
 console.log(response.content);
 console.log(response.usage); // token counts
 ```
@@ -79,14 +77,14 @@ console.log(response.usage); // token counts
 ### Promises (no async/await)
 
 ```javascript
-import { kimicoding, textBlock, imageBase64 } from "@nakedapi/kimicoding";
+import { kimicoding as createKimicoding, textBlock, imageBase64 } from "@nakedapi/kimicoding";
 
-const provider = kimicoding({
+const kimicoding = createKimicoding({
   apiKey: process.env.KIMI_CODING_API_KEY,
   timeout: 60000,
 });
 
-provider.coding.v1
+kimicoding.coding.v1
   .messages({
     model: "k2p5",
     messages: [{ role: "user", content: "What is the capital of France?" }],
@@ -96,7 +94,7 @@ provider.coding.v1
     console.log(response.content);
 
     // Chain a vision request
-    return provider.coding.v1.messages({
+    return kimicoding.coding.v1.messages({
       model: "k2p5",
       messages: [
         {
@@ -121,29 +119,33 @@ provider.coding.v1
 ## Middleware Usage
 
 ```typescript
-import { kimicoding, withRetry, withFallback } from "@nakedapi/kimicoding";
+import { kimicoding as createKimicoding, withRetry, withFallback } from "@nakedapi/kimicoding";
 
-const baseProvider = kimicoding({
+const kimicoding = createKimicoding({
   apiKey: process.env.KIMI_CODING_API_KEY!,
 });
 
 // Add retry logic
-const resilientProvider = withRetry(baseProvider, {
+const resilientChat = withRetry(kimicoding.coding.v1.messages, {
   retries: 3,
   baseMs: 500,
 });
 
 // Add fallback logic
-const fallbackProvider = withFallback([
-  kimicoding({ apiKey: process.env.KIMI_CODING_API_KEY! }),
-  kimicoding({ apiKey: process.env.KIMI_CODING_API_KEY_2! }),
+const kimi1 = createKimicoding({ apiKey: process.env.KIMI_CODING_API_KEY! });
+const kimi2 = createKimicoding({ apiKey: process.env.KIMI_CODING_API_KEY_2! });
+const fallbackChat = withFallback([
+  kimi1.coding.v1.messages,
+  kimi2.coding.v1.messages,
 ]);
 ```
 
 ## Configuration Options
 
 ```typescript
-const provider = kimicoding({
+import { kimicoding as createKimicoding } from "@nakedapi/kimicoding";
+
+const kimicoding = createKimicoding({
   apiKey: "your-api-key",
   baseURL: "https://api.kimi.com/coding/", // optional
   timeout: 30000, // optional, default: 30000ms

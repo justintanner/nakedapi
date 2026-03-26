@@ -31,13 +31,13 @@ Method paths mirror upstream API URL paths segment-by-segment. Kebab-case segmen
 
 ```
 URL path:     /v1/chat/completions
-Method:       provider.v1.chat.completions()
+Method:       openai.v1.chat.completions()
 
 URL path:     /v1/language-models
-Method:       provider.v1.languageModels()
+Method:       xai.v1.languageModels()
 
 URL path:     /api/v1/common/download-url
-Method:       provider.api.v1.common.downloadUrl()
+Method:       kie.api.v1.common.downloadUrl()
 ```
 
 ### All Endpoints
@@ -46,69 +46,69 @@ Method:       provider.api.v1.common.downloadUrl()
 
 | URL | Method Signature |
 |-----|------------------|
-| `POST /chat/completions` | `provider.v1.chat.completions()` |
-| `POST /audio/transcriptions` | `provider.v1.audio.transcriptions()` |
+| `POST /chat/completions` | `openai.v1.chat.completions()` |
+| `POST /audio/transcriptions` | `openai.v1.audio.transcriptions()` |
 
 #### xAI — `https://api.x.ai/v1`
 
 | URL | Method Signature |
 |-----|------------------|
-| `POST /chat/completions` | `provider.v1.chat.completions()` |
-| `POST /images/generations` | `provider.v1.images.generations()` |
-| `POST /images/edits` | `provider.v1.images.edits()` |
-| `GET /videos/{requestId}` | `provider.v1.videos(requestId)` |
-| `POST /videos/generations` | `provider.v1.videos.generations()` |
-| `POST /videos/extensions` | `provider.v1.videos.extensions()` |
-| `POST /files` | `provider.v1.files.upload()` |
-| `GET /files` | `provider.v1.files.list()` |
-| `GET /files/{fileId}` | `provider.v1.files.get(fileId)` |
-| `DELETE /files/{fileId}` | `provider.v1.files.delete(fileId)` |
-| `GET /models` | `provider.v1.models()` |
-| `GET /models/{modelId}` | `provider.v1.models(modelId)` |
-| `GET /language-models` | `provider.v1.languageModels()` |
-| `GET /language-models/{modelId}` | `provider.v1.languageModels(modelId)` |
-| `GET /image-generation-models` | `provider.v1.imageGenerationModels()` |
-| `GET /image-generation-models/{modelId}` | `provider.v1.imageGenerationModels(modelId)` |
-| `GET /video-generation-models` | `provider.v1.videoGenerationModels()` |
-| `GET /video-generation-models/{modelId}` | `provider.v1.videoGenerationModels(modelId)` |
+| `POST /chat/completions` | `xai.v1.chat.completions()` |
+| `POST /images/generations` | `xai.v1.images.generations()` |
+| `POST /images/edits` | `xai.v1.images.edits()` |
+| `GET /videos/{requestId}` | `xai.v1.videos(requestId)` |
+| `POST /videos/generations` | `xai.v1.videos.generations()` |
+| `POST /videos/extensions` | `xai.v1.videos.extensions()` |
+| `POST /files` | `xai.v1.files.upload()` |
+| `GET /files` | `xai.v1.files.list()` |
+| `GET /files/{fileId}` | `xai.v1.files.get(fileId)` |
+| `DELETE /files/{fileId}` | `xai.v1.files.delete(fileId)` |
+| `GET /models` | `xai.v1.models()` |
+| `GET /models/{modelId}` | `xai.v1.models(modelId)` |
+| `GET /language-models` | `xai.v1.languageModels()` |
+| `GET /language-models/{modelId}` | `xai.v1.languageModels(modelId)` |
+| `GET /image-generation-models` | `xai.v1.imageGenerationModels()` |
+| `GET /image-generation-models/{modelId}` | `xai.v1.imageGenerationModels(modelId)` |
+| `GET /video-generation-models` | `xai.v1.videoGenerationModels()` |
+| `GET /video-generation-models/{modelId}` | `xai.v1.videoGenerationModels(modelId)` |
 
 #### Fal — `https://api.fal.ai/v1`
 
 | URL | Method Signature |
 |-----|------------------|
-| `GET /models` | `provider.v1.models()` |
-| `GET /models/pricing` | `provider.v1.models.pricing()` |
-| `POST /models/pricing/estimate` | `provider.v1.models.pricing.estimate()` |
-| `GET /models/usage` | `provider.v1.models.usage()` |
-| `GET /models/analytics` | `provider.v1.models.analytics()` |
-| `GET /models/requests/by-endpoint` | `provider.v1.models.requests.byEndpoint()` |
-| `DELETE /models/requests/{id}/payloads` | `provider.v1.models.requests.payloads()` |
+| `GET /models` | `fal.v1.models()` |
+| `GET /models/pricing` | `fal.v1.models.pricing()` |
+| `POST /models/pricing/estimate` | `fal.v1.models.pricing.estimate()` |
+| `GET /models/usage` | `fal.v1.models.usage()` |
+| `GET /models/analytics` | `fal.v1.models.analytics()` |
+| `GET /models/requests/by-endpoint` | `fal.v1.models.requests.byEndpoint()` |
+| `DELETE /models/requests/{id}/payloads` | `fal.v1.models.requests.payloads()` |
 
 #### KimiCoding — `https://api.kimi.com/coding/`
 
 | URL | Method Signature |
 |-----|------------------|
-| `POST v1/messages` | `provider.coding.v1.messages()` |
-| `POST v1/messages` (stream) | `provider.coding.v1.messages.stream()` |
+| `POST v1/messages` | `kimicoding.coding.v1.messages()` |
+| `POST v1/messages` (stream) | `kimicoding.coding.v1.messages.stream()` |
 
 #### KIE — `https://api.kie.ai`
 
 | URL | Method Signature |
 |-----|------------------|
-| `POST /api/v1/jobs/createTask` | `provider.api.v1.jobs.createTask()` |
-| `GET /api/v1/jobs/recordInfo?taskId=` | `provider.api.v1.jobs.recordInfo(taskId)` |
-| `POST /api/v1/common/download-url` | `provider.api.v1.common.downloadUrl()` |
-| `GET /api/v1/chat/credit` | `provider.api.v1.chat.credit()` |
-| `POST /api/file-stream-upload` | `provider.api.fileStreamUpload()` |
+| `POST /api/v1/jobs/createTask` | `kie.api.v1.jobs.createTask()` |
+| `GET /api/v1/jobs/recordInfo?taskId=` | `kie.api.v1.jobs.recordInfo(taskId)` |
+| `POST /api/v1/common/download-url` | `kie.api.v1.common.downloadUrl()` |
+| `GET /api/v1/chat/credit` | `kie.api.v1.chat.credit()` |
+| `POST /api/file-stream-upload` | `kie.api.fileStreamUpload()` |
 
 #### KIE Sub-providers
 
 | URL | Method Signature |
 |-----|------------------|
-| `POST /api/v1/veo/generate` | `provider.veo.api.v1.veo.generate()` |
-| `POST /api/v1/veo/extend` | `provider.veo.api.v1.veo.extend()` |
-| `POST /api/v1/generate` | `provider.suno.api.v1.generate()` |
-| `POST /gpt-5-2/v1/chat/completions` | `provider.chat.gpt52.v1.chat.completions()` |
+| `POST /api/v1/veo/generate` | `kie.veo.api.v1.veo.generate()` |
+| `POST /api/v1/veo/extend` | `kie.veo.api.v1.veo.extend()` |
+| `POST /api/v1/generate` | `kie.suno.api.v1.generate()` |
+| `POST /gpt-5-2/v1/chat/completions` | `kie.chat.gpt52.v1.chat.completions()` |
 
 ## Quick Start
 
@@ -119,11 +119,11 @@ npm install @nakedapi/kimicoding
 ```
 
 ```typescript
-import { kimicoding, type ChatRequest } from "@nakedapi/kimicoding";
+import { kimicoding as createKimicoding, type ChatRequest } from "@nakedapi/kimicoding";
 
-const provider = kimicoding({ apiKey: process.env.KIMI_CODING_API_KEY! });
+const kimicoding = createKimicoding({ apiKey: process.env.KIMI_CODING_API_KEY! });
 
-for await (const chunk of provider.coding.v1.messages.stream({
+for await (const chunk of kimicoding.coding.v1.messages.stream({
   model: "k2p5",
   messages: [{ role: "user", content: "Hello!" }],
 })) {
@@ -138,22 +138,22 @@ npm install @nakedapi/kie
 ```
 
 ```typescript
-import { kie } from "@nakedapi/kie";
+import { kie as createKie } from "@nakedapi/kie";
 
-const provider = kie({ apiKey: process.env.KIE_API_KEY! });
+const kie = createKie({ apiKey: process.env.KIE_API_KEY! });
 
-const { taskId } = await provider.api.v1.jobs.createTask({
+const { taskId } = await kie.api.v1.jobs.createTask({
   model: "nano-banana-pro",
   input: { prompt: "A serene mountain landscape", aspect_ratio: "16:9" },
 });
 
 // Upload media for generation endpoints
-const upload = await provider.api.fileStreamUpload({
+const upload = await kie.api.fileStreamUpload({
   file: new Blob([fileBuffer]),
   filename: "photo.png",
 });
 
-const video = await provider.api.v1.jobs.createTask({
+const video = await kie.api.v1.jobs.createTask({
   model: "grok-imagine/image-to-video",
   input: { image_urls: [upload.downloadUrl] },
 });
@@ -166,18 +166,18 @@ npm install @nakedapi/openai
 ```
 
 ```typescript
-import { openai } from "@nakedapi/openai";
+import { openai as createOpenai } from "@nakedapi/openai";
 
-const provider = openai({ apiKey: process.env.OPENAI_API_KEY! });
+const openai = createOpenai({ apiKey: process.env.OPENAI_API_KEY! });
 
 // Chat with tool support
-const response = await provider.v1.chat.completions({
+const response = await openai.v1.chat.completions({
   messages: [{ role: "user", content: "Hello!" }],
 });
 console.log(response.content);
 
 // Transcribe audio
-const result = await provider.v1.audio.transcriptions({
+const result = await openai.v1.audio.transcriptions({
   file: new Blob([mp3Buffer], { type: "audio/mp3" }),
 });
 console.log(result.text);
@@ -190,16 +190,16 @@ npm install @nakedapi/xai
 ```
 
 ```typescript
-import { xai } from "@nakedapi/xai";
+import { xai as createXai } from "@nakedapi/xai";
 
-const provider = xai({ apiKey: process.env.XAI_API_KEY! });
+const xai = createXai({ apiKey: process.env.XAI_API_KEY! });
 
-const response = await provider.v1.chat.completions({
+const response = await xai.v1.chat.completions({
   model: "grok-4-fast",
   messages: [{ role: "user", content: "Hello!" }],
 });
 
-const searchResult = await provider.v1.chat.completions.search(
+const searchResult = await xai.v1.chat.completions.search(
   "latest TypeScript news"
 );
 ```
@@ -211,24 +211,24 @@ npm install @nakedapi/fal
 ```
 
 ```typescript
-import { fal } from "@nakedapi/fal";
+import { fal as createFal } from "@nakedapi/fal";
 
-const provider = fal({ apiKey: process.env.FAL_API_KEY! });
+const fal = createFal({ apiKey: process.env.FAL_API_KEY! });
 
-const models = await provider.v1.models({ search: "flux" });
-const pricing = await provider.v1.models.pricing({ appId: "fal-ai/flux" });
-const usage = await provider.v1.models.usage();
+const models = await fal.v1.models({ search: "flux" });
+const pricing = await fal.v1.models.pricing({ appId: "fal-ai/flux" });
+const usage = await fal.v1.models.usage();
 ```
 
 ## Providers
 
 | Package | Methods | Models |
 |---------|---------|--------|
-| [@nakedapi/fal](packages/provider/fal) | `v1.models()`, `.pricing()`, `.usage()`, `.analytics()`, `.requests` | Model registry/marketplace |
-| [@nakedapi/kie](packages/provider/kie) | `api.v1.jobs.createTask()`, `.recordInfo()`, `api.fileStreamUpload()`, sub-providers (chat, veo, suno) | Kling 3.0, Grok Imagine, Nano Banana, GPT Image, Seedance, ElevenLabs |
-| [@nakedapi/kimicoding](packages/provider/kimicoding) | `coding.v1.messages()`, `.stream()` | `k2p5` (32K max tokens) |
-| [@nakedapi/openai](packages/provider/openai) | `v1.chat.completions()`, `v1.audio.transcriptions()` | `gpt-5.4-2026-03-05`, `gpt-4o-mini-transcribe` |
-| [@nakedapi/xai](packages/provider/xai) | `v1.chat.completions()`, `.search()`, `v1.images.generations()`, `.edits()`, `v1.videos.generations()`, `.edits()` | `grok-4-fast`, `grok-imagine-image`, `grok-imagine-video` |
+| [@nakedapi/fal](packages/provider/fal) | `fal.v1.models()`, `.pricing()`, `.usage()`, `.analytics()`, `.requests` | Model registry/marketplace |
+| [@nakedapi/kie](packages/provider/kie) | `kie.api.v1.jobs.createTask()`, `.recordInfo()`, `kie.api.fileStreamUpload()`, sub-providers (chat, veo, suno) | Kling 3.0, Grok Imagine, Nano Banana, GPT Image, Seedance, ElevenLabs |
+| [@nakedapi/kimicoding](packages/provider/kimicoding) | `kimicoding.coding.v1.messages()`, `.stream()` | `k2p5` (32K max tokens) |
+| [@nakedapi/openai](packages/provider/openai) | `openai.v1.chat.completions()`, `openai.v1.audio.transcriptions()` | `gpt-5.4-2026-03-05`, `gpt-4o-mini-transcribe` |
+| [@nakedapi/xai](packages/provider/xai) | `xai.v1.chat.completions()`, `.search()`, `xai.v1.images.generations()`, `.edits()`, `xai.v1.videos.generations()`, `.edits()` | `grok-4-fast`, `grok-imagine-image`, `grok-imagine-video` |
 
 ## Middleware
 
@@ -239,11 +239,11 @@ Every package exports `withRetry` and `withFallback` — generic function-level 
 Wraps a single API call with automatic retries on transient errors (HTTP 429 and 5xx).
 
 ```typescript
-import { openai, withRetry } from "@nakedapi/openai";
+import { openai as createOpenai, withRetry } from "@nakedapi/openai";
 
-const provider = openai({ apiKey: process.env.OPENAI_API_KEY! });
+const openai = createOpenai({ apiKey: process.env.OPENAI_API_KEY! });
 
-const chat = withRetry(provider.v1.chat.completions, {
+const chat = withRetry(openai.v1.chat.completions, {
   retries: 3,   // max retry attempts (default: 2)
   baseMs: 500,  // initial delay in ms (default: 300)
   factor: 2,    // exponential multiplier (default: 2)
@@ -259,10 +259,10 @@ const response = await chat({
 Works the same way across all providers:
 
 ```typescript
-import { xai, withRetry } from "@nakedapi/xai";
+import { xai as createXai, withRetry } from "@nakedapi/xai";
 
-const provider = xai({ apiKey: process.env.XAI_API_KEY! });
-const chat = withRetry(provider.v1.chat.completions);
+const xai = createXai({ apiKey: process.env.XAI_API_KEY! });
+const chat = withRetry(xai.v1.chat.completions);
 ```
 
 ### `withFallback` — Multi-Function Failover
@@ -270,10 +270,10 @@ const chat = withRetry(provider.v1.chat.completions);
 Tries each function in order. If one fails, the next picks up. Useful for redundant API keys, separate accounts, or mixing providers.
 
 ```typescript
-import { openai, withFallback } from "@nakedapi/openai";
+import { openai as createOpenai, withFallback } from "@nakedapi/openai";
 
-const primary = openai({ apiKey: process.env.OPENAI_KEY_PRIMARY! });
-const backup = openai({ apiKey: process.env.OPENAI_KEY_BACKUP! });
+const primary = createOpenai({ apiKey: process.env.OPENAI_KEY_PRIMARY! });
+const backup = createOpenai({ apiKey: process.env.OPENAI_KEY_BACKUP! });
 
 const chat = withFallback(
   [primary.v1.chat.completions, backup.v1.chat.completions],
@@ -296,15 +296,15 @@ const response = await chat({
 
 ```typescript
 import {
-  kimicoding,
+  kimicoding as createKimicoding,
   withStreamRetry,
   withStreamFallback,
 } from "@nakedapi/kimicoding";
 
-const provider = kimicoding({ apiKey: process.env.KIMI_CODING_API_KEY! });
+const kimicoding = createKimicoding({ apiKey: process.env.KIMI_CODING_API_KEY! });
 
 // Retry the full stream on transient failure
-const stream = withStreamRetry(provider.coding.v1.messages.stream, {
+const stream = withStreamRetry(kimicoding.coding.v1.messages.stream, {
   retries: 2,
   baseMs: 300,
 });
@@ -322,15 +322,15 @@ for await (const chunk of stream({
 Since wrappers return plain functions with the same signature, they compose naturally:
 
 ```typescript
-import { kimicoding, withRetry, withFallback } from "@nakedapi/kimicoding";
+import { kimicoding as createKimicoding, withRetry, withFallback } from "@nakedapi/kimicoding";
 
-const p1 = kimicoding({ apiKey: process.env.KIMI_CODING_API_KEY_1! });
-const p2 = kimicoding({ apiKey: process.env.KIMI_CODING_API_KEY_2! });
+const kimi1 = createKimicoding({ apiKey: process.env.KIMI_CODING_API_KEY_1! });
+const kimi2 = createKimicoding({ apiKey: process.env.KIMI_CODING_API_KEY_2! });
 
 // Each function retries individually, then fallback switches
 const chat = withFallback([
-  withRetry(p1.coding.v1.messages, { retries: 2, baseMs: 300 }),
-  withRetry(p2.coding.v1.messages, { retries: 2, baseMs: 300 }),
+  withRetry(kimi1.coding.v1.messages, { retries: 2, baseMs: 300 }),
+  withRetry(kimi2.coding.v1.messages, { retries: 2, baseMs: 300 }),
 ]);
 
 const response = await chat({

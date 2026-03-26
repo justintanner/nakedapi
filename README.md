@@ -25,6 +25,91 @@ packages/provider/
 └── xai/         – @nakedapi/xai (Grok chat, search, images, video)
 ```
 
+## Endpoint Naming Scheme
+
+Method paths mirror upstream API URL paths segment-by-segment. Kebab-case segments become camelCase.
+
+```
+URL path:     /v1/chat/completions
+Method:       provider.v1.chat.completions()
+
+URL path:     /v1/language-models
+Method:       provider.v1.languageModels()
+
+URL path:     /api/v1/common/download-url
+Method:       provider.api.v1.common.downloadUrl()
+```
+
+### All Endpoints
+
+#### OpenAI — `https://api.openai.com/v1`
+
+| URL | Method Signature |
+|-----|------------------|
+| `POST /chat/completions` | `provider.v1.chat.completions()` |
+| `POST /audio/transcriptions` | `provider.v1.audio.transcriptions()` |
+
+#### xAI — `https://api.x.ai/v1`
+
+| URL | Method Signature |
+|-----|------------------|
+| `POST /chat/completions` | `provider.v1.chat.completions()` |
+| `POST /images/generations` | `provider.v1.images.generations()` |
+| `POST /images/edits` | `provider.v1.images.edits()` |
+| `GET /videos/{requestId}` | `provider.v1.videos(requestId)` |
+| `POST /videos/generations` | `provider.v1.videos.generations()` |
+| `POST /videos/extensions` | `provider.v1.videos.extensions()` |
+| `POST /files` | `provider.v1.files.upload()` |
+| `GET /files` | `provider.v1.files.list()` |
+| `GET /files/{fileId}` | `provider.v1.files.get(fileId)` |
+| `DELETE /files/{fileId}` | `provider.v1.files.delete(fileId)` |
+| `GET /models` | `provider.v1.models()` |
+| `GET /models/{modelId}` | `provider.v1.models(modelId)` |
+| `GET /language-models` | `provider.v1.languageModels()` |
+| `GET /language-models/{modelId}` | `provider.v1.languageModels(modelId)` |
+| `GET /image-generation-models` | `provider.v1.imageGenerationModels()` |
+| `GET /image-generation-models/{modelId}` | `provider.v1.imageGenerationModels(modelId)` |
+| `GET /video-generation-models` | `provider.v1.videoGenerationModels()` |
+| `GET /video-generation-models/{modelId}` | `provider.v1.videoGenerationModels(modelId)` |
+
+#### Fal — `https://api.fal.ai/v1`
+
+| URL | Method Signature |
+|-----|------------------|
+| `GET /models` | `provider.v1.models()` |
+| `GET /models/pricing` | `provider.v1.models.pricing()` |
+| `POST /models/pricing/estimate` | `provider.v1.models.pricing.estimate()` |
+| `GET /models/usage` | `provider.v1.models.usage()` |
+| `GET /models/analytics` | `provider.v1.models.analytics()` |
+| `GET /models/requests/by-endpoint` | `provider.v1.models.requests.byEndpoint()` |
+| `DELETE /models/requests/{id}/payloads` | `provider.v1.models.requests.payloads()` |
+
+#### KimiCoding — `https://api.kimi.com/coding/`
+
+| URL | Method Signature |
+|-----|------------------|
+| `POST v1/messages` | `provider.coding.v1.messages()` |
+| `POST v1/messages` (stream) | `provider.coding.v1.messages.stream()` |
+
+#### KIE — `https://api.kie.ai`
+
+| URL | Method Signature |
+|-----|------------------|
+| `POST /api/v1/jobs/createTask` | `provider.api.v1.jobs.createTask()` |
+| `GET /api/v1/jobs/recordInfo?taskId=` | `provider.api.v1.jobs.recordInfo(taskId)` |
+| `POST /api/v1/common/download-url` | `provider.api.v1.common.downloadUrl()` |
+| `GET /api/v1/chat/credit` | `provider.api.v1.chat.credit()` |
+| `POST /api/file-stream-upload` | `provider.api.fileStreamUpload()` |
+
+#### KIE Sub-providers
+
+| URL | Method Signature |
+|-----|------------------|
+| `POST /api/v1/veo/generate` | `provider.veo.api.v1.veo.generate()` |
+| `POST /api/v1/veo/extend` | `provider.veo.api.v1.veo.extend()` |
+| `POST /api/v1/generate` | `provider.suno.api.v1.generate()` |
+| `POST /gpt-5-2/v1/chat/completions` | `provider.chat.gpt52.v1.chat.completions()` |
+
 ## Quick Start
 
 ### Kimi for Coding

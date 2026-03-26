@@ -19,6 +19,15 @@ import {
   XaiImageGenerationModelListResponse,
   XaiVideoGenerationModel,
   XaiVideoGenerationModelListResponse,
+  XaiBatchCreateRequest,
+  XaiBatch,
+  XaiBatchListParams,
+  XaiBatchListResponse,
+  XaiBatchAddRequestsBody,
+  XaiBatchRequestListParams,
+  XaiBatchRequestListResponse,
+  XaiBatchResultListParams,
+  XaiBatchResultListResponse,
   XaiProvider,
   XaiError,
 } from "./types";
@@ -29,6 +38,8 @@ import {
   imageEditsSchema,
   videoGenerationsSchema,
   videoExtensionsSchema,
+  batchCreateSchema,
+  batchAddRequestsSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
 
@@ -321,6 +332,116 @@ export function xai(opts: XaiOptions): XaiProvider {
     );
   }
 
+  function buildQuery(params: object): string {
+    const parts: string[] = [];
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null) {
+        parts.push(
+          `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`
+        );
+      }
+    }
+    return parts.length > 0 ? `?${parts.join("&")}` : "";
+  }
+
+  const batchRequests = Object.assign(
+    async function listRequests(
+      batchId: string,
+      params?: XaiBatchRequestListParams,
+      signal?: AbortSignal
+    ): Promise<XaiBatchRequestListResponse> {
+      const query = buildQuery(params ?? {});
+      return await makeRequest(
+        "GET",
+        `/batches/${batchId}/requests${query}`,
+        undefined,
+        signal
+      );
+    },
+    {
+      add: Object.assign(
+        async function addRequests(
+          batchId: string,
+          req: XaiBatchAddRequestsBody,
+          signal?: AbortSignal
+        ): Promise<void> {
+          await makeRequest(
+            "POST",
+            `/batches/${batchId}/requests`,
+            req,
+            signal
+          );
+        },
+        {
+          payloadSchema: batchAddRequestsSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, batchAddRequestsSchema);
+          },
+        }
+      ),
+    }
+  );
+
+  const batches = Object.assign(
+    async function listBatches(
+      params?: XaiBatchListParams,
+      signal?: AbortSignal
+    ): Promise<XaiBatchListResponse> {
+      const query = buildQuery(params ?? {});
+      return await makeRequest("GET", `/batches${query}`, undefined, signal);
+    },
+    {
+      create: Object.assign(
+        async function createBatch(
+          req: XaiBatchCreateRequest,
+          signal?: AbortSignal
+        ): Promise<XaiBatch> {
+          return await makeRequest("POST", "/batches", req, signal);
+        },
+        {
+          payloadSchema: batchCreateSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, batchCreateSchema);
+          },
+        }
+      ),
+
+      async get(batchId: string, signal?: AbortSignal): Promise<XaiBatch> {
+        return await makeRequest(
+          "GET",
+          `/batches/${batchId}`,
+          undefined,
+          signal
+        );
+      },
+
+      async cancel(batchId: string, signal?: AbortSignal): Promise<XaiBatch> {
+        return await makeRequest(
+          "POST",
+          `/batches/${batchId}:cancel`,
+          {},
+          signal
+        );
+      },
+
+      requests: batchRequests,
+
+      async results(
+        batchId: string,
+        params?: XaiBatchResultListParams,
+        signal?: AbortSignal
+      ): Promise<XaiBatchResultListResponse> {
+        const query = buildQuery(params ?? {});
+        return await makeRequest(
+          "GET",
+          `/batches/${batchId}/results${query}`,
+          undefined,
+          signal
+        );
+      },
+    }
+  );
+
   return {
     v1: {
       chat: {
@@ -382,6 +503,7 @@ export function xai(opts: XaiOptions): XaiProvider {
       },
       videos,
       files,
+      batches: batches as XaiProvider["v1"]["batches"],
       models: models as XaiProvider["v1"]["models"],
       languageModels: languageModels as XaiProvider["v1"]["languageModels"],
       imageGenerationModels:

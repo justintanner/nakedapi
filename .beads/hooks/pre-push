@@ -22,3 +22,13 @@ if command -v bd >/dev/null 2>&1; then
   if [ $_bd_exit -ne 0 ]; then exit $_bd_exit; fi
 fi
 # --- END BEADS INTEGRATION v0.62.0 ---
+
+# --- nakedapi quality gates ---
+CHANGED=$(git diff --name-only @{push}.. 2>/dev/null | grep -E '\.(ts|tsx|js|mjs|cjs)$' || true)
+if [ -n "$CHANGED" ]; then
+  echo "Running unit test gate..."
+  if ! pnpm run test:run; then
+    echo "PUSH BLOCKED: unit test failures." >&2
+    exit 1
+  fi
+fi

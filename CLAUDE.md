@@ -105,7 +105,12 @@ GitHub Actions (`ci.yml`): Three jobs — build (install, compile, verify artifa
 This project uses [beads](https://github.com/steveyegge/beads) (`bd`) for task tracking.
 Hooks auto-inject `bd prime` at session start and before compaction.
 
-Quick reference: `bd ready` (find work), `bd create "Title"` (new task), `bd close <id>` (complete), `bd sync` (sync with git).
+Quick reference: `bd ready` (find work), `bd create "Title"` (new task), `bd close <id>` (complete).
+
+For new endpoints, use the workflow formula:
+```bash
+bd mol pour add-endpoint --var provider=kie --var endpoint=claude.v1.messages
+```
 
 ## Development Workflow
 
@@ -115,7 +120,7 @@ When picking up a beads issue, follow these steps in order. Format, lint, and un
 
 ```bash
 bd ready                                    # find unblocked issues
-bd update <id> --status in_progress         # claim it
+bd update <id> --claim                      # claim it
 git checkout -b <id>/<short-description>    # e.g. nakedapi-5/xai-search
 ```
 
@@ -149,12 +154,11 @@ Three jobs run on the PR:
 
 - **build** — compile + verify artifacts
 - **test** — lint + unit tests + integration replay
-- **harness-report** — posts a Markdown summary of changed recordings as a PR comment + uploads interactive HTML viewer as artifact
+- **harness-report** — posts a visual summary with embedded prompts, input media, and output results as a PR comment + uploads interactive HTML viewer as artifact
 
 ### 6. After merge
 
 ```bash
 git checkout main && git pull
 bd close <id>
-bd sync
 ```

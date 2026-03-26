@@ -243,6 +243,52 @@ export const claudeMessagesSchema: PayloadSchema = {
   },
 };
 
+export const claudeHaikuMessagesSchema: PayloadSchema = {
+  method: "POST",
+  path: "/claude-haiku-4-5/v1/messages",
+  contentType: "application/json",
+  fields: {
+    model: {
+      type: "string",
+      required: true,
+      description: "Model name",
+      enum: ["claude-haiku-4-5"],
+    },
+    messages: {
+      type: "array",
+      required: true,
+      description: "Conversation messages in chronological order",
+      items: {
+        type: "object",
+        properties: {
+          role: {
+            type: "string",
+            required: true,
+            enum: ["user", "assistant"],
+          },
+          content: { type: "string", required: true },
+        },
+      },
+    },
+    tools: {
+      type: "array",
+      description: "Optional callable tools with input_schema",
+      items: {
+        type: "object",
+        properties: {
+          name: { type: "string", required: true },
+          description: { type: "string", required: true },
+          input_schema: { type: "object", required: true },
+        },
+      },
+    },
+    stream: {
+      type: "boolean",
+      description: "If true, response is returned as SSE stream",
+    },
+  },
+};
+
 export const modelInputSchemas: Record<KieMediaModel, ModelInputSchema> = {
   "kling-3.0/video": {
     type: "video",

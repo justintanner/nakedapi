@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -42,8 +42,82 @@ jobs:
           test -f packages/provider/kie/dist/src/index.js
           test -f packages/provider/kie/dist/src/index.d.ts
 
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm run build
+
       - name: Lint
         run: pnpm run lint
 
-      - name: Run tests
+      - name: Unit tests
         run: pnpm run test:run
+
+      - name: Integration tests (replay)
+        run: pnpm run test:integration
+
+  harness-report:
+    if: github.event_name == 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate harness report
+        run: npx tsx tests/harness-report.ts >> $GITHUB_STEP_SUMMARY
+        env:
+          GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref }}
+
+      - name: Comment PR with harness summary
+        run: |
+          CHANGED=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }}...HEAD -- tests/recordings/ | wc -l)
+          if [ "$CHANGED" -gt 0 ]; then
+            gh pr comment ${{ github.event.pull_request.number }} \
+              --body "### Harness Report
+
+          **$CHANGED** HAR recording(s) changed in this PR.
+
+          [View full harness report](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) in the job summary."
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}

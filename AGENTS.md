@@ -136,26 +136,34 @@ packages/provider/<name>/
 
 ## CI/CD
 
-GitHub Actions runs: install → build → verify artifacts → lint → test (unit only) on push/PR to main.
-All checks must pass before merging.
+GitHub Actions (`ci.yml`) runs three jobs on push/PR to main:
+1. **build** — install, build, verify artifacts
+2. **test** — lint, unit tests, integration tests (replay mode)
+3. **harness-report** (PRs only) — generates a recording diff report in the job summary
 
-## Claude Code Tooling (`.claude/`)
+All checks must pass before merging. The harness report shows new/modified HAR recordings for human review.
 
-### Hooks
+## Beads Task Tracking
 
-- **PostToolUse**: Auto-formats `.ts`/`.tsx` files with prettier after every Edit/Write (skips `.claude/` directory files).
+Hooks auto-inject `bd prime` at session start and before compaction.
 
-### Skills
+| Command | Description |
+|---------|-------------|
+| `bd ready` | Find unblocked work |
+| `bd create "Title"` | Create a new task |
+| `bd close <id>` | Complete a task |
+| `bd sync` | Sync issues with git |
 
-| Skill | Trigger | Description |
-|-------|---------|-------------|
-| `/cp` | "commit and push" | Stage, commit, push -- skips secrets, `.env`, `dist/` |
-| `/qa` | "run qa", "check changes" | Build -> lint -> code smell scan -> tests, with summary table |
-| `/strict` | "strict review" | Launches the strict FP review agent in background |
+## PR Workflow
 
-### Agents
-
-- **strict** (cyan): FP and type-safety review agent. Reviews `packages/provider/*/src/` files for functional programming violations, `any` usage, and type-safety issues. Two modes: plan review (appends advice) and code review (fixes directly).
+1. Create beads issue: `bd create "Add <provider> <endpoint>"`
+2. Work on feature branch
+3. Run quality gates: `pnpm run build && pnpm run lint && pnpm run test:run`
+4. Record integration tests if adding new endpoints
+5. Push and open PR: `gh pr create`
+6. CI runs build + test + harness report (shows changed recordings in job summary)
+7. Human reviews PR + harness report in GitHub
+8. Merge to main, then `bd close <id> && bd sync`
 
 ## Landing the Plane (Session Completion)
 

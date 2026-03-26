@@ -78,11 +78,11 @@ Integration tests use `setupPolly(recordingName)` / `teardownPolly(ctx)` from `t
    ```
 4. Stop and tell the user recordings are ready for review.
 
-**CRITICAL: Do NOT `git add`, stage, approve, or commit any files under `tests/recordings/`.** The user reviews recordings in the harness UI (`pnpm run harness` → localhost:3475), manually approves them, and commits them to git. This is a human review gate — Claude must never bypass it.
+**CRITICAL: Do NOT `git add`, stage, approve, or commit any files under `tests/recordings/`.** The user reviews recordings either in the harness UI (`pnpm run harness` → localhost:3475) for local development, or in the GitHub PR harness report for PR-based review. This is a human review gate — Claude must never bypass it.
 
 ### CI
 
-GitHub Actions (`ci.yml`): install → build → verify artifacts → lint → test (unit only). Runs on push/PR to main.
+GitHub Actions (`ci.yml`): Three jobs — build (install, compile, verify artifacts), test (lint, unit tests, integration replay), harness-report (PR-only recording diff in job summary). Runs on push/PR to main.
 
 ## Code Conventions
 

@@ -81,6 +81,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     permissions:
+      contents: write
       pull-requests: write
     steps:
       - name: Checkout repository
@@ -113,6 +114,18 @@ jobs:
         run: npx tsx tests/harness-summary.ts
         env:
           GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref }}
+
+      - name: Commit harness assets
+        if: steps.summary.outputs.has_assets == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout ${{ github.head_ref }}
+          git add -f tests/harness-assets/
+          git commit -m "ci: add harness media assets [skip ci]" || true
+          git push
 
       - name: Post harness summary to PR
         if: steps.summary.outputs.has_changes == 'true'

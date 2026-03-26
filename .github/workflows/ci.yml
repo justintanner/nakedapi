@@ -80,6 +80,8 @@ jobs:
     if: github.event_name == 'pull_request'
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -105,6 +107,23 @@ jobs:
         run: npx tsx tests/harness-report.ts > harness-report.html
         env:
           GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref }}
+
+      - name: Generate harness summary
+        id: summary
+        run: npx tsx tests/harness-summary.ts
+        env:
+          GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref }}
+
+      - name: Post harness summary to PR
+        if: steps.summary.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --body-file harness-summary.md \
+            --edit-last 2>/dev/null || \
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --body-file harness-summary.md
 
       - name: Upload HAR viewer
         uses: actions/upload-artifact@v4

@@ -1,0 +1,67 @@
+{
+  "name": "add-endpoint",
+  "type": "molecule",
+  "description": "Add a single API endpoint to a NakedAPI provider package",
+  "variables": {
+    "provider": {
+      "description": "Provider package name (openai, xai, fal, kimicoding, kie)",
+      "required": true
+    },
+    "endpoint": {
+      "description": "Endpoint path (e.g., v1.embeddings, v1.audio.speech)",
+      "required": true
+    },
+    "method": {
+      "description": "HTTP method (GET or POST)",
+      "default": "POST"
+    },
+    "upstream_url": {
+      "description": "Link to upstream API documentation for this endpoint",
+      "required": false,
+      "default": ""
+    }
+  },
+  "steps": [
+    {
+      "id": "types",
+      "title": "Add request/response types for {{provider}} {{endpoint}}",
+      "description": "Add TypeScript interfaces for the request and response shapes to packages/provider/{{provider}}/src/types.ts. Follow naming conventions: PascalCase for types, include all fields from upstream docs.{{#upstream_url}} Ref: {{upstream_url}}{{/upstream_url}}",
+      "labels": ["code"]
+    },
+    {
+      "id": "schema",
+      "title": "Add payload schema for {{provider}} {{endpoint}}",
+      "description": "Add a payloadSchema object and validatePayload function for the {{method}} endpoint. Schema should match the request type definition.",
+      "labels": ["code"],
+      "depends_on": ["types"]
+    },
+    {
+      "id": "factory",
+      "title": "Wire {{endpoint}} into {{provider}} factory",
+      "description": "Add the endpoint method to the factory function in packages/provider/{{provider}}/src/{{provider}}.ts. Use Object.assign for callable namespaces. Export new types from index.ts.",
+      "labels": ["code"],
+      "depends_on": ["types", "schema"]
+    },
+    {
+      "id": "unit-test",
+      "title": "Add unit tests for {{provider}} {{endpoint}}",
+      "description": "Add test cases to tests/unit/providers/{{provider}}.test.ts covering success path, error handling, and payload validation.",
+      "labels": ["test"],
+      "depends_on": ["factory"]
+    },
+    {
+      "id": "integration-test",
+      "title": "Add integration test for {{provider}} {{endpoint}}",
+      "description": "Write tests/integration/{{provider}}-<endpoint-slug>.test.ts using setupPolly/teardownPolly. Record fixtures with POLLY_MODE=record, verify replay passes.",
+      "labels": ["test"],
+      "depends_on": ["factory"]
+    },
+    {
+      "id": "review-and-pr",
+      "title": "Review recordings and open PR for {{provider}} {{endpoint}}",
+      "description": "User reviews recordings locally (pnpm run harness). User commits recordings. Push and open PR. CI posts harness summary comment.",
+      "labels": ["review"],
+      "depends_on": ["unit-test", "integration-test"]
+    }
+  ]
+}

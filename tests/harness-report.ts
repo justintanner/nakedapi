@@ -4,76 +4,14 @@
  * Works locally too: npx tsx tests/harness-report.ts
  */
 
-import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { type HarEntry, type HarRecording } from "./har-data.js";
-
-interface ChangedRecording {
-  filePath: string;
-  changeType: "new" | "modified";
-  provider: string;
-  recordingName: string;
-  entries: HarEntry[];
-}
-
-function getBaseBranch(): string {
-  const base = process.env.GITHUB_BASE_REF;
-  return base ? `origin/${base}` : "origin/main";
-}
-
-function getChangedRecordings(baseBranch: string): ChangedRecording[] {
-  let diff: string;
-  try {
-    diff = execSync(
-      `git diff --name-status --diff-filter=ACMR ${baseBranch}...HEAD -- tests/recordings/`,
-      { encoding: "utf-8" }
-    ).trim();
-  } catch {
-    return [];
-  }
-
-  if (!diff) return [];
-
-  const recordings: ChangedRecording[] = [];
-
-  for (const line of diff.split("\n")) {
-    const [status, filePath] = line.split("\t");
-    if (!filePath || !filePath.endsWith("recording.har")) continue;
-
-    const fullPath = path.resolve(filePath);
-    if (!fs.existsSync(fullPath)) continue;
-
-    let har: { log?: { _recordingName?: string; entries?: HarEntry[] } };
-    try {
-      har = JSON.parse(fs.readFileSync(fullPath, "utf-8"));
-    } catch {
-      continue;
-    }
-
-    const provider = extractProvider(filePath);
-    const recordingName =
-      har.log?._recordingName ?? path.basename(path.dirname(filePath));
-
-    recordings.push({
-      filePath,
-      changeType: status === "A" ? "new" : "modified",
-      provider,
-      recordingName,
-      entries: har.log?.entries ?? [],
-    });
-  }
-
-  return recordings;
-}
-
-function extractProvider(filePath: string): string {
-  const parts = filePath.split("/");
-  const recordingsIdx = parts.indexOf("recordings");
-  if (recordingsIdx < 0 || recordingsIdx + 1 >= parts.length) return "unknown";
-  const providerDir = parts[recordingsIdx + 1];
-  return providerDir.replace(/_\d+$/, "");
-}
+import {
+  type HarRecording,
+  type ChangedRecording,
+  getBaseBranch,
+  getChangedRecordings,
+} from "./har-data.js";
 
 function generateHtml(changed: ChangedRecording[]): string {
   const viewerHtml = fs.readFileSync(

@@ -100,3 +100,63 @@ export function parseHarPaths(paths: string[]): HarRecording[] {
   }
   return results;
 }
+
+// --- CI diff helpers (used by harness-report.ts and harness-summary.ts) ---
+
+export interface ChangedRecording {
+  filePath: string;
+  changeType: "new" | "modified";
+  provider: string;
+  recordingName: string;
+  entries: HarEntry[];
+}
+
+export function getBaseBranch(): string {
+  const base = process.env.GITHUB_BASE_REF;
+  return base ? `origin/${base}` : "origin/main";
+}
+
+export function getChangedRecordings(baseBranch: string): ChangedRecording[] {
+  let diff: string;
+  try {
+    diff = execSync(
+      `git diff --name-status --diff-filter=ACMR ${baseBranch}...HEAD -- tests/recordings/`,
+      { encoding: "utf-8" }
+    ).trim();
+  } catch {
+    return [];
+  }
+
+  if (!diff) return [];
+
+  const recordings: ChangedRecording[] = [];
+
+  for (const line of diff.split("\n")) {
+    const [status, filePath] = line.split("\t");
+    if (!filePath || !filePath.endsWith("recording.har")) continue;
+
+    const fullPath = path.resolve(filePath);
+    if (!fs.existsSync(fullPath)) continue;
+
+    let har: { log?: { _recordingName?: string; entries?: HarEntry[] } };
+    try {
+      har = JSON.parse(fs.readFileSync(fullPath, "utf-8"));
+    } catch {
+      continue;
+    }
+
+    const provider = extractProvider(filePath);
+    const recordingName =
+      har.log?._recordingName ?? path.basename(path.dirname(filePath));
+
+    recordings.push({
+      filePath,
+      changeType: status === "A" ? "new" : "modified",
+      provider,
+      recordingName,
+      entries: har.log?.entries ?? [],
+    });
+  }
+
+  return recordings;
+}

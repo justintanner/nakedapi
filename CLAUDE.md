@@ -88,7 +88,7 @@ Integration tests use `setupPolly(recordingName)` / `teardownPolly(ctx)` from `t
 
 ### CI
 
-GitHub Actions (`ci.yml`): Three jobs — build (install, compile, verify artifacts), test (lint, unit tests, integration replay), harness-report (PR-only, generates self-contained HTML viewer uploaded as artifact). Runs on push/PR to main.
+GitHub Actions (`ci.yml`): Three jobs — build (install, compile, verify artifacts), test (lint, unit tests, integration replay), harness-report (PR-only, posts Markdown summary of changed recordings as a PR comment + uploads interactive HTML viewer as artifact). Runs on push/PR to main.
 
 ## Code Conventions
 
@@ -110,7 +110,7 @@ Quick reference: `bd ready` (find work), `bd create "Title"` (new task), `bd clo
 
 ## Development Workflow
 
-When picking up a beads issue, follow these steps in order. Do NOT skip steps. Each gate must pass before proceeding.
+When picking up a beads issue, follow these steps in order. Format, lint, and unit test gates are enforced automatically by git hooks (pre-commit: format + lint, pre-push: unit tests).
 
 ### 1. Claim work
 
@@ -122,41 +122,9 @@ git checkout -b <id>/<short-description>    # e.g. nakedapi-5/xai-search
 
 ### 2. Implement
 
-Code the feature/fix following the provider pattern. Reference the issue description for API docs and expected shape.
+Code the feature/fix following the provider pattern. Add types, factory method, unit tests, and integration test. One endpoint per PR.
 
-### 3. Format
-
-```bash
-pnpm run format
-```
-
-### 4. Lint — GATE
-
-```bash
-pnpm run lint
-```
-
-If lint fails, fix all errors and re-run until clean. Do not proceed with lint errors.
-
-### 5. Unit tests — GATE
-
-```bash
-pnpm run test:run
-```
-
-If tests fail, fix and re-run until all pass. Do not proceed with failing tests.
-
-### Automated Gates
-
-Steps 3-5 are enforced by beads git hooks — no need to run manually:
-
-- **Pre-commit**: Auto-formats staged code, then runs lint. Blocks commit on failure.
-- **Pre-push**: Runs unit tests. Blocks push on failure.
-- **CI**: GitHub Actions remains the final safety net.
-
-### 6. Integration tests (if adding/changing endpoints)
-
-Write the test file in `tests/integration/`, then:
+### 3. Record integration test fixtures
 
 ```bash
 # Record fixtures (needs API keys in env)
@@ -165,9 +133,13 @@ POLLY_MODE=record pnpm vitest run --config tests/vitest.integration.ts tests/int
 pnpm vitest run --config tests/vitest.integration.ts tests/integration/<file>.test.ts
 ```
 
-**STOP here.** Tell the user recordings are ready for review. Do NOT stage or commit files under `tests/recordings/` — the user reviews them either locally (`pnpm run harness`) or in the GitHub PR harness report.
+**STOP here.** Tell the user recordings are ready for review. Do NOT `git add`, stage, or commit any files under `tests/recordings/` — this is a human review gate.
 
-### 7. Push + open PR
+### 4. User reviews + commits recordings
+
+The user reviews recordings locally (`pnpm run harness` at localhost:3475) and commits them on the feature branch when satisfied.
+
+### 5. Push + open PR
 
 ```bash
 git add <source code + test files only, NOT recordings>
@@ -176,19 +148,15 @@ git push -u origin HEAD
 gh pr create --title "<title>" --body "Resolves <id>"
 ```
 
-The user will stage and commit approved recordings separately.
-
-### 8. CI validates (automatic)
+### 6. CI validates + posts harness report (automatic)
 
 Three jobs run on the PR:
 
 - **build** — compile + verify artifacts
 - **test** — lint + unit tests + integration replay
-- **harness-report** — generates self-contained HTML viewer of changed HAR recordings (uploaded as artifact)
+- **harness-report** — posts a Markdown summary of changed recordings as a PR comment + uploads interactive HTML viewer as artifact
 
-### 9. Human reviews PR + harness report in GitHub
-
-### 10. After merge
+### 7. After merge
 
 ```bash
 git checkout main && git pull

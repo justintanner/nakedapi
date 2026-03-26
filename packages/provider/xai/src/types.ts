@@ -254,6 +254,92 @@ export interface XaiVideoGenerationModelListResponse {
   models: XaiVideoGenerationModel[];
 }
 
+// Batch state (shared across batch responses)
+export interface XaiBatchState {
+  num_requests: number;
+  num_pending: number;
+  num_success: number;
+  num_error: number;
+  num_cancelled: number;
+}
+
+// Batch info (used in create, get, list, cancel responses)
+export interface XaiBatch {
+  batch_id: string;
+  name: string;
+  create_time: string;
+  expire_time: string | null;
+  create_api_key_id: string;
+  cancel_time: string | null;
+  cancel_by_xai_message: string | null;
+  state: XaiBatchState;
+}
+
+// POST /v1/batches request
+export interface XaiBatchCreateRequest {
+  name: string;
+}
+
+// GET /v1/batches response
+export interface XaiBatchListResponse {
+  batches: XaiBatch[];
+  pagination_token: string | null;
+}
+
+// GET /v1/batches query params
+export interface XaiBatchListParams {
+  limit?: number;
+  pagination_token?: string;
+}
+
+// Batch request metadata (GET /v1/batches/{batch_id}/requests)
+export interface XaiBatchRequestMetadata {
+  batch_request_id: string;
+  endpoint: string;
+  model: string;
+  state: "unknown" | "pending" | "succeeded" | "cancelled" | "failed";
+  create_time: string;
+  finish_time: string | null;
+}
+
+export interface XaiBatchRequestListResponse {
+  batch_request_metadata: XaiBatchRequestMetadata[];
+  pagination_token: string | null;
+}
+
+export interface XaiBatchRequestListParams {
+  limit?: number;
+  pagination_token?: string;
+}
+
+// Batch request item (POST /v1/batches/{batch_id}/requests)
+export interface XaiBatchRequestItem {
+  batch_request_id?: string | null;
+  batch_request: {
+    chat_get_completion: Record<string, unknown>;
+  };
+}
+
+export interface XaiBatchAddRequestsBody {
+  batch_requests: XaiBatchRequestItem[];
+}
+
+// Batch result item (GET /v1/batches/{batch_id}/results)
+export interface XaiBatchResultItem {
+  batch_request_id: string;
+  batch_result: Record<string, unknown>;
+}
+
+export interface XaiBatchResultListResponse {
+  results: XaiBatchResultItem[];
+  pagination_token: string | null;
+}
+
+export interface XaiBatchResultListParams {
+  limit?: number;
+  pagination_token?: string;
+}
+
 // Payload schema types
 export interface PayloadFieldSchema {
   type: "string" | "number" | "boolean" | "array" | "object";
@@ -366,11 +452,51 @@ interface XaiVideoGenerationModelsNamespace {
   (modelId: string, signal?: AbortSignal): Promise<XaiVideoGenerationModel>;
 }
 
+interface XaiBatchCreateMethod {
+  (req: XaiBatchCreateRequest, signal?: AbortSignal): Promise<XaiBatch>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface XaiBatchAddRequestsMethod {
+  (
+    batchId: string,
+    req: XaiBatchAddRequestsBody,
+    signal?: AbortSignal
+  ): Promise<void>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface XaiBatchesNamespace {
+  (
+    params?: XaiBatchListParams,
+    signal?: AbortSignal
+  ): Promise<XaiBatchListResponse>;
+  create: XaiBatchCreateMethod;
+  get(batchId: string, signal?: AbortSignal): Promise<XaiBatch>;
+  cancel(batchId: string, signal?: AbortSignal): Promise<XaiBatch>;
+  requests: {
+    (
+      batchId: string,
+      params?: XaiBatchRequestListParams,
+      signal?: AbortSignal
+    ): Promise<XaiBatchRequestListResponse>;
+    add: XaiBatchAddRequestsMethod;
+  };
+  results(
+    batchId: string,
+    params?: XaiBatchResultListParams,
+    signal?: AbortSignal
+  ): Promise<XaiBatchResultListResponse>;
+}
+
 interface XaiV1Namespace {
   chat: XaiChatNamespace;
   images: XaiImagesNamespace;
   videos: XaiVideosNamespace;
   files: XaiFilesNamespace;
+  batches: XaiBatchesNamespace;
   models: XaiModelsNamespace;
   languageModels: XaiLanguageModelsNamespace;
   imageGenerationModels: XaiImageGenerationModelsNamespace;

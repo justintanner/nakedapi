@@ -156,6 +156,53 @@ export const videoGenerationsSchema: PayloadSchema = {
   },
 };
 
+export const batchCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/batches",
+  contentType: "application/json",
+  fields: {
+    name: {
+      type: "string",
+      required: true,
+      description: "The name of the batch to create",
+    },
+  },
+};
+
+export const batchAddRequestsSchema: PayloadSchema = {
+  method: "POST",
+  path: "/batches/{batch_id}/requests",
+  contentType: "application/json",
+  fields: {
+    batch_requests: {
+      type: "array",
+      required: true,
+      description: "List of batch requests to add",
+      items: {
+        type: "object",
+        properties: {
+          batch_request_id: {
+            type: "string",
+            description: "User-provided identifier, unique within the batch",
+          },
+          batch_request: {
+            type: "object",
+            required: true,
+            properties: {
+              chat_get_completion: {
+                type: "object",
+                required: true,
+                description:
+                  "Chat request body for /v1/chat/completions endpoint",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
 export const videoExtensionsSchema: PayloadSchema = {
   method: "POST",
   path: "/videos/extensions",

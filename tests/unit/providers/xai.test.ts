@@ -427,6 +427,238 @@ describe("xai provider", () => {
     });
   });
 
+  describe("batches", () => {
+    it("should create a batch", async () => {
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            batch_id: "batch_123",
+            name: "My Batch",
+            create_time: "2025-11-11",
+            expire_time: "2025-11-12",
+            create_api_key_id: "key-123",
+            cancel_time: null,
+            cancel_by_xai_message: null,
+            state: {
+              num_requests: 0,
+              num_pending: 0,
+              num_success: 0,
+              num_error: 0,
+              num_cancelled: 0,
+            },
+          }),
+          { status: 200 }
+        )
+      );
+      const provider = xai({ apiKey: "test-key", fetch: mockFetch });
+      const result = await provider.v1.batches.create({ name: "My Batch" });
+      expect(result.batch_id).toBe("batch_123");
+      expect(result.name).toBe("My Batch");
+      expect(result.state.num_requests).toBe(0);
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://api.x.ai/v1/batches",
+        expect.objectContaining({ method: "POST" })
+      );
+    });
+
+    it("should list batches", async () => {
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            batches: [
+              {
+                batch_id: "batch_1",
+                name: "Batch 1",
+                create_time: "2025-11-11",
+                expire_time: null,
+                create_api_key_id: "key-1",
+                cancel_time: null,
+                cancel_by_xai_message: null,
+                state: {
+                  num_requests: 5,
+                  num_pending: 2,
+                  num_success: 3,
+                  num_error: 0,
+                  num_cancelled: 0,
+                },
+              },
+            ],
+            pagination_token: null,
+          }),
+          { status: 200 }
+        )
+      );
+      const provider = xai({ apiKey: "test-key", fetch: mockFetch });
+      const result = await provider.v1.batches();
+      expect(result.batches).toHaveLength(1);
+      expect(result.batches[0].batch_id).toBe("batch_1");
+    });
+
+    it("should list batches with pagination params", async () => {
+      const mockFetch = vi
+        .fn()
+        .mockResolvedValue(
+          new Response(
+            JSON.stringify({ batches: [], pagination_token: null }),
+            { status: 200 }
+          )
+        );
+      const provider = xai({ apiKey: "test-key", fetch: mockFetch });
+      await provider.v1.batches({ limit: 10, pagination_token: "abc" });
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://api.x.ai/v1/batches?limit=10&pagination_token=abc",
+        expect.objectContaining({ method: "GET" })
+      );
+    });
+
+    it("should get a specific batch", async () => {
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            batch_id: "batch_123",
+            name: "My Batch",
+            create_time: "2025-11-11",
+            expire_time: null,
+            create_api_key_id: "key-1",
+            cancel_time: null,
+            cancel_by_xai_message: null,
+            state: {
+              num_requests: 1,
+              num_pending: 0,
+              num_success: 1,
+              num_error: 0,
+              num_cancelled: 0,
+            },
+          }),
+          { status: 200 }
+        )
+      );
+      const provider = xai({ apiKey: "test-key", fetch: mockFetch });
+      const result = await provider.v1.batches.get("batch_123");
+      expect(result.batch_id).toBe("batch_123");
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://api.x.ai/v1/batches/batch_123",
+        expect.objectContaining({ method: "GET" })
+      );
+    });
+
+    it("should cancel a batch", async () => {
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            batch_id: "batch_123",
+            name: "My Batch",
+            create_time: "2025-11-11",
+            expire_time: null,
+            create_api_key_id: "key-1",
+            cancel_time: "2025-11-11",
+            cancel_by_xai_message: null,
+            state: {
+              num_requests: 1,
+              num_pending: 0,
+              num_success: 1,
+              num_error: 0,
+              num_cancelled: 0,
+            },
+          }),
+          { status: 200 }
+        )
+      );
+      const provider = xai({ apiKey: "test-key", fetch: mockFetch });
+      const result = await provider.v1.batches.cancel("batch_123");
+      expect(result.cancel_time).toBe("2025-11-11");
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://api.x.ai/v1/batches/batch_123:cancel",
+        expect.objectContaining({ method: "POST" })
+      );
+    });
+
+    it("should list batch requests", async () => {
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            batch_request_metadata: [
+              {
+                batch_request_id: "req_0",
+                endpoint: "xai_api.Chat/GetCompletion",
+                model: "grok-4",
+                state: "succeeded",
+                create_time: "2025-11-11",
+                finish_time: "2025-11-12",
+              },
+            ],
+            pagination_token: null,
+          }),
+          { status: 200 }
+        )
+      );
+      const provider = xai({ apiKey: "test-key", fetch: mockFetch });
+      const result = await provider.v1.batches.requests("batch_123");
+      expect(result.batch_request_metadata).toHaveLength(1);
+      expect(result.batch_request_metadata[0].state).toBe("succeeded");
+    });
+
+    it("should add requests to a batch", async () => {
+      const mockFetch = vi
+        .fn()
+        .mockResolvedValue(new Response("{}", { status: 200 }));
+      const provider = xai({ apiKey: "test-key", fetch: mockFetch });
+      await provider.v1.batches.requests.add("batch_123", {
+        batch_requests: [
+          {
+            batch_request_id: "req_0",
+            batch_request: {
+              chat_get_completion: {
+                messages: [{ role: "user", content: "Hello" }],
+                model: "grok-4",
+              },
+            },
+          },
+        ],
+      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://api.x.ai/v1/batches/batch_123/requests",
+        expect.objectContaining({ method: "POST" })
+      );
+    });
+
+    it("should get batch results", async () => {
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            results: [
+              {
+                batch_request_id: "req_0",
+                batch_result: {
+                  response: {
+                    chat_get_completion: {
+                      id: "resp-123",
+                      object: "chat.completion",
+                      model: "grok-4",
+                      choices: [
+                        {
+                          index: 0,
+                          message: { role: "assistant", content: "303" },
+                          finish_reason: "stop",
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            ],
+            pagination_token: null,
+          }),
+          { status: 200 }
+        )
+      );
+      const provider = xai({ apiKey: "test-key", fetch: mockFetch });
+      const result = await provider.v1.batches.results("batch_123");
+      expect(result.results).toHaveLength(1);
+      expect(result.results[0].batch_request_id).toBe("req_0");
+    });
+  });
+
   describe("payloadSchema", () => {
     const provider = xai({
       apiKey: "test-key",
@@ -496,6 +728,56 @@ describe("xai provider", () => {
 
     it("v1.videos.extensions.validatePayload rejects missing prompt and video", () => {
       const result = provider.v1.videos.extensions.validatePayload({});
+      expect(result.valid).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
+    });
+
+    it("v1.batches.create.payloadSchema has correct method and path", () => {
+      expect(provider.v1.batches.create.payloadSchema.method).toBe("POST");
+      expect(provider.v1.batches.create.payloadSchema.path).toBe("/batches");
+    });
+
+    it("v1.batches.create.validatePayload accepts valid payload", () => {
+      const result = provider.v1.batches.create.validatePayload({
+        name: "My Batch",
+      });
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it("v1.batches.create.validatePayload rejects missing name", () => {
+      const result = provider.v1.batches.create.validatePayload({});
+      expect(result.valid).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
+    });
+
+    it("v1.batches.requests.add.payloadSchema has correct method and path", () => {
+      expect(provider.v1.batches.requests.add.payloadSchema.method).toBe(
+        "POST"
+      );
+      expect(provider.v1.batches.requests.add.payloadSchema.path).toBe(
+        "/batches/{batch_id}/requests"
+      );
+    });
+
+    it("v1.batches.requests.add.validatePayload accepts valid payload", () => {
+      const result = provider.v1.batches.requests.add.validatePayload({
+        batch_requests: [
+          {
+            batch_request: {
+              chat_get_completion: {
+                messages: [{ role: "user", content: "Hi" }],
+                model: "grok-4",
+              },
+            },
+          },
+        ],
+      });
+      expect(result.valid).toBe(true);
+    });
+
+    it("v1.batches.requests.add.validatePayload rejects missing batch_requests", () => {
+      const result = provider.v1.batches.requests.add.validatePayload({});
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
     });

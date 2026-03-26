@@ -43,4 +43,7 @@ export type {
   FalCdnDeleteResult,
   FalDeletePayloadsResponse,
   FalProvider,
+  PayloadFieldSchema,
+  PayloadSchema,
+  ValidationResult,
 } from "./types";

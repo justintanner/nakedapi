@@ -1,5 +1,6 @@
 // Tests for the openai provider
 import { describe, it, expect, vi } from "vitest";
+import { openai } from "../../../packages/provider/openai/src";
 
 describe("openai provider", () => {
   interface OpenAiMessage {
@@ -253,6 +254,56 @@ describe("openai provider", () => {
       file,
       model: "gpt-4o-mini-transcribe",
       language: "en",
+    });
+  });
+
+  describe("payloadSchema", () => {
+    const realProvider = openai({
+      apiKey: "test-key",
+      fetch: vi.fn().mockResolvedValue(new Response("{}", { status: 200 })),
+    });
+
+    it("v1.chat.completions.payloadSchema exists with correct method and path", () => {
+      const schema = realProvider.v1.chat.completions.payloadSchema;
+      expect(schema).toBeDefined();
+      expect(schema.method).toBe("POST");
+      expect(schema.path).toBe("/chat/completions");
+    });
+
+    it("v1.audio.transcriptions.payloadSchema exists with correct method and path", () => {
+      const schema = realProvider.v1.audio.transcriptions.payloadSchema;
+      expect(schema).toBeDefined();
+      expect(schema.method).toBe("POST");
+      expect(schema.path).toBe("/audio/transcriptions");
+    });
+
+    it("v1.chat.completions.validatePayload accepts valid payload with messages array", () => {
+      const result = realProvider.v1.chat.completions.validatePayload({
+        messages: [{ role: "user", content: "Hello" }],
+      });
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it("v1.chat.completions.validatePayload rejects empty object missing required messages", () => {
+      const result = realProvider.v1.chat.completions.validatePayload({});
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain("messages is required");
+    });
+
+    it("v1.chat.completions.validatePayload rejects wrong type for messages", () => {
+      const result = realProvider.v1.chat.completions.validatePayload({
+        messages: "not-an-array",
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain("messages must be of type array");
+    });
+
+    it("v1.audio.transcriptions.validatePayload rejects missing required fields", () => {
+      const result = realProvider.v1.audio.transcriptions.validatePayload({});
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain("file is required");
+      expect(result.errors).toContain("model is required");
     });
   });
 });

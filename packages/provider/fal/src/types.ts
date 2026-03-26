@@ -296,15 +296,49 @@ export interface FalDeletePayloadsResponse {
   cdn_delete_results: FalCdnDeleteResult[];
 }
 
+// Payload schema types
+export interface PayloadFieldSchema {
+  type: "string" | "number" | "boolean" | "array" | "object";
+  required?: boolean;
+  description?: string;
+  enum?: readonly (string | number | boolean)[];
+  items?: PayloadFieldSchema;
+  properties?: Record<string, PayloadFieldSchema>;
+}
+
+export interface PayloadSchema {
+  method: "POST" | "DELETE";
+  path: string;
+  contentType: "application/json" | "multipart/form-data";
+  fields: Record<string, PayloadFieldSchema>;
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  errors: string[];
+}
+
 // ==================== Provider ====================
 
 // Namespace types
+interface FalPricingEstimateMethod {
+  (req: FalEstimateRequest, signal?: AbortSignal): Promise<FalEstimateResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
 interface FalModelsPricingNamespace {
   (params: FalPricingParams, signal?: AbortSignal): Promise<FalPricingResponse>;
-  estimate(
-    req: FalEstimateRequest,
+  estimate: FalPricingEstimateMethod;
+}
+
+interface FalDeletePayloadsMethod {
+  (
+    params: FalDeletePayloadsParams,
     signal?: AbortSignal
-  ): Promise<FalEstimateResponse>;
+  ): Promise<FalDeletePayloadsResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
 }
 
 interface FalModelsRequestsNamespace {
@@ -312,10 +346,7 @@ interface FalModelsRequestsNamespace {
     params: FalRequestsParams,
     signal?: AbortSignal
   ): Promise<FalRequestsResponse>;
-  payloads(
-    params: FalDeletePayloadsParams,
-    signal?: AbortSignal
-  ): Promise<FalDeletePayloadsResponse>;
+  payloads: FalDeletePayloadsMethod;
 }
 
 interface FalModelsNamespace {

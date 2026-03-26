@@ -3,6 +3,7 @@ import {
   textBlock,
   imageBase64,
   imageUrl,
+  kimicoding,
 } from "../../../packages/provider/kimicoding/src";
 import type {
   ChatRequest,
@@ -48,29 +49,10 @@ function createMockProvider(): KimiCodingProvider {
         messages,
       },
     },
-    getModels: vi.fn().mockResolvedValue(["k2p5"]),
-    validateModel: vi
-      .fn()
-      .mockImplementation(
-        (modelId: string) => modelId === "k2p5" || modelId.startsWith("k2")
-      ),
-    getMaxTokens: vi.fn().mockReturnValue(32768),
   };
 }
 
 describe("kimicoding provider", () => {
-  it("should validate model IDs correctly", () => {
-    const provider = createMockProvider();
-    expect(provider.validateModel("k2p5")).toBe(true);
-    expect(provider.validateModel("k2-next")).toBe(true);
-    expect(provider.validateModel("gpt-4")).toBe(false);
-  });
-
-  it("should return max tokens for k2p5", () => {
-    const provider = createMockProvider();
-    expect(provider.getMaxTokens("k2p5")).toBe(32768);
-  });
-
   it("should stream chat responses", async () => {
     const provider = createMockProvider();
     const req: ChatRequest = {
@@ -103,12 +85,6 @@ describe("kimicoding provider", () => {
     expect(response.content[0].text).toBe("Hello! How can I help you today?");
     expect(response.model).toBe("k2p5");
     expect(response.usage.input_tokens + response.usage.output_tokens).toBe(18);
-  });
-
-  it("should return available models", async () => {
-    const provider = createMockProvider();
-    const models = await provider.getModels();
-    expect(models).toEqual(["k2p5"]);
   });
 
   it("should accept content block array with image in chat request", async () => {
@@ -166,6 +142,58 @@ describe("kimicoding provider", () => {
     expect(block).toEqual({
       type: "image",
       source: { type: "url", url: "https://example.com/img.png" },
+    });
+  });
+
+  describe("payloadSchema", () => {
+    const provider = kimicoding({
+      apiKey: "test-key",
+      fetch: vi.fn().mockResolvedValue(new Response("{}", { status: 200 })),
+    });
+
+    it("coding.v1.messages.payloadSchema has method POST and path /v1/messages", () => {
+      const schema = provider.coding.v1.messages.payloadSchema;
+      expect(schema.method).toBe("POST");
+      expect(schema.path).toBe("/v1/messages");
+    });
+
+    it("coding.v1.messages.stream.payloadSchema has method POST and path /v1/messages", () => {
+      const schema = provider.coding.v1.messages.stream.payloadSchema;
+      expect(schema.method).toBe("POST");
+      expect(schema.path).toBe("/v1/messages");
+    });
+
+    it("coding.v1.messages.validatePayload accepts valid messages request", () => {
+      const result = provider.coding.v1.messages.validatePayload({
+        model: "k2p5",
+        messages: [{ role: "user", content: "Hi" }],
+        max_tokens: 1024,
+      });
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it("coding.v1.messages.validatePayload rejects empty object", () => {
+      const result = provider.coding.v1.messages.validatePayload({});
+      expect(result.valid).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
+      expect(result.errors.join(" ")).toContain("model");
+      expect(result.errors.join(" ")).toContain("messages");
+      expect(result.errors.join(" ")).toContain("max_tokens");
+    });
+
+    it("coding.v1.messages.stream.validatePayload works the same as messages", () => {
+      const valid = provider.coding.v1.messages.stream.validatePayload({
+        model: "k2p5",
+        messages: [{ role: "user", content: "Hi" }],
+        max_tokens: 1024,
+      });
+      expect(valid.valid).toBe(true);
+      expect(valid.errors).toHaveLength(0);
+
+      const invalid = provider.coding.v1.messages.stream.validatePayload({});
+      expect(invalid.valid).toBe(false);
+      expect(invalid.errors.length).toBeGreaterThan(0);
     });
   });
 });

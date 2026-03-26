@@ -22,6 +22,15 @@ import {
   XaiProvider,
   XaiError,
 } from "./types";
+import type { ValidationResult } from "./types";
+import {
+  chatCompletionsSchema,
+  imageGenerationsSchema,
+  imageEditsSchema,
+  videoGenerationsSchema,
+  videoExtensionsSchema,
+} from "./schemas";
+import { validatePayload } from "./validate";
 
 export function xai(opts: XaiOptions): XaiProvider {
   const baseURL = opts.baseURL ?? "https://api.x.ai/v1";
@@ -98,19 +107,35 @@ export function xai(opts: XaiOptions): XaiProvider {
       );
     },
     {
-      async generations(
-        req: XaiVideoGenerateRequest,
-        signal?: AbortSignal
-      ): Promise<XaiVideoAsyncResponse> {
-        return await makeRequest("POST", "/videos/generations", req, signal);
-      },
+      generations: Object.assign(
+        async function generations(
+          req: XaiVideoGenerateRequest,
+          signal?: AbortSignal
+        ): Promise<XaiVideoAsyncResponse> {
+          return await makeRequest("POST", "/videos/generations", req, signal);
+        },
+        {
+          payloadSchema: videoGenerationsSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, videoGenerationsSchema);
+          },
+        }
+      ),
 
-      async extensions(
-        req: XaiVideoExtendRequest,
-        signal?: AbortSignal
-      ): Promise<XaiVideoAsyncResponse> {
-        return await makeRequest("POST", "/videos/extensions", req, signal);
-      },
+      extensions: Object.assign(
+        async function extensions(
+          req: XaiVideoExtendRequest,
+          signal?: AbortSignal
+        ): Promise<XaiVideoAsyncResponse> {
+          return await makeRequest("POST", "/videos/extensions", req, signal);
+        },
+        {
+          payloadSchema: videoExtensionsSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, videoExtensionsSchema);
+          },
+        }
+      ),
     }
   );
 
@@ -299,32 +324,61 @@ export function xai(opts: XaiOptions): XaiProvider {
   return {
     v1: {
       chat: {
-        async completions(
-          req: XaiChatRequest,
-          signal?: AbortSignal
-        ): Promise<XaiChatResponse> {
-          return await makeRequest<XaiChatResponse>(
-            "POST",
-            "/chat/completions",
-            req,
-            signal
-          );
-        },
+        completions: Object.assign(
+          async function completions(
+            req: XaiChatRequest,
+            signal?: AbortSignal
+          ): Promise<XaiChatResponse> {
+            return await makeRequest<XaiChatResponse>(
+              "POST",
+              "/chat/completions",
+              req,
+              signal
+            );
+          },
+          {
+            payloadSchema: chatCompletionsSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, chatCompletionsSchema);
+            },
+          }
+        ),
       },
       images: {
-        async generations(
-          req: XaiImageGenerateRequest,
-          signal?: AbortSignal
-        ): Promise<XaiImageResponse> {
-          return await makeRequest("POST", "/images/generations", req, signal);
-        },
+        generations: Object.assign(
+          async function generations(
+            req: XaiImageGenerateRequest,
+            signal?: AbortSignal
+          ): Promise<XaiImageResponse> {
+            return await makeRequest(
+              "POST",
+              "/images/generations",
+              req,
+              signal
+            );
+          },
+          {
+            payloadSchema: imageGenerationsSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, imageGenerationsSchema);
+            },
+          }
+        ),
 
-        async edits(
-          req: XaiImageEditRequest,
-          signal?: AbortSignal
-        ): Promise<XaiImageResponse> {
-          return await makeRequest("POST", "/images/edits", req, signal);
-        },
+        edits: Object.assign(
+          async function edits(
+            req: XaiImageEditRequest,
+            signal?: AbortSignal
+          ): Promise<XaiImageResponse> {
+            return await makeRequest("POST", "/images/edits", req, signal);
+          },
+          {
+            payloadSchema: imageEditsSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, imageEditsSchema);
+            },
+          }
+        ),
       },
       videos,
       files,

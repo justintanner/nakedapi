@@ -82,13 +82,40 @@ export interface AnthropicStreamEvent {
   };
 }
 
+// Payload schema types
+export interface PayloadFieldSchema {
+  type: "string" | "number" | "boolean" | "array" | "object";
+  required?: boolean;
+  description?: string;
+  enum?: readonly (string | number | boolean)[];
+  items?: PayloadFieldSchema;
+  properties?: Record<string, PayloadFieldSchema>;
+}
+
+export interface PayloadSchema {
+  method: "POST" | "DELETE";
+  path: string;
+  contentType: "application/json" | "multipart/form-data";
+  fields: Record<string, PayloadFieldSchema>;
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  errors: string[];
+}
+
 // Namespace types
+interface KimiCodingStreamMethod {
+  (req: ChatRequest, signal?: AbortSignal): AsyncIterable<AnthropicStreamEvent>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
 interface KimiCodingMessagesNamespace {
   (req: ChatRequest, signal?: AbortSignal): Promise<AnthropicMessage>;
-  stream(
-    req: ChatRequest,
-    signal?: AbortSignal
-  ): AsyncIterable<AnthropicStreamEvent>;
+  stream: KimiCodingStreamMethod;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
 }
 
 interface KimiCodingV1Namespace {
@@ -101,9 +128,6 @@ interface KimiCodingCodingNamespace {
 
 export interface Provider {
   coding: KimiCodingCodingNamespace;
-  getModels(): Promise<string[]>;
-  validateModel(modelId: string): boolean;
-  getMaxTokens(modelId: string): number;
 }
 
 export interface KimiCodingOptions {

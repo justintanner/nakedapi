@@ -427,14 +427,48 @@ export type KieTaskInfo = KieApiEnvelope<KieTaskInfoData>;
 // Credits response (raw envelope)
 export type KieCreditsResponse = KieApiEnvelope<number>;
 
+// Payload schema types
+export interface PayloadFieldSchema {
+  type: "string" | "number" | "boolean" | "array" | "object";
+  required?: boolean;
+  description?: string;
+  enum?: readonly (string | number | boolean)[];
+  items?: PayloadFieldSchema;
+  properties?: Record<string, PayloadFieldSchema>;
+}
+
+export interface PayloadSchema {
+  method: "POST" | "DELETE";
+  path: string;
+  contentType: "application/json" | "multipart/form-data";
+  fields: Record<string, PayloadFieldSchema>;
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  errors: string[];
+}
+
 // Namespace types
+interface KieCreateTaskMethod {
+  (req: MediaGenerationRequest): Promise<TaskResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
 interface KieJobsNamespace {
-  createTask(req: MediaGenerationRequest): Promise<TaskResponse>;
+  createTask: KieCreateTaskMethod;
   recordInfo(taskId: string): Promise<KieTaskInfo>;
 }
 
+interface KieDownloadUrlMethod {
+  (req: DownloadUrlRequest): Promise<DownloadUrlResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
 interface KieCommonNamespace {
-  downloadUrl(req: DownloadUrlRequest): Promise<DownloadUrlResponse>;
+  downloadUrl: KieDownloadUrlMethod;
 }
 
 interface KieCreditNamespace {
@@ -447,17 +481,20 @@ interface KieV1Namespace {
   chat: KieCreditNamespace;
 }
 
+interface KieFileStreamUploadMethod {
+  (req: UploadMediaRequest): Promise<UploadMediaResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
 interface KieApiNamespace {
   v1: KieV1Namespace;
-  fileStreamUpload(req: UploadMediaRequest): Promise<UploadMediaResponse>;
+  fileStreamUpload: KieFileStreamUploadMethod;
 }
 
 // Provider interface (sub-provider types imported in index.ts)
 export interface KieProvider {
   api: KieApiNamespace;
-  validateModel(modelId: string): boolean;
-  getModels(): string[];
-  getModelType(modelId: string): MediaType | null;
   veo: import("./veo").VeoProvider;
   suno: import("./suno").SunoProvider;
   chat: import("./chat").KieChatProvider;

@@ -109,20 +109,50 @@ export interface OpenAiChatResponse {
   error?: { message?: string; type?: string };
 }
 
+// Payload schema types
+export interface PayloadFieldSchema {
+  type: "string" | "number" | "boolean" | "array" | "object";
+  required?: boolean;
+  description?: string;
+  enum?: readonly (string | number | boolean)[];
+  items?: PayloadFieldSchema;
+  properties?: Record<string, PayloadFieldSchema>;
+}
+
+export interface PayloadSchema {
+  method: "POST" | "DELETE";
+  path: string;
+  contentType: "application/json" | "multipart/form-data";
+  fields: Record<string, PayloadFieldSchema>;
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  errors: string[];
+}
+
 // Namespace types
 interface OpenAiChatCompletionsMethod {
   (req: OpenAiChatRequest, signal?: AbortSignal): Promise<OpenAiChatResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
 }
 
 interface OpenAiChatNamespace {
   completions: OpenAiChatCompletionsMethod;
 }
 
-interface OpenAiAudioNamespace {
-  transcriptions(
+interface OpenAiAudioTranscriptionsMethod {
+  (
     req: OpenAiTranscribeRequest,
     signal?: AbortSignal
   ): Promise<OpenAiTranscribeResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiAudioNamespace {
+  transcriptions: OpenAiAudioTranscriptionsMethod;
 }
 
 interface OpenAiV1Namespace {

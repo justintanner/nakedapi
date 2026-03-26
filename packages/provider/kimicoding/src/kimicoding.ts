@@ -8,7 +8,10 @@ import {
   AnthropicMessage,
   AnthropicStreamEvent,
 } from "./types";
+import type { ValidationResult } from "./types";
 import { sseToIterable } from "./sse";
+import { messagesSchema } from "./schemas";
+import { validatePayload } from "./validate";
 
 interface AnthropicErrorBody {
   error?: { message?: string; type?: string };
@@ -145,25 +148,24 @@ export function kimicoding(opts: KimiCodingOptions): KimiCodingProvider {
     }
   }
 
-  const messages = Object.assign(chatImpl, { stream: streamImpl });
+  const messages = Object.assign(chatImpl, {
+    stream: Object.assign(streamImpl, {
+      payloadSchema: messagesSchema,
+      validatePayload(data: unknown): ValidationResult {
+        return validatePayload(data, messagesSchema);
+      },
+    }),
+    payloadSchema: messagesSchema,
+    validatePayload(data: unknown): ValidationResult {
+      return validatePayload(data, messagesSchema);
+    },
+  });
 
   return {
     coding: {
       v1: {
         messages,
       },
-    },
-
-    async getModels(): Promise<string[]> {
-      return ["k2p5"];
-    },
-
-    validateModel(modelId: string): boolean {
-      return modelId === "k2p5" || modelId.startsWith("k2");
-    },
-
-    getMaxTokens(_modelId: string): number {
-      return 32768;
     },
   };
 }

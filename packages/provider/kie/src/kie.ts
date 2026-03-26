@@ -3,7 +3,6 @@ import {
   TaskResponse,
   KieOptions,
   KieProvider,
-  MediaType,
   KieError,
   KieCreditsResponse,
   DownloadUrlRequest,
@@ -12,6 +11,13 @@ import {
   UploadMediaResponse,
   KieTaskInfo,
 } from "./types";
+import type { ValidationResult } from "./types";
+import {
+  createTaskSchema,
+  downloadUrlSchema,
+  fileStreamUploadSchema,
+} from "./schemas";
+import { validatePayload } from "./validate";
 import { createVeoProvider } from "./veo";
 import { createSunoProvider } from "./suno";
 import { createChatProvider } from "./chat";
@@ -41,50 +47,11 @@ function inferMimeType(filename: string): string | undefined {
   return ext ? MIME_TYPES[ext] : undefined;
 }
 
-// Supported models configuration
-const SUPPORTED_MODELS: Record<
-  string,
-  { type: MediaType; supported: boolean }
-> = {
-  "kling-3.0/video": { type: "video", supported: true },
-  "kling-3.0/motion-control": { type: "video", supported: true },
-  "grok-imagine/text-to-image": { type: "image", supported: true },
-  "grok-imagine/image-to-image": { type: "image", supported: true },
-  "grok-imagine/text-to-video": { type: "video", supported: true },
-  "grok-imagine/image-to-video": { type: "video", supported: true },
-  "grok-imagine/extend": { type: "video", supported: true },
-  "grok-imagine/upscale": { type: "video", supported: true },
-  "nano-banana-pro": { type: "image", supported: true },
-  "bytedance/seedance-1.5-pro": { type: "video", supported: true },
-  "nano-banana-2": { type: "image", supported: true },
-  "gpt-image/1.5-image-to-image": { type: "image", supported: true },
-  "seedream/5-lite-image-to-image": { type: "image", supported: true },
-  "elevenlabs/text-to-dialogue-v3": { type: "audio", supported: true },
-  "elevenlabs/sound-effect-v2": { type: "audio", supported: true },
-  "elevenlabs/speech-to-text": { type: "transcription", supported: true },
-  "qwen2/text-to-image": { type: "image", supported: true },
-  "sora-watermark-remover": { type: "video", supported: true },
-};
-
 export function kie(opts: KieOptions): KieProvider {
   const baseURL = opts.baseURL ?? "https://api.kie.ai";
   const uploadBaseURL = opts.uploadBaseURL ?? "https://kieai.redpandaai.co";
   const doFetch = opts.fetch ?? fetch;
   const timeout = opts.timeout ?? 30000;
-  function validateModel(modelId: string): boolean {
-    return SUPPORTED_MODELS[modelId]?.supported === true;
-  }
-
-  function getModels(): string[] {
-    return Object.keys(SUPPORTED_MODELS).filter(
-      (model) => SUPPORTED_MODELS[model].supported
-    );
-  }
-
-  function getModelType(modelId: string): MediaType | null {
-    return SUPPORTED_MODELS[modelId]?.type || null;
-  }
-
   async function createTask(
     req: MediaGenerationRequest
   ): Promise<TaskResponse> {
@@ -316,14 +283,31 @@ export function kie(opts: KieOptions): KieProvider {
     chat: createChatProvider(baseURL, opts.apiKey, doFetch, timeout),
     api: {
       v1: {
-        jobs: { createTask, recordInfo },
-        common: { downloadUrl },
+        jobs: {
+          createTask: Object.assign(createTask, {
+            payloadSchema: createTaskSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, createTaskSchema);
+            },
+          }),
+          recordInfo,
+        },
+        common: {
+          downloadUrl: Object.assign(downloadUrl, {
+            payloadSchema: downloadUrlSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, downloadUrlSchema);
+            },
+          }),
+        },
         chat: { credit },
       },
-      fileStreamUpload,
+      fileStreamUpload: Object.assign(fileStreamUpload, {
+        payloadSchema: fileStreamUploadSchema,
+        validatePayload(data: unknown): ValidationResult {
+          return validatePayload(data, fileStreamUploadSchema);
+        },
+      }),
     },
-    validateModel,
-    getModels,
-    getModelType,
   };
 }

@@ -18,6 +18,9 @@ import {
   FalDeletePayloadsParams,
   FalDeletePayloadsResponse,
 } from "./types";
+import type { ValidationResult } from "./types";
+import { pricingEstimateSchema, deletePayloadsSchema } from "./schemas";
+import { validatePayload } from "./validate";
 
 // Build query string from parameters (no case conversion)
 function buildQueryString(params: Record<string, unknown>): string {
@@ -150,17 +153,25 @@ export function fal(opts: FalOptions): FalProvider {
       );
     },
     {
-      async estimate(
-        req: FalEstimateRequest,
-        signal?: AbortSignal
-      ): Promise<FalEstimateResponse> {
-        return makeRequest<FalEstimateResponse>(
-          "POST",
-          "/models/pricing/estimate",
-          req as unknown as Record<string, unknown>,
-          signal
-        );
-      },
+      estimate: Object.assign(
+        async function estimate(
+          req: FalEstimateRequest,
+          signal?: AbortSignal
+        ): Promise<FalEstimateResponse> {
+          return makeRequest<FalEstimateResponse>(
+            "POST",
+            "/models/pricing/estimate",
+            req as unknown as Record<string, unknown>,
+            signal
+          );
+        },
+        {
+          payloadSchema: pricingEstimateSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, pricingEstimateSchema);
+          },
+        }
+      ),
     }
   );
 
@@ -177,22 +188,30 @@ export function fal(opts: FalOptions): FalProvider {
       );
     },
 
-    async payloads(
-      params: FalDeletePayloadsParams,
-      signal?: AbortSignal
-    ): Promise<FalDeletePayloadsResponse> {
-      const headers: Record<string, string> = {};
-      if (params.idempotency_key) {
-        headers["Idempotency-Key"] = params.idempotency_key;
+    payloads: Object.assign(
+      async function payloads(
+        params: FalDeletePayloadsParams,
+        signal?: AbortSignal
+      ): Promise<FalDeletePayloadsResponse> {
+        const headers: Record<string, string> = {};
+        if (params.idempotency_key) {
+          headers["Idempotency-Key"] = params.idempotency_key;
+        }
+        return makeRequest<FalDeletePayloadsResponse>(
+          "DELETE",
+          `/models/requests/${params.request_id}/payloads`,
+          undefined,
+          signal,
+          headers
+        );
+      },
+      {
+        payloadSchema: deletePayloadsSchema,
+        validatePayload(data: unknown): ValidationResult {
+          return validatePayload(data, deletePayloadsSchema);
+        },
       }
-      return makeRequest<FalDeletePayloadsResponse>(
-        "DELETE",
-        `/models/requests/${params.request_id}/payloads`,
-        undefined,
-        signal,
-        headers
-      );
-    },
+    ),
   };
 
   const models = Object.assign(

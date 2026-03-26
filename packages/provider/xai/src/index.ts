@@ -41,4 +41,7 @@ export type {
   XaiVideoGenerationModel,
   XaiVideoGenerationModelListResponse,
   XaiProvider,
+  PayloadFieldSchema,
+  PayloadSchema,
+  ValidationResult,
 } from "./types";

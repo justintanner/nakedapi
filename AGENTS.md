@@ -7,7 +7,7 @@ This file provides guidelines for AI agents working in this repository.
 TypeScript monorepo for AI provider packages (@nakedapi/openai, @nakedapi/xai, @nakedapi/fal, @nakedapi/kimicoding, @nakedapi/kie).
 Uses pnpm workspaces, ES modules, and Vitest for testing.
 
-Provider method paths mirror their upstream API endpoint paths (e.g., `provider.v1.chat.completions()` maps to `POST /v1/chat/completions`). Callable namespaces use `Object.assign` for dual-purpose nodes. Local helpers like `getModels()` stay flat on the provider root.
+Provider method paths mirror their upstream API endpoint paths (e.g., `provider.v1.chat.completions()` maps to `POST /v1/chat/completions`). Callable namespaces use `Object.assign` for dual-purpose nodes. POST endpoints expose `.payloadSchema` and `.validatePayload(data)` for runtime validation.
 
 ## Build/Lint/Test Commands
 

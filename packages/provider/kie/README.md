@@ -183,12 +183,6 @@ Creates a Kie provider instance.
 - `kie.api.v1.common.downloadUrl(req)`: Converts a kie.ai file URL to a temporary download link (20 min)
 - `kie.api.v1.chat.credit()`: Returns account credit balance
 
-**Local methods:**
-
-- `kie.validateModel(modelId)`: Checks if a model is supported
-- `kie.getModels()`: Returns list of supported models
-- `kie.getModelType(modelId)`: Returns the media type for a model
-
 **Sub-providers:**
 
 - `kie.veo.api.v1.veo.generate(req)`: Generate video with Veo (veo3, veo3_fast)

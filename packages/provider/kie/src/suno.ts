@@ -1,4 +1,7 @@
 import { kieRequest } from "./request";
+import type { PayloadSchema, ValidationResult } from "./types";
+import { sunoGenerateSchema } from "./schemas";
+import { validatePayload } from "./validate";
 
 export type SunoModel = "V4" | "V4_5" | "V4_5PLUS" | "V4_5ALL" | "V5";
 
@@ -20,8 +23,14 @@ interface SunoSubmitResponse {
   };
 }
 
+interface SunoGenerateMethod {
+  (req: SunoGenerateRequest): Promise<SunoSubmitResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
 interface SunoV1Namespace {
-  generate(req: SunoGenerateRequest): Promise<SunoSubmitResponse>;
+  generate: SunoGenerateMethod;
 }
 
 interface SunoApiNamespace {
@@ -53,7 +62,12 @@ export function createSunoProvider(
   return {
     api: {
       v1: {
-        generate: createTask,
+        generate: Object.assign(createTask, {
+          payloadSchema: sunoGenerateSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, sunoGenerateSchema);
+          },
+        }),
       },
     },
   };

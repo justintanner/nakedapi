@@ -1,4 +1,7 @@
 import { kieRequest } from "./request";
+import type { PayloadSchema, ValidationResult } from "./types";
+import { veoGenerateSchema, veoExtendSchema } from "./schemas";
+import { validatePayload } from "./validate";
 
 export type VeoModel = "veo3" | "veo3_fast";
 
@@ -33,9 +36,21 @@ interface VeoSubmitResponse {
   };
 }
 
+interface VeoGenerateMethod {
+  (req: VeoGenerateRequest): Promise<VeoSubmitResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface VeoExtendMethod {
+  (req: VeoExtendRequest): Promise<VeoSubmitResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
 interface VeoVeoNamespace {
-  generate(req: VeoGenerateRequest): Promise<VeoSubmitResponse>;
-  extend(req: VeoExtendRequest): Promise<VeoSubmitResponse>;
+  generate: VeoGenerateMethod;
+  extend: VeoExtendMethod;
 }
 
 interface VeoV1Namespace {
@@ -82,8 +97,18 @@ export function createVeoProvider(
     api: {
       v1: {
         veo: {
-          generate: submitGenerate,
-          extend: submitExtend,
+          generate: Object.assign(submitGenerate, {
+            payloadSchema: veoGenerateSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, veoGenerateSchema);
+            },
+          }),
+          extend: Object.assign(submitExtend, {
+            payloadSchema: veoExtendSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, veoExtendSchema);
+            },
+          }),
         },
       },
     },

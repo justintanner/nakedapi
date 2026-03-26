@@ -1,5 +1,6 @@
 // Tests for the kie provider
 import { describe, it, expect, vi } from "vitest";
+import { kie } from "../../../packages/provider/kie/src";
 
 describe("kie provider", () => {
   interface KieApiEnvelope<T = Record<string, unknown>> {
@@ -14,8 +15,6 @@ describe("kie provider", () => {
     model: string;
     input: Record<string, unknown>;
   }
-
-  type MediaType = "image" | "video" | "audio" | "transcription";
 
   interface VeoSubmitResponse {
     code: number;
@@ -106,53 +105,10 @@ describe("kie provider", () => {
         mimeType?: string;
       }): Promise<UploadMediaResponse>;
     };
-    validateModel(modelId: string): boolean;
-    getModels(): string[];
-    getModelType(modelId: string): MediaType | null;
     veo: VeoProvider;
     suno: SunoProvider;
     chat: KieChatProvider;
   }
-
-  const ALL_MODELS = [
-    "kling-3.0/video",
-    "grok-imagine/text-to-image",
-    "grok-imagine/image-to-image",
-    "grok-imagine/text-to-video",
-    "grok-imagine/image-to-video",
-    "grok-imagine/extend",
-    "grok-imagine/upscale",
-    "nano-banana-pro",
-    "bytedance/seedance-1.5-pro",
-    "nano-banana-2",
-    "gpt-image/1.5-image-to-image",
-    "seedream/5-lite-image-to-image",
-    "elevenlabs/text-to-dialogue-v3",
-    "elevenlabs/sound-effect-v2",
-    "elevenlabs/speech-to-text",
-    "qwen2/text-to-image",
-    "sora-watermark-remover",
-  ];
-
-  const MODEL_TYPES: Record<string, MediaType> = {
-    "kling-3.0/video": "video",
-    "grok-imagine/text-to-image": "image",
-    "grok-imagine/image-to-image": "image",
-    "grok-imagine/text-to-video": "video",
-    "grok-imagine/image-to-video": "video",
-    "grok-imagine/extend": "video",
-    "grok-imagine/upscale": "video",
-    "nano-banana-pro": "image",
-    "bytedance/seedance-1.5-pro": "video",
-    "nano-banana-2": "image",
-    "gpt-image/1.5-image-to-image": "image",
-    "seedream/5-lite-image-to-image": "image",
-    "elevenlabs/text-to-dialogue-v3": "audio",
-    "elevenlabs/sound-effect-v2": "audio",
-    "elevenlabs/speech-to-text": "transcription",
-    "qwen2/text-to-image": "image",
-    "sora-watermark-remover": "video",
-  };
 
   function createMockProvider(): KieProvider {
     return {
@@ -207,13 +163,6 @@ describe("kie provider", () => {
           },
         } satisfies UploadMediaResponse),
       },
-      validateModel: vi
-        .fn()
-        .mockImplementation((modelId: string) => ALL_MODELS.includes(modelId)),
-      getModels: vi.fn().mockReturnValue(ALL_MODELS),
-      getModelType: vi
-        .fn()
-        .mockImplementation((modelId: string) => MODEL_TYPES[modelId] ?? null),
       veo: {
         api: {
           v1: {
@@ -252,42 +201,6 @@ describe("kie provider", () => {
       },
     };
   }
-
-  it("should validate all supported models", () => {
-    const provider = createMockProvider();
-    for (const model of ALL_MODELS) {
-      expect(provider.validateModel(model)).toBe(true);
-    }
-    expect(provider.validateModel("unsupported-model")).toBe(false);
-  });
-
-  it("should return correct model types", () => {
-    const provider = createMockProvider();
-    expect(provider.getModelType("kling-3.0/video")).toBe("video");
-    expect(provider.getModelType("nano-banana-pro")).toBe("image");
-    expect(provider.getModelType("nano-banana-2")).toBe("image");
-    expect(provider.getModelType("bytedance/seedance-1.5-pro")).toBe("video");
-    expect(provider.getModelType("elevenlabs/text-to-dialogue-v3")).toBe(
-      "audio"
-    );
-    expect(provider.getModelType("elevenlabs/sound-effect-v2")).toBe("audio");
-    expect(provider.getModelType("elevenlabs/speech-to-text")).toBe(
-      "transcription"
-    );
-    expect(provider.getModelType("sora-watermark-remover")).toBe("video");
-    expect(provider.getModelType("grok-imagine/extend")).toBe("video");
-    expect(provider.getModelType("grok-imagine/upscale")).toBe("video");
-    expect(provider.getModelType("unknown")).toBe(null);
-  });
-
-  it("should return all 17 models", () => {
-    const provider = createMockProvider();
-    const models = provider.getModels();
-    expect(models).toHaveLength(17);
-    expect(models).toContain("nano-banana-2");
-    expect(models).toContain("bytedance/seedance-1.5-pro");
-    expect(models).toContain("sora-watermark-remover");
-  });
 
   it("should create a task", async () => {
     const provider = createMockProvider();
@@ -368,5 +281,58 @@ describe("kie provider", () => {
     expect(result.data?.downloadUrl).toBe(
       "https://kieai.redpandaai.co/uploads/test.png"
     );
+  });
+
+  describe("payloadSchema", () => {
+    const provider = kie({
+      apiKey: "test-key",
+      fetch: vi
+        .fn()
+        .mockResolvedValue(
+          new Response('{"code":200,"msg":"ok","data":{}}', { status: 200 })
+        ),
+    });
+
+    it("api.v1.jobs.createTask.payloadSchema has method POST and path /api/v1/jobs/createTask", () => {
+      const schema = provider.api.v1.jobs.createTask.payloadSchema;
+      expect(schema.method).toBe("POST");
+      expect(schema.path).toBe("/api/v1/jobs/createTask");
+    });
+
+    it("api.v1.common.downloadUrl.payloadSchema has method POST and path contains download-url", () => {
+      const schema = provider.api.v1.common.downloadUrl.payloadSchema;
+      expect(schema.method).toBe("POST");
+      expect(schema.path).toContain("download-url");
+    });
+
+    it("api.fileStreamUpload.payloadSchema has method POST and contentType multipart/form-data", () => {
+      const schema = provider.api.fileStreamUpload.payloadSchema;
+      expect(schema.method).toBe("POST");
+      expect(schema.contentType).toBe("multipart/form-data");
+    });
+
+    it("api.v1.jobs.createTask.validatePayload accepts valid task request", () => {
+      const result = provider.api.v1.jobs.createTask.validatePayload({
+        model: "nano-banana-pro",
+        input: { prompt: "test" },
+      });
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it("api.v1.jobs.createTask.validatePayload rejects empty object", () => {
+      const result = provider.api.v1.jobs.createTask.validatePayload({});
+      expect(result.valid).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
+      expect(result.errors.join(" ")).toContain("model");
+      expect(result.errors.join(" ")).toContain("input");
+    });
+
+    it("api.v1.common.downloadUrl.validatePayload rejects empty object", () => {
+      const result = provider.api.v1.common.downloadUrl.validatePayload({});
+      expect(result.valid).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
+      expect(result.errors.join(" ")).toContain("url");
+    });
   });
 });

@@ -55,6 +55,9 @@ export type {
   DownloadUrlResponse,
   UploadMediaRequest,
   UploadMediaResponse,
+  PayloadFieldSchema,
+  PayloadSchema,
+  ValidationResult,
 } from "./types";
 
 // Export sub-provider types

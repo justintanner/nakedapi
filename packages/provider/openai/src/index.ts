@@ -25,4 +25,7 @@ export type {
   OpenAiTranscribeRequest,
   OpenAiTranscribeResponse,
   OpenAiProvider,
+  PayloadFieldSchema,
+  PayloadSchema,
+  ValidationResult,
 } from "./types";

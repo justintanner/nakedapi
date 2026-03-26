@@ -1,5 +1,6 @@
 // Tests for the fal provider
 import { describe, it, expect, vi } from "vitest";
+import { fal } from "../../../packages/provider/fal/src";
 
 describe("fal provider", () => {
   interface FalModel {
@@ -452,6 +453,42 @@ describe("fal provider", () => {
         request_id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         idempotency_key: "unique-key-123",
       });
+    });
+  });
+
+  describe("payloadSchema", () => {
+    const provider = fal({
+      apiKey: "test-key",
+      fetch: vi.fn().mockResolvedValue(new Response("{}", { status: 200 })),
+    });
+
+    it("v1.models.pricing.estimate.payloadSchema has method POST and path /models/pricing/estimate", () => {
+      const schema = provider.v1.models.pricing.estimate.payloadSchema;
+      expect(schema.method).toBe("POST");
+      expect(schema.path).toBe("/models/pricing/estimate");
+    });
+
+    it("v1.models.requests.payloads.payloadSchema has method DELETE and path contains payloads", () => {
+      const schema = provider.v1.models.requests.payloads.payloadSchema;
+      expect(schema.method).toBe("DELETE");
+      expect(schema.path).toContain("payloads");
+    });
+
+    it("v1.models.pricing.estimate.validatePayload accepts valid estimate request", () => {
+      const result = provider.v1.models.pricing.estimate.validatePayload({
+        estimate_type: "unit_price",
+        endpoints: {},
+      });
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it("v1.models.pricing.estimate.validatePayload rejects empty object", () => {
+      const result = provider.v1.models.pricing.estimate.validatePayload({});
+      expect(result.valid).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
+      expect(result.errors.join(" ")).toContain("estimate_type");
+      expect(result.errors.join(" ")).toContain("endpoints");
     });
   });
 });

@@ -1,5 +1,6 @@
 // Tests for the xai provider
 import { describe, it, expect, vi } from "vitest";
+import { xai } from "../../../packages/provider/xai/src";
 
 describe("xai provider", () => {
   interface XaiMessage {
@@ -423,6 +424,80 @@ describe("xai provider", () => {
         { prompt: "A cat" },
         controller.signal
       );
+    });
+  });
+
+  describe("payloadSchema", () => {
+    const provider = xai({
+      apiKey: "test-key",
+      fetch: vi.fn().mockResolvedValue(new Response("{}", { status: 200 })),
+    });
+
+    it("v1.chat.completions.payloadSchema has correct method and path", () => {
+      expect(provider.v1.chat.completions.payloadSchema.method).toBe("POST");
+      expect(provider.v1.chat.completions.payloadSchema.path).toBe(
+        "/chat/completions"
+      );
+    });
+
+    it("v1.images.generations.payloadSchema has correct method and path", () => {
+      expect(provider.v1.images.generations.payloadSchema.method).toBe("POST");
+      expect(provider.v1.images.generations.payloadSchema.path).toBe(
+        "/images/generations"
+      );
+    });
+
+    it("v1.images.edits.payloadSchema has correct method and path", () => {
+      expect(provider.v1.images.edits.payloadSchema.method).toBe("POST");
+      expect(provider.v1.images.edits.payloadSchema.path).toBe("/images/edits");
+    });
+
+    it("v1.videos.generations.payloadSchema has correct method and path", () => {
+      expect(provider.v1.videos.generations.payloadSchema.method).toBe("POST");
+      expect(provider.v1.videos.generations.payloadSchema.path).toBe(
+        "/videos/generations"
+      );
+    });
+
+    it("v1.videos.extensions.payloadSchema has correct method and path", () => {
+      expect(provider.v1.videos.extensions.payloadSchema.method).toBe("POST");
+      expect(provider.v1.videos.extensions.payloadSchema.path).toBe(
+        "/videos/extensions"
+      );
+    });
+
+    it("v1.chat.completions.validatePayload accepts valid payload", () => {
+      const result = provider.v1.chat.completions.validatePayload({
+        messages: [{ role: "user", content: "Hi" }],
+      });
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it("v1.chat.completions.validatePayload rejects missing messages", () => {
+      const result = provider.v1.chat.completions.validatePayload({});
+      expect(result.valid).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
+    });
+
+    it("v1.images.generations.validatePayload accepts valid payload", () => {
+      const result = provider.v1.images.generations.validatePayload({
+        prompt: "a sunset",
+      });
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it("v1.images.generations.validatePayload rejects missing prompt", () => {
+      const result = provider.v1.images.generations.validatePayload({});
+      expect(result.valid).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
+    });
+
+    it("v1.videos.extensions.validatePayload rejects missing prompt and video", () => {
+      const result = provider.v1.videos.extensions.validatePayload({});
+      expect(result.valid).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
     });
   });
 });

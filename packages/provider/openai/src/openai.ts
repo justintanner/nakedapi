@@ -7,6 +7,9 @@ import {
   OpenAiProvider,
   OpenAiError,
 } from "./types";
+import type { ValidationResult } from "./types";
+import { chatCompletionsSchema, audioTranscriptionsSchema } from "./schemas";
+import { validatePayload } from "./validate";
 
 export function openai(opts: OpenAiOptions): OpenAiProvider {
   const baseURL = opts.baseURL ?? "https://api.openai.com/v1";
@@ -76,39 +79,56 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
   return {
     v1: {
       chat: {
-        async completions(
-          req: OpenAiChatRequest,
-          signal?: AbortSignal
-        ): Promise<OpenAiChatResponse> {
-          return await makeRequest<OpenAiChatResponse>(
-            "/chat/completions",
-            jsonRequest(req),
-            signal
-          );
-        },
+        completions: Object.assign(
+          async function completions(
+            req: OpenAiChatRequest,
+            signal?: AbortSignal
+          ): Promise<OpenAiChatResponse> {
+            return await makeRequest<OpenAiChatResponse>(
+              "/chat/completions",
+              jsonRequest(req),
+              signal
+            );
+          },
+          {
+            payloadSchema: chatCompletionsSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, chatCompletionsSchema);
+            },
+          }
+        ),
       },
       audio: {
-        async transcriptions(
-          req: OpenAiTranscribeRequest,
-          signal?: AbortSignal
-        ): Promise<OpenAiTranscribeResponse> {
-          const form = new FormData();
-          form.append("file", req.file);
-          form.append("model", req.model);
-          if (req.response_format !== undefined)
-            form.append("response_format", req.response_format);
-          if (req.language !== undefined) form.append("language", req.language);
-          if (req.prompt !== undefined) form.append("prompt", req.prompt);
-          if (req.temperature !== undefined)
-            form.append("temperature", String(req.temperature));
+        transcriptions: Object.assign(
+          async function transcriptions(
+            req: OpenAiTranscribeRequest,
+            signal?: AbortSignal
+          ): Promise<OpenAiTranscribeResponse> {
+            const form = new FormData();
+            form.append("file", req.file);
+            form.append("model", req.model);
+            if (req.response_format !== undefined)
+              form.append("response_format", req.response_format);
+            if (req.language !== undefined)
+              form.append("language", req.language);
+            if (req.prompt !== undefined) form.append("prompt", req.prompt);
+            if (req.temperature !== undefined)
+              form.append("temperature", String(req.temperature));
 
-          const data = await makeRequest<OpenAiTranscribeResponse>(
-            "/audio/transcriptions",
-            { headers: {}, body: form },
-            signal
-          );
-          return data;
-        },
+            const data = await makeRequest<OpenAiTranscribeResponse>(
+              "/audio/transcriptions",
+              { headers: {}, body: form },
+              signal
+            );
+            return data;
+          },
+          {
+            payloadSchema: audioTranscriptionsSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, audioTranscriptionsSchema);
+            },
+          }
+        ),
       },
     },
   };

@@ -254,36 +254,81 @@ export interface XaiVideoGenerationModelListResponse {
   models: XaiVideoGenerationModel[];
 }
 
+// Payload schema types
+export interface PayloadFieldSchema {
+  type: "string" | "number" | "boolean" | "array" | "object";
+  required?: boolean;
+  description?: string;
+  enum?: readonly (string | number | boolean)[];
+  items?: PayloadFieldSchema;
+  properties?: Record<string, PayloadFieldSchema>;
+}
+
+export interface PayloadSchema {
+  method: "POST" | "DELETE";
+  path: string;
+  contentType: "application/json" | "multipart/form-data";
+  fields: Record<string, PayloadFieldSchema>;
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  errors: string[];
+}
+
 // Namespace types
 interface XaiChatCompletionsMethod {
   (req: XaiChatRequest, signal?: AbortSignal): Promise<XaiChatResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
 }
 
 interface XaiChatNamespace {
   completions: XaiChatCompletionsMethod;
 }
 
-interface XaiImagesNamespace {
-  generations(
+interface XaiImageGenerationsMethod {
+  (
     req: XaiImageGenerateRequest,
     signal?: AbortSignal
   ): Promise<XaiImageResponse>;
-  edits(
-    req: XaiImageEditRequest,
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface XaiImageEditsMethod {
+  (req: XaiImageEditRequest, signal?: AbortSignal): Promise<XaiImageResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface XaiImagesNamespace {
+  generations: XaiImageGenerationsMethod;
+  edits: XaiImageEditsMethod;
+}
+
+interface XaiVideoGenerationsMethod {
+  (
+    req: XaiVideoGenerateRequest,
     signal?: AbortSignal
-  ): Promise<XaiImageResponse>;
+  ): Promise<XaiVideoAsyncResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface XaiVideoExtensionsMethod {
+  (
+    req: XaiVideoExtendRequest,
+    signal?: AbortSignal
+  ): Promise<XaiVideoAsyncResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
 }
 
 interface XaiVideosNamespace {
   (requestId: string, signal?: AbortSignal): Promise<XaiVideoResult>;
-  generations(
-    req: XaiVideoGenerateRequest,
-    signal?: AbortSignal
-  ): Promise<XaiVideoAsyncResponse>;
-  extensions(
-    req: XaiVideoExtendRequest,
-    signal?: AbortSignal
-  ): Promise<XaiVideoAsyncResponse>;
+  generations: XaiVideoGenerationsMethod;
+  extensions: XaiVideoExtensionsMethod;
 }
 
 interface XaiFilesNamespace {

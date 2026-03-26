@@ -30,4 +30,7 @@ export type {
   UrlImageSource,
   MessageContent,
   Role,
+  PayloadFieldSchema,
+  PayloadSchema,
+  ValidationResult,
 } from "./types";

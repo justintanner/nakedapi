@@ -802,9 +802,9 @@ interface XaiV1Namespace {
   collections: XaiCollectionsNamespace;
   documents: XaiDocumentsNamespace;
   models: XaiModelsNamespace;
-  languageModels: XaiLanguageModelsNamespace;
-  imageGenerationModels: XaiImageGenerationModelsNamespace;
-  videoGenerationModels: XaiVideoGenerationModelsNamespace;
+  "language-models": XaiLanguageModelsNamespace;
+  "image-generation-models": XaiImageGenerationModelsNamespace;
+  "video-generation-models": XaiVideoGenerationModelsNamespace;
 }
 
 // Provider interface

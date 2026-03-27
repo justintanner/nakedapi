@@ -793,11 +793,11 @@ export function xai(opts: XaiOptions): XaiProvider {
         ),
       },
       models: models as XaiProvider["v1"]["models"],
-      languageModels: languageModels as XaiProvider["v1"]["languageModels"],
-      imageGenerationModels:
-        imageGenerationModels as XaiProvider["v1"]["imageGenerationModels"],
-      videoGenerationModels:
-        videoGenerationModels as XaiProvider["v1"]["videoGenerationModels"],
+      "language-models": languageModels as XaiProvider["v1"]["language-models"],
+      "image-generation-models":
+        imageGenerationModels as XaiProvider["v1"]["image-generation-models"],
+      "video-generation-models":
+        videoGenerationModels as XaiProvider["v1"]["video-generation-models"],
     },
   };
 }

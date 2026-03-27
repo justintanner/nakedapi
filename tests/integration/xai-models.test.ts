@@ -44,7 +44,7 @@ describe("xai models integration", () => {
     const provider = xai({
       apiKey: process.env.XAI_API_KEY ?? "sk-test-key",
     });
-    const result = await provider.v1.languageModels();
+    const result = await provider.v1["language-models"]();
     expect(Array.isArray(result.models)).toBe(true);
     expect(result.models.length).toBeGreaterThan(0);
     const model = result.models[0];
@@ -65,7 +65,7 @@ describe("xai models integration", () => {
     const provider = xai({
       apiKey: process.env.XAI_API_KEY ?? "sk-test-key",
     });
-    const result = await provider.v1.languageModels("grok-3");
+    const result = await provider.v1["language-models"]("grok-3");
     expect(result.id).toBe("grok-3");
     expect(result.object).toBe("model");
     expect(result.fingerprint).toBeTruthy();
@@ -83,7 +83,7 @@ describe("xai models integration", () => {
     const provider = xai({
       apiKey: process.env.XAI_API_KEY ?? "sk-test-key",
     });
-    const result = await provider.v1.imageGenerationModels();
+    const result = await provider.v1["image-generation-models"]();
     expect(Array.isArray(result.models)).toBe(true);
     expect(result.models.length).toBeGreaterThan(0);
     const model = result.models[0];
@@ -102,7 +102,7 @@ describe("xai models integration", () => {
       apiKey: process.env.XAI_API_KEY ?? "sk-test-key",
     });
     const result =
-      await provider.v1.imageGenerationModels("grok-imagine-image");
+      await provider.v1["image-generation-models"]("grok-imagine-image");
     expect(result.id).toBe("grok-imagine-image");
     expect(result.object).toBe("model");
     expect(result.fingerprint).toBeTruthy();
@@ -117,7 +117,7 @@ describe("xai models integration", () => {
     const provider = xai({
       apiKey: process.env.XAI_API_KEY ?? "sk-test-key",
     });
-    const result = await provider.v1.videoGenerationModels();
+    const result = await provider.v1["video-generation-models"]();
     expect(Array.isArray(result.models)).toBe(true);
     expect(result.models.length).toBeGreaterThan(0);
     const model = result.models[0];
@@ -137,7 +137,7 @@ describe("xai models integration", () => {
       apiKey: process.env.XAI_API_KEY ?? "sk-test-key",
     });
     const result =
-      await provider.v1.videoGenerationModels("grok-imagine-video");
+      await provider.v1["video-generation-models"]("grok-imagine-video");
     expect(result.id).toBe("grok-imagine-video");
     expect(result.object).toBe("model");
     expect(result.fingerprint).toBeTruthy();

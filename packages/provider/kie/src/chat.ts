@@ -71,7 +71,7 @@ interface KieChatGpt52Namespace {
 }
 
 export interface KieChatProvider {
-  gpt52: KieChatGpt52Namespace;
+  "gpt-5-2": KieChatGpt52Namespace;
 }
 
 export function createChatProvider(
@@ -81,7 +81,7 @@ export function createChatProvider(
   timeout: number
 ): KieChatProvider {
   return {
-    gpt52: {
+    "gpt-5-2": {
       v1: {
         chat: {
           completions: Object.assign(

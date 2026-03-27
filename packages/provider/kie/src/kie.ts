@@ -23,7 +23,6 @@ import { createVeoProvider } from "./veo";
 import { createSunoProvider } from "./suno";
 import { createChatProvider } from "./chat";
 import { createClaudeProvider } from "./claude";
-import { createClaudeHaikuProvider } from "./claude-haiku";
 
 const MIME_TYPES: Record<string, string> = {
   jpg: "image/jpeg",
@@ -285,7 +284,6 @@ export function kie(opts: KieOptions): KieProvider {
     suno: createSunoProvider(baseURL, opts.apiKey, doFetch, timeout),
     chat: createChatProvider(baseURL, opts.apiKey, doFetch, timeout),
     ...createClaudeProvider(baseURL, opts.apiKey, doFetch, timeout),
-    ...createClaudeHaikuProvider(baseURL, opts.apiKey, doFetch, timeout),
     modelInputSchemas,
     api: {
       v1: {
@@ -299,7 +297,7 @@ export function kie(opts: KieOptions): KieProvider {
           recordInfo,
         },
         common: {
-          downloadUrl: Object.assign(downloadUrl, {
+          "download-url": Object.assign(downloadUrl, {
             payloadSchema: downloadUrlSchema,
             validatePayload(data: unknown): ValidationResult {
               return validatePayload(data, downloadUrlSchema);
@@ -308,7 +306,7 @@ export function kie(opts: KieOptions): KieProvider {
         },
         chat: { credit },
       },
-      fileStreamUpload: Object.assign(fileStreamUpload, {
+      "file-stream-upload": Object.assign(fileStreamUpload, {
         payloadSchema: fileStreamUploadSchema,
         validatePayload(data: unknown): ValidationResult {
           return validatePayload(data, fileStreamUploadSchema);

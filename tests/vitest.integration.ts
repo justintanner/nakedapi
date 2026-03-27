@@ -6,7 +6,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    include: ["tests/integration/**/*.test.{ts,tsx}"],
+    include: [
+      "tests/integration/**/*.test.{ts,tsx}",
+      "tests/functional/**/*.test.{ts,tsx}",
+    ],
     exclude: ["node_modules", "dist"],
     testTimeout: 30000,
     setupFiles: ["tests/integration-setup.ts"],

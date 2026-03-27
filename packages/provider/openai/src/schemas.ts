@@ -71,7 +71,8 @@ export const embeddingsSchema: PayloadSchema = {
     input: {
       type: "string",
       required: true,
-      description: "Input text to embed (string, string[], number[], or number[][])",
+      description:
+        "Input text to embed (string, string[], number[], or number[][])",
     },
     model: {
       type: "string",

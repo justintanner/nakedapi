@@ -179,10 +179,6 @@ interface OpenAiEmbeddingsMethod {
   validatePayload(data: unknown): ValidationResult;
 }
 
-interface OpenAiEmbeddingsNamespace {
-  embeddings: OpenAiEmbeddingsMethod;
-}
-
 interface OpenAiAudioTranscriptionsMethod {
   (
     req: OpenAiTranscribeRequest,

@@ -257,6 +257,118 @@ describe("openai provider", () => {
     });
   });
 
+  it("should moderate text input", async () => {
+    const mockFetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: "modr-test123",
+          model: "omni-moderation-latest",
+          results: [
+            {
+              flagged: false,
+              categories: {
+                sexual: false,
+                "sexual/minors": false,
+                harassment: false,
+                "harassment/threatening": false,
+                hate: false,
+                "hate/threatening": false,
+                illicit: false,
+                "illicit/violent": false,
+                "self-harm": false,
+                "self-harm/intent": false,
+                "self-harm/instructions": false,
+                violence: false,
+                "violence/graphic": false,
+              },
+              category_scores: {
+                sexual: 0.001,
+                "sexual/minors": 0.0001,
+                harassment: 0.002,
+                "harassment/threatening": 0.001,
+                hate: 0.001,
+                "hate/threatening": 0.0005,
+                illicit: 0.001,
+                "illicit/violent": 0.0003,
+                "self-harm": 0.001,
+                "self-harm/intent": 0.0005,
+                "self-harm/instructions": 0.0002,
+                violence: 0.003,
+                "violence/graphic": 0.001,
+              },
+            },
+          ],
+        }),
+        { status: 200 }
+      )
+    );
+    const provider = openai({ apiKey: "test-key", fetch: mockFetch });
+    const result = await provider.v1.moderations({
+      input: "This is a friendly message.",
+    });
+    expect(result.id).toBe("modr-test123");
+    expect(result.model).toBe("omni-moderation-latest");
+    expect(result.results).toHaveLength(1);
+    expect(result.results[0].flagged).toBe(false);
+  });
+
+  it("should detect flagged content in moderation", async () => {
+    const mockFetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: "modr-flagged456",
+          model: "omni-moderation-latest",
+          results: [
+            {
+              flagged: true,
+              categories: {
+                sexual: false,
+                "sexual/minors": false,
+                harassment: true,
+                "harassment/threatening": true,
+                hate: false,
+                "hate/threatening": false,
+                illicit: false,
+                "illicit/violent": false,
+                "self-harm": false,
+                "self-harm/intent": false,
+                "self-harm/instructions": false,
+                violence: false,
+                "violence/graphic": false,
+              },
+              category_scores: {
+                sexual: 0.001,
+                "sexual/minors": 0.0001,
+                harassment: 0.85,
+                "harassment/threatening": 0.92,
+                hate: 0.02,
+                "hate/threatening": 0.01,
+                illicit: 0.005,
+                "illicit/violent": 0.001,
+                "self-harm": 0.003,
+                "self-harm/intent": 0.001,
+                "self-harm/instructions": 0.0005,
+                violence: 0.21,
+                "violence/graphic": 0.05,
+              },
+            },
+          ],
+        }),
+        { status: 200 }
+      )
+    );
+    const provider = openai({ apiKey: "test-key", fetch: mockFetch });
+    const result = await provider.v1.moderations({
+      model: "omni-moderation-latest",
+      input: "threatening content",
+    });
+    expect(result.results[0].flagged).toBe(true);
+    expect(result.results[0].categories["harassment/threatening"]).toBe(true);
+    expect(
+      result.results[0].category_scores["harassment/threatening"]
+    ).toBeGreaterThan(0.5);
+  });
+
   describe("payloadSchema", () => {
     const realProvider = openai({
       apiKey: "test-key",
@@ -413,6 +525,45 @@ describe("openai provider", () => {
       });
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
+    });
+
+    it("v1.moderations.payloadSchema exists with correct method and path", () => {
+      const schema = realProvider.v1.moderations.payloadSchema;
+      expect(schema).toBeDefined();
+      expect(schema.method).toBe("POST");
+      expect(schema.path).toBe("/moderations");
+      expect(schema.contentType).toBe("application/json");
+    });
+
+    it("v1.moderations.validatePayload accepts valid payload with string input", () => {
+      const result = realProvider.v1.moderations.validatePayload({
+        input: "Hello world",
+      });
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it("v1.moderations.validatePayload accepts payload with model", () => {
+      const result = realProvider.v1.moderations.validatePayload({
+        input: "Hello world",
+        model: "omni-moderation-latest",
+      });
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it("v1.moderations.validatePayload rejects missing required input", () => {
+      const result = realProvider.v1.moderations.validatePayload({});
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain("input is required");
+    });
+
+    it("v1.moderations.validatePayload rejects wrong type for input", () => {
+      const result = realProvider.v1.moderations.validatePayload({
+        input: 123,
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain("input must be of type string");
     });
   });
 });

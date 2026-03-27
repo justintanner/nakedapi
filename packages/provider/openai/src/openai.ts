@@ -8,6 +8,8 @@ import {
   OpenAiEmbeddingResponse,
   OpenAiImageEditRequest,
   OpenAiImageEditResponse,
+  OpenAiModerationRequest,
+  OpenAiModerationResponse,
   OpenAiProvider,
   OpenAiError,
 } from "./types";
@@ -16,6 +18,7 @@ import {
   chatCompletionsSchema,
   embeddingsSchema,
   imageEditsSchema,
+  moderationsSchema,
   audioTranscriptionsSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
@@ -171,6 +174,24 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
           }
         ),
       },
+      moderations: Object.assign(
+        async function moderations(
+          req: OpenAiModerationRequest,
+          signal?: AbortSignal
+        ): Promise<OpenAiModerationResponse> {
+          return await makeRequest<OpenAiModerationResponse>(
+            "/moderations",
+            jsonRequest(req),
+            signal
+          );
+        },
+        {
+          payloadSchema: moderationsSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, moderationsSchema);
+          },
+        }
+      ),
       audio: {
         transcriptions: Object.assign(
           async function transcriptions(

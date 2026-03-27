@@ -191,6 +191,76 @@ export interface OpenAiImageEditResponse {
   usage?: OpenAiImageEditUsage | null;
 }
 
+// Moderation input content part
+export interface OpenAiModerationTextInput {
+  type: "text";
+  text: string;
+}
+
+export interface OpenAiModerationImageInput {
+  type: "image_url";
+  image_url: { url: string };
+}
+
+export type OpenAiModerationInputItem =
+  | OpenAiModerationTextInput
+  | OpenAiModerationImageInput;
+
+// Moderation request
+export interface OpenAiModerationRequest {
+  model?: string;
+  input: string | string[] | OpenAiModerationInputItem[];
+}
+
+// Moderation categories (boolean flags)
+export interface OpenAiModerationCategories {
+  sexual: boolean;
+  "sexual/minors": boolean;
+  harassment: boolean;
+  "harassment/threatening": boolean;
+  hate: boolean;
+  "hate/threatening": boolean;
+  illicit: boolean;
+  "illicit/violent": boolean;
+  "self-harm": boolean;
+  "self-harm/intent": boolean;
+  "self-harm/instructions": boolean;
+  violence: boolean;
+  "violence/graphic": boolean;
+}
+
+// Moderation category scores (confidence 0-1)
+export interface OpenAiModerationCategoryScores {
+  sexual: number;
+  "sexual/minors": number;
+  harassment: number;
+  "harassment/threatening": number;
+  hate: number;
+  "hate/threatening": number;
+  illicit: number;
+  "illicit/violent": number;
+  "self-harm": number;
+  "self-harm/intent": number;
+  "self-harm/instructions": number;
+  violence: number;
+  "violence/graphic": number;
+}
+
+// Moderation result
+export interface OpenAiModerationResult {
+  flagged: boolean;
+  categories: OpenAiModerationCategories;
+  category_scores: OpenAiModerationCategoryScores;
+  category_applied_input_types?: Record<string, string[]>;
+}
+
+// Moderation response
+export interface OpenAiModerationResponse {
+  id: string;
+  model: string;
+  results: OpenAiModerationResult[];
+}
+
 // Payload schema types
 export interface PayloadFieldSchema {
   type: "string" | "number" | "boolean" | "array" | "object";
@@ -259,11 +329,21 @@ interface OpenAiImagesNamespace {
   edits: OpenAiImagesEditsMethod;
 }
 
+interface OpenAiModerationsMethod {
+  (
+    req: OpenAiModerationRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiModerationResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
 interface OpenAiV1Namespace {
   chat: OpenAiChatNamespace;
   audio: OpenAiAudioNamespace;
   embeddings: OpenAiEmbeddingsMethod;
   images: OpenAiImagesNamespace;
+  moderations: OpenAiModerationsMethod;
 }
 
 // Provider interface

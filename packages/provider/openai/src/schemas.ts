@@ -167,6 +167,23 @@ export const imageEditsSchema: PayloadSchema = {
   },
 };
 
+export const moderationsSchema: PayloadSchema = {
+  method: "POST",
+  path: "/moderations",
+  contentType: "application/json",
+  fields: {
+    model: {
+      type: "string",
+      description: "Model ID (e.g. omni-moderation-latest)",
+    },
+    input: {
+      type: "string",
+      required: true,
+      description: "Input to classify (string, string[], or multi-modal array)",
+    },
+  },
+};
+
 export const audioTranscriptionsSchema: PayloadSchema = {
   method: "POST",
   path: "/audio/transcriptions",

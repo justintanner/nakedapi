@@ -38,6 +38,7 @@ export type {
   OpenAiGeneratedImage,
   OpenAiImageGenerationUsage,
   OpenAiImageGenerationResponse,
+  OpenAiResponseGetOptions,
   OpenAiResponseRequest,
   OpenAiResponseResponse,
   OpenAiResponseInputItem,

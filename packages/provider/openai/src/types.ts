@@ -353,6 +353,12 @@ export interface OpenAiResponseReasoning {
   summary?: "auto" | "concise" | "detailed" | null;
 }
 
+// Responses API GET options
+export interface OpenAiResponseGetOptions {
+  include?: string[];
+  stream?: boolean;
+}
+
 // Responses API request
 export interface OpenAiResponseRequest {
   model: string;
@@ -576,6 +582,14 @@ interface OpenAiImagesNamespace {
   generations: OpenAiImageGenerationsMethod;
 }
 
+interface OpenAiResponsesGetMethod {
+  (
+    id: string,
+    opts?: OpenAiResponseGetOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiResponseResponse>;
+}
+
 interface OpenAiResponsesMethod {
   (
     req: OpenAiResponseRequest,
@@ -583,6 +597,7 @@ interface OpenAiResponsesMethod {
   ): Promise<OpenAiResponseResponse>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
+  get: OpenAiResponsesGetMethod;
 }
 
 interface OpenAiV1Namespace {

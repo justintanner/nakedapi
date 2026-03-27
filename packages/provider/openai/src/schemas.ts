@@ -240,6 +240,134 @@ export const imageGenerationsSchema: PayloadSchema = {
   },
 };
 
+export const responsesSchema: PayloadSchema = {
+  method: "POST",
+  path: "/responses",
+  contentType: "application/json",
+  fields: {
+    model: {
+      type: "string",
+      required: true,
+      description: "Model ID (e.g. gpt-4o, o3)",
+    },
+    input: {
+      type: "string",
+      required: true,
+      description: "Text string or array of input items",
+    },
+    instructions: {
+      type: "string",
+      description: "System-level instructions",
+    },
+    previous_response_id: {
+      type: "string",
+      description: "ID of a previous response for multi-turn",
+    },
+    max_output_tokens: {
+      type: "number",
+      description: "Upper bound on output tokens",
+    },
+    temperature: {
+      type: "number",
+      description: "Sampling temperature 0-2",
+    },
+    top_p: {
+      type: "number",
+      description: "Nucleus sampling parameter",
+    },
+    tools: {
+      type: "array",
+      description: "Tool definitions (function, web_search, file_search)",
+      items: {
+        type: "object",
+        properties: {
+          type: {
+            type: "string",
+            required: true,
+            enum: ["function", "web_search", "file_search"],
+          },
+          name: { type: "string" },
+          description: { type: "string" },
+          parameters: { type: "object" },
+        },
+      },
+    },
+    tool_choice: {
+      type: "string",
+      description: "Tool selection strategy",
+    },
+    text: {
+      type: "object",
+      description: "Text/structured output configuration",
+      properties: {
+        format: {
+          type: "object",
+          properties: {
+            type: {
+              type: "string",
+              required: true,
+              enum: ["text", "json_object", "json_schema"],
+            },
+            name: { type: "string" },
+            schema: { type: "object" },
+            description: { type: "string" },
+            strict: { type: "boolean" },
+          },
+        },
+      },
+    },
+    reasoning: {
+      type: "object",
+      description: "Reasoning model configuration",
+      properties: {
+        effort: {
+          type: "string",
+          enum: ["low", "medium", "high"],
+        },
+        summary: {
+          type: "string",
+          enum: ["auto", "concise", "detailed"],
+        },
+      },
+    },
+    store: {
+      type: "boolean",
+      description: "Whether to store the response",
+    },
+    metadata: {
+      type: "object",
+      description: "Key-value metadata (up to 16 pairs)",
+    },
+    truncation: {
+      type: "string",
+      description: "Context truncation strategy",
+      enum: ["auto", "disabled"],
+    },
+    stream: {
+      type: "boolean",
+      description: "Enable SSE streaming",
+    },
+    include: {
+      type: "array",
+      description: "Additional data to include in response",
+      items: { type: "string" },
+    },
+    service_tier: {
+      type: "string",
+      description: "Service tier for the request",
+      enum: ["auto", "default", "flex", "scale", "priority"],
+    },
+    user: {
+      type: "string",
+      description: "User identifier",
+    },
+    parallel_tool_calls: {
+      type: "boolean",
+      description: "Allow parallel tool execution",
+    },
+  },
+};
+
 export const audioTranscriptionsSchema: PayloadSchema = {
   method: "POST",
   path: "/audio/transcriptions",

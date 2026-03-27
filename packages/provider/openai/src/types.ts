@@ -244,6 +244,264 @@ export interface OpenAiImageGenerationResponse {
   usage?: OpenAiImageGenerationUsage;
 }
 
+// --- Responses API types (POST /v1/responses) ---
+
+// Input content parts
+export interface OpenAiResponseInputText {
+  type: "input_text";
+  text: string;
+}
+
+export interface OpenAiResponseInputImage {
+  type: "input_image";
+  image_url?: string;
+  file_id?: string;
+  detail?: "auto" | "low" | "high";
+}
+
+export type OpenAiResponseInputContentPart =
+  | OpenAiResponseInputText
+  | OpenAiResponseInputImage;
+
+// Input messages
+export interface OpenAiResponseInputMessage {
+  role: "user" | "assistant" | "system" | "developer";
+  content: string | OpenAiResponseInputContentPart[];
+  type?: "message";
+}
+
+// Function call output (for multi-turn tool use)
+export interface OpenAiResponseFunctionCallOutput {
+  type: "function_call_output";
+  call_id: string;
+  output: string;
+}
+
+export type OpenAiResponseInputItem =
+  | OpenAiResponseInputMessage
+  | OpenAiResponseFunctionCallOutput;
+
+// Tool definitions
+export interface OpenAiResponseFunctionTool {
+  type: "function";
+  name: string;
+  description?: string;
+  parameters?: Record<string, unknown>;
+  strict?: boolean;
+}
+
+export interface OpenAiResponseWebSearchTool {
+  type: "web_search";
+  search_context_size?: "low" | "medium" | "high";
+  user_location?: {
+    type: "approximate";
+    city?: string;
+    country?: string;
+    region?: string;
+    timezone?: string;
+  };
+}
+
+export interface OpenAiResponseFileSearchTool {
+  type: "file_search";
+  vector_store_ids: string[];
+  max_num_results?: number;
+}
+
+export type OpenAiResponseTool =
+  | OpenAiResponseFunctionTool
+  | OpenAiResponseWebSearchTool
+  | OpenAiResponseFileSearchTool;
+
+// Text format config (structured outputs)
+export interface OpenAiResponseTextFormatText {
+  type: "text";
+}
+
+export interface OpenAiResponseTextFormatJsonObject {
+  type: "json_object";
+}
+
+export interface OpenAiResponseTextFormatJsonSchema {
+  type: "json_schema";
+  name: string;
+  schema: Record<string, unknown>;
+  description?: string;
+  strict?: boolean;
+}
+
+export type OpenAiResponseTextFormat =
+  | OpenAiResponseTextFormatText
+  | OpenAiResponseTextFormatJsonObject
+  | OpenAiResponseTextFormatJsonSchema;
+
+export interface OpenAiResponseTextConfig {
+  format?: OpenAiResponseTextFormat;
+}
+
+// Reasoning config
+export interface OpenAiResponseReasoning {
+  effort?: "low" | "medium" | "high";
+  summary?: "auto" | "concise" | "detailed";
+}
+
+// Tool choice
+export type OpenAiResponseToolChoice =
+  | "none"
+  | "auto"
+  | "required"
+  | { type: "function"; name: string };
+
+// Request
+export interface OpenAiResponsesRequest {
+  model: string;
+  input: string | OpenAiResponseInputItem[];
+  instructions?: string;
+  previous_response_id?: string;
+  max_output_tokens?: number;
+  temperature?: number;
+  top_p?: number;
+  tools?: OpenAiResponseTool[];
+  tool_choice?: OpenAiResponseToolChoice;
+  text?: OpenAiResponseTextConfig;
+  reasoning?: OpenAiResponseReasoning;
+  store?: boolean;
+  metadata?: Record<string, string>;
+  truncation?: "auto" | "disabled";
+  stream?: boolean;
+  include?: string[];
+  service_tier?: "auto" | "default" | "flex" | "scale" | "priority";
+  user?: string;
+  parallel_tool_calls?: boolean;
+}
+
+// Response output annotations
+export interface OpenAiResponseUrlCitation {
+  type: "url_citation";
+  url: string;
+  title: string;
+  start_index: number;
+  end_index: number;
+}
+
+export interface OpenAiResponseFileCitation {
+  type: "file_citation";
+  file_id: string;
+  filename: string;
+  index: number;
+}
+
+export type OpenAiResponseAnnotation =
+  | OpenAiResponseUrlCitation
+  | OpenAiResponseFileCitation;
+
+// Response output content
+export interface OpenAiResponseOutputText {
+  type: "output_text";
+  text: string;
+  annotations: OpenAiResponseAnnotation[];
+}
+
+export interface OpenAiResponseOutputRefusal {
+  type: "refusal";
+  refusal: string;
+}
+
+export type OpenAiResponseOutputContent =
+  | OpenAiResponseOutputText
+  | OpenAiResponseOutputRefusal;
+
+// Response output items
+export interface OpenAiResponseOutputMessage {
+  type: "message";
+  id: string;
+  role: "assistant";
+  status: "in_progress" | "completed" | "incomplete";
+  content: OpenAiResponseOutputContent[];
+}
+
+export interface OpenAiResponseFunctionToolCall {
+  type: "function_call";
+  id: string;
+  call_id: string;
+  name: string;
+  arguments: string;
+  status?: "in_progress" | "completed" | "incomplete";
+}
+
+export interface OpenAiResponseReasoningSummary {
+  type: "summary_text";
+  text: string;
+}
+
+export interface OpenAiResponseReasoningItem {
+  type: "reasoning";
+  id: string;
+  summary: OpenAiResponseReasoningSummary[];
+}
+
+export interface OpenAiResponseWebSearchCall {
+  type: "web_search_call";
+  id: string;
+  status: "in_progress" | "searching" | "completed" | "failed";
+}
+
+export interface OpenAiResponseFileSearchCall {
+  type: "file_search_call";
+  id: string;
+  queries: string[];
+  status: "in_progress" | "searching" | "completed" | "incomplete" | "failed";
+}
+
+export type OpenAiResponseOutputItem =
+  | OpenAiResponseOutputMessage
+  | OpenAiResponseFunctionToolCall
+  | OpenAiResponseReasoningItem
+  | OpenAiResponseWebSearchCall
+  | OpenAiResponseFileSearchCall;
+
+// Response usage
+export interface OpenAiResponseUsage {
+  input_tokens: number;
+  input_tokens_details: { cached_tokens: number };
+  output_tokens: number;
+  output_tokens_details: { reasoning_tokens: number };
+  total_tokens: number;
+}
+
+// Response error
+export interface OpenAiResponseErrorDetail {
+  code: string;
+  message: string;
+}
+
+// Full response object
+export interface OpenAiResponsesResponse {
+  id: string;
+  object: "response";
+  created_at: number;
+  model: string;
+  status: "completed" | "failed" | "in_progress" | "incomplete" | "queued";
+  output: OpenAiResponseOutputItem[];
+  error: OpenAiResponseErrorDetail | null;
+  incomplete_details: { reason: string } | null;
+  instructions: string | null;
+  metadata: Record<string, string> | null;
+  temperature: number | null;
+  top_p: number | null;
+  max_output_tokens: number | null;
+  previous_response_id: string | null;
+  reasoning: OpenAiResponseReasoning | null;
+  service_tier: string | null;
+  text: OpenAiResponseTextConfig | null;
+  tool_choice: OpenAiResponseToolChoice;
+  tools: OpenAiResponseTool[];
+  truncation: "auto" | "disabled" | null;
+  usage: OpenAiResponseUsage | null;
+  user: string | null;
+  parallel_tool_calls: boolean;
+}
+
 // Payload schema types
 export interface PayloadFieldSchema {
   type: "string" | "number" | "boolean" | "array" | "object";
@@ -332,11 +590,21 @@ interface OpenAiImagesNamespace {
   generations: OpenAiImageGenerationsMethod;
 }
 
+interface OpenAiResponsesMethod {
+  (
+    req: OpenAiResponsesRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiResponsesResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
 interface OpenAiV1Namespace {
   chat: OpenAiChatNamespace;
   audio: OpenAiAudioNamespace;
   embeddings: OpenAiEmbeddingsMethod;
   images: OpenAiImagesNamespace;
+  responses: OpenAiResponsesMethod;
 }
 
 // Provider interface

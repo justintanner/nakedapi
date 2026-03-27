@@ -529,5 +529,232 @@ describe("openai provider", () => {
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
     });
+
+    it("v1.responses.payloadSchema exists with correct method and path", () => {
+      const schema = realProvider.v1.responses.payloadSchema;
+      expect(schema).toBeDefined();
+      expect(schema.method).toBe("POST");
+      expect(schema.path).toBe("/responses");
+      expect(schema.contentType).toBe("application/json");
+    });
+
+    it("v1.responses.validatePayload accepts valid simple input", () => {
+      const result = realProvider.v1.responses.validatePayload({
+        model: "gpt-4o",
+        input: "What is the capital of France?",
+      });
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it("v1.responses.validatePayload rejects missing required fields", () => {
+      const result = realProvider.v1.responses.validatePayload({});
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain("model is required");
+      expect(result.errors).toContain("input is required");
+    });
+
+    it("v1.responses.validatePayload rejects invalid truncation enum", () => {
+      const result = realProvider.v1.responses.validatePayload({
+        model: "gpt-4o",
+        input: "Hello",
+        truncation: "invalid",
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors[0]).toContain("truncation must be one of");
+    });
+
+    it("v1.responses.validatePayload rejects invalid service_tier enum", () => {
+      const result = realProvider.v1.responses.validatePayload({
+        model: "gpt-4o",
+        input: "Hello",
+        service_tier: "premium",
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors[0]).toContain("service_tier must be one of");
+    });
+
+    it("v1.responses.validatePayload accepts all optional fields", () => {
+      const result = realProvider.v1.responses.validatePayload({
+        model: "gpt-4o",
+        input: "Hello",
+        instructions: "Be concise",
+        temperature: 0.7,
+        top_p: 0.9,
+        max_output_tokens: 1000,
+        store: true,
+        truncation: "auto",
+        service_tier: "default",
+        user: "user-123",
+        parallel_tool_calls: true,
+        stream: false,
+      });
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+  });
+
+  describe("responses endpoint", () => {
+    it("should send a response request with string input", async () => {
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: "resp_test123",
+            object: "response",
+            created_at: 1700000000,
+            model: "gpt-4o",
+            status: "completed",
+            output: [
+              {
+                type: "message",
+                id: "msg_001",
+                role: "assistant",
+                status: "completed",
+                content: [
+                  {
+                    type: "output_text",
+                    text: "The capital of France is Paris.",
+                    annotations: [],
+                  },
+                ],
+              },
+            ],
+            error: null,
+            incomplete_details: null,
+            instructions: null,
+            metadata: null,
+            temperature: 1,
+            top_p: 1,
+            max_output_tokens: null,
+            previous_response_id: null,
+            reasoning: null,
+            service_tier: "default",
+            text: { format: { type: "text" } },
+            tool_choice: "auto",
+            tools: [],
+            truncation: "disabled",
+            usage: {
+              input_tokens: 10,
+              input_tokens_details: { cached_tokens: 0 },
+              output_tokens: 8,
+              output_tokens_details: { reasoning_tokens: 0 },
+              total_tokens: 18,
+            },
+            user: null,
+            parallel_tool_calls: true,
+          }),
+          { status: 200 }
+        )
+      );
+
+      const provider = openai({
+        apiKey: "test-key",
+        fetch: mockFetch,
+      });
+
+      const result = await provider.v1.responses({
+        model: "gpt-4o",
+        input: "What is the capital of France?",
+      });
+
+      expect(result.id).toBe("resp_test123");
+      expect(result.object).toBe("response");
+      expect(result.status).toBe("completed");
+      expect(result.output).toHaveLength(1);
+      expect(result.output[0].type).toBe("message");
+      const msg = result.output[0] as {
+        type: "message";
+        content: Array<{ type: string; text: string }>;
+      };
+      expect(msg.content[0].text).toBe("The capital of France is Paris.");
+      expect(result.usage?.total_tokens).toBe(18);
+    });
+
+    it("should send a response request with function tools", async () => {
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: "resp_tool123",
+            object: "response",
+            created_at: 1700000000,
+            model: "gpt-4o",
+            status: "completed",
+            output: [
+              {
+                type: "function_call",
+                id: "fc_001",
+                call_id: "call_abc",
+                name: "get_weather",
+                arguments: '{"location":"San Francisco"}',
+                status: "completed",
+              },
+            ],
+            error: null,
+            incomplete_details: null,
+            instructions: null,
+            metadata: null,
+            temperature: 1,
+            top_p: 1,
+            max_output_tokens: null,
+            previous_response_id: null,
+            reasoning: null,
+            service_tier: "default",
+            text: { format: { type: "text" } },
+            tool_choice: "auto",
+            tools: [
+              {
+                type: "function",
+                name: "get_weather",
+                parameters: {
+                  type: "object",
+                  properties: { location: { type: "string" } },
+                },
+              },
+            ],
+            truncation: "disabled",
+            usage: {
+              input_tokens: 20,
+              input_tokens_details: { cached_tokens: 0 },
+              output_tokens: 15,
+              output_tokens_details: { reasoning_tokens: 0 },
+              total_tokens: 35,
+            },
+            user: null,
+            parallel_tool_calls: true,
+          }),
+          { status: 200 }
+        )
+      );
+
+      const provider = openai({
+        apiKey: "test-key",
+        fetch: mockFetch,
+      });
+
+      const result = await provider.v1.responses({
+        model: "gpt-4o",
+        input: "What's the weather in SF?",
+        tools: [
+          {
+            type: "function",
+            name: "get_weather",
+            parameters: {
+              type: "object",
+              properties: { location: { type: "string" } },
+            },
+          },
+        ],
+      });
+
+      expect(result.output).toHaveLength(1);
+      expect(result.output[0].type).toBe("function_call");
+      const fc = result.output[0] as {
+        type: "function_call";
+        name: string;
+        arguments: string;
+      };
+      expect(fc.name).toBe("get_weather");
+      expect(JSON.parse(fc.arguments)).toEqual({ location: "San Francisco" });
+    });
   });
 });

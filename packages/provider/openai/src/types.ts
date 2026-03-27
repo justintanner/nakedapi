@@ -40,6 +40,22 @@ export interface OpenAiTranscribeResponse {
   text: string;
 }
 
+// Speech request
+export interface OpenAiSpeechRequest {
+  model: string;
+  input: string;
+  voice: string;
+  instructions?: string;
+  response_format?: "mp3" | "opus" | "aac" | "flac" | "wav" | "pcm";
+  speed?: number;
+}
+
+// Speech response (binary audio)
+export interface OpenAiSpeechResponse {
+  audioData: ArrayBuffer;
+  contentType: string;
+}
+
 // Tool function definition
 export interface OpenAiToolFunction {
   name: string;
@@ -242,8 +258,18 @@ interface OpenAiAudioTranscriptionsMethod {
   validatePayload(data: unknown): ValidationResult;
 }
 
+interface OpenAiAudioSpeechMethod {
+  (
+    req: OpenAiSpeechRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiSpeechResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
 interface OpenAiAudioNamespace {
   transcriptions: OpenAiAudioTranscriptionsMethod;
+  speech: OpenAiAudioSpeechMethod;
 }
 
 interface OpenAiImagesEditsMethod {

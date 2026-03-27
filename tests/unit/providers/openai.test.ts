@@ -414,5 +414,140 @@ describe("openai provider", () => {
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
     });
+
+    it("v1.audio.speech.payloadSchema exists with correct method and path", () => {
+      const schema = realProvider.v1.audio.speech.payloadSchema;
+      expect(schema).toBeDefined();
+      expect(schema.method).toBe("POST");
+      expect(schema.path).toBe("/audio/speech");
+      expect(schema.contentType).toBe("application/json");
+    });
+
+    it("v1.audio.speech.validatePayload accepts valid payload", () => {
+      const result = realProvider.v1.audio.speech.validatePayload({
+        model: "tts-1",
+        input: "Hello world",
+        voice: "alloy",
+      });
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it("v1.audio.speech.validatePayload rejects missing required fields", () => {
+      const result = realProvider.v1.audio.speech.validatePayload({});
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain("model is required");
+      expect(result.errors).toContain("input is required");
+      expect(result.errors).toContain("voice is required");
+    });
+
+    it("v1.audio.speech.validatePayload rejects invalid response_format", () => {
+      const result = realProvider.v1.audio.speech.validatePayload({
+        model: "tts-1",
+        input: "Hello",
+        voice: "alloy",
+        response_format: "invalid",
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors[0]).toContain("response_format must be one of");
+    });
+
+    it("v1.audio.speech.validatePayload accepts optional fields", () => {
+      const result = realProvider.v1.audio.speech.validatePayload({
+        model: "gpt-4o-mini-tts",
+        input: "Hello world",
+        voice: "nova",
+        instructions: "Speak slowly and clearly",
+        response_format: "opus",
+        speed: 0.75,
+      });
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+  });
+
+  describe("v1.audio.speech", () => {
+    it("should return audio data from speech synthesis", async () => {
+      const audioBytes = new Uint8Array([0x49, 0x44, 0x33]);
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(audioBytes, {
+          status: 200,
+          headers: { "content-type": "audio/mpeg" },
+        })
+      );
+
+      const provider = openai({
+        apiKey: "test-key",
+        fetch: mockFetch,
+      });
+
+      const result = await provider.v1.audio.speech({
+        model: "tts-1",
+        input: "Hello world",
+        voice: "alloy",
+      });
+
+      expect(result.audioData).toBeInstanceOf(ArrayBuffer);
+      expect(result.contentType).toBe("audio/mpeg");
+      expect(result.audioData.byteLength).toBe(3);
+    });
+
+    it("should send correct request body", async () => {
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(new Uint8Array([0]), {
+          status: 200,
+          headers: { "content-type": "audio/mpeg" },
+        })
+      );
+
+      const provider = openai({
+        apiKey: "test-key",
+        fetch: mockFetch,
+      });
+
+      await provider.v1.audio.speech({
+        model: "tts-1-hd",
+        input: "Test speech",
+        voice: "echo",
+        response_format: "opus",
+        speed: 1.5,
+      });
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      const [url, init] = mockFetch.mock.calls[0];
+      expect(url).toContain("/audio/speech");
+      const body = JSON.parse(init.body as string);
+      expect(body.model).toBe("tts-1-hd");
+      expect(body.input).toBe("Test speech");
+      expect(body.voice).toBe("echo");
+      expect(body.response_format).toBe("opus");
+      expect(body.speed).toBe(1.5);
+    });
+
+    it("should throw OpenAiError on API failure", async () => {
+      const { OpenAiError } =
+        await import("../../../packages/provider/openai/src");
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            error: { message: "Invalid voice" },
+          }),
+          { status: 400 }
+        )
+      );
+
+      const provider = openai({
+        apiKey: "test-key",
+        fetch: mockFetch,
+      });
+
+      await expect(
+        provider.v1.audio.speech({
+          model: "tts-1",
+          input: "Hello",
+          voice: "invalid-voice",
+        })
+      ).rejects.toThrow(OpenAiError);
+    });
   });
 });

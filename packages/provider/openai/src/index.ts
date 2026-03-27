@@ -24,6 +24,8 @@ export type {
   OpenAiChatResponse,
   OpenAiTranscribeRequest,
   OpenAiTranscribeResponse,
+  OpenAiSpeechRequest,
+  OpenAiSpeechResponse,
   OpenAiEmbeddingRequest,
   OpenAiEmbeddingData,
   OpenAiEmbeddingUsage,

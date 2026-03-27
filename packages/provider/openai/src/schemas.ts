@@ -167,6 +167,42 @@ export const imageEditsSchema: PayloadSchema = {
   },
 };
 
+export const audioSpeechSchema: PayloadSchema = {
+  method: "POST",
+  path: "/audio/speech",
+  contentType: "application/json",
+  fields: {
+    model: {
+      type: "string",
+      required: true,
+      description: "Model ID (e.g. tts-1, tts-1-hd, gpt-4o-mini-tts)",
+    },
+    input: {
+      type: "string",
+      required: true,
+      description: "Text to convert to speech (max 4096 characters)",
+    },
+    voice: {
+      type: "string",
+      required: true,
+      description: "Voice to use for synthesis",
+    },
+    instructions: {
+      type: "string",
+      description: "Instructions to guide the voice (gpt-4o-mini-tts only)",
+    },
+    response_format: {
+      type: "string",
+      description: "Audio output format",
+      enum: ["mp3", "opus", "aac", "flac", "wav", "pcm"],
+    },
+    speed: {
+      type: "number",
+      description: "Speed multiplier (0.25 to 4.0, default 1.0)",
+    },
+  },
+};
+
 export const audioTranscriptionsSchema: PayloadSchema = {
   method: "POST",
   path: "/audio/transcriptions",

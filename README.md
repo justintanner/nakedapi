@@ -22,7 +22,7 @@ packages/provider/
 ├── fal/         – @nakedapi/fal (model registry, pricing, analytics)
 ├── kie/         – @nakedapi/kie (media generation, chat, audio)
 ├── kimicoding/  – @nakedapi/kimicoding (Anthropic Messages API)
-├── openai/      – @nakedapi/openai (chat, transcription)
+├── openai/      – @nakedapi/openai (chat, images, audio, embeddings, responses)
 └── xai/         – @nakedapi/xai (Grok chat, search, images, video)
 ```
 
@@ -48,30 +48,56 @@ Method:       kie.api.v1.common.downloadUrl()
 | URL                          | Method Signature                   |
 | ---------------------------- | ---------------------------------- |
 | `POST /chat/completions`     | `openai.v1.chat.completions()`     |
+| `POST /embeddings`           | `openai.v1.embeddings()`           |
+| `POST /images/edits`         | `openai.v1.images.edits()`         |
+| `POST /images/generations`   | `openai.v1.images.generations()`   |
+| `POST /responses`            | `openai.v1.responses()`            |
+| `GET /responses/{id}`        | `openai.v1.responses.get(id)`      |
 | `POST /audio/transcriptions` | `openai.v1.audio.transcriptions()` |
+| `POST /audio/translations`   | `openai.v1.audio.translations()`   |
 
 #### xAI — `https://api.x.ai/v1`
 
-| URL                                      | Method Signature                        |
-| ---------------------------------------- | --------------------------------------- |
-| `POST /chat/completions`                 | `xai.v1.chat.completions()`             |
-| `POST /images/generations`               | `xai.v1.images.generations()`           |
-| `POST /images/edits`                     | `xai.v1.images.edits()`                 |
-| `GET /videos/{requestId}`                | `xai.v1.videos(requestId)`              |
-| `POST /videos/generations`               | `xai.v1.videos.generations()`           |
-| `POST /videos/extensions`                | `xai.v1.videos.extensions()`            |
-| `POST /files`                            | `xai.v1.files.upload()`                 |
-| `GET /files`                             | `xai.v1.files.list()`                   |
-| `GET /files/{fileId}`                    | `xai.v1.files.get(fileId)`              |
-| `DELETE /files/{fileId}`                 | `xai.v1.files.delete(fileId)`           |
-| `GET /models`                            | `xai.v1.models()`                       |
-| `GET /models/{modelId}`                  | `xai.v1.models(modelId)`                |
-| `GET /language-models`                   | `xai.v1.languageModels()`               |
-| `GET /language-models/{modelId}`         | `xai.v1.languageModels(modelId)`        |
-| `GET /image-generation-models`           | `xai.v1.imageGenerationModels()`        |
-| `GET /image-generation-models/{modelId}` | `xai.v1.imageGenerationModels(modelId)` |
-| `GET /video-generation-models`           | `xai.v1.videoGenerationModels()`        |
-| `GET /video-generation-models/{modelId}` | `xai.v1.videoGenerationModels(modelId)` |
+| URL                                           | Method Signature                                      |
+| --------------------------------------------- | ----------------------------------------------------- |
+| `POST /chat/completions`                      | `xai.v1.chat.completions()`                           |
+| `POST /images/generations`                    | `xai.v1.images.generations()`                         |
+| `POST /images/edits`                          | `xai.v1.images.edits()`                               |
+| `GET /videos/{requestId}`                     | `xai.v1.videos(requestId)`                            |
+| `POST /videos/generations`                    | `xai.v1.videos.generations()`                         |
+| `POST /videos/edits`                          | `xai.v1.videos.edits()`                               |
+| `POST /videos/extensions`                     | `xai.v1.videos.extensions()`                          |
+| `POST /files`                                 | `xai.v1.files.upload()`                               |
+| `GET /files`                                  | `xai.v1.files.list()`                                 |
+| `GET /files/{fileId}`                         | `xai.v1.files.get(fileId)`                            |
+| `DELETE /files/{fileId}`                      | `xai.v1.files.delete(fileId)`                         |
+| `GET /models`                                 | `xai.v1.models()`                                     |
+| `GET /models/{modelId}`                       | `xai.v1.models(modelId)`                              |
+| `GET /language-models`                        | `xai.v1.languageModels()`                             |
+| `GET /language-models/{modelId}`              | `xai.v1.languageModels(modelId)`                      |
+| `GET /image-generation-models`                | `xai.v1.imageGenerationModels()`                      |
+| `GET /image-generation-models/{modelId}`      | `xai.v1.imageGenerationModels(modelId)`               |
+| `GET /video-generation-models`                | `xai.v1.videoGenerationModels()`                      |
+| `GET /video-generation-models/{modelId}`      | `xai.v1.videoGenerationModels(modelId)`               |
+| `GET /batches`                                | `xai.v1.batches()`                                    |
+| `POST /batches`                               | `xai.v1.batches.create()`                             |
+| `GET /batches/{id}`                           | `xai.v1.batches.get(id)`                              |
+| `POST /batches/{id}:cancel`                   | `xai.v1.batches.cancel(id)`                           |
+| `GET /batches/{id}/requests`                  | `xai.v1.batches.requests(id)`                         |
+| `POST /batches/{id}/requests`                 | `xai.v1.batches.requests.add(id, req)`                |
+| `GET /batches/{id}/results`                   | `xai.v1.batches.results(id)`                          |
+| `GET /collections`                            | `xai.v1.collections()`                                |
+| `POST /collections`                           | `xai.v1.collections.create()`                         |
+| `GET /collections/{id}`                       | `xai.v1.collections.get(id)`                          |
+| `PUT /collections/{id}`                       | `xai.v1.collections.update(id, req)`                  |
+| `DELETE /collections/{id}`                    | `xai.v1.collections.delete(id)`                       |
+| `GET /collections/{id}/documents`             | `xai.v1.collections.documents(id)`                    |
+| `POST /collections/{id}/documents/{fileId}`   | `xai.v1.collections.documents.add(id, fileId)`        |
+| `GET /collections/{id}/documents/{fileId}`    | `xai.v1.collections.documents.get(id, fileId)`        |
+| `DELETE /collections/{id}/documents/{fileId}` | `xai.v1.collections.documents.delete(id, fileId)`     |
+| `PATCH /collections/{id}/documents/{fileId}`  | `xai.v1.collections.documents.regenerate(id, fileId)` |
+| `GET /collections/{id}/documents:batchGet`    | `xai.v1.collections.documents.batchGet(id, fileIds)`  |
+| `POST /documents/search`                      | `xai.v1.documents.search()`                           |
 
 #### Fal — `https://api.fal.ai/v1`
 
@@ -110,6 +136,8 @@ Method:       kie.api.v1.common.downloadUrl()
 | `POST /api/v1/veo/extend`           | `kie.veo.api.v1.veo.extend()`          |
 | `POST /api/v1/generate`             | `kie.suno.api.v1.generate()`           |
 | `POST /gpt-5-2/v1/chat/completions` | `kie.chat.gpt52.v1.chat.completions()` |
+| `POST /claude/v1/messages`          | `kie.claude.v1.messages()`             |
+| `POST /claude/v1/messages`          | `kie.claudeHaiku.v1.messages()`        |
 
 ## Quick Start
 
@@ -205,9 +233,10 @@ const response = await xai.v1.chat.completions({
   messages: [{ role: "user", content: "Hello!" }],
 });
 
-const searchResult = await xai.v1.chat.completions.search(
-  "latest TypeScript news"
-);
+const searchResult = await xai.v1.documents.search({
+  query: "latest TypeScript news",
+  collection_ids: ["your-collection-id"],
+});
 ```
 
 ### Fal (Model Registry & Analytics)
@@ -228,13 +257,13 @@ const usage = await fal.v1.models.usage();
 
 ## Providers
 
-| Package                                              | Methods                                                                                                                        | Models                                                                |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
-| [@nakedapi/fal](packages/provider/fal)               | `fal.v1.models()`, `.pricing()`, `.usage()`, `.analytics()`, `.requests`                                                       | Model registry/marketplace                                            |
-| [@nakedapi/kie](packages/provider/kie)               | `kie.api.v1.jobs.createTask()`, `.recordInfo()`, `kie.api.fileStreamUpload()`, sub-providers (chat, veo, suno)                 | Kling 3.0, Grok Imagine, Nano Banana, GPT Image, Seedance, ElevenLabs |
-| [@nakedapi/kimicoding](packages/provider/kimicoding) | `kimicoding.coding.v1.messages()`, `.stream()`                                                                                 | `k2p5` (32K max tokens)                                               |
-| [@nakedapi/openai](packages/provider/openai)         | `openai.v1.chat.completions()`, `openai.v1.audio.transcriptions()`                                                             | `gpt-5.4-2026-03-05`, `gpt-4o-mini-transcribe`                        |
-| [@nakedapi/xai](packages/provider/xai)               | `xai.v1.chat.completions()`, `.search()`, `xai.v1.images.generations()`, `.edits()`, `xai.v1.videos.generations()`, `.edits()` | `grok-4-fast`, `grok-imagine-image`, `grok-imagine-video`             |
+| Package                                              | Methods                                                                                                                                                                             | Models                                                                |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| [@nakedapi/fal](packages/provider/fal)               | `fal.v1.models()`, `.pricing()`, `.usage()`, `.analytics()`, `.requests`                                                                                                            | Model registry/marketplace                                            |
+| [@nakedapi/kie](packages/provider/kie)               | `kie.api.v1.jobs.createTask()`, `.recordInfo()`, `kie.api.fileStreamUpload()`, sub-providers (chat, veo, suno, claude, claudeHaiku)                                                 | Kling 3.0, Grok Imagine, Nano Banana, GPT Image, Seedance, ElevenLabs |
+| [@nakedapi/kimicoding](packages/provider/kimicoding) | `kimicoding.coding.v1.messages()`, `.stream()`                                                                                                                                      | `k2p5` (32K max tokens)                                               |
+| [@nakedapi/openai](packages/provider/openai)         | `openai.v1.chat.completions()`, `.embeddings()`, `.images.edits()`, `.images.generations()`, `.responses()`, `.responses.get()`, `.audio.transcriptions()`, `.audio.translations()` | `gpt-5.4-2026-03-05`, `gpt-4o-mini-transcribe`                        |
+| [@nakedapi/xai](packages/provider/xai)               | `xai.v1.chat.completions()`, `.images.*`, `.videos.*`, `.files.*`, `.models()`, `.batches.*`, `.collections.*`, `.documents.search()`                                               | `grok-4-fast`, `grok-imagine-image`, `grok-imagine-video`             |
 
 ## Middleware
 
@@ -488,10 +517,12 @@ Most methods are pure pass-through — your request params are sent as-is and th
 
 | Transformation        | Provider | Method                                                                            | What happens                                                                         |
 | --------------------- | -------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| FormData construction | OpenAI   | `v1.audio.transcriptions()`                                                       | Builds FormData from params; converts `temperature` to string                        |
+| FormData construction | OpenAI   | `v1.audio.transcriptions()`, `v1.audio.translations()`                            | Builds FormData from params; converts `temperature` to string                        |
+| FormData construction | OpenAI   | `v1.images.edits()`                                                               | Builds FormData from params; supports multiple image blobs                           |
 | FormData construction | xAI      | `v1.files.upload()`                                                               | Builds FormData from `file` Blob + `filename`                                        |
 | FormData construction | KIE      | `api.fileStreamUpload()`                                                          | Infers MIME type from filename, generates timestamped upload path, wraps in FormData |
 | Query string          | Fal      | `v1.models()`, `.pricing()`, `.usage()`, `.analytics()`, `.requests.byEndpoint()` | Converts param objects to URL query strings                                          |
+| Query string          | xAI      | `v1.batches()`, `.requests()`, `.results()`, `v1.collections()`, `.documents()`   | Converts pagination/filter params to URL query strings                               |
 | Header promotion      | Fal      | `v1.models.requests.payloads()`                                                   | Moves `idempotency_key` from params to `Idempotency-Key` header                      |
 
 ## License

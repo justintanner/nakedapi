@@ -620,9 +620,11 @@ describe("openai provider", () => {
         },
       };
 
-      const mockFetch = vi.fn().mockResolvedValue(
-        new Response(JSON.stringify(mockResponse), { status: 200 })
-      );
+      const mockFetch = vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify(mockResponse), { status: 200 })
+        );
 
       const provider = openai({ apiKey: "test-key", fetch: mockFetch });
       const result = await provider.v1.responses({
@@ -661,9 +663,11 @@ describe("openai provider", () => {
         ],
       };
 
-      const mockFetch = vi.fn().mockResolvedValue(
-        new Response(JSON.stringify(mockResponse), { status: 200 })
-      );
+      const mockFetch = vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify(mockResponse), { status: 200 })
+        );
 
       const provider = openai({ apiKey: "test-key", fetch: mockFetch });
       const result = await provider.v1.responses({
@@ -681,9 +685,21 @@ describe("openai provider", () => {
     });
 
     it("should send correct request body to API", async () => {
-      const mockFetch = vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ id: "resp_test", object: "response", created_at: 0, status: "completed", model: "gpt-4o", output: [] }), { status: 200 })
-      );
+      const mockFetch = vi
+        .fn()
+        .mockResolvedValue(
+          new Response(
+            JSON.stringify({
+              id: "resp_test",
+              object: "response",
+              created_at: 0,
+              status: "completed",
+              model: "gpt-4o",
+              output: [],
+            }),
+            { status: 200 }
+          )
+        );
 
       const provider = openai({ apiKey: "test-key", fetch: mockFetch });
       await provider.v1.responses({
@@ -706,23 +722,26 @@ describe("openai provider", () => {
 
     it("should support function tools in request", async () => {
       const mockFetch = vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({
-          id: "resp_tool",
-          object: "response",
-          created_at: 0,
-          status: "completed",
-          model: "gpt-4o",
-          output: [
-            {
-              type: "function_call",
-              id: "fc_1",
-              call_id: "call_abc",
-              name: "get_weather",
-              arguments: '{"location":"SF"}',
-              status: "completed",
-            },
-          ],
-        }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            id: "resp_tool",
+            object: "response",
+            created_at: 0,
+            status: "completed",
+            model: "gpt-4o",
+            output: [
+              {
+                type: "function_call",
+                id: "fc_1",
+                call_id: "call_abc",
+                name: "get_weather",
+                arguments: '{"location":"SF"}',
+                status: "completed",
+              },
+            ],
+          }),
+          { status: 200 }
+        )
       );
 
       const provider = openai({ apiKey: "test-key", fetch: mockFetch });
@@ -743,22 +762,29 @@ describe("openai provider", () => {
       });
 
       expect(result.output[0].type).toBe("function_call");
-      const fnCall = result.output[0] as { type: "function_call"; name: string; arguments: string };
+      const fnCall = result.output[0] as {
+        type: "function_call";
+        name: string;
+        arguments: string;
+      };
       expect(fnCall.name).toBe("get_weather");
       expect(fnCall.arguments).toBe('{"location":"SF"}');
     });
 
     it("should support previous_response_id for multi-turn", async () => {
       const mockFetch = vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({
-          id: "resp_turn2",
-          object: "response",
-          created_at: 0,
-          status: "completed",
-          model: "gpt-4o",
-          output: [],
-          previous_response_id: "resp_turn1",
-        }), { status: 200 })
+        new Response(
+          JSON.stringify({
+            id: "resp_turn2",
+            object: "response",
+            created_at: 0,
+            status: "completed",
+            model: "gpt-4o",
+            output: [],
+            previous_response_id: "resp_turn1",
+          }),
+          { status: 200 }
+        )
       );
 
       const provider = openai({ apiKey: "test-key", fetch: mockFetch });

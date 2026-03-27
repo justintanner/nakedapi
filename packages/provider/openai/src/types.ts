@@ -362,11 +362,7 @@ export interface OpenAiResponseRequest {
   max_output_tokens?: number;
   top_p?: number;
   tools?: OpenAiResponseTool[];
-  tool_choice?:
-    | "auto"
-    | "none"
-    | "required"
-    | { type: string; name?: string };
+  tool_choice?: "auto" | "none" | "required" | { type: string; name?: string };
   previous_response_id?: string;
   store?: boolean;
   metadata?: Record<string, string>;
@@ -486,11 +482,7 @@ export interface OpenAiResponseResponse {
   previous_response_id?: string | null;
   reasoning?: OpenAiResponseReasoning | null;
   text?: OpenAiResponseTextFormat;
-  tool_choice?:
-    | "auto"
-    | "none"
-    | "required"
-    | { type: string; name?: string };
+  tool_choice?: "auto" | "none" | "required" | { type: string; name?: string };
   tools?: OpenAiResponseTool[];
   truncation?: "auto" | "disabled";
   parallel_tool_calls?: boolean;

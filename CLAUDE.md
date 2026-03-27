@@ -74,6 +74,7 @@ Integration tests use `setupPolly(recordingName)` / `teardownPolly(ctx)` from `t
 
 1. Write the test file in `tests/integration/`.
 2. Record fixtures for **only** the new/changed file:
+
    ```bash
    # With 1Password (recommended — secrets never touch disk):
    pnpm run test:integration:record -- tests/integration/<file>.test.ts
@@ -81,7 +82,9 @@ Integration tests use `setupPolly(recordingName)` / `teardownPolly(ctx)` from `t
    # With plain env vars (manual):
    POLLY_MODE=record OPENAI_API_KEY=sk-... pnpm vitest run --config tests/vitest.integration.ts tests/integration/<file>.test.ts
    ```
+
    This sends real API requests and writes HAR files to `tests/recordings/`.
+
 3. Verify the test passes in replay mode:
    ```bash
    pnpm vitest run --config tests/vitest.integration.ts tests/integration/<file>.test.ts

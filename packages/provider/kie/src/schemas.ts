@@ -243,6 +243,9 @@ export const claudeMessagesSchema: PayloadSchema = {
   },
 };
 
+// claudeHaiku uses the same schema as claude (same endpoint shape, different base URL)
+export const claudeHaikuMessagesSchema: PayloadSchema = claudeMessagesSchema;
+
 export const modelInputSchemas: Record<KieMediaModel, ModelInputSchema> = {
   "kling-3.0/video": {
     type: "video",

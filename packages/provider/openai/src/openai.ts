@@ -14,6 +14,7 @@ import {
   OpenAiImageGenerationResponse,
   OpenAiResponseRequest,
   OpenAiResponseResponse,
+  OpenAiResponseGetOptions,
   OpenAiProvider,
   OpenAiError,
 } from "./types";
@@ -92,6 +93,70 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     };
+  }
+
+  async function makeGetRequest<T>(
+    path: string,
+    query?: Record<string, string | string[] | boolean | undefined>,
+    signal?: AbortSignal
+  ): Promise<T> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    if (signal) {
+      signal.addEventListener("abort", () => controller.abort());
+    }
+
+    const params = new URLSearchParams();
+    if (query) {
+      for (const [key, value] of Object.entries(query)) {
+        if (value === undefined) continue;
+        if (Array.isArray(value)) {
+          for (const v of value) {
+            params.append(`${key}[]`, v);
+          }
+        } else {
+          params.append(key, String(value));
+        }
+      }
+    }
+    const qs = params.toString();
+    const url = `${baseURL}${path}${qs ? `?${qs}` : ""}`;
+
+    try {
+      const res = await doFetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${opts.apiKey}`,
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        let message = `OpenAI API error: ${res.status}`;
+        let body: unknown = null;
+        try {
+          body = await res.json();
+          if (typeof body === "object" && body !== null && "error" in body) {
+            const err = (body as { error: { message?: string } }).error;
+            if (err?.message) {
+              message = `OpenAI API error ${res.status}: ${err.message}`;
+            }
+          }
+        } catch {
+          // ignore parse errors
+        }
+        throw new OpenAiError(message, res.status, body);
+      }
+
+      return (await res.json()) as T;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof OpenAiError) throw error;
+      throw new OpenAiError(`OpenAI request failed: ${error}`, 500);
+    }
   }
 
   return {
@@ -213,6 +278,20 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
           payloadSchema: responsesSchema,
           validatePayload(data: unknown): ValidationResult {
             return validatePayload(data, responsesSchema);
+          },
+          get: async function get(
+            id: string,
+            getOpts?: OpenAiResponseGetOptions,
+            signal?: AbortSignal
+          ): Promise<OpenAiResponseResponse> {
+            return await makeGetRequest<OpenAiResponseResponse>(
+              `/responses/${encodeURIComponent(id)}`,
+              {
+                include: getOpts?.include,
+                stream: getOpts?.stream,
+              },
+              signal
+            );
           },
         }
       ),

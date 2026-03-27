@@ -826,4 +826,183 @@ describe("openai provider", () => {
       expect(body.previous_response_id).toBe("resp_turn1");
     });
   });
+
+  describe("responses.get endpoint", () => {
+    it("should retrieve a response by id", async () => {
+      const mockResponse = {
+        id: "resp_abc123",
+        object: "response",
+        created_at: 1700000000,
+        status: "completed",
+        model: "gpt-4o",
+        output: [
+          {
+            type: "message",
+            id: "msg_get1",
+            role: "assistant",
+            content: [
+              {
+                type: "output_text",
+                text: "Previously generated response.",
+              },
+            ],
+            status: "completed",
+          },
+        ],
+        usage: {
+          input_tokens: 5,
+          output_tokens: 4,
+          total_tokens: 9,
+        },
+      };
+
+      const mockFetch = vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify(mockResponse), { status: 200 })
+        );
+
+      const provider = openai({ apiKey: "test-key", fetch: mockFetch });
+      const result = await provider.v1.responses.get("resp_abc123");
+
+      expect(result.id).toBe("resp_abc123");
+      expect(result.object).toBe("response");
+      expect(result.status).toBe("completed");
+      expect(result.output).toHaveLength(1);
+      expect(result.usage?.total_tokens).toBe(9);
+    });
+
+    it("should send GET request to correct URL", async () => {
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: "resp_url_test",
+            object: "response",
+            created_at: 0,
+            status: "completed",
+            model: "gpt-4o",
+            output: [],
+          }),
+          { status: 200 }
+        )
+      );
+
+      const provider = openai({ apiKey: "test-key", fetch: mockFetch });
+      await provider.v1.responses.get("resp_url_test");
+
+      const [url, init] = mockFetch.mock.calls[0];
+      expect(url).toContain("/responses/resp_url_test");
+      expect(init.method).toBe("GET");
+    });
+
+    it("should pass include query params", async () => {
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: "resp_include",
+            object: "response",
+            created_at: 0,
+            status: "completed",
+            model: "gpt-4o",
+            output: [],
+          }),
+          { status: 200 }
+        )
+      );
+
+      const provider = openai({ apiKey: "test-key", fetch: mockFetch });
+      await provider.v1.responses.get("resp_include", {
+        include: ["file_search_call.results", "message.input_image.image_url"],
+      });
+
+      const [url] = mockFetch.mock.calls[0];
+      expect(url).toContain("include%5B%5D=file_search_call.results");
+      expect(url).toContain(
+        "include%5B%5D=message.input_image.image_url"
+      );
+    });
+
+    it("should pass stream query param", async () => {
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: "resp_stream",
+            object: "response",
+            created_at: 0,
+            status: "completed",
+            model: "gpt-4o",
+            output: [],
+          }),
+          { status: 200 }
+        )
+      );
+
+      const provider = openai({ apiKey: "test-key", fetch: mockFetch });
+      await provider.v1.responses.get("resp_stream", { stream: true });
+
+      const [url] = mockFetch.mock.calls[0];
+      expect(url).toContain("stream=true");
+    });
+
+    it("should include authorization header", async () => {
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: "resp_auth",
+            object: "response",
+            created_at: 0,
+            status: "completed",
+            model: "gpt-4o",
+            output: [],
+          }),
+          { status: 200 }
+        )
+      );
+
+      const provider = openai({ apiKey: "sk-test-key-123", fetch: mockFetch });
+      await provider.v1.responses.get("resp_auth");
+
+      const [, init] = mockFetch.mock.calls[0];
+      expect(init.headers.Authorization).toBe("Bearer sk-test-key-123");
+    });
+
+    it("should handle API errors", async () => {
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            error: { message: "Response not found", type: "not_found_error" },
+          }),
+          { status: 404 }
+        )
+      );
+
+      const provider = openai({ apiKey: "test-key", fetch: mockFetch });
+      await expect(
+        provider.v1.responses.get("resp_nonexistent")
+      ).rejects.toThrow("OpenAI API error 404: Response not found");
+    });
+
+    it("should work with no options", async () => {
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: "resp_noopts",
+            object: "response",
+            created_at: 0,
+            status: "completed",
+            model: "gpt-4o",
+            output: [],
+          }),
+          { status: 200 }
+        )
+      );
+
+      const provider = openai({ apiKey: "test-key", fetch: mockFetch });
+      const result = await provider.v1.responses.get("resp_noopts");
+
+      expect(result.id).toBe("resp_noopts");
+      const [url] = mockFetch.mock.calls[0];
+      expect(url).not.toContain("?");
+    });
+  });
 });

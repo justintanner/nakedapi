@@ -80,7 +80,7 @@ describe("fal integration", () => {
     const provider = fal({
       apiKey: process.env.FAL_API_KEY ?? "fal-test-key",
     });
-    const result = await provider.v1.models.requests.byEndpoint({
+    const result = await provider.v1.models.requests["by-endpoint"]({
       endpoint_id: "fal-ai/flux/dev",
       limit: 5,
     });

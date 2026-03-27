@@ -473,7 +473,7 @@ interface KieDownloadUrlMethod {
 }
 
 interface KieCommonNamespace {
-  downloadUrl: KieDownloadUrlMethod;
+  "download-url": KieDownloadUrlMethod;
 }
 
 interface KieCreditNamespace {
@@ -494,7 +494,7 @@ interface KieFileStreamUploadMethod {
 
 interface KieApiNamespace {
   v1: KieV1Namespace;
-  fileStreamUpload: KieFileStreamUploadMethod;
+  "file-stream-upload": KieFileStreamUploadMethod;
 }
 
 // Provider interface (sub-provider types imported in index.ts)
@@ -505,5 +505,4 @@ export interface KieProvider {
   suno: import("./suno").SunoProvider;
   chat: import("./chat").KieChatProvider;
   claude: import("./claude").KieClaudeProvider["claude"];
-  claudeHaiku: import("./claude-haiku").KieClaudeHaikuProvider["claudeHaiku"];
 }

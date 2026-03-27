@@ -13,7 +13,6 @@ export { createVeoProvider } from "./veo";
 export { createSunoProvider } from "./suno";
 export { createChatProvider } from "./chat";
 export { createClaudeProvider } from "./claude";
-export { createClaudeHaikuProvider } from "./claude-haiku";
 
 // Export SSE utility
 export { sseToIterable } from "./sse";
@@ -97,17 +96,3 @@ export type {
   KieClaudeResponse,
   KieClaudeProvider,
 } from "./claude";
-
-export type {
-  KieClaudeHaikuToolInputSchema,
-  KieClaudeHaikuTool,
-  KieClaudeHaikuContentPart,
-  KieClaudeHaikuMessage,
-  KieClaudeHaikuRequest,
-  KieClaudeHaikuUsage,
-  KieClaudeHaikuToolUseContent,
-  KieClaudeHaikuTextContent,
-  KieClaudeHaikuContentBlock,
-  KieClaudeHaikuResponse,
-  KieClaudeHaikuProvider,
-} from "./claude-haiku";

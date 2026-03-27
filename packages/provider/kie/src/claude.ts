@@ -31,7 +31,7 @@ export interface KieClaudeMessage {
 }
 
 export interface KieClaudeRequest {
-  model: "claude-sonnet-4-6";
+  model: "claude-sonnet-4-6" | "claude-haiku-4-5";
   messages: KieClaudeMessage[];
   tools?: KieClaudeTool[];
   thinkingFlag?: boolean;

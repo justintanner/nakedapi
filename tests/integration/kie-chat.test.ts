@@ -14,7 +14,7 @@ describe("kie integration", () => {
     const provider = kie({
       apiKey: process.env.KIE_API_KEY ?? "sk-test-key",
     });
-    const result = await provider.chat.gpt52.v1.chat.completions({
+    const result = await provider.chat["gpt-5-2"].v1.chat.completions({
       messages: [{ role: "user", content: "Say hello in one sentence." }],
       temperature: 0,
     });

@@ -1,5 +1,9 @@
 # @nakedapi/kie
 
+[![npm](https://img.shields.io/npm/v/@nakedapi/kie?color=cb0000)](https://www.npmjs.com/package/@nakedapi/kie)
+[![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript&logoColor=white)](tsconfig.json)
+
 Kie provider for media generation — video, image, audio, and transcription.
 
 ## Installation

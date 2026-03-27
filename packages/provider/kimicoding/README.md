@@ -1,5 +1,9 @@
 # @nakedapi/kimicoding
 
+[![npm](https://img.shields.io/npm/v/@nakedapi/kimicoding?color=cb0000)](https://www.npmjs.com/package/@nakedapi/kimicoding)
+[![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript&logoColor=white)](tsconfig.json)
+
 Kimi for Coding provider for NakedAPI - **completely standalone** with Anthropic Messages API format, streaming-first API, and built-in middleware.
 
 ## Installation

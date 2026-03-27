@@ -1,5 +1,9 @@
 # @nakedapi/fal
 
+[![npm](https://img.shields.io/npm/v/@nakedapi/fal?color=cb0000)](https://www.npmjs.com/package/@nakedapi/fal)
+[![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript&logoColor=white)](tsconfig.json)
+
 Fal provider — model registry, pricing, usage analytics, and request management. Completely standalone with zero external dependencies.
 
 ## Installation

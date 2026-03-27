@@ -1,5 +1,9 @@
 # @nakedapi/xai
 
+[![npm](https://img.shields.io/npm/v/@nakedapi/xai?color=cb0000)](https://www.npmjs.com/package/@nakedapi/xai)
+[![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript&logoColor=white)](tsconfig.json)
+
 xAI (Grok) provider — chat completions, image/video generation and editing, file management, batches, collections, document search, and model listing. Completely standalone with zero external dependencies.
 
 ## Installation

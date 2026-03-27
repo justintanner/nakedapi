@@ -1,5 +1,9 @@
 # @nakedapi/openai
 
+[![npm](https://img.shields.io/npm/v/@nakedapi/openai?color=cb0000)](https://www.npmjs.com/package/@nakedapi/openai)
+[![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript&logoColor=white)](tsconfig.json)
+
 OpenAI provider — chat completions, embeddings, image generation/editing, responses, and audio transcription/translation. Completely standalone with zero external dependencies.
 
 ## Installation

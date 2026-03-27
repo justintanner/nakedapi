@@ -1,7 +1,11 @@
 # NakedAPI
 
+[![CI](https://github.com/justintanner/nakedapi/actions/workflows/ci.yml/badge.svg)](https://github.com/justintanner/nakedapi/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Build](https://github.com/justintanner/nakedapi/actions/workflows/ci.yml/badge.svg)](https://github.com/justintanner/nakedapi/actions)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript&logoColor=white)](tsconfig.base.json)
+[![Node](https://img.shields.io/badge/Node.js-%E2%89%A518-339933?logo=nodedotjs&logoColor=white)](package.json)
+[![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/justintanner/nakedapi/pulls)
 
 Standalone-first TypeScript AI provider packages. Each is self-contained with zero external dependencies.
 
@@ -17,13 +21,13 @@ Standalone-first TypeScript AI provider packages. Each is self-contained with ze
 
 ## Providers
 
-| Package | Description | Docs |
-| ------- | ----------- | ---- |
-| [@nakedapi/openai](packages/provider/openai) | Chat, embeddings, images, responses, audio | [README](packages/provider/openai/README.md#endpoints) |
-| [@nakedapi/xai](packages/provider/xai) | Grok chat, images, video, files, batches, collections, search | [README](packages/provider/xai/README.md#endpoints) |
-| [@nakedapi/fal](packages/provider/fal) | Model registry, pricing, usage, analytics | [README](packages/provider/fal/README.md#endpoints) |
-| [@nakedapi/kimicoding](packages/provider/kimicoding) | Anthropic Messages API format, streaming | [README](packages/provider/kimicoding/README.md#endpoints) |
-| [@nakedapi/kie](packages/provider/kie) | Media generation (video/image/audio), sub-providers | [README](packages/provider/kie/README.md#endpoints) |
+| Package | Version | Description | Docs |
+| ------- | ------- | ----------- | ---- |
+| [@nakedapi/openai](packages/provider/openai) | [![npm](https://img.shields.io/npm/v/@nakedapi/openai?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/openai) | Chat, embeddings, images, responses, audio | [README](packages/provider/openai/README.md#endpoints) |
+| [@nakedapi/xai](packages/provider/xai) | [![npm](https://img.shields.io/npm/v/@nakedapi/xai?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/xai) | Grok chat, images, video, files, batches, collections, search | [README](packages/provider/xai/README.md#endpoints) |
+| [@nakedapi/fal](packages/provider/fal) | [![npm](https://img.shields.io/npm/v/@nakedapi/fal?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/fal) | Model registry, pricing, usage, analytics | [README](packages/provider/fal/README.md#endpoints) |
+| [@nakedapi/kimicoding](packages/provider/kimicoding) | [![npm](https://img.shields.io/npm/v/@nakedapi/kimicoding?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/kimicoding) | Anthropic Messages API format, streaming | [README](packages/provider/kimicoding/README.md#endpoints) |
+| [@nakedapi/kie](packages/provider/kie) | [![npm](https://img.shields.io/npm/v/@nakedapi/kie?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/kie) | Media generation (video/image/audio), sub-providers | [README](packages/provider/kie/README.md#endpoints) |
 
 ## Quick Start
 

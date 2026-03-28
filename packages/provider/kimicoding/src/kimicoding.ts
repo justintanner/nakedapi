@@ -5,6 +5,7 @@ import {
   KimiCodingOptions,
   KimiCodingError,
   KimiCodingProvider,
+  KimiCodingModelListResponse,
   AnthropicMessage,
   AnthropicStreamEvent,
 } from "./types";
@@ -55,6 +56,54 @@ export function kimicoding(opts: KimiCodingOptions): KimiCodingProvider {
       "x-api-key": opts.apiKey,
       "Content-Type": "application/json",
     };
+  }
+
+  async function makeGetRequest<T>(
+    path: string,
+    signal?: AbortSignal
+  ): Promise<T> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    if (signal) {
+      signal.addEventListener("abort", () => controller.abort());
+    }
+
+    try {
+      const res = await doFetch(`${baseURL}${path}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${opts.apiKey}`,
+          "x-api-key": opts.apiKey,
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        let message = `KimiCoding error: ${res.status}`;
+        let body: unknown = null;
+        try {
+          body = await res.json();
+          if (
+            isAnthropicErrorBody(body) &&
+            typeof body.error?.message === "string"
+          ) {
+            message = `KimiCoding error ${res.status}: ${body.error.message}`;
+          }
+        } catch {
+          // ignore parse errors
+        }
+        throw new KimiCodingError(message, res.status, body);
+      }
+
+      return (await res.json()) as T;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof KimiCodingError) throw error;
+      throw new KimiCodingError(`KimiCoding request failed: ${error}`, 500);
+    }
   }
 
   async function* streamImpl(
@@ -165,6 +214,16 @@ export function kimicoding(opts: KimiCodingOptions): KimiCodingProvider {
     coding: {
       v1: {
         messages,
+        models: {
+          list: async function list(
+            signal?: AbortSignal
+          ): Promise<KimiCodingModelListResponse> {
+            return await makeGetRequest<KimiCodingModelListResponse>(
+              "v1/models",
+              signal
+            );
+          },
+        },
       },
     },
   };

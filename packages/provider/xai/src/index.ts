@@ -19,6 +19,7 @@ export type {
   XaiChatChoice,
   XaiChatRequest,
   XaiChatResponse,
+  XaiDeferredChatCompletionResult,
   XaiImageGenerateRequest,
   XaiImageEditRequest,
   XaiImageReference,

@@ -2,6 +2,7 @@ import {
   XaiOptions,
   XaiChatRequest,
   XaiChatResponse,
+  XaiDeferredChatCompletionResult,
   XaiImageGenerateRequest,
   XaiImageEditRequest,
   XaiImageResponse,
@@ -740,6 +741,63 @@ export function xai(opts: XaiOptions): XaiProvider {
             },
           }
         ),
+
+        async deferredCompletion(
+          requestId: string,
+          signal?: AbortSignal
+        ): Promise<XaiDeferredChatCompletionResult> {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+          if (signal) {
+            signal.addEventListener("abort", () => controller.abort());
+          }
+
+          try {
+            const res = await doFetch(
+              `${baseURL}/chat/deferred-completion/${encodeURIComponent(requestId)}`,
+              {
+                method: "GET",
+                headers: { Authorization: `Bearer ${opts.apiKey}` },
+                signal: controller.signal,
+              }
+            );
+
+            clearTimeout(timeoutId);
+
+            if (res.status === 202) {
+              return { ready: false, data: null };
+            }
+
+            if (!res.ok) {
+              let message = `XAI API error: ${res.status}`;
+              let body: unknown = null;
+              try {
+                body = await res.json();
+                if (
+                  typeof body === "object" &&
+                  body !== null &&
+                  "error" in body
+                ) {
+                  const err = (body as { error: { message?: string } }).error;
+                  if (err?.message) {
+                    message = `XAI API error ${res.status}: ${err.message}`;
+                  }
+                }
+              } catch {
+                // ignore parse errors
+              }
+              throw new XaiError(message, res.status, body);
+            }
+
+            const data = (await res.json()) as XaiChatResponse;
+            return { ready: true, data };
+          } catch (error) {
+            clearTimeout(timeoutId);
+            if (error instanceof XaiError) throw error;
+            throw new XaiError(`XAI request failed: ${error}`, 500);
+          }
+        },
       },
       images: {
         generations: Object.assign(

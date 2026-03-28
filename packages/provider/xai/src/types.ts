@@ -55,6 +55,15 @@ export interface XaiChatRequest {
     | "auto"
     | "none"
     | { type: "function"; function: { name: string } };
+  deferred?: boolean;
+}
+
+// Deferred chat completion result
+// GET /v1/chat/deferred-completion/{request_id}
+// Returns null when pending (HTTP 202), or the full chat response when complete (HTTP 200)
+export interface XaiDeferredChatCompletionResult {
+  ready: boolean;
+  data: XaiChatResponse | null;
 }
 
 // Chat response (raw API shape)
@@ -805,6 +814,10 @@ interface XaiChatCompletionsMethod {
 
 interface XaiChatNamespace {
   completions: XaiChatCompletionsMethod;
+  deferredCompletion(
+    requestId: string,
+    signal?: AbortSignal
+  ): Promise<XaiDeferredChatCompletionResult>;
 }
 
 interface XaiImageGenerationsMethod {

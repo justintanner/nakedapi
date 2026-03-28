@@ -44,6 +44,11 @@ export const chatCompletionsSchema: PayloadSchema = {
       },
     },
     tool_choice: { type: "string", description: "Tool choice strategy" },
+    deferred: {
+      type: "boolean",
+      description:
+        "If true, returns a request_id immediately; poll GET /v1/chat/deferred-completion/{request_id} for the result",
+    },
   },
 };
 

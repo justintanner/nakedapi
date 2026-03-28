@@ -442,11 +442,115 @@ interface FireworksV1Namespace {
   embeddings: FireworksEmbeddingsMethod;
   rerank: FireworksRerankMethod;
   messages: FireworksMessagesMethod;
+  workflows: FireworksWorkflowsNamespace;
 }
 
 // Provider interface
 export interface FireworksProvider {
   v1: FireworksV1Namespace;
+}
+
+// Text-to-image request (synchronous FLUX schnell/dev)
+export interface FireworksTextToImageRequest {
+  prompt: string;
+  aspect_ratio?:
+    | "1:1"
+    | "21:9"
+    | "16:9"
+    | "3:2"
+    | "5:4"
+    | "4:5"
+    | "2:3"
+    | "9:16"
+    | "9:21"
+    | "4:3"
+    | "3:4";
+  guidance_scale?: number;
+  num_inference_steps?: number;
+  seed?: number;
+}
+
+// Text-to-image JSON response
+export interface FireworksTextToImageResponse {
+  id: string;
+  base64: string[];
+  finishReason: "SUCCESS" | "CONTENT_FILTERED";
+  seed: number;
+}
+
+// Kontext async request (FLUX Kontext Pro/Max)
+export interface FireworksKontextRequest {
+  prompt: string;
+  input_image?: string | null;
+  seed?: number | null;
+  aspect_ratio?: string | null;
+  output_format?: "png" | "jpeg";
+  webhook_url?: string | null;
+  webhook_secret?: string | null;
+  prompt_upsampling?: boolean;
+  safety_tolerance?: number;
+}
+
+// Kontext async create response
+export interface FireworksKontextResponse {
+  request_id: string;
+}
+
+// Kontext get_result request
+export interface FireworksGetResultRequest {
+  id: string;
+}
+
+// Kontext get_result response
+export interface FireworksGetResultResponse {
+  id: string;
+  status:
+    | "Task not found"
+    | "Pending"
+    | "Request Moderated"
+    | "Content Moderated"
+    | "Ready"
+    | "Error";
+  result: unknown;
+  progress: number | null;
+  details: Record<string, unknown> | null;
+}
+
+// Namespace types for workflows
+interface FireworksTextToImageMethod {
+  (
+    model: string,
+    req: FireworksTextToImageRequest,
+    signal?: AbortSignal
+  ): Promise<FireworksTextToImageResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface FireworksKontextMethod {
+  (
+    model: string,
+    req: FireworksKontextRequest,
+    signal?: AbortSignal
+  ): Promise<FireworksKontextResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface FireworksGetResultMethod {
+  (
+    model: string,
+    req: FireworksGetResultRequest,
+    signal?: AbortSignal
+  ): Promise<FireworksGetResultResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface FireworksWorkflowsNamespace {
+  textToImage: FireworksTextToImageMethod;
+  kontext: FireworksKontextMethod;
+  getResult: FireworksGetResultMethod;
 }
 
 // Error class

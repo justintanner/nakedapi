@@ -1403,3 +1403,82 @@ export const embeddingsSchema: PayloadSchema = {
     },
   },
 };
+
+// Deployed Models (LoRA management)
+export const createDeployedModelSchema: PayloadSchema = {
+  method: "POST",
+  path: "/v1/accounts/{account_id}/deployedModels",
+  contentType: "application/json",
+  fields: {
+    model: {
+      type: "string",
+      required: true,
+      description:
+        "Model resource name (e.g. accounts/my-account/models/my-lora)",
+    },
+    deployment: {
+      type: "string",
+      required: true,
+      description:
+        "Base deployment resource name (e.g. accounts/my-account/deployments/my-deployment)",
+    },
+    displayName: {
+      type: "string",
+      description: "Human-readable display name",
+    },
+    description: {
+      type: "string",
+      description: "Description of the deployed model",
+    },
+    default: {
+      type: "boolean",
+      description:
+        "If true, default target when querying without #<deployment> suffix",
+    },
+    serverless: {
+      type: "boolean",
+      description: "Whether to deploy as serverless (not applicable for LoRA)",
+    },
+    public: {
+      type: "boolean",
+      description: "Whether the deployed model is publicly reachable",
+    },
+  },
+};
+
+export const updateDeployedModelSchema: PayloadSchema = {
+  method: "PATCH",
+  path: "/v1/accounts/{account_id}/deployedModels/{deployed_model_id}",
+  contentType: "application/json",
+  fields: {
+    displayName: {
+      type: "string",
+      description: "Human-readable display name",
+    },
+    description: {
+      type: "string",
+      description: "Description of the deployed model",
+    },
+    model: {
+      type: "string",
+      description: "Model resource name",
+    },
+    deployment: {
+      type: "string",
+      description: "Base deployment resource name",
+    },
+    default: {
+      type: "boolean",
+      description:
+        "If true, default target when querying without #<deployment> suffix",
+    },
+    serverless: {
+      type: "boolean",
+      description: "Whether to deploy as serverless",
+    },
+    public: {
+      type: "boolean",
+      description: "Whether the deployed model is publicly reachable",
+    },
+  },
+};

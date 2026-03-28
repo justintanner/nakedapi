@@ -1309,6 +1309,7 @@ export type FireworksCheckpointFormat =
   | "UNINITIALIZED";
 
 export type FireworksDeployedModelState =
+  | "STATE_UNSPECIFIED"
   | "UNDEPLOYING"
   | "DEPLOYING"
   | "DEPLOYED"
@@ -1765,6 +1766,64 @@ export interface FireworksListDeploymentShapeVersionsResponse {
   totalSize?: number;
 }
 
+// Deployed Models (LoRA management)
+export interface FireworksDeployedModel {
+  name?: string;
+  displayName?: string;
+  description?: string;
+  createTime?: string;
+  updateTime?: string;
+  model?: string;
+  deployment?: string;
+  default?: boolean;
+  state?: FireworksDeployedModelState;
+  serverless?: boolean;
+  status?: FireworksModelStatus;
+  public?: boolean;
+}
+
+export interface FireworksCreateDeployedModelRequest {
+  displayName?: string;
+  description?: string;
+  model: string;
+  deployment: string;
+  default?: boolean;
+  serverless?: boolean;
+  public?: boolean;
+}
+
+export interface FireworksCreateDeployedModelOptions {
+  replaceMergedAddon?: boolean;
+}
+
+export interface FireworksUpdateDeployedModelRequest {
+  displayName?: string;
+  description?: string;
+  model?: string;
+  deployment?: string;
+  default?: boolean;
+  serverless?: boolean;
+  public?: boolean;
+}
+
+export interface FireworksListDeployedModelsRequest {
+  pageSize?: number;
+  pageToken?: string;
+  filter?: string;
+  orderBy?: string;
+  readMask?: string;
+}
+
+export interface FireworksListDeployedModelsResponse {
+  deployedModels: FireworksDeployedModel[];
+  nextPageToken?: string;
+  totalSize?: number;
+}
+
+export interface FireworksGetDeployedModelRequest {
+  readMask?: string;
+}
+
 interface FireworksCreateDeploymentMethod {
   (
     accountId: string,
@@ -1847,6 +1906,50 @@ interface FireworksDeploymentShapesNamespace {
   };
 }
 
+// Deployed Models namespace types
+interface FireworksCreateDeployedModelMethod {
+  (
+    accountId: string,
+    req: FireworksCreateDeployedModelRequest,
+    options?: FireworksCreateDeployedModelOptions,
+    signal?: AbortSignal
+  ): Promise<FireworksDeployedModel>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface FireworksUpdateDeployedModelMethod {
+  (
+    accountId: string,
+    deployedModelId: string,
+    req: FireworksUpdateDeployedModelRequest,
+    signal?: AbortSignal
+  ): Promise<FireworksDeployedModel>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface FireworksDeployedModelsNamespace {
+  list(
+    accountId: string,
+    params?: FireworksListDeployedModelsRequest,
+    signal?: AbortSignal
+  ): Promise<FireworksListDeployedModelsResponse>;
+  create: FireworksCreateDeployedModelMethod;
+  get(
+    accountId: string,
+    deployedModelId: string,
+    params?: FireworksGetDeployedModelRequest,
+    signal?: AbortSignal
+  ): Promise<FireworksDeployedModel>;
+  update: FireworksUpdateDeployedModelMethod;
+  delete(
+    accountId: string,
+    deployedModelId: string,
+    signal?: AbortSignal
+  ): Promise<Record<string, unknown>>;
+}
+
 // DPO Jobs namespace types
 interface FireworksDpoJobCreateMethod {
   (
@@ -1892,6 +1995,7 @@ interface FireworksAccountsNamespace {
   models: FireworksModelsNamespace;
   supervisedFineTuningJobs: FireworksSFTNamespace;
   deployments: FireworksDeploymentsNamespace;
+  deployedModels: FireworksDeployedModelsNamespace;
   deploymentShapes: FireworksDeploymentShapesNamespace;
   dpoJobs: FireworksDpoJobsNamespace;
 }

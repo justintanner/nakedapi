@@ -666,10 +666,7 @@ export type FireworksModelKind =
   | "EMBEDDING_MODEL"
   | "SNAPSHOT_MODEL";
 
-export type FireworksModelState =
-  | "STATE_UNSPECIFIED"
-  | "UPLOADING"
-  | "READY";
+export type FireworksModelState = "STATE_UNSPECIFIED" | "UPLOADING" | "READY";
 
 export type FireworksDeploymentPrecision =
   | "PRECISION_UNSPECIFIED"
@@ -718,9 +715,7 @@ export type FireworksDeployedModelState =
   | "DEPLOYED"
   | "UPDATING";
 
-export type FireworksSnapshotType =
-  | "FULL_SNAPSHOT"
-  | "INCREMENTAL_SNAPSHOT";
+export type FireworksSnapshotType = "FULL_SNAPSHOT" | "INCREMENTAL_SNAPSHOT";
 
 export interface FireworksBaseModelDetails {
   worldSize?: number;

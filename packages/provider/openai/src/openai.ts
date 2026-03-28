@@ -2,6 +2,7 @@ import {
   OpenAiOptions,
   OpenAiChatRequest,
   OpenAiChatResponse,
+  OpenAiSpeechRequest,
   OpenAiTranscribeRequest,
   OpenAiTranscribeResponse,
   OpenAiTranslateRequest,
@@ -32,6 +33,7 @@ import {
   imageGenerationsSchema,
   modelsDeleteSchema,
   moderationsSchema,
+  audioSpeechSchema,
   audioTranscriptionsSchema,
   audioTranslationsSchema,
   responsesSchema,
@@ -102,6 +104,56 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     };
+  }
+
+  async function makeBinaryRequest(
+    path: string,
+    init: { headers: Record<string, string>; body: BodyInit },
+    signal?: AbortSignal
+  ): Promise<ArrayBuffer> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    if (signal) {
+      signal.addEventListener("abort", () => controller.abort());
+    }
+
+    try {
+      const res = await doFetch(`${baseURL}${path}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${opts.apiKey}`,
+          ...init.headers,
+        },
+        body: init.body,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        let message = `OpenAI API error: ${res.status}`;
+        let body: unknown = null;
+        try {
+          body = await res.json();
+          if (typeof body === "object" && body !== null && "error" in body) {
+            const err = (body as { error: { message?: string } }).error;
+            if (err?.message) {
+              message = `OpenAI API error ${res.status}: ${err.message}`;
+            }
+          }
+        } catch {
+          // ignore parse errors
+        }
+        throw new OpenAiError(message, res.status, body);
+      }
+
+      return await res.arrayBuffer();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof OpenAiError) throw error;
+      throw new OpenAiError(`OpenAI request failed: ${error}`, 500);
+    }
   }
 
   async function makeGetRequest<T>(
@@ -419,6 +471,24 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
         }
       ),
       audio: {
+        speech: Object.assign(
+          async function speech(
+            req: OpenAiSpeechRequest,
+            signal?: AbortSignal
+          ): Promise<ArrayBuffer> {
+            return await makeBinaryRequest(
+              "/audio/speech",
+              jsonRequest(req),
+              signal
+            );
+          },
+          {
+            payloadSchema: audioSpeechSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, audioSpeechSchema);
+            },
+          }
+        ),
         transcriptions: Object.assign(
           async function transcriptions(
             req: OpenAiTranscribeRequest,

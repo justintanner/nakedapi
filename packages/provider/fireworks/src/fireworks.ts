@@ -82,6 +82,17 @@ import {
   FireworksDpoJobListResponse,
   FireworksDpoJobGetRequest,
   FireworksMetricsFileEndpointResponse,
+  FireworksRFTCreateRequest,
+  FireworksRFTJob,
+  FireworksRFTListRequest,
+  FireworksRFTListResponse,
+  FireworksRFTGetRequest,
+  FireworksRlorTrainerJobCreateRequest,
+  FireworksRlorTrainerJob,
+  FireworksRlorTrainerJobListRequest,
+  FireworksRlorTrainerJobListResponse,
+  FireworksRlorTrainerJobGetRequest,
+  FireworksRlorTrainerJobExecuteStepRequest,
   FireworksCreateDeployedModelRequest,
   FireworksCreateDeployedModelOptions,
   FireworksListDeployedModelsRequest,
@@ -146,6 +157,9 @@ import {
   audioBatchTranslationsSchema,
   audioStreamingTranscriptionsSchema,
   dpoJobCreateSchema,
+  rftCreateSchema,
+  rlorTrainerJobCreateSchema,
+  rlorTrainerJobExecuteStepSchema,
   createDeployedModelSchema,
   updateDeployedModelSchema,
   createUserSchema,
@@ -2331,6 +2345,186 @@ export function fireworks(opts: FireworksOptions): FireworksProvider {
               "GET",
               `/v1/accounts/${accountId}/dpoJobs/${jobId}:getMetricsFileEndpoint`,
               undefined,
+              undefined,
+              signal
+            );
+          },
+        },
+        reinforcementFineTuningJobs: {
+          create: Object.assign(
+            async function create(
+              accountId: string,
+              req: FireworksRFTCreateRequest,
+              signal?: AbortSignal
+            ): Promise<FireworksRFTJob> {
+              const { reinforcementFineTuningJobId, ...body } = req;
+              const query: Record<string, string> = {};
+              if (reinforcementFineTuningJobId) {
+                query.reinforcementFineTuningJobId =
+                  reinforcementFineTuningJobId;
+              }
+              return await makeModelsRequest<FireworksRFTJob>(
+                "POST",
+                `/v1/accounts/${accountId}/reinforcementFineTuningJobs`,
+                body,
+                Object.keys(query).length > 0 ? query : undefined,
+                signal
+              );
+            },
+            {
+              payloadSchema: rftCreateSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, rftCreateSchema);
+              },
+            }
+          ),
+          async get(
+            accountId: string,
+            jobId: string,
+            req?: FireworksRFTGetRequest,
+            signal?: AbortSignal
+          ): Promise<FireworksRFTJob> {
+            return await makeModelsRequest<FireworksRFTJob>(
+              "GET",
+              `/v1/accounts/${accountId}/reinforcementFineTuningJobs/${jobId}`,
+              undefined,
+              req as Record<string, string | number | boolean | undefined>,
+              signal
+            );
+          },
+          async list(
+            accountId: string,
+            req?: FireworksRFTListRequest,
+            signal?: AbortSignal
+          ): Promise<FireworksRFTListResponse> {
+            return await makeModelsRequest<FireworksRFTListResponse>(
+              "GET",
+              `/v1/accounts/${accountId}/reinforcementFineTuningJobs`,
+              undefined,
+              req as Record<string, string | number | boolean | undefined>,
+              signal
+            );
+          },
+          async delete(
+            accountId: string,
+            jobId: string,
+            signal?: AbortSignal
+          ): Promise<Record<string, never>> {
+            return await makeModelsRequest<Record<string, never>>(
+              "DELETE",
+              `/v1/accounts/${accountId}/reinforcementFineTuningJobs/${jobId}`,
+              undefined,
+              undefined,
+              signal
+            );
+          },
+          async resume(
+            accountId: string,
+            jobId: string,
+            signal?: AbortSignal
+          ): Promise<FireworksRFTJob> {
+            return await makeModelsRequest<FireworksRFTJob>(
+              "POST",
+              `/v1/accounts/${accountId}/reinforcementFineTuningJobs/${jobId}:resume`,
+              {},
+              undefined,
+              signal
+            );
+          },
+        },
+        rlorTrainerJobs: {
+          create: Object.assign(
+            async function create(
+              accountId: string,
+              req: FireworksRlorTrainerJobCreateRequest,
+              signal?: AbortSignal
+            ): Promise<FireworksRlorTrainerJob> {
+              return await makeModelsRequest<FireworksRlorTrainerJob>(
+                "POST",
+                `/v1/accounts/${accountId}/rlorTrainerJobs`,
+                req,
+                undefined,
+                signal
+              );
+            },
+            {
+              payloadSchema: rlorTrainerJobCreateSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, rlorTrainerJobCreateSchema);
+              },
+            }
+          ),
+          async get(
+            accountId: string,
+            jobId: string,
+            req?: FireworksRlorTrainerJobGetRequest,
+            signal?: AbortSignal
+          ): Promise<FireworksRlorTrainerJob> {
+            return await makeModelsRequest<FireworksRlorTrainerJob>(
+              "GET",
+              `/v1/accounts/${accountId}/rlorTrainerJobs/${jobId}`,
+              undefined,
+              req as Record<string, string | number | boolean | undefined>,
+              signal
+            );
+          },
+          async list(
+            accountId: string,
+            req?: FireworksRlorTrainerJobListRequest,
+            signal?: AbortSignal
+          ): Promise<FireworksRlorTrainerJobListResponse> {
+            return await makeModelsRequest<FireworksRlorTrainerJobListResponse>(
+              "GET",
+              `/v1/accounts/${accountId}/rlorTrainerJobs`,
+              undefined,
+              req as Record<string, string | number | boolean | undefined>,
+              signal
+            );
+          },
+          async delete(
+            accountId: string,
+            jobId: string,
+            signal?: AbortSignal
+          ): Promise<Record<string, never>> {
+            return await makeModelsRequest<Record<string, never>>(
+              "DELETE",
+              `/v1/accounts/${accountId}/rlorTrainerJobs/${jobId}`,
+              undefined,
+              undefined,
+              signal
+            );
+          },
+          executeTrainStep: Object.assign(
+            async function executeTrainStep(
+              accountId: string,
+              jobId: string,
+              req: FireworksRlorTrainerJobExecuteStepRequest,
+              signal?: AbortSignal
+            ): Promise<Record<string, unknown>> {
+              return await makeModelsRequest<Record<string, unknown>>(
+                "POST",
+                `/v1/accounts/${accountId}/rlorTrainerJobs/${jobId}:executeTrainStep`,
+                req,
+                undefined,
+                signal
+              );
+            },
+            {
+              payloadSchema: rlorTrainerJobExecuteStepSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, rlorTrainerJobExecuteStepSchema);
+              },
+            }
+          ),
+          async resume(
+            accountId: string,
+            jobId: string,
+            signal?: AbortSignal
+          ): Promise<FireworksRlorTrainerJob> {
+            return await makeModelsRequest<FireworksRlorTrainerJob>(
+              "POST",
+              `/v1/accounts/${accountId}/rlorTrainerJobs/${jobId}:resume`,
+              {},
               undefined,
               signal
             );

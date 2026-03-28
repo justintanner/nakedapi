@@ -1599,6 +1599,158 @@ export const datasetsGetUploadEndpointSchema: PayloadSchema = {
     readMask: {
       type: "string",
       description: "Fields to return",
+export const rftCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/v1/accounts/{account_id}/reinforcementFineTuningJobs",
+  contentType: "application/json",
+  fields: {
+    dataset: {
+      type: "string",
+      required: true,
+      description:
+        "Dataset resource name (e.g. accounts/{account_id}/datasets/{dataset_id})",
+    },
+    evaluator: {
+      type: "string",
+      required: true,
+      description: "Evaluator resource for RLOR fine-tuning",
+    },
+    displayName: {
+      type: "string",
+      description: "Human-readable display name for the job",
+    },
+    trainingConfig: {
+      type: "object",
+      description: "Training configuration",
+      properties: {
+        baseModel: {
+          type: "string",
+          description: "Model to fine-tune",
+        },
+        warmStartFrom: {
+          type: "string",
+          description: "PEFT addon model (mutually exclusive with baseModel)",
+        },
+        outputModel: {
+          type: "string",
+          description: "Resulting model ID",
+        },
+        learningRate: {
+          type: "number",
+          description: "Training learning rate",
+        },
+        epochs: {
+          type: "number",
+          description: "Number of training iterations",
+        },
+        batchSize: {
+          type: "number",
+          description: "Max tokens per batch",
+        },
+        maxContextLength: {
+          type: "number",
+          description: "Model context window size",
+        },
+        loraRank: {
+          type: "number",
+          description: "LoRA layer rank (0 for service-mode)",
+        },
+        jinjaTemplate: {
+          type: "string",
+          description: "Conversation format Jinja2 template",
+        },
+        region: {
+          type: "string",
+          description: "Training region",
+        },
+      },
+    },
+    inferenceParams: {
+      type: "object",
+      description: "Inference parameters for RL rollouts",
+      properties: {
+        maxTokens: {
+          type: "number",
+          description: "Maximum tokens per response",
+        },
+        temperature: {
+          type: "number",
+          description: "Sampling temperature",
+        },
+        topP: {
+          type: "number",
+          description: "Top-p (nucleus) sampling",
+        },
+        topK: {
+          type: "number",
+          description: "Top-k sampling",
+        },
+      },
+    },
+    lossConfig: {
+      type: "object",
+      description: "Reinforcement learning loss configuration",
+      properties: {
+        method: {
+          type: "string",
+          description: "Loss algorithm",
+          enum: [
+            "METHOD_UNSPECIFIED",
+            "GRPO",
+            "DAPO",
+            "DPO",
+            "ORPO",
+            "GSPO_TOKEN",
+          ],
+        },
+        klBeta: {
+          type: "number",
+          description: "KL coefficient (beta) override",
+        },
+      },
+    },
+    wandbConfig: {
+      type: "object",
+      description: "Weights & Biases integration config",
+      properties: {
+        enabled: { type: "boolean", description: "Enable W&B logging" },
+        apiKey: { type: "string", description: "W&B API key" },
+        project: { type: "string", description: "W&B project name" },
+        entity: { type: "string", description: "W&B entity/team name" },
+        runId: { type: "string", description: "W&B run ID" },
+      },
+    },
+    awsS3Config: {
+      type: "object",
+      description: "AWS S3 configuration for dataset storage",
+      properties: {
+        credentialsSecret: {
+          type: "string",
+          description: "Secret resource name with AWS credentials",
+        },
+        iamRoleArn: {
+          type: "string",
+          description: "AWS IAM role ARN for GCP federation",
+        },
+      },
+    },
+    azureBlobStorageConfig: {
+      type: "object",
+      description: "Azure Blob Storage configuration",
+      properties: {
+        credentialsSecret: {
+          type: "string",
+          description: "Secret resource name with Azure credentials",
+        },
+        managedIdentityClientId: {
+          type: "string",
+          description: "Managed identity client UUID",
+        },
+        tenantId: {
+          type: "string",
+          description: "Azure tenant UUID",
+        },
+      },
     },
   },
 };
@@ -1616,6 +1768,175 @@ export const datasetsGetDownloadEndpointSchema: PayloadSchema = {
       type: "boolean",
       description:
         "Download entire lineage chain with dataset ID prefixed filenames",
+export const rlorTrainerJobCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/v1/accounts/{account_id}/rlorTrainerJobs",
+  contentType: "application/json",
+  fields: {
+    dataset: {
+      type: "string",
+      required: true,
+      description:
+        "Dataset resource name (e.g. accounts/{account_id}/datasets/{dataset_id})",
+    },
+    evaluator: {
+      type: "string",
+      required: true,
+      description: "Evaluator resource for RLOR fine-tuning",
+    },
+    displayName: {
+      type: "string",
+      description: "Human-readable display name for the trainer job",
+    },
+    trainingConfig: {
+      type: "object",
+      description: "Training configuration",
+      properties: {
+        baseModel: {
+          type: "string",
+          description: "Model to fine-tune",
+        },
+        warmStartFrom: {
+          type: "string",
+          description: "PEFT addon model (mutually exclusive with baseModel)",
+        },
+        outputModel: {
+          type: "string",
+          description: "Resulting model ID",
+        },
+        learningRate: {
+          type: "number",
+          description: "Training learning rate",
+        },
+        epochs: {
+          type: "number",
+          description: "Number of training iterations",
+        },
+        batchSize: {
+          type: "number",
+          description: "Max tokens per batch",
+        },
+        maxContextLength: {
+          type: "number",
+          description: "Model context window size",
+        },
+        loraRank: {
+          type: "number",
+          description: "LoRA layer rank (0 for service-mode)",
+        },
+        jinjaTemplate: {
+          type: "string",
+          description: "Conversation format Jinja2 template",
+        },
+        region: {
+          type: "string",
+          description: "Training region",
+        },
+      },
+    },
+    inferenceParams: {
+      type: "object",
+      description: "Inference parameters for RL rollouts",
+      properties: {
+        maxTokens: {
+          type: "number",
+          description: "Maximum tokens per response",
+        },
+        temperature: {
+          type: "number",
+          description: "Sampling temperature",
+        },
+        topP: {
+          type: "number",
+          description: "Top-p (nucleus) sampling",
+        },
+        topK: {
+          type: "number",
+          description: "Top-k sampling",
+        },
+      },
+    },
+    lossConfig: {
+      type: "object",
+      description: "Reinforcement learning loss configuration",
+      properties: {
+        method: {
+          type: "string",
+          description: "Loss algorithm",
+          enum: [
+            "METHOD_UNSPECIFIED",
+            "GRPO",
+            "DAPO",
+            "DPO",
+            "ORPO",
+            "GSPO_TOKEN",
+          ],
+        },
+        klBeta: {
+          type: "number",
+          description: "KL coefficient (beta) override",
+        },
+      },
+    },
+    rewardWeights: {
+      type: "array",
+      description: "Reward weight configurations for RL training",
+      items: {
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+            description: "Reward function name",
+          },
+          weight: {
+            type: "number",
+            description: "Reward weight multiplier",
+          },
+        },
+      },
+    },
+    wandbConfig: {
+      type: "object",
+      description: "Weights & Biases integration config",
+      properties: {
+        enabled: { type: "boolean", description: "Enable W&B logging" },
+        apiKey: { type: "string", description: "W&B API key" },
+        project: { type: "string", description: "W&B project name" },
+        entity: { type: "string", description: "W&B entity/team name" },
+        runId: { type: "string", description: "W&B run ID" },
+      },
+    },
+    awsS3Config: {
+      type: "object",
+      description: "AWS S3 configuration for dataset storage",
+      properties: {
+        credentialsSecret: {
+          type: "string",
+          description: "Secret resource name with AWS credentials",
+        },
+        iamRoleArn: {
+          type: "string",
+          description: "AWS IAM role ARN for GCP federation",
+        },
+      },
+    },
+    azureBlobStorageConfig: {
+      type: "object",
+      description: "Azure Blob Storage configuration",
+      properties: {
+        credentialsSecret: {
+          type: "string",
+          description: "Secret resource name with Azure credentials",
+        },
+        managedIdentityClientId: {
+          type: "string",
+          description: "Managed identity client UUID",
+        },
+        tenantId: {
+          type: "string",
+          description: "Azure tenant UUID",
+        },
+      },
     },
   },
 };
@@ -1625,6 +1946,22 @@ export const datasetsValidateUploadSchema: PayloadSchema = {
   path: "/v1/accounts/{account_id}/datasets/{dataset_id}:validateUpload",
   contentType: "application/json",
   fields: {},
+export const rlorTrainerJobExecuteStepSchema: PayloadSchema = {
+  method: "POST",
+  path: "/v1/accounts/{account_id}/rlorTrainerJobs/{job_id}:executeTrainStep",
+  contentType: "application/json",
+  fields: {
+    dataset: {
+      type: "string",
+      required: true,
+      description: "Dataset to process for this iteration",
+    },
+    outputModel: {
+      type: "string",
+      required: true,
+      description: "Output model to materialize when training completes",
+    },
+  },
 };
 
 export const embeddingsSchema: PayloadSchema = {

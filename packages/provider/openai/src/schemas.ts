@@ -240,6 +240,54 @@ export const imageGenerationsSchema: PayloadSchema = {
   },
 };
 
+export const audioSpeechSchema: PayloadSchema = {
+  method: "POST",
+  path: "/audio/speech",
+  contentType: "application/json",
+  fields: {
+    model: {
+      type: "string",
+      required: true,
+      description: "Model ID (e.g. tts-1, tts-1-hd, gpt-4o-mini-tts)",
+    },
+    input: {
+      type: "string",
+      required: true,
+      description: "The text to generate audio for (max 4096 characters)",
+    },
+    voice: {
+      type: "string",
+      required: true,
+      description: "The voice to use for generation",
+      enum: [
+        "alloy",
+        "ash",
+        "coral",
+        "echo",
+        "fable",
+        "onyx",
+        "nova",
+        "sage",
+        "shimmer",
+      ],
+    },
+    response_format: {
+      type: "string",
+      description: "The audio output format",
+      enum: ["mp3", "opus", "aac", "flac", "wav", "pcm"],
+    },
+    speed: {
+      type: "number",
+      description: "The speed of the generated audio (0.25 to 4.0)",
+    },
+    instructions: {
+      type: "string",
+      description:
+        "Instructions for the model to control audio generation (gpt-4o-mini-tts only)",
+    },
+  },
+};
+
 export const audioTranscriptionsSchema: PayloadSchema = {
   method: "POST",
   path: "/audio/transcriptions",

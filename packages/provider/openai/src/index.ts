@@ -22,6 +22,7 @@ export type {
   OpenAiChatChoice,
   OpenAiChatRequest,
   OpenAiChatResponse,
+  OpenAiSpeechRequest,
   OpenAiTranscribeRequest,
   OpenAiTranscribeResponse,
   OpenAiTranslateRequest,

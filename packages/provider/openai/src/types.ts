@@ -25,6 +25,16 @@ export interface OpenAiMessage {
   content: string | OpenAiContentPart[];
 }
 
+// Speech (text-to-speech) request
+export interface OpenAiSpeechRequest {
+  model: string;
+  input: string;
+  voice: "alloy" | "ash" | "coral" | "echo" | "fable" | "onyx" | "nova" | "sage" | "shimmer";
+  response_format?: "mp3" | "opus" | "aac" | "flac" | "wav" | "pcm";
+  speed?: number;
+  instructions?: string;
+}
+
 // Transcription request
 export interface OpenAiTranscribeRequest {
   file: Blob;
@@ -645,6 +655,15 @@ interface OpenAiEmbeddingsMethod {
   validatePayload(data: unknown): ValidationResult;
 }
 
+interface OpenAiAudioSpeechMethod {
+  (
+    req: OpenAiSpeechRequest,
+    signal?: AbortSignal
+  ): Promise<ArrayBuffer>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
 interface OpenAiAudioTranscriptionsMethod {
   (
     req: OpenAiTranscribeRequest,
@@ -664,6 +683,7 @@ interface OpenAiAudioTranslationsMethod {
 }
 
 interface OpenAiAudioNamespace {
+  speech: OpenAiAudioSpeechMethod;
   transcriptions: OpenAiAudioTranscriptionsMethod;
   translations: OpenAiAudioTranslationsMethod;
 }

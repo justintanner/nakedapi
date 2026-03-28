@@ -29,7 +29,16 @@ export interface OpenAiMessage {
 export interface OpenAiSpeechRequest {
   model: string;
   input: string;
-  voice: "alloy" | "ash" | "coral" | "echo" | "fable" | "onyx" | "nova" | "sage" | "shimmer";
+  voice:
+    | "alloy"
+    | "ash"
+    | "coral"
+    | "echo"
+    | "fable"
+    | "onyx"
+    | "nova"
+    | "sage"
+    | "shimmer";
   response_format?: "mp3" | "opus" | "aac" | "flac" | "wav" | "pcm";
   speed?: number;
   instructions?: string;
@@ -656,10 +665,7 @@ interface OpenAiEmbeddingsMethod {
 }
 
 interface OpenAiAudioSpeechMethod {
-  (
-    req: OpenAiSpeechRequest,
-    signal?: AbortSignal
-  ): Promise<ArrayBuffer>;
+  (req: OpenAiSpeechRequest, signal?: AbortSignal): Promise<ArrayBuffer>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
 }

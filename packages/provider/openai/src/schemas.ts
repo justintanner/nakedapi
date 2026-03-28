@@ -549,6 +549,103 @@ export const moderationsSchema: PayloadSchema = {
       type: "string",
       description:
         "Moderation model ID (e.g. omni-moderation-latest, text-moderation-latest)",
+export const fineTuningJobsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/fine_tuning/jobs",
+  contentType: "application/json",
+  fields: {
+    model: {
+      type: "string",
+      required: true,
+      description:
+        "Model to fine-tune (e.g. gpt-4o-mini-2024-07-18, gpt-3.5-turbo)",
+    },
+    training_file: {
+      type: "string",
+      required: true,
+      description: "File ID of the uploaded training data",
+    },
+    hyperparameters: {
+      type: "object",
+      description: "Hyperparameters (deprecated, use method instead)",
+      properties: {
+        batch_size: {
+          type: "string",
+          description: '"auto" or integer batch size',
+        },
+        learning_rate_multiplier: {
+          type: "string",
+          description: '"auto" or number learning rate multiplier',
+        },
+        n_epochs: {
+          type: "string",
+          description: '"auto" or integer number of epochs',
+        },
+      },
+    },
+    integrations: {
+      type: "array",
+      description: "Integrations (e.g. WandB)",
+      items: {
+        type: "object",
+        properties: {
+          type: { type: "string", required: true, enum: ["wandb"] },
+          wandb: {
+            type: "object",
+            required: true,
+            properties: {
+              project: { type: "string", required: true },
+              entity: { type: "string" },
+              name: { type: "string" },
+              tags: { type: "array", items: { type: "string" } },
+            },
+          },
+        },
+      },
+    },
+    metadata: {
+      type: "object",
+      description: "Up to 16 key-value pairs of metadata",
+    },
+    method: {
+      type: "object",
+      description: "Fine-tuning method configuration",
+      properties: {
+        type: {
+          type: "string",
+          required: true,
+          enum: ["supervised", "dpo", "reinforcement"],
+        },
+        supervised: { type: "object" },
+        dpo: { type: "object" },
+        reinforcement: { type: "object" },
+      },
+    },
+    seed: {
+      type: "number",
+      description: "Seed for reproducibility",
+    },
+    suffix: {
+      type: "string",
+      description: "Up to 64 chars appended to the fine-tuned model name",
+    },
+    validation_file: {
+      type: "string",
+      description: "File ID of validation data",
+    },
+  },
+};
+
+export const checkpointPermissionsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/fine_tuning/checkpoints/{checkpoint}/permissions",
+  contentType: "application/json",
+  fields: {
+    project_ids: {
+      type: "array",
+      required: true,
+      description: "Project IDs to grant access to",
+      items: { type: "string" },
     },
   },
 };

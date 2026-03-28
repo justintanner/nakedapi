@@ -8,15 +8,13 @@ describe("fireworks audio streaming transcriptions", () => {
     });
 
     expect(provider.v1.audio.transcriptions.streaming).toBeDefined();
-    expect(typeof provider.v1.audio.transcriptions.streaming).toBe(
-      "function"
-    );
+    expect(typeof provider.v1.audio.transcriptions.streaming).toBe("function");
     expect(
       provider.v1.audio.transcriptions.streaming.payloadSchema
     ).toBeDefined();
-    expect(
-      provider.v1.audio.transcriptions.streaming.payloadSchema.path
-    ).toBe("/v1/audio/transcriptions/streaming");
+    expect(provider.v1.audio.transcriptions.streaming.payloadSchema.path).toBe(
+      "/v1/audio/transcriptions/streaming"
+    );
     expect(
       typeof provider.v1.audio.transcriptions.streaming.validatePayload
     ).toBe("function");
@@ -27,18 +25,16 @@ describe("fireworks audio streaming transcriptions", () => {
       apiKey: "fw-test-key",
     });
 
-    const valid =
-      provider.v1.audio.transcriptions.streaming.validatePayload({
-        language: "en",
-        temperature: 0,
-      });
+    const valid = provider.v1.audio.transcriptions.streaming.validatePayload({
+      language: "en",
+      temperature: 0,
+    });
     expect(valid.valid).toBe(true);
     expect(valid.errors).toHaveLength(0);
 
-    const invalid =
-      provider.v1.audio.transcriptions.streaming.validatePayload({
-        temperature: "not-a-number",
-      });
+    const invalid = provider.v1.audio.transcriptions.streaming.validatePayload({
+      temperature: "not-a-number",
+    });
     expect(invalid.valid).toBe(false);
     expect(invalid.errors.length).toBeGreaterThan(0);
   });
@@ -58,8 +54,7 @@ describe("fireworks audio streaming transcriptions", () => {
 
     const provider = fireworks({
       apiKey: "fw-test-key",
-      WebSocket:
-        MockWebSocket as unknown as typeof globalThis.WebSocket,
+      WebSocket: MockWebSocket as unknown as typeof globalThis.WebSocket,
     });
 
     const session = provider.v1.audio.transcriptions.streaming({
@@ -90,8 +85,7 @@ describe("fireworks audio streaming transcriptions", () => {
 
     const provider = fireworks({
       apiKey: "fw-test-key",
-      WebSocket:
-        MockWebSocket as unknown as typeof globalThis.WebSocket,
+      WebSocket: MockWebSocket as unknown as typeof globalThis.WebSocket,
     });
 
     provider.v1.audio.transcriptions.streaming({
@@ -109,8 +103,7 @@ describe("fireworks audio streaming transcriptions", () => {
     expect(capturedUrl).toContain("prompt=technical+discussion");
     expect(capturedUrl).toContain("temperature=0");
     expect(capturedUrl).toContain(
-      "timestamp_granularities=" +
-        encodeURIComponent("word,segment")
+      "timestamp_granularities=" + encodeURIComponent("word,segment")
     );
   });
 
@@ -129,10 +122,8 @@ describe("fireworks audio streaming transcriptions", () => {
 
     const provider = fireworks({
       apiKey: "fw-test-key",
-      audioStreamingBaseURL:
-        "wss://audio-streaming-v2.api.fireworks.ai",
-      WebSocket:
-        MockWebSocket as unknown as typeof globalThis.WebSocket,
+      audioStreamingBaseURL: "wss://audio-streaming-v2.api.fireworks.ai",
+      WebSocket: MockWebSocket as unknown as typeof globalThis.WebSocket,
     });
 
     provider.v1.audio.transcriptions.streaming({
@@ -159,14 +150,12 @@ describe("fireworks audio streaming transcriptions", () => {
 
     const provider = fireworks({
       apiKey: "fw-test-key",
-      WebSocket:
-        MockWebSocket as unknown as typeof globalThis.WebSocket,
+      WebSocket: MockWebSocket as unknown as typeof globalThis.WebSocket,
     });
 
     provider.v1.audio.transcriptions.streaming({
       language: "en",
-      baseURL:
-        "wss://audio-streaming.us-virginia-1.direct.fireworks.ai",
+      baseURL: "wss://audio-streaming.us-virginia-1.direct.fireworks.ai",
     });
 
     expect(capturedUrl).toContain(
@@ -179,16 +168,12 @@ describe("fireworks audio streaming transcriptions", () => {
     class MockWebSocket {
       send = mockSend;
       addEventListener = vi.fn();
-      constructor(
-        _url: string,
-        _protocols?: string | string[]
-      ) {}
+      constructor(_url: string, _protocols?: string | string[]) {}
     }
 
     const provider = fireworks({
       apiKey: "fw-test-key",
-      WebSocket:
-        MockWebSocket as unknown as typeof globalThis.WebSocket,
+      WebSocket: MockWebSocket as unknown as typeof globalThis.WebSocket,
     });
 
     const session = provider.v1.audio.transcriptions.streaming();
@@ -203,16 +188,12 @@ describe("fireworks audio streaming transcriptions", () => {
     class MockWebSocket {
       send = mockSend;
       addEventListener = vi.fn();
-      constructor(
-        _url: string,
-        _protocols?: string | string[]
-      ) {}
+      constructor(_url: string, _protocols?: string | string[]) {}
     }
 
     const provider = fireworks({
       apiKey: "fw-test-key",
-      WebSocket:
-        MockWebSocket as unknown as typeof globalThis.WebSocket,
+      WebSocket: MockWebSocket as unknown as typeof globalThis.WebSocket,
     });
 
     const session = provider.v1.audio.transcriptions.streaming();
@@ -230,16 +211,12 @@ describe("fireworks audio streaming transcriptions", () => {
     class MockWebSocket {
       send = mockSend;
       addEventListener = vi.fn();
-      constructor(
-        _url: string,
-        _protocols?: string | string[]
-      ) {}
+      constructor(_url: string, _protocols?: string | string[]) {}
     }
 
     const provider = fireworks({
       apiKey: "fw-test-key",
-      WebSocket:
-        MockWebSocket as unknown as typeof globalThis.WebSocket,
+      WebSocket: MockWebSocket as unknown as typeof globalThis.WebSocket,
     });
 
     const session = provider.v1.audio.transcriptions.streaming();
@@ -257,16 +234,12 @@ describe("fireworks audio streaming transcriptions", () => {
     class MockWebSocket {
       send = mockSend;
       addEventListener = vi.fn();
-      constructor(
-        _url: string,
-        _protocols?: string | string[]
-      ) {}
+      constructor(_url: string, _protocols?: string | string[]) {}
     }
 
     const provider = fireworks({
       apiKey: "fw-test-key",
-      WebSocket:
-        MockWebSocket as unknown as typeof globalThis.WebSocket,
+      WebSocket: MockWebSocket as unknown as typeof globalThis.WebSocket,
     });
 
     const session = provider.v1.audio.transcriptions.streaming();
@@ -287,16 +260,12 @@ describe("fireworks audio streaming transcriptions", () => {
         if (!listeners[event]) listeners[event] = [];
         listeners[event].push(fn);
       }
-      constructor(
-        _url: string,
-        _protocols?: string | string[]
-      ) {}
+      constructor(_url: string, _protocols?: string | string[]) {}
     }
 
     const provider = fireworks({
       apiKey: "fw-test-key",
-      WebSocket:
-        MockWebSocket as unknown as typeof globalThis.WebSocket,
+      WebSocket: MockWebSocket as unknown as typeof globalThis.WebSocket,
     });
 
     const session = provider.v1.audio.transcriptions.streaming({

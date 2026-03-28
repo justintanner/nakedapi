@@ -126,8 +126,7 @@ export function fireworks(opts: FireworksOptions): FireworksProvider {
   const audioBaseURL =
     opts.audioBaseURL ?? "https://audio-prod.api.fireworks.ai/v1";
   const audioStreamingBaseURL =
-    opts.audioStreamingBaseURL ??
-    "wss://audio-streaming.api.fireworks.ai";
+    opts.audioStreamingBaseURL ?? "wss://audio-streaming.api.fireworks.ai";
   const doFetch = opts.fetch ?? fetch;
   const WS = opts.WebSocket ?? globalThis.WebSocket;
   const timeout = opts.timeout ?? 30000;
@@ -854,24 +853,16 @@ export function fireworks(opts: FireworksOptions): FireworksProvider {
               function streaming(
                 streamOpts?: FireworksStreamingTranscriptionOptions
               ): FireworksStreamingTranscriptionSession {
-                const wsBase =
-                  streamOpts?.baseURL ?? audioStreamingBaseURL;
+                const wsBase = streamOpts?.baseURL ?? audioStreamingBaseURL;
                 const params = new URLSearchParams();
                 params.set("Authorization", opts.apiKey);
                 if (streamOpts?.language)
                   params.set("language", streamOpts.language);
-                if (streamOpts?.prompt)
-                  params.set("prompt", streamOpts.prompt);
+                if (streamOpts?.prompt) params.set("prompt", streamOpts.prompt);
                 if (streamOpts?.temperature !== undefined)
-                  params.set(
-                    "temperature",
-                    String(streamOpts.temperature)
-                  );
+                  params.set("temperature", String(streamOpts.temperature));
                 if (streamOpts?.response_format)
-                  params.set(
-                    "response_format",
-                    streamOpts.response_format
-                  );
+                  params.set("response_format", streamOpts.response_format);
                 if (streamOpts?.timestamp_granularities)
                   params.set(
                     "timestamp_granularities",
@@ -946,86 +937,77 @@ export function fireworks(opts: FireworksOptions): FireworksProvider {
                   enqueue({ type: "close" });
                 });
 
-                const session: FireworksStreamingTranscriptionSession =
-                  {
-                    send(
-                      audio: ArrayBuffer | Uint8Array
-                    ): void {
-                      ws.send(audio);
-                    },
+                const session: FireworksStreamingTranscriptionSession = {
+                  send(audio: ArrayBuffer | Uint8Array): void {
+                    ws.send(audio);
+                  },
 
-                    clearState(resetId?: string): void {
-                      const id =
-                        resetId ?? crypto.randomUUID();
-                      ws.send(
-                        JSON.stringify({
-                          event_id: crypto.randomUUID(),
-                          object: "stt.state.clear",
-                          reset_id: id,
-                        })
-                      );
-                    },
+                  clearState(resetId?: string): void {
+                    const id = resetId ?? crypto.randomUUID();
+                    ws.send(
+                      JSON.stringify({
+                        event_id: crypto.randomUUID(),
+                        object: "stt.state.clear",
+                        reset_id: id,
+                      })
+                    );
+                  },
 
-                    trace(traceId: string): void {
-                      ws.send(
-                        JSON.stringify({
-                          event_id: crypto.randomUUID(),
-                          object: "stt.input.trace",
-                          trace_id: traceId,
-                        })
-                      );
-                    },
+                  trace(traceId: string): void {
+                    ws.send(
+                      JSON.stringify({
+                        event_id: crypto.randomUUID(),
+                        object: "stt.input.trace",
+                        trace_id: traceId,
+                      })
+                    );
+                  },
 
-                    close(): void {
-                      ws.send(
-                        JSON.stringify({
-                          checkpoint_id: "final",
-                        })
-                      );
-                    },
+                  close(): void {
+                    ws.send(
+                      JSON.stringify({
+                        checkpoint_id: "final",
+                      })
+                    );
+                  },
 
-                    [Symbol.asyncIterator](): AsyncIterator<FireworksStreamingTranscriptionMessage> {
-                      return {
-                        next(): Promise<
-                          IteratorResult<FireworksStreamingTranscriptionMessage>
-                        > {
-                          const item = queue.shift();
-                          if (item) {
-                            if (item.type === "message") {
-                              return Promise.resolve({
-                                value: item.value,
-                                done: false,
-                              });
-                            }
+                  [Symbol.asyncIterator](): AsyncIterator<FireworksStreamingTranscriptionMessage> {
+                    return {
+                      next(): Promise<
+                        IteratorResult<FireworksStreamingTranscriptionMessage>
+                      > {
+                        const item = queue.shift();
+                        if (item) {
+                          if (item.type === "message") {
                             return Promise.resolve({
-                              value:
-                                undefined as never,
-                              done: true,
+                              value: item.value,
+                              done: false,
                             });
                           }
-                          if (done) {
-                            return Promise.resolve({
-                              value:
-                                undefined as never,
-                              done: true,
-                            });
-                          }
-                          return new Promise((r) => {
-                            resolve = r;
+                          return Promise.resolve({
+                            value: undefined as never,
+                            done: true,
                           });
-                        },
-                      };
-                    },
-                  };
+                        }
+                        if (done) {
+                          return Promise.resolve({
+                            value: undefined as never,
+                            done: true,
+                          });
+                        }
+                        return new Promise((r) => {
+                          resolve = r;
+                        });
+                      },
+                    };
+                  },
+                };
 
                 return session;
               },
               {
-                payloadSchema:
-                  audioStreamingTranscriptionsSchema,
-                validatePayload(
-                  data: unknown
-                ): ValidationResult {
+                payloadSchema: audioStreamingTranscriptionsSchema,
+                validatePayload(data: unknown): ValidationResult {
                   return validatePayload(
                     data,
                     audioStreamingTranscriptionsSchema

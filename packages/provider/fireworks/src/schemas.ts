@@ -324,6 +324,107 @@ export const messagesSchema: PayloadSchema = {
   },
 };
 
+export const textToImageSchema: PayloadSchema = {
+  method: "POST",
+  path: "/workflows/accounts/fireworks/models/{model}/text_to_image",
+  contentType: "application/json",
+  fields: {
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Text prompt for image generation",
+    },
+    aspect_ratio: {
+      type: "string",
+      description: "Image aspect ratio",
+      enum: [
+        "1:1",
+        "21:9",
+        "16:9",
+        "3:2",
+        "5:4",
+        "4:5",
+        "2:3",
+        "9:16",
+        "9:21",
+        "4:3",
+        "3:4",
+      ],
+    },
+    guidance_scale: {
+      type: "number",
+      description: "Classifier-free guidance scale (default 3.5)",
+    },
+    num_inference_steps: {
+      type: "number",
+      description: "Number of denoising steps (default 4)",
+    },
+    seed: {
+      type: "number",
+      description: "Random seed (0 = random)",
+    },
+  },
+};
+
+export const kontextSchema: PayloadSchema = {
+  method: "POST",
+  path: "/workflows/accounts/fireworks/models/{model}",
+  contentType: "application/json",
+  fields: {
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Text prompt for image generation or editing",
+    },
+    input_image: {
+      type: "string",
+      description: "Base64-encoded image or URL for image-to-image editing",
+    },
+    seed: {
+      type: "number",
+      description: "Seed for reproducibility (default 42)",
+    },
+    aspect_ratio: {
+      type: "string",
+      description: "Aspect ratio (range 21:9 to 9:21)",
+    },
+    output_format: {
+      type: "string",
+      description: "Output image format",
+      enum: ["png", "jpeg"],
+    },
+    webhook_url: {
+      type: "string",
+      description: "URL for webhook notifications",
+    },
+    webhook_secret: {
+      type: "string",
+      description: "Secret for webhook signature verification",
+    },
+    prompt_upsampling: {
+      type: "boolean",
+      description: "Auto-modify prompt for creative generation",
+    },
+    safety_tolerance: {
+      type: "number",
+      description: "Moderation level 0-6 (0=strictest)",
+    },
+  },
+};
+
+export const getResultSchema: PayloadSchema = {
+  method: "POST",
+  path: "/workflows/accounts/fireworks/models/{model}/get_result",
+  contentType: "application/json",
+  fields: {
+    id: {
+      type: "string",
+      required: true,
+      description: "Request ID from the create request",
+    },
+  },
+};
+
 export const embeddingsSchema: PayloadSchema = {
   method: "POST",
   path: "/embeddings",

@@ -11,6 +11,12 @@ import {
   AnthropicMessagesRequest,
   AnthropicMessagesResponse,
   AnthropicStreamEvent,
+  FireworksTextToImageRequest,
+  FireworksTextToImageResponse,
+  FireworksKontextRequest,
+  FireworksKontextResponse,
+  FireworksGetResultRequest,
+  FireworksGetResultResponse,
   FireworksProvider,
   FireworksError,
 } from "./types";
@@ -21,6 +27,9 @@ import {
   embeddingsSchema,
   rerankSchema,
   messagesSchema,
+  textToImageSchema,
+  kontextSchema,
+  getResultSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
 import { sseToIterable } from "./sse";
@@ -189,6 +198,70 @@ export function fireworks(opts: FireworksOptions): FireworksProvider {
     }
   }
 
+  async function makeWorkflowRequest<T>(
+    model: string,
+    suffix: string,
+    body: unknown,
+    signal?: AbortSignal
+  ): Promise<T> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    if (signal) {
+      signal.addEventListener("abort", () => controller.abort());
+    }
+
+    try {
+      const url = `${baseURL}/workflows/accounts/fireworks/models/${model}${suffix}`;
+      const res = await doFetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${opts.apiKey}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        let message = `Fireworks API error: ${res.status}`;
+        let resBody: unknown = null;
+        try {
+          resBody = await res.json();
+          if (
+            typeof resBody === "object" &&
+            resBody !== null &&
+            "error" in resBody
+          ) {
+            const err = (resBody as { error: { message?: string } }).error;
+            if (err?.message) {
+              message = `Fireworks API error ${res.status}: ${err.message}`;
+            }
+          }
+          if (
+            typeof resBody === "object" &&
+            resBody !== null &&
+            "error_message" in resBody
+          ) {
+            message = `Fireworks API error ${res.status}: ${(resBody as { error_message: string }).error_message}`;
+          }
+        } catch {
+          // ignore parse errors
+        }
+        throw new FireworksError(message, res.status, resBody);
+      }
+
+      return (await res.json()) as T;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof FireworksError) throw error;
+      throw new FireworksError(`Fireworks request failed: ${error}`, 500);
+    }
+  }
+
   return {
     v1: {
       chat: {
@@ -277,6 +350,68 @@ export function fireworks(opts: FireworksOptions): FireworksProvider {
           return validatePayload(data, messagesSchema);
         },
       }),
+      workflows: {
+        textToImage: Object.assign(
+          async function textToImage(
+            model: string,
+            req: FireworksTextToImageRequest,
+            signal?: AbortSignal
+          ): Promise<FireworksTextToImageResponse> {
+            return await makeWorkflowRequest<FireworksTextToImageResponse>(
+              model,
+              "/text_to_image",
+              req,
+              signal
+            );
+          },
+          {
+            payloadSchema: textToImageSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, textToImageSchema);
+            },
+          }
+        ),
+        kontext: Object.assign(
+          async function kontext(
+            model: string,
+            req: FireworksKontextRequest,
+            signal?: AbortSignal
+          ): Promise<FireworksKontextResponse> {
+            return await makeWorkflowRequest<FireworksKontextResponse>(
+              model,
+              "",
+              req,
+              signal
+            );
+          },
+          {
+            payloadSchema: kontextSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, kontextSchema);
+            },
+          }
+        ),
+        getResult: Object.assign(
+          async function getResult(
+            model: string,
+            req: FireworksGetResultRequest,
+            signal?: AbortSignal
+          ): Promise<FireworksGetResultResponse> {
+            return await makeWorkflowRequest<FireworksGetResultResponse>(
+              model,
+              "/get_result",
+              req,
+              signal
+            );
+          },
+          {
+            payloadSchema: getResultSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, getResultSchema);
+            },
+          }
+        ),
+      },
     },
   };
 }

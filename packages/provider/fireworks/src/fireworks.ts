@@ -71,6 +71,13 @@ import {
   FireworksDpoJobListResponse,
   FireworksDpoJobGetRequest,
   FireworksMetricsFileEndpointResponse,
+  FireworksCreateDeployedModelRequest,
+  FireworksCreateDeployedModelOptions,
+  FireworksListDeployedModelsRequest,
+  FireworksListDeployedModelsResponse,
+  FireworksDeployedModel,
+  FireworksUpdateDeployedModelRequest,
+  FireworksGetDeployedModelRequest,
   FireworksProvider,
   FireworksError,
 } from "./types";
@@ -103,6 +110,8 @@ import {
   audioBatchTranscriptionsSchema,
   audioBatchTranslationsSchema,
   dpoJobCreateSchema,
+  createDeployedModelSchema,
+  updateDeployedModelSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
 import { sseToIterable } from "./sse";
@@ -1484,6 +1493,95 @@ export function fireworks(opts: FireworksOptions): FireworksProvider {
               "POST",
               `/v1/accounts/${accountId}/deployments/${deploymentId}:undelete`,
               {},
+              undefined,
+              signal
+            );
+          },
+        },
+        deployedModels: {
+          async list(
+            accountId: string,
+            params?: FireworksListDeployedModelsRequest,
+            signal?: AbortSignal
+          ): Promise<FireworksListDeployedModelsResponse> {
+            return await makeModelsRequest<FireworksListDeployedModelsResponse>(
+              "GET",
+              `/v1/accounts/${accountId}/deployedModels`,
+              undefined,
+              params as Record<string, string | number | boolean | undefined>,
+              signal
+            );
+          },
+          create: Object.assign(
+            async function create(
+              accountId: string,
+              req: FireworksCreateDeployedModelRequest,
+              options?: FireworksCreateDeployedModelOptions,
+              signal?: AbortSignal
+            ): Promise<FireworksDeployedModel> {
+              return await makeModelsRequest<FireworksDeployedModel>(
+                "POST",
+                `/v1/accounts/${accountId}/deployedModels`,
+                req,
+                options as Record<
+                  string,
+                  string | number | boolean | undefined
+                >,
+                signal
+              );
+            },
+            {
+              payloadSchema: createDeployedModelSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, createDeployedModelSchema);
+              },
+            }
+          ),
+          async get(
+            accountId: string,
+            deployedModelId: string,
+            params?: FireworksGetDeployedModelRequest,
+            signal?: AbortSignal
+          ): Promise<FireworksDeployedModel> {
+            return await makeModelsRequest<FireworksDeployedModel>(
+              "GET",
+              `/v1/accounts/${accountId}/deployedModels/${deployedModelId}`,
+              undefined,
+              params as Record<string, string | number | boolean | undefined>,
+              signal
+            );
+          },
+          update: Object.assign(
+            async function update(
+              accountId: string,
+              deployedModelId: string,
+              req: FireworksUpdateDeployedModelRequest,
+              signal?: AbortSignal
+            ): Promise<FireworksDeployedModel> {
+              return await makeModelsRequest<FireworksDeployedModel>(
+                "PATCH",
+                `/v1/accounts/${accountId}/deployedModels/${deployedModelId}`,
+                req,
+                undefined,
+                signal
+              );
+            },
+            {
+              payloadSchema: updateDeployedModelSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, updateDeployedModelSchema);
+              },
+            }
+          ),
+          async delete(
+            accountId: string,
+            deployedModelId: string,
+            signal?: AbortSignal
+          ): Promise<Record<string, unknown>> {
+            return await makeModelsRequest<Record<string, unknown>>(
+              "DELETE",
+              `/v1/accounts/${accountId}/deployedModels/${deployedModelId}`,
+              undefined,
               undefined,
               signal
             );

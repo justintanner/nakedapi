@@ -754,6 +754,152 @@ export interface FireworksAudioBatchJob {
   error?: string;
 }
 
+// Training region enum (shared across fine-tuning jobs)
+export type FireworksTrainingRegion =
+  | "REGION_UNSPECIFIED"
+  | "US_IOWA_1"
+  | "US_VIRGINIA_1"
+  | "US_VIRGINIA_2"
+  | "US_ILLINOIS_1"
+  | "AP_TOKYO_1"
+  | "EU_LONDON_1"
+  | "US_ARIZONA_1"
+  | "US_TEXAS_1"
+  | "US_ILLINOIS_2"
+  | "EU_FRANKFURT_1"
+  | "US_TEXAS_2"
+  | "EU_PARIS_1"
+  | "EU_HELSINKI_1"
+  | "US_NEVADA_1"
+  | "EU_ICELAND_1"
+  | "EU_ICELAND_2"
+  | "US_WASHINGTON_1"
+  | "US_WASHINGTON_2"
+  | "EU_ICELAND_DEV_1"
+  | "US_WASHINGTON_3"
+  | "US_ARIZONA_2"
+  | "AP_TOKYO_2"
+  | "US_CALIFORNIA_1"
+  | "US_MISSOURI_1"
+  | "US_UTAH_1"
+  | "US_TEXAS_3"
+  | "US_ARIZONA_3"
+  | "US_GEORGIA_1"
+  | "US_GEORGIA_2"
+  | "US_WASHINGTON_4"
+  | "US_GEORGIA_3"
+  | "NA_BRITISHCOLUMBIA_1"
+  | "US_GEORGIA_4"
+  | "EU_ICELAND_3"
+  | "US_OHIO_1"
+  | "US_NEWYORK_1";
+
+// Base training config (shared across SFT, DPO, RFT)
+export interface FireworksBaseTrainingConfig {
+  baseModel?: string;
+  warmStartFrom?: string;
+  outputModel?: string;
+  learningRate?: number;
+  epochs?: number;
+  batchSize?: number;
+  batchSizeSamples?: number;
+  gradientAccumulationSteps?: number;
+  learningRateWarmupSteps?: number;
+  maxContextLength?: number;
+  loraRank?: number;
+  optimizerWeightDecay?: number;
+  jinjaTemplate?: string;
+  region?: FireworksTrainingRegion;
+}
+
+// Reinforcement learning loss config (shared across DPO, RFT)
+export type FireworksRLLossMethod =
+  | "METHOD_UNSPECIFIED"
+  | "GRPO"
+  | "DAPO"
+  | "DPO"
+  | "ORPO"
+  | "GSPO_TOKEN";
+
+export interface FireworksRLLossConfig {
+  method?: FireworksRLLossMethod;
+  klBeta?: number;
+}
+
+// W&B integration config (shared across fine-tuning jobs)
+export interface FireworksWandbConfig {
+  enabled?: boolean;
+  apiKey?: string;
+  project?: string;
+  entity?: string;
+  runId?: string;
+  url?: string;
+}
+
+// AWS S3 config (shared across fine-tuning jobs)
+export interface FireworksAwsS3Config {
+  credentialsSecret?: string;
+  iamRoleArn?: string;
+}
+
+// Azure Blob Storage config (shared across fine-tuning jobs)
+export interface FireworksAzureBlobStorageConfig {
+  credentialsSecret?: string;
+  managedIdentityClientId?: string;
+  tenantId?: string;
+}
+
+// DPO Fine-Tuning Job types
+
+export interface FireworksDpoJobCreateRequest {
+  dataset: string;
+  displayName?: string;
+  trainingConfig?: FireworksBaseTrainingConfig;
+  lossConfig?: FireworksRLLossConfig;
+  wandbConfig?: FireworksWandbConfig;
+  awsS3Config?: FireworksAwsS3Config;
+  azureBlobStorageConfig?: FireworksAzureBlobStorageConfig;
+}
+
+export interface FireworksDpoJob {
+  name?: string;
+  displayName?: string;
+  createTime?: string;
+  completedTime?: string;
+  dataset?: string;
+  state?: FireworksBatchJobState;
+  status?: { code?: FireworksStatusCode; message?: string };
+  createdBy?: string;
+  trainingConfig?: FireworksBaseTrainingConfig;
+  lossConfig?: FireworksRLLossConfig;
+  wandbConfig?: FireworksWandbConfig;
+  trainerLogsSignedUrl?: string;
+  awsS3Config?: FireworksAwsS3Config;
+  azureBlobStorageConfig?: FireworksAzureBlobStorageConfig;
+}
+
+export interface FireworksDpoJobListRequest {
+  pageSize?: number;
+  pageToken?: string;
+  filter?: string;
+  orderBy?: string;
+  readMask?: string;
+}
+
+export interface FireworksDpoJobListResponse {
+  dpoJobs?: FireworksDpoJob[];
+  nextPageToken?: string;
+  totalSize?: number;
+}
+
+export interface FireworksDpoJobGetRequest {
+  readMask?: string;
+}
+
+export interface FireworksMetricsFileEndpointResponse {
+  signedUrl?: string;
+}
+
 // Payload schema types
 export interface PayloadFieldSchema {
   type: "string" | "number" | "boolean" | "array" | "object";
@@ -1701,11 +1847,53 @@ interface FireworksDeploymentShapesNamespace {
   };
 }
 
+// DPO Jobs namespace types
+interface FireworksDpoJobCreateMethod {
+  (
+    accountId: string,
+    req: FireworksDpoJobCreateRequest,
+    signal?: AbortSignal
+  ): Promise<FireworksDpoJob>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface FireworksDpoJobsNamespace {
+  create: FireworksDpoJobCreateMethod;
+  get(
+    accountId: string,
+    jobId: string,
+    req?: FireworksDpoJobGetRequest,
+    signal?: AbortSignal
+  ): Promise<FireworksDpoJob>;
+  list(
+    accountId: string,
+    req?: FireworksDpoJobListRequest,
+    signal?: AbortSignal
+  ): Promise<FireworksDpoJobListResponse>;
+  delete(
+    accountId: string,
+    jobId: string,
+    signal?: AbortSignal
+  ): Promise<Record<string, never>>;
+  resume(
+    accountId: string,
+    jobId: string,
+    signal?: AbortSignal
+  ): Promise<FireworksDpoJob>;
+  getMetricsFileEndpoint(
+    accountId: string,
+    jobId: string,
+    signal?: AbortSignal
+  ): Promise<FireworksMetricsFileEndpointResponse>;
+}
+
 interface FireworksAccountsNamespace {
   models: FireworksModelsNamespace;
   supervisedFineTuningJobs: FireworksSFTNamespace;
   deployments: FireworksDeploymentsNamespace;
   deploymentShapes: FireworksDeploymentShapesNamespace;
+  dpoJobs: FireworksDpoJobsNamespace;
 }
 
 // Error class

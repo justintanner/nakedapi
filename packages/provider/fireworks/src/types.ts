@@ -2103,9 +2103,7 @@ interface FireworksDpoJobsNamespace {
 
 // Account types
 
-export type FireworksAccountType =
-  | "ACCOUNT_TYPE_UNSPECIFIED"
-  | "ENTERPRISE";
+export type FireworksAccountType = "ACCOUNT_TYPE_UNSPECIFIED" | "ENTERPRISE";
 
 export type FireworksAccountState =
   | "STATE_UNSPECIFIED"

@@ -85,10 +85,7 @@ describe("fireworks accounts integration", () => {
       const provider = fireworks({
         apiKey: process.env.FIREWORKS_API_KEY ?? "fw-test-key",
       });
-      const result = await provider.v1.accounts.users.get(
-        ACCOUNT_ID,
-        USER_ID
-      );
+      const result = await provider.v1.accounts.users.get(ACCOUNT_ID, USER_ID);
       expect(result).toHaveProperty("name");
     });
   });

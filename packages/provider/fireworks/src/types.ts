@@ -1184,6 +1184,129 @@ export interface FireworksGetExecutionLogEndpointResponse {
   expireTime?: string;
 }
 
+
+// Reinforcement Fine-Tuning (RFT) Job types
+
+export interface FireworksRFTInferenceParams {
+  maxTokens?: number;
+  temperature?: number;
+  topP?: number;
+  topK?: number;
+}
+
+export interface FireworksRFTCreateRequest {
+  dataset: string;
+  evaluator: string;
+  displayName?: string;
+  trainingConfig?: FireworksBaseTrainingConfig;
+  inferenceParams?: FireworksRFTInferenceParams;
+  lossConfig?: FireworksRLLossConfig;
+  wandbConfig?: FireworksWandbConfig;
+  awsS3Config?: FireworksAwsS3Config;
+  azureBlobStorageConfig?: FireworksAzureBlobStorageConfig;
+  reinforcementFineTuningJobId?: string;
+}
+
+export interface FireworksRFTJob {
+  name?: string;
+  displayName?: string;
+  createTime?: string;
+  completedTime?: string;
+  updateTime?: string;
+  dataset?: string;
+  evaluator?: string;
+  state?: FireworksBatchJobState;
+  status?: { code?: FireworksStatusCode; message?: string };
+  createdBy?: string;
+  trainingConfig?: FireworksBaseTrainingConfig;
+  inferenceParams?: FireworksRFTInferenceParams;
+  lossConfig?: FireworksRLLossConfig;
+  wandbConfig?: FireworksWandbConfig;
+  awsS3Config?: FireworksAwsS3Config;
+  azureBlobStorageConfig?: FireworksAzureBlobStorageConfig;
+  trainerLogsSignedUrl?: string;
+}
+
+export interface FireworksRFTListRequest {
+  pageSize?: number;
+  pageToken?: string;
+  filter?: string;
+  orderBy?: string;
+  readMask?: string;
+}
+
+export interface FireworksRFTListResponse {
+  reinforcementFineTuningJobs?: FireworksRFTJob[];
+  nextPageToken?: string;
+  totalSize?: number;
+}
+
+export interface FireworksRFTGetRequest {
+  readMask?: string;
+}
+
+// RLOR Trainer Job types (RFT training steps sub-resource)
+
+export interface FireworksRlorRewardWeight {
+  name?: string;
+  weight?: number;
+}
+
+export interface FireworksRlorTrainerJobCreateRequest {
+  dataset: string;
+  evaluator: string;
+  displayName?: string;
+  trainingConfig?: FireworksBaseTrainingConfig;
+  inferenceParams?: FireworksRFTInferenceParams;
+  lossConfig?: FireworksRLLossConfig;
+  rewardWeights?: FireworksRlorRewardWeight[];
+  wandbConfig?: FireworksWandbConfig;
+  awsS3Config?: FireworksAwsS3Config;
+  azureBlobStorageConfig?: FireworksAzureBlobStorageConfig;
+}
+
+export interface FireworksRlorTrainerJob {
+  name?: string;
+  displayName?: string;
+  createTime?: string;
+  completedTime?: string;
+  updateTime?: string;
+  dataset?: string;
+  evaluator?: string;
+  state?: FireworksBatchJobState;
+  status?: { code?: FireworksStatusCode; message?: string };
+  createdBy?: string;
+  trainingConfig?: FireworksBaseTrainingConfig;
+  inferenceParams?: FireworksRFTInferenceParams;
+  lossConfig?: FireworksRLLossConfig;
+  rewardWeights?: FireworksRlorRewardWeight[];
+  wandbConfig?: FireworksWandbConfig;
+  awsS3Config?: FireworksAwsS3Config;
+  azureBlobStorageConfig?: FireworksAzureBlobStorageConfig;
+  trainerLogsSignedUrl?: string;
+}
+
+export interface FireworksRlorTrainerJobListRequest {
+  pageSize?: number;
+  pageToken?: string;
+  filter?: string;
+  orderBy?: string;
+  readMask?: string;
+}
+
+export interface FireworksRlorTrainerJobListResponse {
+  rlorTrainerJobs?: FireworksRlorTrainerJob[];
+  nextPageToken?: string;
+  totalSize?: number;
+}
+
+export interface FireworksRlorTrainerJobGetRequest {
+  readMask?: string;
+}
+
+export interface FireworksRlorTrainerJobExecuteStepRequest {
+  dataset: string;
+  outputModel: string;
 // Payload schema types
 export interface PayloadFieldSchema {
   type: "string" | "number" | "boolean" | "array" | "object";
@@ -2896,6 +3019,90 @@ interface FireworksEvaluationJobsNamespace {
   ): Promise<FireworksGetExecutionLogEndpointResponse>;
 }
 
+// RFT Jobs namespace types
+interface FireworksRFTCreateMethod {
+  (
+    accountId: string,
+    req: FireworksRFTCreateRequest,
+    signal?: AbortSignal
+  ): Promise<FireworksRFTJob>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface FireworksRFTNamespace {
+  create: FireworksRFTCreateMethod;
+  get(
+    accountId: string,
+    jobId: string,
+    req?: FireworksRFTGetRequest,
+    signal?: AbortSignal
+  ): Promise<FireworksRFTJob>;
+  list(
+    accountId: string,
+    req?: FireworksRFTListRequest,
+    signal?: AbortSignal
+  ): Promise<FireworksRFTListResponse>;
+  delete(
+    accountId: string,
+    jobId: string,
+    signal?: AbortSignal
+  ): Promise<Record<string, never>>;
+  resume(
+    accountId: string,
+    jobId: string,
+    signal?: AbortSignal
+  ): Promise<FireworksRFTJob>;
+}
+
+// RLOR Trainer Jobs namespace types
+interface FireworksRlorTrainerJobCreateMethod {
+  (
+    accountId: string,
+    req: FireworksRlorTrainerJobCreateRequest,
+    signal?: AbortSignal
+  ): Promise<FireworksRlorTrainerJob>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface FireworksRlorTrainerJobExecuteStepMethod {
+  (
+    accountId: string,
+    jobId: string,
+    req: FireworksRlorTrainerJobExecuteStepRequest,
+    signal?: AbortSignal
+  ): Promise<Record<string, unknown>>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface FireworksRlorTrainerJobsNamespace {
+  create: FireworksRlorTrainerJobCreateMethod;
+  get(
+    accountId: string,
+    jobId: string,
+    req?: FireworksRlorTrainerJobGetRequest,
+    signal?: AbortSignal
+  ): Promise<FireworksRlorTrainerJob>;
+  list(
+    accountId: string,
+    req?: FireworksRlorTrainerJobListRequest,
+    signal?: AbortSignal
+  ): Promise<FireworksRlorTrainerJobListResponse>;
+  delete(
+    accountId: string,
+    jobId: string,
+    signal?: AbortSignal
+  ): Promise<Record<string, never>>;
+  executeTrainStep: FireworksRlorTrainerJobExecuteStepMethod;
+  resume(
+    accountId: string,
+    jobId: string,
+    signal?: AbortSignal
+  ): Promise<FireworksRlorTrainerJob>;
+}
+
 interface FireworksAccountsNamespace {
   models: FireworksModelsNamespace;
   datasets: FireworksDatasetsNamespace;
@@ -2918,6 +3125,8 @@ interface FireworksAccountsNamespace {
   secrets: FireworksSecretsNamespace;
   evaluators: FireworksEvaluatorsNamespace;
   evaluationJobs: FireworksEvaluationJobsNamespace;
+  reinforcementFineTuningJobs: FireworksRFTNamespace;
+  rlorTrainerJobs: FireworksRlorTrainerJobsNamespace;
 }
 
 // Error class

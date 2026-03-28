@@ -63,6 +63,12 @@ import {
   FireworksAudioBatchTranslationRequest,
   FireworksAudioBatchSubmitResponse,
   FireworksAudioBatchJob,
+  FireworksDpoJobCreateRequest,
+  FireworksDpoJob,
+  FireworksDpoJobListRequest,
+  FireworksDpoJobListResponse,
+  FireworksDpoJobGetRequest,
+  FireworksMetricsFileEndpointResponse,
   FireworksProvider,
   FireworksError,
 } from "./types";
@@ -94,6 +100,7 @@ import {
   scaleDeploymentSchema,
   audioBatchTranscriptionsSchema,
   audioBatchTranslationsSchema,
+  dpoJobCreateSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
 import { sseToIterable } from "./sse";
@@ -1523,6 +1530,95 @@ export function fireworks(opts: FireworksOptions): FireworksProvider {
                 signal
               );
             },
+          },
+        },
+        dpoJobs: {
+          create: Object.assign(
+            async function create(
+              accountId: string,
+              req: FireworksDpoJobCreateRequest,
+              signal?: AbortSignal
+            ): Promise<FireworksDpoJob> {
+              return await makeModelsRequest<FireworksDpoJob>(
+                "POST",
+                `/v1/accounts/${accountId}/dpoJobs`,
+                req,
+                undefined,
+                signal
+              );
+            },
+            {
+              payloadSchema: dpoJobCreateSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, dpoJobCreateSchema);
+              },
+            }
+          ),
+          async get(
+            accountId: string,
+            jobId: string,
+            req?: FireworksDpoJobGetRequest,
+            signal?: AbortSignal
+          ): Promise<FireworksDpoJob> {
+            return await makeModelsRequest<FireworksDpoJob>(
+              "GET",
+              `/v1/accounts/${accountId}/dpoJobs/${jobId}`,
+              undefined,
+              req as Record<string, string | number | boolean | undefined>,
+              signal
+            );
+          },
+          async list(
+            accountId: string,
+            req?: FireworksDpoJobListRequest,
+            signal?: AbortSignal
+          ): Promise<FireworksDpoJobListResponse> {
+            return await makeModelsRequest<FireworksDpoJobListResponse>(
+              "GET",
+              `/v1/accounts/${accountId}/dpoJobs`,
+              undefined,
+              req as Record<string, string | number | boolean | undefined>,
+              signal
+            );
+          },
+          async delete(
+            accountId: string,
+            jobId: string,
+            signal?: AbortSignal
+          ): Promise<Record<string, never>> {
+            return await makeModelsRequest<Record<string, never>>(
+              "DELETE",
+              `/v1/accounts/${accountId}/dpoJobs/${jobId}`,
+              undefined,
+              undefined,
+              signal
+            );
+          },
+          async resume(
+            accountId: string,
+            jobId: string,
+            signal?: AbortSignal
+          ): Promise<FireworksDpoJob> {
+            return await makeModelsRequest<FireworksDpoJob>(
+              "POST",
+              `/v1/accounts/${accountId}/dpoJobs/${jobId}:resume`,
+              {},
+              undefined,
+              signal
+            );
+          },
+          async getMetricsFileEndpoint(
+            accountId: string,
+            jobId: string,
+            signal?: AbortSignal
+          ): Promise<FireworksMetricsFileEndpointResponse> {
+            return await makeModelsRequest<FireworksMetricsFileEndpointResponse>(
+              "GET",
+              `/v1/accounts/${accountId}/dpoJobs/${jobId}:getMetricsFileEndpoint`,
+              undefined,
+              undefined,
+              signal
+            );
           },
         },
       },

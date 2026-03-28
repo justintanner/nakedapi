@@ -17,9 +17,21 @@ import {
   FalRequestsResponse,
   FalDeletePayloadsParams,
   FalDeletePayloadsResponse,
+  FalQueueSubmitParams,
+  FalQueueSubmitResponse,
+  FalQueueStatusParams,
+  FalQueueStatusResponse,
+  FalQueueResultParams,
+  FalQueueResultResponse,
+  FalQueueCancelParams,
+  FalQueueCancelResponse,
 } from "./types";
 import type { ValidationResult } from "./types";
-import { pricingEstimateSchema, deletePayloadsSchema } from "./schemas";
+import {
+  pricingEstimateSchema,
+  deletePayloadsSchema,
+  queueSubmitSchema,
+} from "./schemas";
 import { validatePayload } from "./validate";
 
 // Build query string from parameters (no case conversion)
@@ -67,11 +79,12 @@ export function fal(opts: FalOptions): FalProvider {
   const timeout = opts.timeout ?? 30000;
 
   async function makeRequest<T>(
-    method: "GET" | "POST" | "DELETE",
+    method: "GET" | "POST" | "DELETE" | "PUT",
     path: string,
     paramsOrBody?: Record<string, unknown>,
     signal?: AbortSignal,
-    headers?: Record<string, string>
+    headers?: Record<string, string>,
+    customBaseURL?: string
   ): Promise<T> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -80,10 +93,11 @@ export function fal(opts: FalOptions): FalProvider {
       signal.addEventListener("abort", () => controller.abort());
     }
 
+    const base = customBaseURL ?? baseURL;
     const url =
       method === "GET" && paramsOrBody
-        ? `${baseURL}${path}${buildQueryString(paramsOrBody)}`
-        : `${baseURL}${path}`;
+        ? `${base}${path}${buildQueryString(paramsOrBody)}`
+        : `${base}${path}`;
 
     const requestInit: RequestInit = {
       method,
@@ -257,9 +271,107 @@ export function fal(opts: FalOptions): FalProvider {
     }
   );
 
+  const queueBaseURL = opts.queueBaseURL ?? "https://queue.fal.run";
+
+  const queue = {
+    submit: Object.assign(
+      async function submit(
+        params: FalQueueSubmitParams,
+        signal?: AbortSignal
+      ): Promise<FalQueueSubmitResponse> {
+        const headers: Record<string, string> = {};
+        if (params.priority) {
+          headers["X-Fal-Queue-Priority"] = params.priority;
+        }
+        if (params.timeout !== undefined) {
+          headers["X-Fal-Request-Timeout"] = String(params.timeout);
+        }
+        if (params.no_retry) {
+          headers["X-Fal-No-Retry"] = "1";
+        }
+        if (params.runner_hint) {
+          headers["X-Fal-Runner-Hint"] = params.runner_hint;
+        }
+        if (params.store_io) {
+          headers["X-Fal-Store-IO"] = params.store_io;
+        }
+        if (params.object_lifecycle_preference) {
+          headers["X-Fal-Object-Lifecycle-Preference"] =
+            params.object_lifecycle_preference;
+        }
+
+        const path = params.webhook
+          ? `/${params.endpoint_id}?fal_webhook=${encodeURIComponent(params.webhook)}`
+          : `/${params.endpoint_id}`;
+
+        return makeRequest<FalQueueSubmitResponse>(
+          "POST",
+          path,
+          params.input,
+          signal,
+          headers,
+          queueBaseURL
+        );
+      },
+      {
+        payloadSchema: queueSubmitSchema,
+        validatePayload(data: unknown): ValidationResult {
+          return validatePayload(data, queueSubmitSchema);
+        },
+      }
+    ),
+
+    async status(
+      params: FalQueueStatusParams,
+      signal?: AbortSignal
+    ): Promise<FalQueueStatusResponse> {
+      const queryParams: Record<string, unknown> = {};
+      if (params.logs) {
+        queryParams.logs = "1";
+      }
+      return makeRequest<FalQueueStatusResponse>(
+        "GET",
+        `/${params.endpoint_id}/requests/${params.request_id}/status`,
+        Object.keys(queryParams).length > 0 ? queryParams : undefined,
+        signal,
+        undefined,
+        queueBaseURL
+      );
+    },
+
+    async result(
+      params: FalQueueResultParams,
+      signal?: AbortSignal
+    ): Promise<FalQueueResultResponse> {
+      return makeRequest<FalQueueResultResponse>(
+        "GET",
+        `/${params.endpoint_id}/requests/${params.request_id}`,
+        undefined,
+        signal,
+        undefined,
+        queueBaseURL
+      );
+    },
+
+    async cancel(
+      params: FalQueueCancelParams,
+      signal?: AbortSignal
+    ): Promise<FalQueueCancelResponse> {
+      return makeRequest<FalQueueCancelResponse>(
+        "PUT",
+        `/${params.endpoint_id}/requests/${params.request_id}/cancel`,
+        undefined,
+        signal,
+        undefined,
+        queueBaseURL
+      );
+    },
+  };
+
   return {
     v1: {
       models,
+      queue,
     },
   };
 }

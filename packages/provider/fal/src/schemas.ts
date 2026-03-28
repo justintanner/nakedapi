@@ -20,6 +20,41 @@ export const pricingEstimateSchema: PayloadSchema = {
   },
 };
 
+export const queueSubmitSchema: PayloadSchema = {
+  method: "POST",
+  path: "/{endpoint_id}",
+  contentType: "application/json",
+  fields: {
+    endpoint_id: {
+      type: "string",
+      required: true,
+      description: "Model endpoint ID (e.g. fal-ai/flux/schnell)",
+    },
+    input: {
+      type: "object",
+      required: true,
+      description: "Model-specific input payload",
+    },
+    webhook: {
+      type: "string",
+      description: "Webhook URL for async notification",
+    },
+    priority: {
+      type: "string",
+      enum: ["normal", "low"],
+      description: "Queue priority (defaults to normal)",
+    },
+    timeout: {
+      type: "number",
+      description: "Server-side request timeout in seconds",
+    },
+    no_retry: {
+      type: "boolean",
+      description: "Disable automatic retries",
+    },
+  },
+};
+
 export const deletePayloadsSchema: PayloadSchema = {
   method: "DELETE",
   path: "/models/requests/{request_id}/payloads",

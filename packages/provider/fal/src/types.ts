@@ -2,6 +2,7 @@
 export interface FalOptions {
   apiKey: string;
   baseURL?: string;
+  queueBaseURL?: string;
   timeout?: number;
   fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 }
@@ -318,6 +319,105 @@ export interface ValidationResult {
   errors: string[];
 }
 
+// ==================== Queue ====================
+
+// Queue submit options (model-specific input is the body)
+export interface FalQueueSubmitParams {
+  endpoint_id: string;
+  input: Record<string, unknown>;
+  webhook?: string;
+  priority?: "normal" | "low";
+  timeout?: number;
+  no_retry?: boolean;
+  runner_hint?: string;
+  store_io?: string;
+  object_lifecycle_preference?: string;
+}
+
+// Queue submit response
+export interface FalQueueSubmitResponse {
+  request_id: string;
+  response_url: string;
+  status_url: string;
+  cancel_url: string;
+  queue_position: number;
+}
+
+// Queue status parameters
+export interface FalQueueStatusParams {
+  endpoint_id: string;
+  request_id: string;
+  logs?: boolean;
+}
+
+// Queue log entry
+export interface FalQueueLog {
+  message: string;
+  level: "STDERR" | "STDOUT" | "ERROR" | "INFO" | "WARN" | "DEBUG";
+  source: string;
+  timestamp: string;
+}
+
+// Queue metrics
+export interface FalQueueMetrics {
+  inference_time: number | null;
+}
+
+// Queue status: IN_QUEUE
+export interface FalQueueInQueueStatus {
+  status: "IN_QUEUE";
+  request_id: string;
+  response_url: string;
+  queue_position: number;
+}
+
+// Queue status: IN_PROGRESS
+export interface FalQueueInProgressStatus {
+  status: "IN_PROGRESS";
+  request_id: string;
+  response_url: string;
+  logs?: FalQueueLog[];
+}
+
+// Queue status: COMPLETED
+export interface FalQueueCompletedStatus {
+  status: "COMPLETED";
+  request_id: string;
+  response_url: string;
+  logs?: FalQueueLog[];
+  metrics?: FalQueueMetrics;
+  error?: string;
+  error_type?: string;
+}
+
+// Queue status response (discriminated union)
+export type FalQueueStatusResponse =
+  | FalQueueInQueueStatus
+  | FalQueueInProgressStatus
+  | FalQueueCompletedStatus;
+
+// Queue result parameters
+export interface FalQueueResultParams {
+  endpoint_id: string;
+  request_id: string;
+}
+
+// Queue result response (model-specific output)
+export interface FalQueueResultResponse {
+  [key: string]: unknown;
+}
+
+// Queue cancel parameters
+export interface FalQueueCancelParams {
+  endpoint_id: string;
+  request_id: string;
+}
+
+// Queue cancel response
+export interface FalQueueCancelResponse {
+  status: string;
+}
+
 // ==================== Provider ====================
 
 // Namespace types
@@ -366,8 +466,34 @@ interface FalModelsNamespace {
   requests: FalModelsRequestsNamespace;
 }
 
+interface FalQueueSubmitMethod {
+  (
+    params: FalQueueSubmitParams,
+    signal?: AbortSignal
+  ): Promise<FalQueueSubmitResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface FalQueueNamespace {
+  submit: FalQueueSubmitMethod;
+  status(
+    params: FalQueueStatusParams,
+    signal?: AbortSignal
+  ): Promise<FalQueueStatusResponse>;
+  result(
+    params: FalQueueResultParams,
+    signal?: AbortSignal
+  ): Promise<FalQueueResultResponse>;
+  cancel(
+    params: FalQueueCancelParams,
+    signal?: AbortSignal
+  ): Promise<FalQueueCancelResponse>;
+}
+
 interface FalV1Namespace {
   models: FalModelsNamespace;
+  queue: FalQueueNamespace;
 }
 
 // Provider interface

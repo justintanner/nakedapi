@@ -82,6 +82,28 @@ export interface AnthropicStreamEvent {
   };
 }
 
+// Models API types
+export interface KimiCodingModel {
+  id: string;
+  object: "model";
+  created: number;
+  created_at: string;
+  display_name: string;
+  type: string;
+  context_length: number;
+  supports_reasoning: boolean;
+  supports_image_in: boolean;
+  supports_video_in: boolean;
+}
+
+export interface KimiCodingModelListResponse {
+  object: "list";
+  data: KimiCodingModel[];
+  first_id: string;
+  last_id: string;
+  has_more: boolean;
+}
+
 // Payload schema types
 export interface PayloadFieldSchema {
   type: "string" | "number" | "boolean" | "array" | "object";
@@ -118,8 +140,17 @@ interface KimiCodingMessagesNamespace {
   validatePayload(data: unknown): ValidationResult;
 }
 
+interface KimiCodingModelsListMethod {
+  (signal?: AbortSignal): Promise<KimiCodingModelListResponse>;
+}
+
+interface KimiCodingModelsNamespace {
+  list: KimiCodingModelsListMethod;
+}
+
 interface KimiCodingV1Namespace {
   messages: KimiCodingMessagesNamespace;
+  models: KimiCodingModelsNamespace;
 }
 
 interface KimiCodingCodingNamespace {

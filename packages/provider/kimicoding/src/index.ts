@@ -30,6 +30,8 @@ export type {
   UrlImageSource,
   MessageContent,
   Role,
+  KimiCodingModel,
+  KimiCodingModelListResponse,
   PayloadFieldSchema,
   PayloadSchema,
   ValidationResult,

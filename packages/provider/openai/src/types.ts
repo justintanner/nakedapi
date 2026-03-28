@@ -520,6 +520,237 @@ export interface OpenAiResponseResponse {
   parallel_tool_calls?: boolean;
 }
 
+// --- Fine-Tuning API types ---
+
+// Fine-tuning job error
+export interface OpenAiFineTuningJobError {
+  code: string;
+  message: string;
+  param: string | null;
+}
+
+// Fine-tuning hyperparameters
+export interface OpenAiFineTuningHyperparameters {
+  batch_size?: "auto" | number | null;
+  learning_rate_multiplier?: "auto" | number | null;
+  n_epochs?: "auto" | number | null;
+}
+
+// Fine-tuning method types
+export interface OpenAiFineTuningSupervisedHyperparameters {
+  batch_size?: "auto" | number;
+  learning_rate_multiplier?: "auto" | number;
+  n_epochs?: "auto" | number;
+}
+
+export interface OpenAiFineTuningSupervisedMethod {
+  hyperparameters?: OpenAiFineTuningSupervisedHyperparameters;
+}
+
+export interface OpenAiFineTuningDpoHyperparameters {
+  batch_size?: "auto" | number;
+  beta?: "auto" | number;
+  learning_rate_multiplier?: "auto" | number;
+  n_epochs?: "auto" | number;
+}
+
+export interface OpenAiFineTuningDpoMethod {
+  hyperparameters?: OpenAiFineTuningDpoHyperparameters;
+}
+
+export interface OpenAiFineTuningReinforcementHyperparameters {
+  batch_size?: "auto" | number;
+  compute_multiplier?: "auto" | number;
+  eval_interval?: "auto" | number;
+  eval_samples?: "auto" | number;
+  learning_rate_multiplier?: "auto" | number;
+  n_epochs?: "auto" | number;
+  reasoning_effort?: "default" | "low" | "medium" | "high";
+}
+
+export interface OpenAiFineTuningReinforcementMethod {
+  grader: Record<string, unknown>;
+  hyperparameters?: OpenAiFineTuningReinforcementHyperparameters;
+}
+
+export interface OpenAiFineTuningMethod {
+  type: "supervised" | "dpo" | "reinforcement";
+  supervised?: OpenAiFineTuningSupervisedMethod | null;
+  dpo?: OpenAiFineTuningDpoMethod | null;
+  reinforcement?: OpenAiFineTuningReinforcementMethod | null;
+}
+
+// Fine-tuning WandB integration
+export interface OpenAiFineTuningWandbConfig {
+  project: string;
+  entity?: string | null;
+  name?: string | null;
+  tags?: string[];
+}
+
+export interface OpenAiFineTuningIntegration {
+  type: "wandb";
+  wandb: OpenAiFineTuningWandbConfig;
+}
+
+// Fine-tuning job object (response)
+export interface OpenAiFineTuningJob {
+  id: string;
+  object: "fine_tuning.job";
+  created_at: number;
+  error: OpenAiFineTuningJobError | null;
+  fine_tuned_model: string | null;
+  finished_at: number | null;
+  hyperparameters: OpenAiFineTuningHyperparameters;
+  model: string;
+  organization_id: string;
+  result_files: string[];
+  seed: number;
+  status:
+    | "validating_files"
+    | "queued"
+    | "running"
+    | "succeeded"
+    | "failed"
+    | "cancelled";
+  trained_tokens: number | null;
+  training_file: string;
+  validation_file: string | null;
+  estimated_finish: number | null;
+  integrations: OpenAiFineTuningIntegration[] | null;
+  metadata: Record<string, string> | null;
+  method: OpenAiFineTuningMethod | null;
+}
+
+// Create fine-tuning job request
+export interface OpenAiFineTuningJobCreateRequest {
+  model: string;
+  training_file: string;
+  hyperparameters?: OpenAiFineTuningHyperparameters;
+  integrations?: OpenAiFineTuningIntegration[] | null;
+  metadata?: Record<string, string> | null;
+  method?: OpenAiFineTuningMethod;
+  seed?: number | null;
+  suffix?: string | null;
+  validation_file?: string | null;
+}
+
+// List fine-tuning jobs options
+export interface OpenAiFineTuningJobListOptions {
+  after?: string;
+  limit?: number;
+  metadata?: Record<string, string>;
+}
+
+// List fine-tuning jobs response
+export interface OpenAiFineTuningJobListResponse {
+  object: "list";
+  data: OpenAiFineTuningJob[];
+  has_more: boolean;
+}
+
+// Fine-tuning job event
+export interface OpenAiFineTuningJobEvent {
+  id: string;
+  object: "fine_tuning.job.event";
+  created_at: number;
+  level: "info" | "warn" | "error";
+  message: string;
+  data: Record<string, unknown> | null;
+  type: "message" | "metrics" | null;
+}
+
+// List events options
+export interface OpenAiFineTuningJobEventListOptions {
+  after?: string;
+  limit?: number;
+}
+
+// List events response
+export interface OpenAiFineTuningJobEventListResponse {
+  object: "list";
+  data: OpenAiFineTuningJobEvent[];
+  has_more: boolean;
+}
+
+// Fine-tuning job checkpoint metrics
+export interface OpenAiFineTuningCheckpointMetrics {
+  full_valid_loss?: number | null;
+  full_valid_mean_token_accuracy?: number | null;
+  step?: number | null;
+  train_loss?: number | null;
+  train_mean_token_accuracy?: number | null;
+  valid_loss?: number | null;
+  valid_mean_token_accuracy?: number | null;
+}
+
+// Fine-tuning job checkpoint
+export interface OpenAiFineTuningJobCheckpoint {
+  id: string;
+  object: "fine_tuning.job.checkpoint";
+  created_at: number;
+  fine_tuned_model_checkpoint: string;
+  fine_tuning_job_id: string;
+  metrics: OpenAiFineTuningCheckpointMetrics;
+  step_number: number;
+}
+
+// List checkpoints options
+export interface OpenAiFineTuningJobCheckpointListOptions {
+  after?: string;
+  limit?: number;
+}
+
+// List checkpoints response
+export interface OpenAiFineTuningJobCheckpointListResponse {
+  object: "list";
+  data: OpenAiFineTuningJobCheckpoint[];
+  has_more: boolean;
+}
+
+// Checkpoint permission
+export interface OpenAiCheckpointPermission {
+  id: string;
+  object: "checkpoint.permission";
+  created_at: number;
+  project_id: string;
+}
+
+// Create checkpoint permissions request
+export interface OpenAiCheckpointPermissionCreateRequest {
+  project_ids: string[];
+}
+
+// Create checkpoint permissions response
+export interface OpenAiCheckpointPermissionCreateResponse {
+  object: "list";
+  data: OpenAiCheckpointPermission[];
+}
+
+// List checkpoint permissions options
+export interface OpenAiCheckpointPermissionListOptions {
+  after?: string;
+  limit?: number;
+  order?: "ascending" | "descending";
+  project_id?: string;
+}
+
+// List checkpoint permissions response
+export interface OpenAiCheckpointPermissionListResponse {
+  object: "list";
+  data: OpenAiCheckpointPermission[];
+  has_more: boolean;
+  first_id: string | null;
+  last_id: string | null;
+}
+
+// Delete checkpoint permission response
+export interface OpenAiCheckpointPermissionDeleteResponse {
+  id: string;
+  object: "checkpoint.permission";
+  deleted: boolean;
+}
+
 // Models API types
 export interface OpenAiModel {
   id: string;
@@ -858,6 +1089,97 @@ interface OpenAiModerationsMethod {
   ): Promise<OpenAiModerationResponse>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
+// Fine-tuning namespace types
+interface OpenAiFineTuningJobsCreateMethod {
+  (
+    req: OpenAiFineTuningJobCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiFineTuningJob>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  list: OpenAiFineTuningJobsListMethod;
+  retrieve: OpenAiFineTuningJobsRetrieveMethod;
+  cancel: OpenAiFineTuningJobsCancelMethod;
+  pause: OpenAiFineTuningJobsPauseMethod;
+  resume: OpenAiFineTuningJobsResumeMethod;
+  events: OpenAiFineTuningJobsEventsMethod;
+  checkpoints: OpenAiFineTuningJobsCheckpointsMethod;
+}
+
+interface OpenAiFineTuningJobsListMethod {
+  (
+    opts?: OpenAiFineTuningJobListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiFineTuningJobListResponse>;
+}
+
+interface OpenAiFineTuningJobsRetrieveMethod {
+  (id: string, signal?: AbortSignal): Promise<OpenAiFineTuningJob>;
+}
+
+interface OpenAiFineTuningJobsCancelMethod {
+  (id: string, signal?: AbortSignal): Promise<OpenAiFineTuningJob>;
+}
+
+interface OpenAiFineTuningJobsPauseMethod {
+  (id: string, signal?: AbortSignal): Promise<OpenAiFineTuningJob>;
+}
+
+interface OpenAiFineTuningJobsResumeMethod {
+  (id: string, signal?: AbortSignal): Promise<OpenAiFineTuningJob>;
+}
+
+interface OpenAiFineTuningJobsEventsMethod {
+  (
+    id: string,
+    opts?: OpenAiFineTuningJobEventListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiFineTuningJobEventListResponse>;
+}
+
+interface OpenAiFineTuningJobsCheckpointsMethod {
+  (
+    id: string,
+    opts?: OpenAiFineTuningJobCheckpointListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiFineTuningJobCheckpointListResponse>;
+}
+
+interface OpenAiCheckpointPermissionsCreateMethod {
+  (
+    checkpoint: string,
+    req: OpenAiCheckpointPermissionCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiCheckpointPermissionCreateResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  list: OpenAiCheckpointPermissionsListMethod;
+  del: OpenAiCheckpointPermissionsDeleteMethod;
+}
+
+interface OpenAiCheckpointPermissionsListMethod {
+  (
+    checkpoint: string,
+    opts?: OpenAiCheckpointPermissionListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiCheckpointPermissionListResponse>;
+}
+
+interface OpenAiCheckpointPermissionsDeleteMethod {
+  (
+    checkpoint: string,
+    permissionId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiCheckpointPermissionDeleteResponse>;
+}
+
+interface OpenAiFineTuningCheckpointsNamespace {
+  permissions: OpenAiCheckpointPermissionsCreateMethod;
+}
+
+interface OpenAiFineTuningNamespace {
+  jobs: OpenAiFineTuningJobsCreateMethod;
+  checkpoints: OpenAiFineTuningCheckpointsNamespace;
 }
 
 interface OpenAiV1Namespace {
@@ -869,6 +1191,7 @@ interface OpenAiV1Namespace {
   models: OpenAiModelsNamespace;
   moderations: OpenAiModerationsMethod;
   responses: OpenAiResponsesMethod;
+  fine_tuning: OpenAiFineTuningNamespace;
 }
 
 // Provider interface

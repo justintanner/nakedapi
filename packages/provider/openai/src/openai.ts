@@ -27,6 +27,19 @@ import {
   OpenAiResponseGetOptions,
   OpenAiModerationRequest,
   OpenAiModerationResponse,
+  OpenAiFineTuningJobCreateRequest,
+  OpenAiFineTuningJob,
+  OpenAiFineTuningJobListOptions,
+  OpenAiFineTuningJobListResponse,
+  OpenAiFineTuningJobEventListOptions,
+  OpenAiFineTuningJobEventListResponse,
+  OpenAiFineTuningJobCheckpointListOptions,
+  OpenAiFineTuningJobCheckpointListResponse,
+  OpenAiCheckpointPermissionCreateRequest,
+  OpenAiCheckpointPermissionCreateResponse,
+  OpenAiCheckpointPermissionListOptions,
+  OpenAiCheckpointPermissionListResponse,
+  OpenAiCheckpointPermissionDeleteResponse,
   OpenAiProvider,
   OpenAiError,
 } from "./types";
@@ -45,6 +58,8 @@ import {
   audioTranslationsSchema,
   responsesSchema,
   responsesDeleteSchema,
+  fineTuningJobsCreateSchema,
+  checkpointPermissionsCreateSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
 
@@ -194,6 +209,53 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
     try {
       const res = await doFetch(url, {
         method: "GET",
+        headers: {
+          Authorization: `Bearer ${opts.apiKey}`,
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        let message = `OpenAI API error: ${res.status}`;
+        let body: unknown = null;
+        try {
+          body = await res.json();
+          if (typeof body === "object" && body !== null && "error" in body) {
+            const err = (body as { error: { message?: string } }).error;
+            if (err?.message) {
+              message = `OpenAI API error ${res.status}: ${err.message}`;
+            }
+          }
+        } catch {
+          // ignore parse errors
+        }
+        throw new OpenAiError(message, res.status, body);
+      }
+
+      return (await res.json()) as T;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof OpenAiError) throw error;
+      throw new OpenAiError(`OpenAI request failed: ${error}`, 500);
+    }
+  }
+
+  async function makeEmptyPostRequest<T>(
+    path: string,
+    signal?: AbortSignal
+  ): Promise<T> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    if (signal) {
+      signal.addEventListener("abort", () => controller.abort());
+    }
+
+    try {
+      const res = await doFetch(`${baseURL}${path}`, {
+        method: "POST",
         headers: {
           Authorization: `Bearer ${opts.apiKey}`,
         },
@@ -679,6 +741,161 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             },
           }
         ),
+      },
+      fine_tuning: {
+        jobs: Object.assign(
+          async function jobs(
+            req: OpenAiFineTuningJobCreateRequest,
+            signal?: AbortSignal
+          ): Promise<OpenAiFineTuningJob> {
+            return await makeRequest<OpenAiFineTuningJob>(
+              "/fine_tuning/jobs",
+              jsonRequest(req),
+              signal
+            );
+          },
+          {
+            payloadSchema: fineTuningJobsCreateSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, fineTuningJobsCreateSchema);
+            },
+            list: async function list(
+              listOpts?: OpenAiFineTuningJobListOptions,
+              signal?: AbortSignal
+            ): Promise<OpenAiFineTuningJobListResponse> {
+              const query: Record<string, string | undefined> = {};
+              if (listOpts?.after) query.after = listOpts.after;
+              if (listOpts?.limit !== undefined)
+                query.limit = String(listOpts.limit);
+              if (listOpts?.metadata) {
+                for (const [k, v] of Object.entries(listOpts.metadata)) {
+                  query[`metadata[${k}]`] = v;
+                }
+              }
+              return await makeGetRequest<OpenAiFineTuningJobListResponse>(
+                "/fine_tuning/jobs",
+                query,
+                signal
+              );
+            },
+            retrieve: async function retrieve(
+              id: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiFineTuningJob> {
+              return await makeGetRequest<OpenAiFineTuningJob>(
+                `/fine_tuning/jobs/${encodeURIComponent(id)}`,
+                undefined,
+                signal
+              );
+            },
+            cancel: async function cancel(
+              id: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiFineTuningJob> {
+              return await makeEmptyPostRequest<OpenAiFineTuningJob>(
+                `/fine_tuning/jobs/${encodeURIComponent(id)}/cancel`,
+                signal
+              );
+            },
+            pause: async function pause(
+              id: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiFineTuningJob> {
+              return await makeEmptyPostRequest<OpenAiFineTuningJob>(
+                `/fine_tuning/jobs/${encodeURIComponent(id)}/pause`,
+                signal
+              );
+            },
+            resume: async function resume(
+              id: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiFineTuningJob> {
+              return await makeEmptyPostRequest<OpenAiFineTuningJob>(
+                `/fine_tuning/jobs/${encodeURIComponent(id)}/resume`,
+                signal
+              );
+            },
+            events: async function events(
+              id: string,
+              evtOpts?: OpenAiFineTuningJobEventListOptions,
+              signal?: AbortSignal
+            ): Promise<OpenAiFineTuningJobEventListResponse> {
+              const query: Record<string, string | undefined> = {};
+              if (evtOpts?.after) query.after = evtOpts.after;
+              if (evtOpts?.limit !== undefined)
+                query.limit = String(evtOpts.limit);
+              return await makeGetRequest<OpenAiFineTuningJobEventListResponse>(
+                `/fine_tuning/jobs/${encodeURIComponent(id)}/events`,
+                query,
+                signal
+              );
+            },
+            checkpoints: async function checkpoints(
+              id: string,
+              cpOpts?: OpenAiFineTuningJobCheckpointListOptions,
+              signal?: AbortSignal
+            ): Promise<OpenAiFineTuningJobCheckpointListResponse> {
+              const query: Record<string, string | undefined> = {};
+              if (cpOpts?.after) query.after = cpOpts.after;
+              if (cpOpts?.limit !== undefined)
+                query.limit = String(cpOpts.limit);
+              return await makeGetRequest<OpenAiFineTuningJobCheckpointListResponse>(
+                `/fine_tuning/jobs/${encodeURIComponent(id)}/checkpoints`,
+                query,
+                signal
+              );
+            },
+          }
+        ),
+        checkpoints: {
+          permissions: Object.assign(
+            async function permissions(
+              checkpoint: string,
+              req: OpenAiCheckpointPermissionCreateRequest,
+              signal?: AbortSignal
+            ): Promise<OpenAiCheckpointPermissionCreateResponse> {
+              return await makeRequest<OpenAiCheckpointPermissionCreateResponse>(
+                `/fine_tuning/checkpoints/${encodeURIComponent(checkpoint)}/permissions`,
+                jsonRequest(req),
+                signal
+              );
+            },
+            {
+              payloadSchema: checkpointPermissionsCreateSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, checkpointPermissionsCreateSchema);
+              },
+              list: async function list(
+                checkpoint: string,
+                permOpts?: OpenAiCheckpointPermissionListOptions,
+                signal?: AbortSignal
+              ): Promise<OpenAiCheckpointPermissionListResponse> {
+                const query: Record<string, string | undefined> = {};
+                if (permOpts?.after) query.after = permOpts.after;
+                if (permOpts?.limit !== undefined)
+                  query.limit = String(permOpts.limit);
+                if (permOpts?.order) query.order = permOpts.order;
+                if (permOpts?.project_id)
+                  query.project_id = permOpts.project_id;
+                return await makeGetRequest<OpenAiCheckpointPermissionListResponse>(
+                  `/fine_tuning/checkpoints/${encodeURIComponent(checkpoint)}/permissions`,
+                  query,
+                  signal
+                );
+              },
+              del: async function del(
+                checkpoint: string,
+                permissionId: string,
+                signal?: AbortSignal
+              ): Promise<OpenAiCheckpointPermissionDeleteResponse> {
+                return await makeDeleteRequest<OpenAiCheckpointPermissionDeleteResponse>(
+                  `/fine_tuning/checkpoints/${encodeURIComponent(checkpoint)}/permissions/${encodeURIComponent(permissionId)}`,
+                  signal
+                );
+              },
+            }
+          ),
+        },
       },
     },
   };

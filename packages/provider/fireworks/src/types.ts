@@ -6,7 +6,10 @@ export interface FireworksOptions {
   audioStreamingBaseURL?: string;
   timeout?: number;
   fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
-  WebSocket?: new (url: string | URL, protocols?: string | string[]) => WebSocket;
+  WebSocket?: new (
+    url: string | URL,
+    protocols?: string | string[]
+  ) => WebSocket;
 }
 
 // Chat message

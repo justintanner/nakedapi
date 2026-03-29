@@ -1547,12 +1547,51 @@ interface FireworksAccountsNamespace {
   supervisedFineTuningJobs: FireworksSFTNamespace;
 }
 
+interface FireworksResponsesGetMethod {
+  (id: string, signal?: AbortSignal): Promise<FireworksResponseResponse>;
+}
+
+interface FireworksResponsesListMethod {
+  (
+    opts?: FireworksResponseListRequest,
+    signal?: AbortSignal
+  ): Promise<FireworksResponseListResponse>;
+}
+
+interface FireworksResponsesDeleteMethod {
+  (id: string, signal?: AbortSignal): Promise<FireworksResponseDeleteResponse>;
+  payloadSchema: PayloadSchema;
+}
+
+interface FireworksResponsesStreamMethod {
+  (
+    req: FireworksResponseRequest,
+    signal?: AbortSignal
+  ): AsyncIterable<FireworksResponseStreamEvent>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface FireworksResponsesMethod {
+  (
+    req: FireworksResponseRequest,
+    signal?: AbortSignal
+  ): Promise<FireworksResponseResponse>;
+  stream: FireworksResponsesStreamMethod;
+  get: FireworksResponsesGetMethod;
+  list: FireworksResponsesListMethod;
+  del: FireworksResponsesDeleteMethod;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
 interface FireworksV1Namespace {
   chat: FireworksChatNamespace;
   completions: FireworksCompletionsMethod;
   embeddings: FireworksEmbeddingsMethod;
   rerank: FireworksRerankMethod;
   messages: FireworksMessagesMethod;
+  responses: FireworksResponsesMethod;
   workflows: FireworksWorkflowsNamespace;
   audio: FireworksAudioNamespace;
   accounts: FireworksAccountsNamespace;
@@ -3128,6 +3167,242 @@ interface FireworksAccountsNamespace {
   evaluationJobs: FireworksEvaluationJobsNamespace;
   reinforcementFineTuningJobs: FireworksRFTNamespace;
   rlorTrainerJobs: FireworksRlorTrainerJobsNamespace;
+}
+
+// Responses API types (OpenAI Responses-compatible)
+
+export interface FireworksResponseInputTextContent {
+  type: "input_text";
+  text: string;
+}
+
+export interface FireworksResponseInputImageContent {
+  type: "input_image";
+  image_url?: string;
+  file_id?: string;
+  detail?: "auto" | "low" | "high";
+}
+
+export interface FireworksResponseInputAudioContent {
+  type: "input_audio";
+  data: string;
+  format: "wav" | "mp3";
+}
+
+export type FireworksResponseInputContent =
+  | FireworksResponseInputTextContent
+  | FireworksResponseInputImageContent
+  | FireworksResponseInputAudioContent;
+
+export interface FireworksResponseInputMessage {
+  role: "user" | "assistant" | "system" | "developer";
+  content: string | FireworksResponseInputContent[];
+}
+
+export interface FireworksResponseFunctionCallOutput {
+  type: "function_call_output";
+  call_id: string;
+  output: string;
+}
+
+export interface FireworksResponseItemReference {
+  type: "item_reference";
+  id: string;
+}
+
+export type FireworksResponseInputItem =
+  | FireworksResponseInputMessage
+  | FireworksResponseFunctionCallOutput
+  | FireworksResponseItemReference;
+
+export interface FireworksResponseFunctionTool {
+  type: "function";
+  name: string;
+  description?: string;
+  parameters?: Record<string, unknown>;
+  strict?: boolean;
+}
+
+export interface FireworksResponseMcpTool {
+  type: "mcp";
+  server_url: string;
+}
+
+export interface FireworksResponseSseTool {
+  type: "sse";
+  server_url: string;
+}
+
+export interface FireworksResponsePythonTool {
+  type: "python";
+}
+
+export type FireworksResponseTool =
+  | FireworksResponseFunctionTool
+  | FireworksResponseMcpTool
+  | FireworksResponseSseTool
+  | FireworksResponsePythonTool;
+
+export interface FireworksResponseTextFormat {
+  format:
+    | { type: "text" }
+    | { type: "json_object" }
+    | {
+        type: "json_schema";
+        name: string;
+        schema: Record<string, unknown>;
+        description?: string;
+        strict?: boolean;
+      };
+}
+
+export interface FireworksResponseReasoning {
+  effort?: "low" | "medium" | "high";
+  summary?: "auto" | "concise" | "detailed" | null;
+}
+
+export interface FireworksResponseRequest {
+  model: string;
+  input: string | FireworksResponseInputItem[];
+  previous_response_id?: string | null;
+  instructions?: string | null;
+  max_output_tokens?: number | null;
+  max_tool_calls?: number | null;
+  metadata?: Record<string, string> | null;
+  parallel_tool_calls?: boolean | null;
+  reasoning?: FireworksResponseReasoning | null;
+  store?: boolean | null;
+  stream?: boolean | null;
+  temperature?: number | null;
+  text?: FireworksResponseTextFormat | null;
+  tool_choice?:
+    | "none"
+    | "auto"
+    | "required"
+    | { type: string; name?: string }
+    | null;
+  tools?: FireworksResponseTool[] | null;
+  top_p?: number | null;
+  truncation?: "auto" | "disabled" | null;
+  user?: string | null;
+}
+
+export interface FireworksResponseOutputText {
+  type: "output_text";
+  text: string;
+}
+
+export type FireworksResponseOutputContent = FireworksResponseOutputText;
+
+export interface FireworksResponseOutputMessage {
+  id: string;
+  type: "message";
+  role: "assistant";
+  content: FireworksResponseOutputContent[];
+  status: "in_progress" | "completed";
+}
+
+export interface FireworksResponseFunctionCallItem {
+  id: string;
+  type: "function_call";
+  call_id: string | null;
+  name: string | null;
+  arguments: string | null;
+  status: "in_progress" | "completed" | "incomplete" | null;
+}
+
+export interface FireworksResponseMcpCallItem {
+  id: string;
+  type: "mcp_call";
+  call_id: string | null;
+  name: string | null;
+  arguments: string | null;
+  status: "in_progress" | "completed" | "incomplete" | null;
+  mcp: Record<string, unknown> | null;
+}
+
+export type FireworksResponseOutputItem =
+  | FireworksResponseOutputMessage
+  | FireworksResponseFunctionCallItem
+  | FireworksResponseMcpCallItem;
+
+export interface FireworksResponseUsage {
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+  prompt_tokens_details?: { cached_tokens?: number };
+}
+
+export type FireworksResponseStatus =
+  | "completed"
+  | "in_progress"
+  | "incomplete"
+  | "failed"
+  | "cancelled";
+
+export interface FireworksResponseResponse {
+  id: string | null;
+  object: "response";
+  created_at: number;
+  status: FireworksResponseStatus;
+  model: string;
+  output: FireworksResponseOutputItem[];
+  usage?: FireworksResponseUsage | null;
+  error?: { type: string; code: string; message: string } | null;
+  incomplete_details?: {
+    reason: "max_output_tokens" | "max_tool_calls" | "content_filter";
+  } | null;
+  previous_response_id?: string | null;
+  instructions?: string | null;
+  max_output_tokens?: number | null;
+  max_tool_calls?: number | null;
+  metadata?: Record<string, string> | null;
+  parallel_tool_calls?: boolean;
+  reasoning?: FireworksResponseReasoning | null;
+  store?: boolean | null;
+  temperature?: number;
+  text?: FireworksResponseTextFormat | null;
+  tool_choice?:
+    | "none"
+    | "auto"
+    | "required"
+    | { type: string; name?: string }
+    | null;
+  tools?: FireworksResponseTool[];
+  top_p?: number;
+  truncation?: "auto" | "disabled";
+  user?: string | null;
+}
+
+export interface FireworksResponseListRequest {
+  limit?: number;
+  after?: string;
+  before?: string;
+}
+
+export interface FireworksResponseListResponse {
+  object: "list";
+  data: FireworksResponseResponse[];
+  has_more: boolean;
+  first_id: string | null;
+  last_id: string | null;
+}
+
+export interface FireworksResponseDeleteResponse {
+  message: string;
+}
+
+export interface FireworksResponseStreamEvent {
+  type: string;
+  sequence_number?: number;
+  response?: FireworksResponseResponse;
+  item?: FireworksResponseOutputItem;
+  content_index?: number;
+  output_index?: number;
+  item_id?: string;
+  delta?: string;
+  text?: string;
+  part?: FireworksResponseOutputContent;
 }
 
 // Error class

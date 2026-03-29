@@ -143,6 +143,12 @@ import {
   FireworksRlorTrainerJobListRequest,
   FireworksRlorTrainerJobListResponse,
   FireworksRlorTrainerJobExecuteStepRequest,
+  FireworksResponseRequest,
+  FireworksResponseResponse,
+  FireworksResponseListRequest,
+  FireworksResponseListResponse,
+  FireworksResponseDeleteResponse,
+  FireworksResponseStreamEvent,
   FireworksProvider,
   FireworksError,
 } from "./types";
@@ -196,6 +202,8 @@ import {
   rftCreateSchema,
   rlorTrainerJobCreateSchema,
   rlorTrainerJobExecuteStepSchema,
+  responsesCreateSchema,
+  responsesDeleteSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
 import { sseToIterable } from "./sse";
@@ -689,6 +697,119 @@ export function fireworks(opts: FireworksOptions): FireworksProvider {
     }
   }
 
+  async function makeGetRequest<T>(
+    path: string,
+    query?: Record<string, string | number | boolean | undefined>,
+    signal?: AbortSignal
+  ): Promise<T> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    if (signal) {
+      signal.addEventListener("abort", () => controller.abort());
+    }
+
+    try {
+      let url = `${baseURL}${path}`;
+      if (query) {
+        const params = new URLSearchParams();
+        for (const [k, v] of Object.entries(query)) {
+          if (v !== undefined) params.append(k, String(v));
+        }
+        const qs = params.toString();
+        if (qs) url += `?${qs}`;
+      }
+
+      const res = await doFetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${opts.apiKey}`,
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        let message = `Fireworks API error: ${res.status}`;
+        let resBody: unknown = null;
+        try {
+          resBody = await res.json();
+          if (
+            typeof resBody === "object" &&
+            resBody !== null &&
+            "error" in resBody
+          ) {
+            const err = (resBody as { error: { message?: string } }).error;
+            if (err?.message) {
+              message = `Fireworks API error ${res.status}: ${err.message}`;
+            }
+          }
+        } catch {
+          // ignore parse errors
+        }
+        throw new FireworksError(message, res.status, resBody);
+      }
+
+      return (await res.json()) as T;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof FireworksError) throw error;
+      throw new FireworksError(`Fireworks request failed: ${error}`, 500);
+    }
+  }
+
+  async function makeDeleteRequest<T>(
+    path: string,
+    signal?: AbortSignal
+  ): Promise<T> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    if (signal) {
+      signal.addEventListener("abort", () => controller.abort());
+    }
+
+    try {
+      const res = await doFetch(`${baseURL}${path}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${opts.apiKey}`,
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        let message = `Fireworks API error: ${res.status}`;
+        let resBody: unknown = null;
+        try {
+          resBody = await res.json();
+          if (
+            typeof resBody === "object" &&
+            resBody !== null &&
+            "error" in resBody
+          ) {
+            const err = (resBody as { error: { message?: string } }).error;
+            if (err?.message) {
+              message = `Fireworks API error ${res.status}: ${err.message}`;
+            }
+          }
+        } catch {
+          // ignore parse errors
+        }
+        throw new FireworksError(message, res.status, resBody);
+      }
+
+      return (await res.json()) as T;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof FireworksError) throw error;
+      throw new FireworksError(`Fireworks request failed: ${error}`, 500);
+    }
+  }
+
   return {
     v1: {
       chat: {
@@ -813,6 +934,80 @@ export function fireworks(opts: FireworksOptions): FireworksProvider {
           return validatePayload(data, messagesSchema);
         },
       }),
+      responses: Object.assign(
+        async function responses(
+          req: FireworksResponseRequest,
+          signal?: AbortSignal
+        ): Promise<FireworksResponseResponse> {
+          return await makeRequest<FireworksResponseResponse>(
+            "/responses",
+            req,
+            signal
+          );
+        },
+        {
+          stream: Object.assign(
+            function responsesStream(
+              req: FireworksResponseRequest,
+              signal?: AbortSignal
+            ): AsyncIterable<FireworksResponseStreamEvent> {
+              return makeStreamRequest<FireworksResponseStreamEvent>(
+                "/responses",
+                { ...req, stream: true },
+                signal
+              );
+            },
+            {
+              payloadSchema: responsesCreateSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, responsesCreateSchema);
+              },
+            }
+          ),
+          async get(
+            id: string,
+            signal?: AbortSignal
+          ): Promise<FireworksResponseResponse> {
+            return await makeGetRequest<FireworksResponseResponse>(
+              `/responses/${encodeURIComponent(id)}`,
+              undefined,
+              signal
+            );
+          },
+          async list(
+            listOpts?: FireworksResponseListRequest,
+            signal?: AbortSignal
+          ): Promise<FireworksResponseListResponse> {
+            const query: Record<string, string | number | undefined> = {};
+            if (listOpts?.limit !== undefined) query.limit = listOpts.limit;
+            if (listOpts?.after !== undefined) query.after = listOpts.after;
+            if (listOpts?.before !== undefined) query.before = listOpts.before;
+            return await makeGetRequest<FireworksResponseListResponse>(
+              "/responses",
+              query,
+              signal
+            );
+          },
+          del: Object.assign(
+            async function del(
+              id: string,
+              signal?: AbortSignal
+            ): Promise<FireworksResponseDeleteResponse> {
+              return await makeDeleteRequest<FireworksResponseDeleteResponse>(
+                `/responses/${encodeURIComponent(id)}`,
+                signal
+              );
+            },
+            {
+              payloadSchema: responsesDeleteSchema,
+            }
+          ),
+          payloadSchema: responsesCreateSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, responsesCreateSchema);
+          },
+        }
+      ),
       workflows: {
         textToImage: Object.assign(
           async function textToImage(

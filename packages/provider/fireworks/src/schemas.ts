@@ -2354,3 +2354,144 @@ export const updateDeployedModelSchema: PayloadSchema = {
     },
   },
 };
+
+// Responses API schemas
+
+export const responsesCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/responses",
+  contentType: "application/json",
+  fields: {
+    model: {
+      type: "string",
+      required: true,
+      description: "Model identifier",
+    },
+    input: {
+      type: "string",
+      required: true,
+      description: "Text string or array of input message objects",
+    },
+    previous_response_id: {
+      type: "string",
+      description: "ID of previous response to continue conversation from",
+    },
+    instructions: {
+      type: "string",
+      description: "System instructions guiding model behavior",
+    },
+    max_output_tokens: {
+      type: "number",
+      description: "Maximum tokens in response",
+    },
+    max_tool_calls: {
+      type: "number",
+      description: "Maximum tool calls allowed per response",
+    },
+    metadata: {
+      type: "object",
+      description: "Up to 16 key-value pairs of metadata",
+    },
+    parallel_tool_calls: {
+      type: "boolean",
+      description: "Enable simultaneous tool invocation",
+    },
+    reasoning: {
+      type: "object",
+      description: "Reasoning configuration",
+      properties: {
+        effort: {
+          type: "string",
+          enum: ["low", "medium", "high"],
+        },
+        summary: {
+          type: "string",
+          enum: ["auto", "concise", "detailed"],
+        },
+      },
+    },
+    store: {
+      type: "boolean",
+      description: "Whether to persist response for future retrieval",
+    },
+    stream: {
+      type: "boolean",
+      description: "Enable SSE streaming",
+    },
+    temperature: {
+      type: "number",
+      description: "Sampling temperature 0-2",
+    },
+    text: {
+      type: "object",
+      description: "Text generation config",
+      properties: {
+        format: {
+          type: "object",
+          required: true,
+          properties: {
+            type: {
+              type: "string",
+              required: true,
+              enum: ["text", "json_object", "json_schema"],
+            },
+            name: { type: "string" },
+            schema: { type: "object" },
+            description: { type: "string" },
+            strict: { type: "boolean" },
+          },
+        },
+      },
+    },
+    tool_choice: {
+      type: "string",
+      description:
+        'Tool choice: "none", "auto", "required", or object with type and name',
+    },
+    tools: {
+      type: "array",
+      description: "Tool definitions",
+      items: {
+        type: "object",
+        properties: {
+          type: {
+            type: "string",
+            required: true,
+            enum: ["function", "mcp", "sse", "python"],
+          },
+          name: { type: "string" },
+          description: { type: "string" },
+          parameters: { type: "object" },
+          strict: { type: "boolean" },
+          server_url: { type: "string" },
+        },
+      },
+    },
+    top_p: {
+      type: "number",
+      description: "Nucleus sampling 0-1",
+    },
+    truncation: {
+      type: "string",
+      description: "Truncation strategy",
+      enum: ["auto", "disabled"],
+    },
+    user: {
+      type: "string",
+      description: "End-user identifier",
+    },
+  },
+};
+
+export const responsesDeleteSchema: PayloadSchema = {
+  method: "DELETE",
+  path: "/responses/{id}",
+  contentType: "application/json",
+  fields: {
+    id: {
+      type: "string",
+      required: true,
+      description: "Response ID to delete",
+    },
+  },
+};

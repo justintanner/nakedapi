@@ -1067,54 +1067,6 @@ export const realtimeClientSecretsCreateSchema: PayloadSchema = {
     session: {
       type: "object",
       description: "Session configuration for the client secret",
-export const vectorStoresCreateSchema: PayloadSchema = {
-  method: "POST",
-  path: "/vector_stores",
-  contentType: "application/json",
-  fields: {
-    file_ids: {
-      type: "array",
-      description: "List of file IDs to add (max 500)",
-      items: { type: "string" },
-    },
-    name: {
-      type: "string",
-      description: "Name of the vector store",
-    },
-    description: {
-      type: "string",
-      description: "Description of the vector store",
-    },
-    expires_after: {
-      type: "object",
-      description: "Expiration policy",
-      properties: {
-        anchor: {
-          type: "string",
-          required: true,
-          enum: ["last_active_at"],
-        },
-        days: {
-          type: "number",
-          required: true,
-          description: "Days until expiration (1-365)",
-        },
-      },
-    },
-    chunking_strategy: {
-      type: "object",
-      description: "Chunking strategy for file processing",
-      properties: {
-        type: {
-          type: "string",
-          required: true,
-          enum: ["auto", "static"],
-        },
-      },
-    },
-    metadata: {
-      type: "object",
-      description: "Key-value metadata pairs (max 16)",
     },
   },
 };
@@ -1168,86 +1120,6 @@ export const realtimeCallsRejectSchema: PayloadSchema = {
     status_code: {
       type: "number",
       description: "SIP response code (defaults to 603 Decline)",
-export const vectorStoresUpdateSchema: PayloadSchema = {
-  method: "POST",
-  path: "/vector_stores/{vector_store_id}",
-  contentType: "application/json",
-  fields: {
-    name: {
-      type: "string",
-      description: "Name of the vector store",
-    },
-    expires_after: {
-      type: "object",
-      description: "Expiration policy",
-      properties: {
-        anchor: {
-          type: "string",
-          required: true,
-          enum: ["last_active_at"],
-        },
-        days: {
-          type: "number",
-          required: true,
-          description: "Days until expiration (1-365)",
-        },
-      },
-    },
-    metadata: {
-      type: "object",
-      description: "Key-value metadata pairs (max 16)",
-    },
-  },
-};
-
-export const vectorStoresDeleteSchema: PayloadSchema = {
-  method: "DELETE",
-  path: "/vector_stores/{vector_store_id}",
-  contentType: "application/json",
-  fields: {
-    vector_store_id: {
-      type: "string",
-      required: true,
-      description: "The ID of the vector store to delete",
-    },
-  },
-};
-
-export const vectorStoresSearchSchema: PayloadSchema = {
-  method: "POST",
-  path: "/vector_stores/{vector_store_id}/search",
-  contentType: "application/json",
-  fields: {
-    query: {
-      type: "string",
-      required: true,
-      description: "Search query string or array of strings",
-    },
-    rewrite_query: {
-      type: "boolean",
-      description: "Whether to rewrite the query for better results",
-    },
-    max_num_results: {
-      type: "number",
-      description: "Maximum number of results (1-50, default 10)",
-    },
-    filters: {
-      type: "object",
-      description: "Filter by file attributes (comparison or compound filter)",
-    },
-    ranking_options: {
-      type: "object",
-      description: "Ranking configuration",
-      properties: {
-        ranker: {
-          type: "string",
-          enum: ["none", "auto", "default-2024-11-15"],
-        },
-        score_threshold: {
-          type: "number",
-          description: "Minimum score threshold (0-1)",
-        },
-      },
     },
   },
 };
@@ -1305,6 +1177,141 @@ export const evalRunsCreateSchema: PayloadSchema = {
       description: "Key-value pairs for metadata",
     },
     name: { type: "string", description: "Name of the eval run" },
+  },
+};
+
+// --- Vector Stores schemas ---
+
+export const vectorStoresCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/vector_stores",
+  contentType: "application/json",
+  fields: {
+    file_ids: {
+      type: "array",
+      description: "List of file IDs to add (max 500)",
+      items: { type: "string" },
+    },
+    name: { type: "string", description: "Name of the vector store" },
+    description: {
+      type: "string",
+      description: "Description of the vector store",
+    },
+    expires_after: {
+      type: "object",
+      description: "Expiration policy",
+      properties: {
+        anchor: {
+          type: "string",
+          required: true,
+          enum: ["last_active_at"],
+        },
+        days: {
+          type: "number",
+          required: true,
+          description: "Days until expiration (1-365)",
+        },
+      },
+    },
+    chunking_strategy: {
+      type: "object",
+      description: "Chunking strategy for file processing",
+      properties: {
+        type: {
+          type: "string",
+          required: true,
+          enum: ["auto", "static"],
+        },
+      },
+    },
+    metadata: {
+      type: "object",
+      description: "Key-value metadata pairs (max 16)",
+    },
+  },
+};
+
+export const vectorStoresUpdateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/vector_stores/{vector_store_id}",
+  contentType: "application/json",
+  fields: {
+    name: { type: "string", description: "Name of the vector store" },
+    expires_after: {
+      type: "object",
+      description: "Expiration policy",
+      properties: {
+        anchor: {
+          type: "string",
+          required: true,
+          enum: ["last_active_at"],
+        },
+        days: {
+          type: "number",
+          required: true,
+          description: "Days until expiration (1-365)",
+        },
+      },
+    },
+    metadata: {
+      type: "object",
+      description: "Key-value metadata pairs (max 16)",
+    },
+  },
+};
+
+export const vectorStoresDeleteSchema: PayloadSchema = {
+  method: "DELETE",
+  path: "/vector_stores/{vector_store_id}",
+  contentType: "application/json",
+  fields: {
+    vector_store_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the vector store to delete",
+    },
+  },
+};
+
+export const vectorStoresSearchSchema: PayloadSchema = {
+  method: "POST",
+  path: "/vector_stores/{vector_store_id}/search",
+  contentType: "application/json",
+  fields: {
+    query: {
+      type: "string",
+      required: true,
+      description: "Search query string or array of strings",
+    },
+    rewrite_query: {
+      type: "boolean",
+      description: "Whether to rewrite the query for better results",
+    },
+    max_num_results: {
+      type: "number",
+      description: "Maximum number of results (1-50, default 10)",
+    },
+    filters: {
+      type: "object",
+      description: "Filter by file attributes",
+    },
+    ranking_options: {
+      type: "object",
+      description: "Ranking configuration",
+      properties: {
+        ranker: {
+          type: "string",
+          enum: ["none", "auto", "default-2024-11-15"],
+        },
+        score_threshold: {
+          type: "number",
+          description: "Minimum score threshold (0-1)",
+        },
+      },
+    },
+  },
+};
+
 export const vectorStoreFilesCreateSchema: PayloadSchema = {
   method: "POST",
   path: "/vector_stores/{vector_store_id}/files",
@@ -1341,7 +1348,7 @@ export const vectorStoreFilesUpdateSchema: PayloadSchema = {
     attributes: {
       type: "object",
       required: true,
-      description: "File attributes for filtering (max 16 key-value pairs)",
+      description: "File attributes for filtering",
     },
   },
 };
@@ -1422,7 +1429,7 @@ export const vectorStoreFileBatchesCancelSchema: PayloadSchema = {
   },
 };
 
-// Organization: Admin API Keys
+// --- Organization Admin schemas ---
 
 export const adminApiKeysCreateSchema: PayloadSchema = {
   method: "POST",
@@ -1449,8 +1456,6 @@ export const adminApiKeysDeleteSchema: PayloadSchema = {
     },
   },
 };
-
-// Organization: Invites
 
 export const invitesCreateSchema: PayloadSchema = {
   method: "POST",
@@ -1504,8 +1509,6 @@ export const invitesDeleteSchema: PayloadSchema = {
   },
 };
 
-// Organization: Users
-
 export const orgUsersUpdateSchema: PayloadSchema = {
   method: "POST",
   path: "/organization/users/{user_id}",
@@ -1532,8 +1535,6 @@ export const orgUsersDeleteSchema: PayloadSchema = {
     },
   },
 };
-
-// Organization: Projects
 
 export const projectsCreateSchema: PayloadSchema = {
   method: "POST",
@@ -1573,8 +1574,6 @@ export const projectsArchiveSchema: PayloadSchema = {
     },
   },
 };
-
-// Organization: Project Users
 
 export const projectUsersCreateSchema: PayloadSchema = {
   method: "POST",
@@ -1627,8 +1626,6 @@ export const projectUsersDeleteSchema: PayloadSchema = {
   },
 };
 
-// Organization: Project Service Accounts
-
 export const projectServiceAccountsCreateSchema: PayloadSchema = {
   method: "POST",
   path: "/organization/projects/{project_id}/service_accounts",
@@ -1660,8 +1657,6 @@ export const projectServiceAccountsDeleteSchema: PayloadSchema = {
   },
 };
 
-// Organization: Project API Keys
-
 export const projectApiKeysDeleteSchema: PayloadSchema = {
   method: "DELETE",
   path: "/organization/projects/{project_id}/api_keys/{key_id}",
@@ -1679,8 +1674,6 @@ export const projectApiKeysDeleteSchema: PayloadSchema = {
     },
   },
 };
-
-// Organization: Project Rate Limits
 
 export const projectRateLimitsUpdateSchema: PayloadSchema = {
   method: "POST",

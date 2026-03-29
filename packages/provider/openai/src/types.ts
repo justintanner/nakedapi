@@ -1415,238 +1415,6 @@ export interface OpenAiFileDeleteResponse {
   deleted: boolean;
 }
 
-// --- Vector Stores API types ---
-
-// Vector store expiration policy
-export interface OpenAiVectorStoreExpirationAfter {
-  anchor: "last_active_at";
-  days: number;
-}
-
-// Vector store file counts
-export interface OpenAiVectorStoreFileCounts {
-  in_progress: number;
-  completed: number;
-  failed: number;
-  cancelled: number;
-  total: number;
-}
-
-// Vector store object
-export interface OpenAiVectorStore {
-  id: string;
-  object: "vector_store";
-  created_at: number;
-  name: string;
-  usage_bytes: number;
-  file_counts: OpenAiVectorStoreFileCounts;
-  status: "expired" | "in_progress" | "completed";
-  expires_after?: OpenAiVectorStoreExpirationAfter;
-  expires_at?: number | null;
-  last_active_at: number | null;
-  metadata: Record<string, string> | null;
-}
-
-// Static chunking strategy
-export interface OpenAiStaticChunkingStrategy {
-  max_chunk_size_tokens: number;
-  chunk_overlap_tokens: number;
-}
-
-// Chunking strategy for requests
-export type OpenAiChunkingStrategyRequest =
-  | { type: "auto" }
-  | { type: "static"; static: OpenAiStaticChunkingStrategy };
-
-// Chunking strategy in responses
-export type OpenAiChunkingStrategyResponse =
-  | { type: "static"; static: OpenAiStaticChunkingStrategy }
-  | { type: "other" };
-
-// File attributes (string, number, or boolean values)
-export type OpenAiVectorStoreFileAttributes = Record<
-  string,
-  string | number | boolean
-> | null;
-
-// Create vector store request
-export interface OpenAiVectorStoreCreateRequest {
-  file_ids?: string[];
-  name?: string;
-  description?: string;
-  expires_after?: OpenAiVectorStoreExpirationAfter;
-  chunking_strategy?: OpenAiChunkingStrategyRequest;
-  metadata?: Record<string, string> | null;
-}
-
-// Update vector store request
-export interface OpenAiVectorStoreUpdateRequest {
-  name?: string | null;
-  expires_after?: OpenAiVectorStoreExpirationAfter | null;
-  metadata?: Record<string, string> | null;
-}
-
-// List vector stores options
-export interface OpenAiVectorStoreListOptions {
-  limit?: number;
-  order?: "asc" | "desc";
-  after?: string;
-  before?: string;
-}
-
-// List vector stores response
-export interface OpenAiVectorStoreListResponse {
-  object: "list";
-  data: OpenAiVectorStore[];
-  first_id: string;
-  last_id: string;
-  has_more: boolean;
-}
-
-// Delete vector store response
-export interface OpenAiVectorStoreDeleteResponse {
-  id: string;
-  object: "vector_store.deleted";
-  deleted: boolean;
-}
-
-// Search filter types
-export interface OpenAiVectorStoreComparisonFilter {
-  type: "eq" | "ne" | "gt" | "gte" | "lt" | "lte" | "in" | "nin";
-  key: string;
-  value: string | number | boolean | (string | number)[];
-}
-
-export interface OpenAiVectorStoreCompoundFilter {
-  type: "and" | "or";
-  filters: (
-    | OpenAiVectorStoreComparisonFilter
-    | OpenAiVectorStoreCompoundFilter
-  )[];
-}
-
-export type OpenAiVectorStoreSearchFilter =
-  | OpenAiVectorStoreComparisonFilter
-  | OpenAiVectorStoreCompoundFilter;
-
-// Search ranking options
-export interface OpenAiVectorStoreSearchRankingOptions {
-  ranker?: "none" | "auto" | "default-2024-11-15";
-  score_threshold?: number;
-}
-
-// Search vector store request
-export interface OpenAiVectorStoreSearchRequest {
-  query: string | string[];
-  rewrite_query?: boolean;
-  max_num_results?: number;
-  filters?: OpenAiVectorStoreSearchFilter;
-  ranking_options?: OpenAiVectorStoreSearchRankingOptions;
-}
-
-// Search result content
-export interface OpenAiVectorStoreSearchResultContent {
-  type: "text";
-  text: string;
-}
-
-// Search result item
-export interface OpenAiVectorStoreSearchResultItem {
-  file_id: string;
-  filename: string;
-  score: number;
-  attributes: OpenAiVectorStoreFileAttributes;
-  content: OpenAiVectorStoreSearchResultContent[];
-}
-
-// Search response
-export interface OpenAiVectorStoreSearchResponse {
-  object: "vector_store.search_results.page";
-  search_query: string[];
-  data: OpenAiVectorStoreSearchResultItem[];
-  has_more: boolean;
-  next_page: string | null;
-}
-
-// Vector store file object
-export interface OpenAiVectorStoreFile {
-  id: string;
-  object: "vector_store.file";
-  usage_bytes: number;
-  created_at: number;
-  vector_store_id: string;
-  status: "in_progress" | "completed" | "cancelled" | "failed";
-  last_error: {
-    code: "server_error" | "unsupported_file" | "invalid_file";
-    message: string;
-  } | null;
-  chunking_strategy?: OpenAiChunkingStrategyResponse;
-  attributes?: OpenAiVectorStoreFileAttributes;
-}
-
-// Create vector store file request
-export interface OpenAiVectorStoreFileCreateRequest {
-  file_id: string;
-  chunking_strategy?: OpenAiChunkingStrategyRequest;
-  attributes?: OpenAiVectorStoreFileAttributes;
-}
-
-// Update vector store file attributes request
-export interface OpenAiVectorStoreFileUpdateRequest {
-  attributes: OpenAiVectorStoreFileAttributes;
-}
-
-// List vector store files options
-export interface OpenAiVectorStoreFileListOptions {
-  limit?: number;
-  order?: "asc" | "desc";
-  after?: string;
-  before?: string;
-  filter?: "in_progress" | "completed" | "failed" | "cancelled";
-}
-
-// List vector store files response
-export interface OpenAiVectorStoreFileListResponse {
-  object: "list";
-  data: OpenAiVectorStoreFile[];
-  first_id: string;
-  last_id: string;
-  has_more: boolean;
-}
-
-// Delete vector store file response
-export interface OpenAiVectorStoreFileDeleteResponse {
-  id: string;
-  object: "vector_store.file.deleted";
-  deleted: boolean;
-}
-
-// Vector store file content response
-export interface OpenAiVectorStoreFileContentResponse {
-  object: "vector_store.file_content.page";
-  data: { type: string; text: string }[];
-  has_more: boolean;
-  next_page: string | null;
-}
-
-// Vector store file batch object
-export interface OpenAiVectorStoreFileBatch {
-  id: string;
-  object: "vector_store.file_batch";
-  created_at: number;
-  vector_store_id: string;
-  status: "in_progress" | "completed" | "cancelled" | "failed";
-  file_counts: OpenAiVectorStoreFileCounts;
-}
-
-// Create vector store file batch request
-export interface OpenAiVectorStoreFileBatchCreateRequest {
-  file_ids?: string[];
-  files?: OpenAiVectorStoreFileCreateRequest[];
-  chunking_strategy?: OpenAiChunkingStrategyRequest;
-  attributes?: OpenAiVectorStoreFileAttributes;
-}
-
 // Payload schema types
 export interface PayloadFieldSchema {
   type: "string" | "number" | "boolean" | "array" | "object";
@@ -2052,40 +1820,6 @@ interface OpenAiConversationsUpdateMethod {
     req: OpenAiConversationUpdateRequest,
     signal?: AbortSignal
   ): Promise<OpenAiConversation>;
-// Vector stores namespace types
-interface OpenAiVectorStoresCreateMethod {
-  (
-    req: OpenAiVectorStoreCreateRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiVectorStore>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
-  list: OpenAiVectorStoresListMethod;
-  retrieve: OpenAiVectorStoresRetrieveMethod;
-  update: OpenAiVectorStoresUpdateMethod;
-  del: OpenAiVectorStoresDeleteMethod;
-  search: OpenAiVectorStoresSearchMethod;
-  files: OpenAiVectorStoreFilesNamespace;
-  file_batches: OpenAiVectorStoreFileBatchesNamespace;
-}
-
-interface OpenAiVectorStoresListMethod {
-  (
-    opts?: OpenAiVectorStoreListOptions,
-    signal?: AbortSignal
-  ): Promise<OpenAiVectorStoreListResponse>;
-}
-
-interface OpenAiVectorStoresRetrieveMethod {
-  (id: string, signal?: AbortSignal): Promise<OpenAiVectorStore>;
-}
-
-interface OpenAiVectorStoresUpdateMethod {
-  (
-    id: string,
-    req: OpenAiVectorStoreUpdateRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiVectorStore>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
 }
@@ -2100,17 +1834,6 @@ interface OpenAiConversationItemsCreateMethod {
     req: OpenAiConversationItemsCreateRequest,
     signal?: AbortSignal
   ): Promise<OpenAiConversationItemListResponse>;
-interface OpenAiVectorStoresDeleteMethod {
-  (id: string, signal?: AbortSignal): Promise<OpenAiVectorStoreDeleteResponse>;
-  payloadSchema: PayloadSchema;
-}
-
-interface OpenAiVectorStoresSearchMethod {
-  (
-    id: string,
-    req: OpenAiVectorStoreSearchRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiVectorStoreSearchResponse>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
 }
@@ -2153,12 +1876,6 @@ interface OpenAiRealtimeSessionsCreateMethod {
     req: OpenAiRealtimeSessionCreateRequest,
     signal?: AbortSignal
   ): Promise<OpenAiRealtimeSessionCreateResponse>;
-interface OpenAiVectorStoreFilesCreateMethod {
-  (
-    vectorStoreId: string,
-    req: OpenAiVectorStoreFileCreateRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiVectorStoreFile>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
 }
@@ -2168,29 +1885,6 @@ interface OpenAiRealtimeTranscriptionSessionsCreateMethod {
     req?: OpenAiRealtimeTranscriptionSessionCreateRequest,
     signal?: AbortSignal
   ): Promise<OpenAiRealtimeTranscriptionSessionCreateResponse>;
-interface OpenAiVectorStoreFilesListMethod {
-  (
-    vectorStoreId: string,
-    opts?: OpenAiVectorStoreFileListOptions,
-    signal?: AbortSignal
-  ): Promise<OpenAiVectorStoreFileListResponse>;
-}
-
-interface OpenAiVectorStoreFilesRetrieveMethod {
-  (
-    vectorStoreId: string,
-    fileId: string,
-    signal?: AbortSignal
-  ): Promise<OpenAiVectorStoreFile>;
-}
-
-interface OpenAiVectorStoreFilesUpdateMethod {
-  (
-    vectorStoreId: string,
-    fileId: string,
-    req: OpenAiVectorStoreFileUpdateRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiVectorStoreFile>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
 }
@@ -2200,38 +1894,6 @@ interface OpenAiRealtimeClientSecretsCreateMethod {
     req?: OpenAiRealtimeClientSecretCreateRequest,
     signal?: AbortSignal
   ): Promise<OpenAiRealtimeClientSecretCreateResponse>;
-interface OpenAiVectorStoreFilesDeleteMethod {
-  (
-    vectorStoreId: string,
-    fileId: string,
-    signal?: AbortSignal
-  ): Promise<OpenAiVectorStoreFileDeleteResponse>;
-  payloadSchema: PayloadSchema;
-}
-
-interface OpenAiVectorStoreFilesContentMethod {
-  (
-    vectorStoreId: string,
-    fileId: string,
-    signal?: AbortSignal
-  ): Promise<OpenAiVectorStoreFileContentResponse>;
-}
-
-interface OpenAiVectorStoreFilesNamespace {
-  create: OpenAiVectorStoreFilesCreateMethod;
-  list: OpenAiVectorStoreFilesListMethod;
-  retrieve: OpenAiVectorStoreFilesRetrieveMethod;
-  update: OpenAiVectorStoreFilesUpdateMethod;
-  del: OpenAiVectorStoreFilesDeleteMethod;
-  content: OpenAiVectorStoreFilesContentMethod;
-}
-
-interface OpenAiVectorStoreFileBatchesCreateMethod {
-  (
-    vectorStoreId: string,
-    req: OpenAiVectorStoreFileBatchCreateRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiVectorStoreFileBatch>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
 }
@@ -2385,6 +2047,328 @@ interface OpenAiEvalRunsNamespace {
   del: OpenAiEvalRunsDeleteMethod;
   cancel: OpenAiEvalRunsCancelMethod;
   output_items: OpenAiEvalRunOutputItemsNamespace;
+}
+
+// --- Vector Stores API types ---
+
+export interface OpenAiVectorStoreExpirationAfter {
+  anchor: "last_active_at";
+  days: number;
+}
+
+export interface OpenAiVectorStoreFileCounts {
+  in_progress: number;
+  completed: number;
+  failed: number;
+  cancelled: number;
+  total: number;
+}
+
+export interface OpenAiVectorStore {
+  id: string;
+  object: "vector_store";
+  created_at: number;
+  name: string;
+  usage_bytes: number;
+  file_counts: OpenAiVectorStoreFileCounts;
+  status: "expired" | "in_progress" | "completed";
+  expires_after?: OpenAiVectorStoreExpirationAfter;
+  expires_at?: number | null;
+  last_active_at: number | null;
+  metadata: Record<string, string> | null;
+}
+
+export interface OpenAiStaticChunkingStrategy {
+  max_chunk_size_tokens: number;
+  chunk_overlap_tokens: number;
+}
+
+export type OpenAiChunkingStrategyRequest =
+  | { type: "auto" }
+  | { type: "static"; static: OpenAiStaticChunkingStrategy };
+
+export type OpenAiChunkingStrategyResponse =
+  | { type: "static"; static: OpenAiStaticChunkingStrategy }
+  | { type: "other" };
+
+export type OpenAiVectorStoreFileAttributes = Record<
+  string,
+  string | number | boolean
+> | null;
+
+export interface OpenAiVectorStoreCreateRequest {
+  file_ids?: string[];
+  name?: string;
+  description?: string;
+  expires_after?: OpenAiVectorStoreExpirationAfter;
+  chunking_strategy?: OpenAiChunkingStrategyRequest;
+  metadata?: Record<string, string> | null;
+}
+
+export interface OpenAiVectorStoreUpdateRequest {
+  name?: string | null;
+  expires_after?: OpenAiVectorStoreExpirationAfter | null;
+  metadata?: Record<string, string> | null;
+}
+
+export interface OpenAiVectorStoreListOptions {
+  limit?: number;
+  order?: "asc" | "desc";
+  after?: string;
+  before?: string;
+}
+
+export interface OpenAiVectorStoreListResponse {
+  object: "list";
+  data: OpenAiVectorStore[];
+  first_id: string;
+  last_id: string;
+  has_more: boolean;
+}
+
+export interface OpenAiVectorStoreDeleteResponse {
+  id: string;
+  object: "vector_store.deleted";
+  deleted: boolean;
+}
+
+export interface OpenAiVectorStoreComparisonFilter {
+  type: "eq" | "ne" | "gt" | "gte" | "lt" | "lte" | "in" | "nin";
+  key: string;
+  value: string | number | boolean | (string | number)[];
+}
+
+export interface OpenAiVectorStoreCompoundFilter {
+  type: "and" | "or";
+  filters: (
+    | OpenAiVectorStoreComparisonFilter
+    | OpenAiVectorStoreCompoundFilter
+  )[];
+}
+
+export type OpenAiVectorStoreSearchFilter =
+  | OpenAiVectorStoreComparisonFilter
+  | OpenAiVectorStoreCompoundFilter;
+
+export interface OpenAiVectorStoreSearchRankingOptions {
+  ranker?: "none" | "auto" | "default-2024-11-15";
+  score_threshold?: number;
+}
+
+export interface OpenAiVectorStoreSearchRequest {
+  query: string | string[];
+  rewrite_query?: boolean;
+  max_num_results?: number;
+  filters?: OpenAiVectorStoreSearchFilter;
+  ranking_options?: OpenAiVectorStoreSearchRankingOptions;
+}
+
+export interface OpenAiVectorStoreSearchResultContent {
+  type: "text";
+  text: string;
+}
+
+export interface OpenAiVectorStoreSearchResultItem {
+  file_id: string;
+  filename: string;
+  score: number;
+  attributes: OpenAiVectorStoreFileAttributes;
+  content: OpenAiVectorStoreSearchResultContent[];
+}
+
+export interface OpenAiVectorStoreSearchResponse {
+  object: "vector_store.search_results.page";
+  search_query: string[];
+  data: OpenAiVectorStoreSearchResultItem[];
+  has_more: boolean;
+  next_page: string | null;
+}
+
+export interface OpenAiVectorStoreFile {
+  id: string;
+  object: "vector_store.file";
+  usage_bytes: number;
+  created_at: number;
+  vector_store_id: string;
+  status: "in_progress" | "completed" | "cancelled" | "failed";
+  last_error: {
+    code: "server_error" | "unsupported_file" | "invalid_file";
+    message: string;
+  } | null;
+  chunking_strategy?: OpenAiChunkingStrategyResponse;
+  attributes?: OpenAiVectorStoreFileAttributes;
+}
+
+export interface OpenAiVectorStoreFileCreateRequest {
+  file_id: string;
+  chunking_strategy?: OpenAiChunkingStrategyRequest;
+  attributes?: OpenAiVectorStoreFileAttributes;
+}
+
+export interface OpenAiVectorStoreFileUpdateRequest {
+  attributes: OpenAiVectorStoreFileAttributes;
+}
+
+export interface OpenAiVectorStoreFileListOptions {
+  limit?: number;
+  order?: "asc" | "desc";
+  after?: string;
+  before?: string;
+  filter?: "in_progress" | "completed" | "failed" | "cancelled";
+}
+
+export interface OpenAiVectorStoreFileListResponse {
+  object: "list";
+  data: OpenAiVectorStoreFile[];
+  first_id: string;
+  last_id: string;
+  has_more: boolean;
+}
+
+export interface OpenAiVectorStoreFileDeleteResponse {
+  id: string;
+  object: "vector_store.file.deleted";
+  deleted: boolean;
+}
+
+export interface OpenAiVectorStoreFileContentResponse {
+  bytes: string;
+  content: string;
+}
+
+export interface OpenAiVectorStoreFileBatch {
+  id: string;
+  object: "vector_store.files_batch";
+  created_at: number;
+  vector_store_id: string;
+  status: "in_progress" | "completed" | "cancelled" | "failed";
+  file_counts: OpenAiVectorStoreFileCounts;
+}
+
+export interface OpenAiVectorStoreFileBatchCreateRequest {
+  file_ids?: string[];
+  files?: {
+    file_id: string;
+    chunking_strategy?: OpenAiChunkingStrategyRequest;
+    attributes?: OpenAiVectorStoreFileAttributes;
+  }[];
+  chunking_strategy?: OpenAiChunkingStrategyRequest;
+  attributes?: OpenAiVectorStoreFileAttributes;
+}
+
+interface OpenAiVectorStoresCreateMethod {
+  (
+    req: OpenAiVectorStoreCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiVectorStore>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  list: OpenAiVectorStoresListMethod;
+  retrieve: OpenAiVectorStoresRetrieveMethod;
+  update: OpenAiVectorStoresUpdateMethod;
+  del: OpenAiVectorStoresDeleteMethod;
+  search: OpenAiVectorStoresSearchMethod;
+  files: OpenAiVectorStoreFilesNamespace;
+  file_batches: OpenAiVectorStoreFileBatchesNamespace;
+}
+
+interface OpenAiVectorStoresListMethod {
+  (
+    opts?: OpenAiVectorStoreListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiVectorStoreListResponse>;
+}
+
+interface OpenAiVectorStoresRetrieveMethod {
+  (id: string, signal?: AbortSignal): Promise<OpenAiVectorStore>;
+}
+
+interface OpenAiVectorStoresUpdateMethod {
+  (
+    id: string,
+    req: OpenAiVectorStoreUpdateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiVectorStore>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiVectorStoresDeleteMethod {
+  (id: string, signal?: AbortSignal): Promise<OpenAiVectorStoreDeleteResponse>;
+  payloadSchema: PayloadSchema;
+}
+
+interface OpenAiVectorStoresSearchMethod {
+  (
+    id: string,
+    req: OpenAiVectorStoreSearchRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiVectorStoreSearchResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiVectorStoreFilesCreateMethod {
+  (
+    vectorStoreId: string,
+    req: OpenAiVectorStoreFileCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiVectorStoreFile>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiVectorStoreFilesUpdateMethod {
+  (
+    vectorStoreId: string,
+    fileId: string,
+    req: OpenAiVectorStoreFileUpdateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiVectorStoreFile>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiVectorStoreFilesDeleteMethod {
+  (
+    vectorStoreId: string,
+    fileId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiVectorStoreFileDeleteResponse>;
+  payloadSchema: PayloadSchema;
+}
+
+interface OpenAiVectorStoreFilesNamespace {
+  create: OpenAiVectorStoreFilesCreateMethod;
+  list(
+    vectorStoreId: string,
+    opts?: OpenAiVectorStoreFileListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiVectorStoreFileListResponse>;
+  retrieve(
+    vectorStoreId: string,
+    fileId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiVectorStoreFile>;
+  update: OpenAiVectorStoreFilesUpdateMethod;
+  del: OpenAiVectorStoreFilesDeleteMethod;
+  content(
+    vectorStoreId: string,
+    fileId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiVectorStoreFileContentResponse>;
+}
+
+interface OpenAiVectorStoreFileBatchesCreateMethod {
+  (
+    vectorStoreId: string,
+    req: OpenAiVectorStoreFileBatchCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiVectorStoreFileBatch>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
 interface OpenAiVectorStoreFileBatchesRetrieveMethod {
   (
     vectorStoreId: string,
@@ -2467,7 +2451,12 @@ export interface OpenAiAdminApiKeyDeleteResponse {
 export interface OpenAiAuditLogActor {
   type: string;
   session?: { user?: { id: string; email: string }; ip_address?: string };
-  api_key?: { id: string; type: string; user?: { id: string; email: string }; service_account?: { id: string } };
+  api_key?: {
+    id: string;
+    type: string;
+    user?: { id: string; email: string };
+    service_account?: { id: string };
+  };
 }
 
 export interface OpenAiAuditLog {
@@ -2555,13 +2544,7 @@ export interface OpenAiUsageCompletionsOptions {
   api_key_ids?: string[];
   models?: string[];
   batch?: boolean;
-  group_by?: (
-    | "project_id"
-    | "user_id"
-    | "api_key_id"
-    | "model"
-    | "batch"
-  )[];
+  group_by?: ("project_id" | "user_id" | "api_key_id" | "model" | "batch")[];
   limit?: number;
   page?: string;
 }
@@ -2596,18 +2579,8 @@ export interface OpenAiUsageImagesOptions {
   start_time: number;
   end_time?: number;
   bucket_width?: "1m" | "1h" | "1d";
-  sources?: (
-    | "image.generation"
-    | "image.edit"
-    | "image.variation"
-  )[];
-  sizes?: (
-    | "256x256"
-    | "512x512"
-    | "1024x1024"
-    | "1792x1792"
-    | "1024x1792"
-  )[];
+  sources?: ("image.generation" | "image.edit" | "image.variation")[];
+  sizes?: ("256x256" | "512x512" | "1024x1024" | "1792x1792" | "1024x1792")[];
   project_ids?: string[];
   user_ids?: string[];
   api_key_ids?: string[];
@@ -2944,8 +2917,6 @@ export interface OpenAiProjectRateLimitListResponse {
   has_more: boolean;
 }
 
-// Organization: Method interfaces
-
 interface OpenAiAdminApiKeysCreateMethod {
   (
     req: OpenAiAdminApiKeyCreateRequest,
@@ -2970,7 +2941,10 @@ interface OpenAiAdminApiKeysRetrieveMethod {
 }
 
 interface OpenAiAdminApiKeysDeleteMethod {
-  (keyId: string, signal?: AbortSignal): Promise<OpenAiAdminApiKeyDeleteResponse>;
+  (
+    keyId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiAdminApiKeyDeleteResponse>;
   payloadSchema: PayloadSchema;
 }
 
@@ -3060,10 +3034,7 @@ interface OpenAiOrgUsageNamespace {
 }
 
 interface OpenAiInvitesCreateMethod {
-  (
-    req: OpenAiInviteCreateRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiInvite>;
+  (req: OpenAiInviteCreateRequest, signal?: AbortSignal): Promise<OpenAiInvite>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
   list: OpenAiInvitesListMethod;
@@ -3087,6 +3058,17 @@ interface OpenAiInvitesDeleteMethod {
   payloadSchema: PayloadSchema;
 }
 
+interface OpenAiOrgUsersListMethod {
+  (
+    opts?: OpenAiOrgUserListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiOrgUserListResponse>;
+}
+
+interface OpenAiOrgUsersRetrieveMethod {
+  (userId: string, signal?: AbortSignal): Promise<OpenAiOrgUser>;
+}
+
 interface OpenAiOrgUsersUpdateMethod {
   (
     userId: string,
@@ -3107,17 +3089,6 @@ interface OpenAiOrgUsersNamespace {
   retrieve: OpenAiOrgUsersRetrieveMethod;
   update: OpenAiOrgUsersUpdateMethod;
   del: OpenAiOrgUsersDeleteMethod;
-}
-
-interface OpenAiOrgUsersListMethod {
-  (
-    opts?: OpenAiOrgUserListOptions,
-    signal?: AbortSignal
-  ): Promise<OpenAiOrgUserListResponse>;
-}
-
-interface OpenAiOrgUsersRetrieveMethod {
-  (userId: string, signal?: AbortSignal): Promise<OpenAiOrgUser>;
 }
 
 interface OpenAiProjectsCreateMethod {

@@ -1366,14 +1366,6 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
           return await makeRequest<OpenAiConversation>(
             "/conversations",
             jsonRequest(req ?? {}),
-      vector_stores: Object.assign(
-        async function vector_stores(
-          req: OpenAiVectorStoreCreateRequest,
-          signal?: AbortSignal
-        ): Promise<OpenAiVectorStore> {
-          return await makeRequest<OpenAiVectorStore>(
-            "/vector_stores",
-            jsonRequest(req),
             signal
           );
         },
@@ -1381,25 +1373,6 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
           payloadSchema: conversationsCreateSchema,
           validatePayload(data: unknown): ValidationResult {
             return validatePayload(data, conversationsCreateSchema);
-          payloadSchema: vectorStoresCreateSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, vectorStoresCreateSchema);
-          },
-          list: async function list(
-            listOpts?: OpenAiVectorStoreListOptions,
-            signal?: AbortSignal
-          ): Promise<OpenAiVectorStoreListResponse> {
-            const query: Record<string, string | undefined> = {};
-            if (listOpts?.limit !== undefined)
-              query.limit = String(listOpts.limit);
-            if (listOpts?.order) query.order = listOpts.order;
-            if (listOpts?.after) query.after = listOpts.after;
-            if (listOpts?.before) query.before = listOpts.before;
-            return await makeGetRequest<OpenAiVectorStoreListResponse>(
-              "/vector_stores",
-              query,
-              signal
-            );
           },
           retrieve: async function retrieve(
             id: string,
@@ -1407,9 +1380,6 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
           ): Promise<OpenAiConversation> {
             return await makeGetRequest<OpenAiConversation>(
               `/conversations/${encodeURIComponent(id)}`,
-          ): Promise<OpenAiVectorStore> {
-            return await makeGetRequest<OpenAiVectorStore>(
-              `/vector_stores/${encodeURIComponent(id)}`,
               undefined,
               signal
             );
@@ -1422,11 +1392,6 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             ): Promise<OpenAiConversation> {
               return await makeRequest<OpenAiConversation>(
                 `/conversations/${encodeURIComponent(id)}`,
-              req: OpenAiVectorStoreUpdateRequest,
-              signal?: AbortSignal
-            ): Promise<OpenAiVectorStore> {
-              return await makeRequest<OpenAiVectorStore>(
-                `/vector_stores/${encodeURIComponent(id)}`,
                 jsonRequest(req),
                 signal
               );
@@ -1456,54 +1421,6 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
               ): Promise<OpenAiConversationItemListResponse> {
                 return await makeRequest<OpenAiConversationItemListResponse>(
                   `/conversations/${encodeURIComponent(conversationId)}/items`,
-              payloadSchema: vectorStoresUpdateSchema,
-              validatePayload(data: unknown): ValidationResult {
-                return validatePayload(data, vectorStoresUpdateSchema);
-              },
-            }
-          ),
-          del: Object.assign(
-            async function del(
-              id: string,
-              signal?: AbortSignal
-            ): Promise<OpenAiVectorStoreDeleteResponse> {
-              return await makeDeleteRequest<OpenAiVectorStoreDeleteResponse>(
-                `/vector_stores/${encodeURIComponent(id)}`,
-                signal
-              );
-            },
-            {
-              payloadSchema: vectorStoresDeleteSchema,
-            }
-          ),
-          search: Object.assign(
-            async function search(
-              id: string,
-              req: OpenAiVectorStoreSearchRequest,
-              signal?: AbortSignal
-            ): Promise<OpenAiVectorStoreSearchResponse> {
-              return await makeRequest<OpenAiVectorStoreSearchResponse>(
-                `/vector_stores/${encodeURIComponent(id)}/search`,
-                jsonRequest(req),
-                signal
-              );
-            },
-            {
-              payloadSchema: vectorStoresSearchSchema,
-              validatePayload(data: unknown): ValidationResult {
-                return validatePayload(data, vectorStoresSearchSchema);
-              },
-            }
-          ),
-          files: {
-            create: Object.assign(
-              async function create(
-                vectorStoreId: string,
-                req: OpenAiVectorStoreFileCreateRequest,
-                signal?: AbortSignal
-              ): Promise<OpenAiVectorStoreFile> {
-                return await makeRequest<OpenAiVectorStoreFile>(
-                  `/vector_stores/${encodeURIComponent(vectorStoreId)}/files`,
                   jsonRequest(req),
                   signal
                 );
@@ -1541,26 +1458,6 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
               if (opts?.include) query.include = opts.include;
               return await makeGetRequest<OpenAiConversationItemListResponse>(
                 `/conversations/${encodeURIComponent(conversationId)}/items`,
-                payloadSchema: vectorStoreFilesCreateSchema,
-                validatePayload(data: unknown): ValidationResult {
-                  return validatePayload(data, vectorStoreFilesCreateSchema);
-                },
-              }
-            ),
-            list: async function list(
-              vectorStoreId: string,
-              listOpts?: OpenAiVectorStoreFileListOptions,
-              signal?: AbortSignal
-            ): Promise<OpenAiVectorStoreFileListResponse> {
-              const query: Record<string, string | undefined> = {};
-              if (listOpts?.limit !== undefined)
-                query.limit = String(listOpts.limit);
-              if (listOpts?.order) query.order = listOpts.order;
-              if (listOpts?.after) query.after = listOpts.after;
-              if (listOpts?.before) query.before = listOpts.before;
-              if (listOpts?.filter) query.filter = listOpts.filter;
-              return await makeGetRequest<OpenAiVectorStoreFileListResponse>(
-                `/vector_stores/${encodeURIComponent(vectorStoreId)}/files`,
                 query,
                 signal
               );
@@ -1801,13 +1698,6 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             ): Promise<OpenAiEvalRun> {
               return await makeGetRequest<OpenAiEvalRun>(
                 `/evals/${encodeURIComponent(evalId)}/runs/${encodeURIComponent(runId)}`,
-            retrieve: async function retrieve(
-              vectorStoreId: string,
-              fileId: string,
-              signal?: AbortSignal
-            ): Promise<OpenAiVectorStoreFile> {
-              return await makeGetRequest<OpenAiVectorStoreFile>(
-                `/vector_stores/${encodeURIComponent(vectorStoreId)}/files/${encodeURIComponent(fileId)}`,
                 undefined,
                 signal
               );
@@ -1824,117 +1714,6 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
               if (opts?.status) query.status = opts.status;
               return await makeGetRequest<OpenAiEvalRunListResponse>(
                 `/evals/${encodeURIComponent(evalId)}/runs`,
-            update: Object.assign(
-              async function update(
-                vectorStoreId: string,
-                fileId: string,
-                req: OpenAiVectorStoreFileUpdateRequest,
-                signal?: AbortSignal
-              ): Promise<OpenAiVectorStoreFile> {
-                return await makeRequest<OpenAiVectorStoreFile>(
-                  `/vector_stores/${encodeURIComponent(vectorStoreId)}/files/${encodeURIComponent(fileId)}`,
-                  jsonRequest(req),
-                  signal
-                );
-              },
-              {
-                payloadSchema: vectorStoreFilesUpdateSchema,
-                validatePayload(data: unknown): ValidationResult {
-                  return validatePayload(data, vectorStoreFilesUpdateSchema);
-                },
-              }
-            ),
-            del: Object.assign(
-              async function del(
-                vectorStoreId: string,
-                fileId: string,
-                signal?: AbortSignal
-              ): Promise<OpenAiVectorStoreFileDeleteResponse> {
-                return await makeDeleteRequest<OpenAiVectorStoreFileDeleteResponse>(
-                  `/vector_stores/${encodeURIComponent(vectorStoreId)}/files/${encodeURIComponent(fileId)}`,
-                  signal
-                );
-              },
-              {
-                payloadSchema: vectorStoreFilesDeleteSchema,
-              }
-            ),
-            content: async function content(
-              vectorStoreId: string,
-              fileId: string,
-              signal?: AbortSignal
-            ): Promise<OpenAiVectorStoreFileContentResponse> {
-              return await makeGetRequest<OpenAiVectorStoreFileContentResponse>(
-                `/vector_stores/${encodeURIComponent(vectorStoreId)}/files/${encodeURIComponent(fileId)}/content`,
-                undefined,
-                signal
-              );
-            },
-          },
-          file_batches: {
-            create: Object.assign(
-              async function create(
-                vectorStoreId: string,
-                req: OpenAiVectorStoreFileBatchCreateRequest,
-                signal?: AbortSignal
-              ): Promise<OpenAiVectorStoreFileBatch> {
-                return await makeRequest<OpenAiVectorStoreFileBatch>(
-                  `/vector_stores/${encodeURIComponent(vectorStoreId)}/file_batches`,
-                  jsonRequest(req),
-                  signal
-                );
-              },
-              {
-                payloadSchema: vectorStoreFileBatchesCreateSchema,
-                validatePayload(data: unknown): ValidationResult {
-                  return validatePayload(
-                    data,
-                    vectorStoreFileBatchesCreateSchema
-                  );
-                },
-              }
-            ),
-            retrieve: async function retrieve(
-              vectorStoreId: string,
-              batchId: string,
-              signal?: AbortSignal
-            ): Promise<OpenAiVectorStoreFileBatch> {
-              return await makeGetRequest<OpenAiVectorStoreFileBatch>(
-                `/vector_stores/${encodeURIComponent(vectorStoreId)}/file_batches/${encodeURIComponent(batchId)}`,
-                undefined,
-                signal
-              );
-            },
-            cancel: Object.assign(
-              async function cancel(
-                vectorStoreId: string,
-                batchId: string,
-                signal?: AbortSignal
-              ): Promise<OpenAiVectorStoreFileBatch> {
-                return await makeEmptyPostRequest<OpenAiVectorStoreFileBatch>(
-                  `/vector_stores/${encodeURIComponent(vectorStoreId)}/file_batches/${encodeURIComponent(batchId)}/cancel`,
-                  signal
-                );
-              },
-              {
-                payloadSchema: vectorStoreFileBatchesCancelSchema,
-              }
-            ),
-            files: async function files(
-              vectorStoreId: string,
-              batchId: string,
-              listOpts?: OpenAiVectorStoreFileListOptions,
-              signal?: AbortSignal
-            ): Promise<OpenAiVectorStoreFileListResponse> {
-              const query: Record<string, string | undefined> = {};
-              if (listOpts?.limit !== undefined)
-                query.limit = String(listOpts.limit);
-              if (listOpts?.order) query.order = listOpts.order;
-              if (listOpts?.after) query.after = listOpts.after;
-              if (listOpts?.before) query.before = listOpts.before;
-              if (listOpts?.filter) query.filter = listOpts.filter;
-              return await makeGetRequest<OpenAiVectorStoreFileListResponse>(
-                `/vector_stores/${encodeURIComponent(vectorStoreId)}/file_batches/${encodeURIComponent(batchId)}/files`,
                 query,
                 signal
               );
@@ -1994,6 +1773,262 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
         }
       ),
 
+      vector_stores: Object.assign(
+        async function vector_stores(
+          req: OpenAiVectorStoreCreateRequest,
+          signal?: AbortSignal
+        ): Promise<OpenAiVectorStore> {
+          return await makeRequest<OpenAiVectorStore>(
+            "/vector_stores",
+            jsonRequest(req),
+            signal
+          );
+        },
+        {
+          payloadSchema: vectorStoresCreateSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, vectorStoresCreateSchema);
+          },
+          list: async function list(
+            listOpts?: OpenAiVectorStoreListOptions,
+            signal?: AbortSignal
+          ): Promise<OpenAiVectorStoreListResponse> {
+            const query: Record<string, string | undefined> = {};
+            if (listOpts?.limit !== undefined)
+              query.limit = String(listOpts.limit);
+            if (listOpts?.order) query.order = listOpts.order;
+            if (listOpts?.after) query.after = listOpts.after;
+            if (listOpts?.before) query.before = listOpts.before;
+            return await makeGetRequest<OpenAiVectorStoreListResponse>(
+              "/vector_stores",
+              query,
+              signal
+            );
+          },
+          retrieve: async function retrieve(
+            id: string,
+            signal?: AbortSignal
+          ): Promise<OpenAiVectorStore> {
+            return await makeGetRequest<OpenAiVectorStore>(
+              `/vector_stores/${encodeURIComponent(id)}`,
+              undefined,
+              signal
+            );
+          },
+          update: Object.assign(
+            async function update(
+              id: string,
+              req: OpenAiVectorStoreUpdateRequest,
+              signal?: AbortSignal
+            ): Promise<OpenAiVectorStore> {
+              return await makeRequest<OpenAiVectorStore>(
+                `/vector_stores/${encodeURIComponent(id)}`,
+                jsonRequest(req),
+                signal
+              );
+            },
+            {
+              payloadSchema: vectorStoresUpdateSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, vectorStoresUpdateSchema);
+              },
+            }
+          ),
+          del: Object.assign(
+            async function del(
+              id: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiVectorStoreDeleteResponse> {
+              return await makeDeleteRequest<OpenAiVectorStoreDeleteResponse>(
+                `/vector_stores/${encodeURIComponent(id)}`,
+                signal
+              );
+            },
+            { payloadSchema: vectorStoresDeleteSchema }
+          ),
+          search: Object.assign(
+            async function search(
+              id: string,
+              req: OpenAiVectorStoreSearchRequest,
+              signal?: AbortSignal
+            ): Promise<OpenAiVectorStoreSearchResponse> {
+              return await makeRequest<OpenAiVectorStoreSearchResponse>(
+                `/vector_stores/${encodeURIComponent(id)}/search`,
+                jsonRequest(req),
+                signal
+              );
+            },
+            {
+              payloadSchema: vectorStoresSearchSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, vectorStoresSearchSchema);
+              },
+            }
+          ),
+          files: {
+            create: Object.assign(
+              async function create(
+                vectorStoreId: string,
+                req: OpenAiVectorStoreFileCreateRequest,
+                signal?: AbortSignal
+              ): Promise<OpenAiVectorStoreFile> {
+                return await makeRequest<OpenAiVectorStoreFile>(
+                  `/vector_stores/${encodeURIComponent(vectorStoreId)}/files`,
+                  jsonRequest(req),
+                  signal
+                );
+              },
+              {
+                payloadSchema: vectorStoreFilesCreateSchema,
+                validatePayload(data: unknown): ValidationResult {
+                  return validatePayload(data, vectorStoreFilesCreateSchema);
+                },
+              }
+            ),
+            list: async function list(
+              vectorStoreId: string,
+              listOpts?: OpenAiVectorStoreFileListOptions,
+              signal?: AbortSignal
+            ): Promise<OpenAiVectorStoreFileListResponse> {
+              const query: Record<string, string | undefined> = {};
+              if (listOpts?.limit !== undefined)
+                query.limit = String(listOpts.limit);
+              if (listOpts?.order) query.order = listOpts.order;
+              if (listOpts?.after) query.after = listOpts.after;
+              if (listOpts?.before) query.before = listOpts.before;
+              if (listOpts?.filter) query.filter = listOpts.filter;
+              return await makeGetRequest<OpenAiVectorStoreFileListResponse>(
+                `/vector_stores/${encodeURIComponent(vectorStoreId)}/files`,
+                query,
+                signal
+              );
+            },
+            retrieve: async function retrieve(
+              vectorStoreId: string,
+              fileId: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiVectorStoreFile> {
+              return await makeGetRequest<OpenAiVectorStoreFile>(
+                `/vector_stores/${encodeURIComponent(vectorStoreId)}/files/${encodeURIComponent(fileId)}`,
+                undefined,
+                signal
+              );
+            },
+            update: Object.assign(
+              async function update(
+                vectorStoreId: string,
+                fileId: string,
+                req: OpenAiVectorStoreFileUpdateRequest,
+                signal?: AbortSignal
+              ): Promise<OpenAiVectorStoreFile> {
+                return await makeRequest<OpenAiVectorStoreFile>(
+                  `/vector_stores/${encodeURIComponent(vectorStoreId)}/files/${encodeURIComponent(fileId)}`,
+                  jsonRequest(req),
+                  signal
+                );
+              },
+              {
+                payloadSchema: vectorStoreFilesUpdateSchema,
+                validatePayload(data: unknown): ValidationResult {
+                  return validatePayload(data, vectorStoreFilesUpdateSchema);
+                },
+              }
+            ),
+            del: Object.assign(
+              async function del(
+                vectorStoreId: string,
+                fileId: string,
+                signal?: AbortSignal
+              ): Promise<OpenAiVectorStoreFileDeleteResponse> {
+                return await makeDeleteRequest<OpenAiVectorStoreFileDeleteResponse>(
+                  `/vector_stores/${encodeURIComponent(vectorStoreId)}/files/${encodeURIComponent(fileId)}`,
+                  signal
+                );
+              },
+              { payloadSchema: vectorStoreFilesDeleteSchema }
+            ),
+            content: async function content(
+              vectorStoreId: string,
+              fileId: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiVectorStoreFileContentResponse> {
+              return await makeGetRequest<OpenAiVectorStoreFileContentResponse>(
+                `/vector_stores/${encodeURIComponent(vectorStoreId)}/files/${encodeURIComponent(fileId)}/content`,
+                undefined,
+                signal
+              );
+            },
+          },
+          file_batches: {
+            create: Object.assign(
+              async function create(
+                vectorStoreId: string,
+                req: OpenAiVectorStoreFileBatchCreateRequest,
+                signal?: AbortSignal
+              ): Promise<OpenAiVectorStoreFileBatch> {
+                return await makeRequest<OpenAiVectorStoreFileBatch>(
+                  `/vector_stores/${encodeURIComponent(vectorStoreId)}/file_batches`,
+                  jsonRequest(req),
+                  signal
+                );
+              },
+              {
+                payloadSchema: vectorStoreFileBatchesCreateSchema,
+                validatePayload(data: unknown): ValidationResult {
+                  return validatePayload(
+                    data,
+                    vectorStoreFileBatchesCreateSchema
+                  );
+                },
+              }
+            ),
+            retrieve: async function retrieve(
+              vectorStoreId: string,
+              batchId: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiVectorStoreFileBatch> {
+              return await makeGetRequest<OpenAiVectorStoreFileBatch>(
+                `/vector_stores/${encodeURIComponent(vectorStoreId)}/file_batches/${encodeURIComponent(batchId)}`,
+                undefined,
+                signal
+              );
+            },
+            cancel: Object.assign(
+              async function cancel(
+                vectorStoreId: string,
+                batchId: string,
+                signal?: AbortSignal
+              ): Promise<OpenAiVectorStoreFileBatch> {
+                return await makeEmptyPostRequest<OpenAiVectorStoreFileBatch>(
+                  `/vector_stores/${encodeURIComponent(vectorStoreId)}/file_batches/${encodeURIComponent(batchId)}/cancel`,
+                  signal
+                );
+              },
+              { payloadSchema: vectorStoreFileBatchesCancelSchema }
+            ),
+            files: async function files(
+              vectorStoreId: string,
+              batchId: string,
+              listOpts?: OpenAiVectorStoreFileListOptions,
+              signal?: AbortSignal
+            ): Promise<OpenAiVectorStoreFileListResponse> {
+              const query: Record<string, string | undefined> = {};
+              if (listOpts?.limit !== undefined)
+                query.limit = String(listOpts.limit);
+              if (listOpts?.order) query.order = listOpts.order;
+              if (listOpts?.after) query.after = listOpts.after;
+              if (listOpts?.before) query.before = listOpts.before;
+              if (listOpts?.filter) query.filter = listOpts.filter;
+              return await makeGetRequest<OpenAiVectorStoreFileListResponse>(
+                `/vector_stores/${encodeURIComponent(vectorStoreId)}/file_batches/${encodeURIComponent(batchId)}/files`,
+                query,
+                signal
+              );
+            },
+          },
+        }
+      ),
+
       organization: {
         admin_api_keys: Object.assign(
           async function admin_api_keys(
@@ -2018,8 +2053,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
               const query: Record<string, string | undefined> = {};
               if (opts?.after) query.after = opts.after;
               if (opts?.order) query.order = opts.order;
-              if (opts?.limit !== undefined)
-                query.limit = String(opts.limit);
+              if (opts?.limit !== undefined) query.limit = String(opts.limit);
               return await makeGetRequest<OpenAiAdminApiKeyListResponse>(
                 "/organization/admin_api_keys",
                 query,
@@ -2056,38 +2090,24 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             opts?: OpenAiAuditLogListOptions,
             signal?: AbortSignal
           ): Promise<OpenAiAuditLogListResponse> {
-            const query: Record<
-              string,
-              string | string[] | undefined
-            > = {};
-            if (opts?.limit !== undefined)
-              query.limit = String(opts.limit);
+            const query: Record<string, string | string[] | undefined> = {};
+            if (opts?.limit !== undefined) query.limit = String(opts.limit);
             if (opts?.after) query.after = opts.after;
             if (opts?.before) query.before = opts.before;
             if (opts?.project_ids) query.project_ids = opts.project_ids;
             if (opts?.event_types) query.event_types = opts.event_types;
             if (opts?.actor_ids) query.actor_ids = opts.actor_ids;
-            if (opts?.actor_emails)
-              query.actor_emails = opts.actor_emails;
-            if (opts?.resource_ids)
-              query.resource_ids = opts.resource_ids;
+            if (opts?.actor_emails) query.actor_emails = opts.actor_emails;
+            if (opts?.resource_ids) query.resource_ids = opts.resource_ids;
             if (opts?.effective_at) {
               if (opts.effective_at.gt !== undefined)
-                query["effective_at[gt]"] = String(
-                  opts.effective_at.gt
-                );
+                query["effective_at[gt]"] = String(opts.effective_at.gt);
               if (opts.effective_at.gte !== undefined)
-                query["effective_at[gte]"] = String(
-                  opts.effective_at.gte
-                );
+                query["effective_at[gte]"] = String(opts.effective_at.gte);
               if (opts.effective_at.lt !== undefined)
-                query["effective_at[lt]"] = String(
-                  opts.effective_at.lt
-                );
+                query["effective_at[lt]"] = String(opts.effective_at.lt);
               if (opts.effective_at.lte !== undefined)
-                query["effective_at[lte]"] = String(
-                  opts.effective_at.lte
-                );
+                query["effective_at[lte]"] = String(opts.effective_at.lte);
             }
             return await makeGetRequest<OpenAiAuditLogListResponse>(
               "/organization/audit_logs",
@@ -2101,18 +2121,14 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
           opts: OpenAiCostsOptions,
           signal?: AbortSignal
         ): Promise<OpenAiUsageResponse> {
-          const query: Record<
-            string,
-            string | string[] | undefined
-          > = {};
+          const query: Record<string, string | string[] | undefined> = {};
           query.start_time = String(opts.start_time);
           if (opts.end_time !== undefined)
             query.end_time = String(opts.end_time);
           if (opts.bucket_width) query.bucket_width = opts.bucket_width;
           if (opts.project_ids) query.project_ids = opts.project_ids;
           if (opts.group_by) query.group_by = opts.group_by;
-          if (opts.limit !== undefined)
-            query.limit = String(opts.limit);
+          if (opts.limit !== undefined) query.limit = String(opts.limit);
           if (opts.page) query.page = opts.page;
           return await makeGetRequest<OpenAiUsageResponse>(
             "/organization/costs",
@@ -2133,18 +2149,14 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             query.start_time = String(opts.start_time);
             if (opts.end_time !== undefined)
               query.end_time = String(opts.end_time);
-            if (opts.bucket_width)
-              query.bucket_width = opts.bucket_width;
-            if (opts.project_ids)
-              query.project_ids = opts.project_ids;
+            if (opts.bucket_width) query.bucket_width = opts.bucket_width;
+            if (opts.project_ids) query.project_ids = opts.project_ids;
             if (opts.user_ids) query.user_ids = opts.user_ids;
-            if (opts.api_key_ids)
-              query.api_key_ids = opts.api_key_ids;
+            if (opts.api_key_ids) query.api_key_ids = opts.api_key_ids;
             if (opts.models) query.models = opts.models;
             if (opts.batch !== undefined) query.batch = opts.batch;
             if (opts.group_by) query.group_by = opts.group_by;
-            if (opts.limit !== undefined)
-              query.limit = String(opts.limit);
+            if (opts.limit !== undefined) query.limit = String(opts.limit);
             if (opts.page) query.page = opts.page;
             return await makeGetRequest<OpenAiUsageResponse>(
               "/organization/usage/completions",
@@ -2156,24 +2168,17 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             opts: OpenAiUsageEmbeddingsOptions,
             signal?: AbortSignal
           ): Promise<OpenAiUsageResponse> {
-            const query: Record<
-              string,
-              string | string[] | undefined
-            > = {};
+            const query: Record<string, string | string[] | undefined> = {};
             query.start_time = String(opts.start_time);
             if (opts.end_time !== undefined)
               query.end_time = String(opts.end_time);
-            if (opts.bucket_width)
-              query.bucket_width = opts.bucket_width;
-            if (opts.project_ids)
-              query.project_ids = opts.project_ids;
+            if (opts.bucket_width) query.bucket_width = opts.bucket_width;
+            if (opts.project_ids) query.project_ids = opts.project_ids;
             if (opts.user_ids) query.user_ids = opts.user_ids;
-            if (opts.api_key_ids)
-              query.api_key_ids = opts.api_key_ids;
+            if (opts.api_key_ids) query.api_key_ids = opts.api_key_ids;
             if (opts.models) query.models = opts.models;
             if (opts.group_by) query.group_by = opts.group_by;
-            if (opts.limit !== undefined)
-              query.limit = String(opts.limit);
+            if (opts.limit !== undefined) query.limit = String(opts.limit);
             if (opts.page) query.page = opts.page;
             return await makeGetRequest<OpenAiUsageResponse>(
               "/organization/usage/embeddings",
@@ -2185,24 +2190,17 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             opts: OpenAiUsageModerationsOptions,
             signal?: AbortSignal
           ): Promise<OpenAiUsageResponse> {
-            const query: Record<
-              string,
-              string | string[] | undefined
-            > = {};
+            const query: Record<string, string | string[] | undefined> = {};
             query.start_time = String(opts.start_time);
             if (opts.end_time !== undefined)
               query.end_time = String(opts.end_time);
-            if (opts.bucket_width)
-              query.bucket_width = opts.bucket_width;
-            if (opts.project_ids)
-              query.project_ids = opts.project_ids;
+            if (opts.bucket_width) query.bucket_width = opts.bucket_width;
+            if (opts.project_ids) query.project_ids = opts.project_ids;
             if (opts.user_ids) query.user_ids = opts.user_ids;
-            if (opts.api_key_ids)
-              query.api_key_ids = opts.api_key_ids;
+            if (opts.api_key_ids) query.api_key_ids = opts.api_key_ids;
             if (opts.models) query.models = opts.models;
             if (opts.group_by) query.group_by = opts.group_by;
-            if (opts.limit !== undefined)
-              query.limit = String(opts.limit);
+            if (opts.limit !== undefined) query.limit = String(opts.limit);
             if (opts.page) query.page = opts.page;
             return await makeGetRequest<OpenAiUsageResponse>(
               "/organization/usage/moderations",
@@ -2214,26 +2212,19 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             opts: OpenAiUsageImagesOptions,
             signal?: AbortSignal
           ): Promise<OpenAiUsageResponse> {
-            const query: Record<
-              string,
-              string | string[] | undefined
-            > = {};
+            const query: Record<string, string | string[] | undefined> = {};
             query.start_time = String(opts.start_time);
             if (opts.end_time !== undefined)
               query.end_time = String(opts.end_time);
-            if (opts.bucket_width)
-              query.bucket_width = opts.bucket_width;
+            if (opts.bucket_width) query.bucket_width = opts.bucket_width;
             if (opts.sources) query.sources = opts.sources;
             if (opts.sizes) query.sizes = opts.sizes;
-            if (opts.project_ids)
-              query.project_ids = opts.project_ids;
+            if (opts.project_ids) query.project_ids = opts.project_ids;
             if (opts.user_ids) query.user_ids = opts.user_ids;
-            if (opts.api_key_ids)
-              query.api_key_ids = opts.api_key_ids;
+            if (opts.api_key_ids) query.api_key_ids = opts.api_key_ids;
             if (opts.models) query.models = opts.models;
             if (opts.group_by) query.group_by = opts.group_by;
-            if (opts.limit !== undefined)
-              query.limit = String(opts.limit);
+            if (opts.limit !== undefined) query.limit = String(opts.limit);
             if (opts.page) query.page = opts.page;
             return await makeGetRequest<OpenAiUsageResponse>(
               "/organization/usage/images",
@@ -2245,24 +2236,17 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             opts: OpenAiUsageAudioSpeechesOptions,
             signal?: AbortSignal
           ): Promise<OpenAiUsageResponse> {
-            const query: Record<
-              string,
-              string | string[] | undefined
-            > = {};
+            const query: Record<string, string | string[] | undefined> = {};
             query.start_time = String(opts.start_time);
             if (opts.end_time !== undefined)
               query.end_time = String(opts.end_time);
-            if (opts.bucket_width)
-              query.bucket_width = opts.bucket_width;
-            if (opts.project_ids)
-              query.project_ids = opts.project_ids;
+            if (opts.bucket_width) query.bucket_width = opts.bucket_width;
+            if (opts.project_ids) query.project_ids = opts.project_ids;
             if (opts.user_ids) query.user_ids = opts.user_ids;
-            if (opts.api_key_ids)
-              query.api_key_ids = opts.api_key_ids;
+            if (opts.api_key_ids) query.api_key_ids = opts.api_key_ids;
             if (opts.models) query.models = opts.models;
             if (opts.group_by) query.group_by = opts.group_by;
-            if (opts.limit !== undefined)
-              query.limit = String(opts.limit);
+            if (opts.limit !== undefined) query.limit = String(opts.limit);
             if (opts.page) query.page = opts.page;
             return await makeGetRequest<OpenAiUsageResponse>(
               "/organization/usage/audio_speeches",
@@ -2274,24 +2258,17 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             opts: OpenAiUsageAudioTranscriptionsOptions,
             signal?: AbortSignal
           ): Promise<OpenAiUsageResponse> {
-            const query: Record<
-              string,
-              string | string[] | undefined
-            > = {};
+            const query: Record<string, string | string[] | undefined> = {};
             query.start_time = String(opts.start_time);
             if (opts.end_time !== undefined)
               query.end_time = String(opts.end_time);
-            if (opts.bucket_width)
-              query.bucket_width = opts.bucket_width;
-            if (opts.project_ids)
-              query.project_ids = opts.project_ids;
+            if (opts.bucket_width) query.bucket_width = opts.bucket_width;
+            if (opts.project_ids) query.project_ids = opts.project_ids;
             if (opts.user_ids) query.user_ids = opts.user_ids;
-            if (opts.api_key_ids)
-              query.api_key_ids = opts.api_key_ids;
+            if (opts.api_key_ids) query.api_key_ids = opts.api_key_ids;
             if (opts.models) query.models = opts.models;
             if (opts.group_by) query.group_by = opts.group_by;
-            if (opts.limit !== undefined)
-              query.limit = String(opts.limit);
+            if (opts.limit !== undefined) query.limit = String(opts.limit);
             if (opts.page) query.page = opts.page;
             return await makeGetRequest<OpenAiUsageResponse>(
               "/organization/usage/audio_transcriptions",
@@ -2303,20 +2280,14 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             opts: OpenAiUsageVectorStoresOptions,
             signal?: AbortSignal
           ): Promise<OpenAiUsageResponse> {
-            const query: Record<
-              string,
-              string | string[] | undefined
-            > = {};
+            const query: Record<string, string | string[] | undefined> = {};
             query.start_time = String(opts.start_time);
             if (opts.end_time !== undefined)
               query.end_time = String(opts.end_time);
-            if (opts.bucket_width)
-              query.bucket_width = opts.bucket_width;
-            if (opts.project_ids)
-              query.project_ids = opts.project_ids;
+            if (opts.bucket_width) query.bucket_width = opts.bucket_width;
+            if (opts.project_ids) query.project_ids = opts.project_ids;
             if (opts.group_by) query.group_by = opts.group_by;
-            if (opts.limit !== undefined)
-              query.limit = String(opts.limit);
+            if (opts.limit !== undefined) query.limit = String(opts.limit);
             if (opts.page) query.page = opts.page;
             return await makeGetRequest<OpenAiUsageResponse>(
               "/organization/usage/vector_stores",
@@ -2324,32 +2295,25 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
               signal
             );
           },
-          code_interpreter_sessions:
-            async function code_interpreter_sessions(
-              opts: OpenAiUsageCodeInterpreterSessionsOptions,
-              signal?: AbortSignal
-            ): Promise<OpenAiUsageResponse> {
-              const query: Record<
-                string,
-                string | string[] | undefined
-              > = {};
-              query.start_time = String(opts.start_time);
-              if (opts.end_time !== undefined)
-                query.end_time = String(opts.end_time);
-              if (opts.bucket_width)
-                query.bucket_width = opts.bucket_width;
-              if (opts.project_ids)
-                query.project_ids = opts.project_ids;
-              if (opts.group_by) query.group_by = opts.group_by;
-              if (opts.limit !== undefined)
-                query.limit = String(opts.limit);
-              if (opts.page) query.page = opts.page;
-              return await makeGetRequest<OpenAiUsageResponse>(
-                "/organization/usage/code_interpreter_sessions",
-                query,
-                signal
-              );
-            },
+          code_interpreter_sessions: async function code_interpreter_sessions(
+            opts: OpenAiUsageCodeInterpreterSessionsOptions,
+            signal?: AbortSignal
+          ): Promise<OpenAiUsageResponse> {
+            const query: Record<string, string | string[] | undefined> = {};
+            query.start_time = String(opts.start_time);
+            if (opts.end_time !== undefined)
+              query.end_time = String(opts.end_time);
+            if (opts.bucket_width) query.bucket_width = opts.bucket_width;
+            if (opts.project_ids) query.project_ids = opts.project_ids;
+            if (opts.group_by) query.group_by = opts.group_by;
+            if (opts.limit !== undefined) query.limit = String(opts.limit);
+            if (opts.page) query.page = opts.page;
+            return await makeGetRequest<OpenAiUsageResponse>(
+              "/organization/usage/code_interpreter_sessions",
+              query,
+              signal
+            );
+          },
         },
 
         invites: Object.assign(
@@ -2373,8 +2337,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
               signal?: AbortSignal
             ): Promise<OpenAiInviteListResponse> {
               const query: Record<string, string | undefined> = {};
-              if (opts?.limit !== undefined)
-                query.limit = String(opts.limit);
+              if (opts?.limit !== undefined) query.limit = String(opts.limit);
               if (opts?.after) query.after = opts.after;
               return await makeGetRequest<OpenAiInviteListResponse>(
                 "/organization/invites",
@@ -2412,12 +2375,8 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             opts?: OpenAiOrgUserListOptions,
             signal?: AbortSignal
           ): Promise<OpenAiOrgUserListResponse> {
-            const query: Record<
-              string,
-              string | string[] | undefined
-            > = {};
-            if (opts?.limit !== undefined)
-              query.limit = String(opts.limit);
+            const query: Record<string, string | string[] | undefined> = {};
+            if (opts?.limit !== undefined) query.limit = String(opts.limit);
             if (opts?.after) query.after = opts.after;
             if (opts?.emails) query.emails = opts.emails;
             return await makeGetRequest<OpenAiOrgUserListResponse>(
@@ -2489,12 +2448,8 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
               opts?: OpenAiProjectListOptions,
               signal?: AbortSignal
             ): Promise<OpenAiProjectListResponse> {
-              const query: Record<
-                string,
-                string | boolean | undefined
-              > = {};
-              if (opts?.limit !== undefined)
-                query.limit = String(opts.limit);
+              const query: Record<string, string | boolean | undefined> = {};
+              if (opts?.limit !== undefined) query.limit = String(opts.limit);
               if (opts?.after) query.after = opts.after;
               if (opts?.include_archived !== undefined)
                 query.include_archived = opts.include_archived;
@@ -2529,10 +2484,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
               {
                 payloadSchema: projectsUpdateSchema,
                 validatePayload(data: unknown): ValidationResult {
-                  return validatePayload(
-                    data,
-                    projectsUpdateSchema
-                  );
+                  return validatePayload(data, projectsUpdateSchema);
                 },
               }
             ),
@@ -2548,7 +2500,6 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
               },
               { payloadSchema: projectsArchiveSchema }
             ),
-
             users: {
               create: Object.assign(
                 async function create(
@@ -2565,10 +2516,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
                 {
                   payloadSchema: projectUsersCreateSchema,
                   validatePayload(data: unknown): ValidationResult {
-                    return validatePayload(
-                      data,
-                      projectUsersCreateSchema
-                    );
+                    return validatePayload(data, projectUsersCreateSchema);
                   },
                 }
               ),
@@ -2577,12 +2525,8 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
                 opts?: OpenAiProjectUserListOptions,
                 signal?: AbortSignal
               ): Promise<OpenAiProjectUserListResponse> {
-                const query: Record<
-                  string,
-                  string | undefined
-                > = {};
-                if (opts?.limit !== undefined)
-                  query.limit = String(opts.limit);
+                const query: Record<string, string | undefined> = {};
+                if (opts?.limit !== undefined) query.limit = String(opts.limit);
                 if (opts?.after) query.after = opts.after;
                 return await makeGetRequest<OpenAiProjectUserListResponse>(
                   `/organization/projects/${encodeURIComponent(projectId)}/users`,
@@ -2616,13 +2560,8 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
                 },
                 {
                   payloadSchema: projectUsersUpdateSchema,
-                  validatePayload(
-                    data: unknown
-                  ): ValidationResult {
-                    return validatePayload(
-                      data,
-                      projectUsersUpdateSchema
-                    );
+                  validatePayload(data: unknown): ValidationResult {
+                    return validatePayload(data, projectUsersUpdateSchema);
                   },
                 }
               ),
@@ -2640,7 +2579,6 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
                 { payloadSchema: projectUsersDeleteSchema }
               ),
             },
-
             service_accounts: {
               create: Object.assign(
                 async function create(
@@ -2655,11 +2593,8 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
                   );
                 },
                 {
-                  payloadSchema:
-                    projectServiceAccountsCreateSchema,
-                  validatePayload(
-                    data: unknown
-                  ): ValidationResult {
+                  payloadSchema: projectServiceAccountsCreateSchema,
+                  validatePayload(data: unknown): ValidationResult {
                     return validatePayload(
                       data,
                       projectServiceAccountsCreateSchema
@@ -2672,12 +2607,8 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
                 opts?: OpenAiProjectServiceAccountListOptions,
                 signal?: AbortSignal
               ): Promise<OpenAiProjectServiceAccountListResponse> {
-                const query: Record<
-                  string,
-                  string | undefined
-                > = {};
-                if (opts?.limit !== undefined)
-                  query.limit = String(opts.limit);
+                const query: Record<string, string | undefined> = {};
+                if (opts?.limit !== undefined) query.limit = String(opts.limit);
                 if (opts?.after) query.after = opts.after;
                 return await makeGetRequest<OpenAiProjectServiceAccountListResponse>(
                   `/organization/projects/${encodeURIComponent(projectId)}/service_accounts`,
@@ -2708,24 +2639,18 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
                   );
                 },
                 {
-                  payloadSchema:
-                    projectServiceAccountsDeleteSchema,
+                  payloadSchema: projectServiceAccountsDeleteSchema,
                 }
               ),
             },
-
             api_keys: {
               list: async function list(
                 projectId: string,
                 opts?: OpenAiProjectApiKeyListOptions,
                 signal?: AbortSignal
               ): Promise<OpenAiProjectApiKeyListResponse> {
-                const query: Record<
-                  string,
-                  string | undefined
-                > = {};
-                if (opts?.limit !== undefined)
-                  query.limit = String(opts.limit);
+                const query: Record<string, string | undefined> = {};
+                if (opts?.limit !== undefined) query.limit = String(opts.limit);
                 if (opts?.after) query.after = opts.after;
                 return await makeGetRequest<OpenAiProjectApiKeyListResponse>(
                   `/organization/projects/${encodeURIComponent(projectId)}/api_keys`,
@@ -2758,19 +2683,14 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
                 { payloadSchema: projectApiKeysDeleteSchema }
               ),
             },
-
             rate_limits: {
               list: async function list(
                 projectId: string,
                 opts?: OpenAiProjectRateLimitListOptions,
                 signal?: AbortSignal
               ): Promise<OpenAiProjectRateLimitListResponse> {
-                const query: Record<
-                  string,
-                  string | undefined
-                > = {};
-                if (opts?.limit !== undefined)
-                  query.limit = String(opts.limit);
+                const query: Record<string, string | undefined> = {};
+                if (opts?.limit !== undefined) query.limit = String(opts.limit);
                 if (opts?.after) query.after = opts.after;
                 if (opts?.before) query.before = opts.before;
                 return await makeGetRequest<OpenAiProjectRateLimitListResponse>(
@@ -2794,13 +2714,8 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
                 },
                 {
                   payloadSchema: projectRateLimitsUpdateSchema,
-                  validatePayload(
-                    data: unknown
-                  ): ValidationResult {
-                    return validatePayload(
-                      data,
-                      projectRateLimitsUpdateSchema
-                    );
+                  validatePayload(data: unknown): ValidationResult {
+                    return validatePayload(data, projectRateLimitsUpdateSchema);
                   },
                 }
               ),

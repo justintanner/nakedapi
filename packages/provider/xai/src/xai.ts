@@ -46,6 +46,8 @@ import {
   XaiResponseDeleteResponse,
   XaiRealtimeClientSecretRequest,
   XaiRealtimeClientSecretResponse,
+  XaiTokenizeTextRequest,
+  XaiTokenizeTextResponse,
   XaiRealtimeConnectOptions,
   XaiRealtimeConnection,
   XaiRealtimeClientEvent,
@@ -69,6 +71,7 @@ import {
   collectionUpdateSchema,
   documentAddSchema,
   documentSearchSchema,
+  tokenizeTextSchema,
   realtimeClientSecretsSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
@@ -1015,6 +1018,25 @@ export function xai(opts: XaiOptions): XaiProvider {
         imageGenerationModels as XaiProvider["v1"]["image-generation-models"],
       "video-generation-models":
         videoGenerationModels as XaiProvider["v1"]["video-generation-models"],
+      "tokenize-text": Object.assign(
+        async function tokenizeText(
+          req: XaiTokenizeTextRequest,
+          signal?: AbortSignal
+        ): Promise<XaiTokenizeTextResponse> {
+          return await makeRequest<XaiTokenizeTextResponse>(
+            "POST",
+            "/tokenize-text",
+            req,
+            signal
+          );
+        },
+        {
+          payloadSchema: tokenizeTextSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, tokenizeTextSchema);
+          },
+        }
+      ),
       realtime,
     },
   };

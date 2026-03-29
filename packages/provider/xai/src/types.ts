@@ -783,6 +783,27 @@ export interface XaiResponseDeleteResponse {
   deleted: boolean;
 }
 
+// Tokenize text types
+
+// POST /v1/tokenize-text request
+export interface XaiTokenizeTextRequest {
+  model: string;
+  text: string;
+  user?: string | null;
+}
+
+// Single token in tokenize-text response
+export interface XaiToken {
+  token_id: number;
+  string_token: string;
+  token_bytes: number[];
+}
+
+// POST /v1/tokenize-text response
+export interface XaiTokenizeTextResponse {
+  token_ids: XaiToken[];
+}
+
 // Realtime API types
 
 // POST /v1/realtime/client_secrets request
@@ -1358,6 +1379,15 @@ interface XaiResponsesMethod {
   del: XaiResponsesDeleteMethod;
 }
 
+interface XaiTokenizeTextMethod {
+  (
+    req: XaiTokenizeTextRequest,
+    signal?: AbortSignal
+  ): Promise<XaiTokenizeTextResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
 interface XaiRealtimeClientSecretsMethod {
   (
     req: XaiRealtimeClientSecretRequest,
@@ -1385,6 +1415,7 @@ interface XaiV1Namespace {
   "language-models": XaiLanguageModelsNamespace;
   "image-generation-models": XaiImageGenerationModelsNamespace;
   "video-generation-models": XaiVideoGenerationModelsNamespace;
+  "tokenize-text": XaiTokenizeTextMethod;
   realtime: XaiRealtimeNamespace;
 }
 

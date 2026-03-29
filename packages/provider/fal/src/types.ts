@@ -247,6 +247,33 @@ export interface FalAnalyticsResponse {
   summary?: FalAnalyticsRecord[];
 }
 
+// ==================== Billing Events ====================
+
+// Billing events parameters
+export interface FalBillingEventsParams extends FalPaginatedParams {
+  endpoint_id?: string | string[];
+  start?: string;
+  end?: string;
+}
+
+// Billing event record
+export interface FalBillingEvent {
+  request_id: string;
+  endpoint_id: string;
+  timestamp: string;
+  output_units: number;
+  unit_price: number;
+  percent_discount: number;
+  cost_estimate_nano_usd: number;
+}
+
+// Billing events response
+export interface FalBillingEventsResponse {
+  billing_events: FalBillingEvent[];
+  next_cursor: string | null;
+  has_more: boolean;
+}
+
 // ==================== Requests ====================
 
 // Requests parameters
@@ -256,6 +283,18 @@ export interface FalRequestsParams extends FalPaginatedParams {
   end?: string;
   status?: "success" | "error" | "user_error";
   request_id?: string;
+  expand?: string[];
+  sort_by?: "ended_at" | "duration";
+}
+
+// Requests search parameters (broader search, endpoint_id optional)
+export interface FalRequestsSearchParams extends FalPaginatedParams {
+  endpoint_id?: string | string[];
+  start?: string;
+  end?: string;
+  status?: "success" | "error" | "user_error";
+  request_id?: string;
+  q?: string;
   expand?: string[];
   sort_by?: "ended_at" | "duration";
 }
@@ -278,6 +317,13 @@ export interface FalRequestsResponse {
   next_cursor: string | null;
   has_more: boolean;
   items: FalRequestItem[];
+}
+
+// Requests search response (uses "results" instead of "items")
+export interface FalRequestsSearchResponse {
+  next_cursor: string | null;
+  has_more: boolean;
+  results: FalRequestItem[];
 }
 
 // ==================== Delete Payloads ====================
@@ -703,6 +749,10 @@ interface FalModelsRequestsNamespace {
     params: FalRequestsParams,
     signal?: AbortSignal
   ): Promise<FalRequestsResponse>;
+  search(
+    params?: FalRequestsSearchParams,
+    signal?: AbortSignal
+  ): Promise<FalRequestsSearchResponse>;
   payloads: FalDeletePayloadsMethod;
 }
 
@@ -720,6 +770,10 @@ interface FalModelsNamespace {
     params: FalAnalyticsParams,
     signal?: AbortSignal
   ): Promise<FalAnalyticsResponse>;
+  "billing-events"(
+    params?: FalBillingEventsParams,
+    signal?: AbortSignal
+  ): Promise<FalBillingEventsResponse>;
   requests: FalModelsRequestsNamespace;
 }
 

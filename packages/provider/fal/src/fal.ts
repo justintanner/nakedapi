@@ -13,8 +13,12 @@ import {
   FalUsageResponse,
   FalAnalyticsParams,
   FalAnalyticsResponse,
+  FalBillingEventsParams,
+  FalBillingEventsResponse,
   FalRequestsParams,
   FalRequestsResponse,
+  FalRequestsSearchParams,
+  FalRequestsSearchResponse,
   FalDeletePayloadsParams,
   FalDeletePayloadsResponse,
   FalQueueSubmitParams,
@@ -549,6 +553,18 @@ export function fal(opts: FalOptions): FalProvider {
       );
     },
 
+    async search(
+      params?: FalRequestsSearchParams,
+      signal?: AbortSignal
+    ): Promise<FalRequestsSearchResponse> {
+      return makeRequest<FalRequestsSearchResponse>(
+        "GET",
+        "/models/requests/search",
+        params as unknown as Record<string, unknown>,
+        signal
+      );
+    },
+
     payloads: Object.assign(
       async function payloads(
         params: FalDeletePayloadsParams,
@@ -609,6 +625,18 @@ export function fal(opts: FalOptions): FalProvider {
         return makeRequest<FalAnalyticsResponse>(
           "GET",
           "/models/analytics",
+          params as unknown as Record<string, unknown>,
+          signal
+        );
+      },
+
+      async "billing-events"(
+        params?: FalBillingEventsParams,
+        signal?: AbortSignal
+      ): Promise<FalBillingEventsResponse> {
+        return makeRequest<FalBillingEventsResponse>(
+          "GET",
+          "/models/billing-events",
           params as unknown as Record<string, unknown>,
           signal
         );

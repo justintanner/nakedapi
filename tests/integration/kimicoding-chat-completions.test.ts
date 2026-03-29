@@ -45,7 +45,12 @@ describe("kimicoding chat completions (OpenAI format)", () => {
       events.push(event);
     }
     expect(events.length).toBeGreaterThan(0);
-    expect(events.some((e) => e.choices?.[0]?.delta?.content !== undefined ||
-      e.choices?.[0]?.finish_reason !== null)).toBe(true);
+    expect(
+      events.some(
+        (e) =>
+          e.choices?.[0]?.delta?.content !== undefined ||
+          e.choices?.[0]?.finish_reason !== null
+      )
+    ).toBe(true);
   });
 });

@@ -32,15 +32,14 @@ describe("kie gpt4o-image integration", () => {
     const pollIntervalMs = ctx.mode === "record" ? 5000 : 0;
     let info: Awaited<
       ReturnType<
-        typeof provider.gpt4oImage.api.v1["gpt4o-image"]["record-info"]
+        (typeof provider.gpt4oImage.api.v1)["gpt4o-image"]["record-info"]
       >
     >;
 
     // Poll record-info until success or fail
     while (Date.now() < deadline) {
-      info = await provider.gpt4oImage.api.v1["gpt4o-image"][
-        "record-info"
-      ](taskId);
+      info =
+        await provider.gpt4oImage.api.v1["gpt4o-image"]["record-info"](taskId);
 
       if (info.data) {
         if (
@@ -65,13 +64,10 @@ describe("kie gpt4o-image integration", () => {
 
   it("should validate generate payload schema", () => {
     const provider = kie({ apiKey: "test-key" });
-    const method =
-      provider.gpt4oImage.api.v1["gpt4o-image"].generate;
+    const method = provider.gpt4oImage.api.v1["gpt4o-image"].generate;
 
     expect(method.payloadSchema.method).toBe("POST");
-    expect(method.payloadSchema.path).toBe(
-      "/api/v1/gpt4o-image/generate"
-    );
+    expect(method.payloadSchema.path).toBe("/api/v1/gpt4o-image/generate");
     expect(method.payloadSchema.fields.size.required).toBe(true);
 
     const result = method.validatePayload({ size: "1:1" });
@@ -80,13 +76,10 @@ describe("kie gpt4o-image integration", () => {
 
   it("should validate download-url payload schema", () => {
     const provider = kie({ apiKey: "test-key" });
-    const method =
-      provider.gpt4oImage.api.v1["gpt4o-image"]["download-url"];
+    const method = provider.gpt4oImage.api.v1["gpt4o-image"]["download-url"];
 
     expect(method.payloadSchema.method).toBe("POST");
-    expect(method.payloadSchema.path).toBe(
-      "/api/v1/gpt4o-image/download-url"
-    );
+    expect(method.payloadSchema.path).toBe("/api/v1/gpt4o-image/download-url");
     expect(method.payloadSchema.fields.taskId.required).toBe(true);
     expect(method.payloadSchema.fields.url.required).toBe(true);
 

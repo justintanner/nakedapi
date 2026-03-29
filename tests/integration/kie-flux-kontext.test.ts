@@ -20,12 +20,11 @@ describe("kie flux-kontext integration", () => {
     });
 
     // Submit image generation
-    const task =
-      await provider.fluxKontext.api.v1.flux.kontext.generate({
-        prompt: "A futuristic cityscape at night with neon lights",
-        model: "flux-kontext-pro",
-        aspectRatio: "16:9",
-      });
+    const task = await provider.fluxKontext.api.v1.flux.kontext.generate({
+      prompt: "A futuristic cityscape at night with neon lights",
+      model: "flux-kontext-pro",
+      aspectRatio: "16:9",
+    });
     expect(task.code).toBe(200);
     expect(task.data?.taskId).toBeTruthy();
 
@@ -34,16 +33,14 @@ describe("kie flux-kontext integration", () => {
     const pollIntervalMs = ctx.mode === "record" ? 5000 : 0;
     let info: Awaited<
       ReturnType<
-        typeof provider.fluxKontext.api.v1.flux.kontext["record-info"]
+        (typeof provider.fluxKontext.api.v1.flux.kontext)["record-info"]
       >
     >;
 
     // Poll record-info until complete
     while (Date.now() < deadline) {
       info =
-        await provider.fluxKontext.api.v1.flux.kontext[
-          "record-info"
-        ](taskId);
+        await provider.fluxKontext.api.v1.flux.kontext["record-info"](taskId);
 
       if (info.data) {
         // successFlag: 0=GENERATING, 1=SUCCESS, 2=CREATE_TASK_FAILED, 3=GENERATE_FAILED
@@ -66,13 +63,10 @@ describe("kie flux-kontext integration", () => {
 
   it("should validate generate payload schema", () => {
     const provider = kie({ apiKey: "test-key" });
-    const method =
-      provider.fluxKontext.api.v1.flux.kontext.generate;
+    const method = provider.fluxKontext.api.v1.flux.kontext.generate;
 
     expect(method.payloadSchema.method).toBe("POST");
-    expect(method.payloadSchema.path).toBe(
-      "/api/v1/flux/kontext/generate"
-    );
+    expect(method.payloadSchema.path).toBe("/api/v1/flux/kontext/generate");
     expect(method.payloadSchema.fields.prompt.required).toBe(true);
 
     const result = method.validatePayload({

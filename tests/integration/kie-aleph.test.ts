@@ -2,10 +2,6 @@ import { describe, it, expect, afterEach } from "vitest";
 import { setupPolly, teardownPolly, type PollyContext } from "../harness";
 import { kie } from "@nakedapi/kie";
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 describe("kie aleph integration", () => {
   let ctx: PollyContext;
 
@@ -22,8 +18,7 @@ describe("kie aleph integration", () => {
     // Submit video-to-video transformation
     const task = await provider.aleph.api.v1.aleph.generate({
       prompt: "Transform into an anime art style",
-      videoUrl:
-        "https://static.aiquickdraw.com/tools/example/sample-video.mp4",
+      videoUrl: "https://static.aiquickdraw.com/tools/example/sample-video.mp4",
       aspectRatio: "16:9",
     });
 
@@ -40,9 +35,7 @@ describe("kie aleph integration", () => {
     const method = provider.aleph.api.v1.aleph.generate;
 
     expect(method.payloadSchema.method).toBe("POST");
-    expect(method.payloadSchema.path).toBe(
-      "/api/v1/aleph/generate"
-    );
+    expect(method.payloadSchema.path).toBe("/api/v1/aleph/generate");
     expect(method.payloadSchema.fields.prompt.required).toBe(true);
     expect(method.payloadSchema.fields.videoUrl.required).toBe(true);
 

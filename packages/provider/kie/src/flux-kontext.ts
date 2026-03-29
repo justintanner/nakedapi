@@ -13,13 +13,7 @@ export interface FluxKontextGenerateRequest {
   prompt: string;
   inputImage?: string;
   model?: FluxKontextModel;
-  aspectRatio?:
-    | "21:9"
-    | "16:9"
-    | "4:3"
-    | "1:1"
-    | "3:4"
-    | "9:16";
+  aspectRatio?: "21:9" | "16:9" | "4:3" | "1:1" | "3:4" | "9:16";
   outputFormat?: "jpeg" | "png";
   promptUpsampling?: boolean;
   safetyTolerance?: number;
@@ -47,8 +41,7 @@ export interface FluxKontextRecordInfoData {
   };
 }
 
-export type FluxKontextRecordInfo =
-  KieApiEnvelope<FluxKontextRecordInfoData>;
+export type FluxKontextRecordInfo = KieApiEnvelope<FluxKontextRecordInfoData>;
 
 // ---------------------------------------------------------------------------
 // Namespace types
@@ -108,9 +101,7 @@ export function createFluxKontextProvider(
     );
   }
 
-  async function recordInfo(
-    taskId: string
-  ): Promise<FluxKontextRecordInfo> {
+  async function recordInfo(taskId: string): Promise<FluxKontextRecordInfo> {
     return kieRequest<FluxKontextRecordInfo>(
       `${baseURL}/api/v1/flux/kontext/record-info?taskId=${encodeURIComponent(taskId)}`,
       { method: "GET", ...requestOpts }

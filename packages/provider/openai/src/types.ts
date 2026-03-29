@@ -1089,6 +1089,8 @@ interface OpenAiModerationsMethod {
   ): Promise<OpenAiModerationResponse>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
+}
+
 // Fine-tuning namespace types
 interface OpenAiFineTuningJobsCreateMethod {
   (

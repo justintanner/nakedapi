@@ -105,6 +105,58 @@ import {
   OpenAiVectorStoreFileContentResponse,
   OpenAiVectorStoreFileBatchCreateRequest,
   OpenAiVectorStoreFileBatch,
+  OpenAiAdminApiKeyCreateRequest,
+  OpenAiAdminApiKey,
+  OpenAiAdminApiKeyListOptions,
+  OpenAiAdminApiKeyListResponse,
+  OpenAiAdminApiKeyDeleteResponse,
+  OpenAiAuditLogListOptions,
+  OpenAiAuditLogListResponse,
+  OpenAiCostsOptions,
+  OpenAiUsageResponse,
+  OpenAiUsageCompletionsOptions,
+  OpenAiUsageEmbeddingsOptions,
+  OpenAiUsageModerationsOptions,
+  OpenAiUsageImagesOptions,
+  OpenAiUsageAudioSpeechesOptions,
+  OpenAiUsageAudioTranscriptionsOptions,
+  OpenAiUsageVectorStoresOptions,
+  OpenAiUsageCodeInterpreterSessionsOptions,
+  OpenAiInviteCreateRequest,
+  OpenAiInvite,
+  OpenAiInviteListOptions,
+  OpenAiInviteListResponse,
+  OpenAiInviteDeleteResponse,
+  OpenAiOrgUserUpdateRequest,
+  OpenAiOrgUser,
+  OpenAiOrgUserListOptions,
+  OpenAiOrgUserListResponse,
+  OpenAiOrgUserDeleteResponse,
+  OpenAiProjectCreateRequest,
+  OpenAiProject,
+  OpenAiProjectListOptions,
+  OpenAiProjectListResponse,
+  OpenAiProjectUpdateRequest,
+  OpenAiProjectUserCreateRequest,
+  OpenAiProjectUser,
+  OpenAiProjectUserListOptions,
+  OpenAiProjectUserListResponse,
+  OpenAiProjectUserUpdateRequest,
+  OpenAiProjectUserDeleteResponse,
+  OpenAiProjectServiceAccountCreateRequest,
+  OpenAiProjectServiceAccountCreateResponse,
+  OpenAiProjectServiceAccount,
+  OpenAiProjectServiceAccountListOptions,
+  OpenAiProjectServiceAccountListResponse,
+  OpenAiProjectServiceAccountDeleteResponse,
+  OpenAiProjectApiKey,
+  OpenAiProjectApiKeyListOptions,
+  OpenAiProjectApiKeyListResponse,
+  OpenAiProjectApiKeyDeleteResponse,
+  OpenAiProjectRateLimit,
+  OpenAiProjectRateLimitUpdateRequest,
+  OpenAiProjectRateLimitListOptions,
+  OpenAiProjectRateLimitListResponse,
   OpenAiProvider,
   OpenAiError,
 } from "./types";
@@ -153,6 +205,22 @@ import {
   vectorStoreFilesDeleteSchema,
   vectorStoreFileBatchesCreateSchema,
   vectorStoreFileBatchesCancelSchema,
+  adminApiKeysCreateSchema,
+  adminApiKeysDeleteSchema,
+  invitesCreateSchema,
+  invitesDeleteSchema,
+  orgUsersUpdateSchema,
+  orgUsersDeleteSchema,
+  projectsCreateSchema,
+  projectsUpdateSchema,
+  projectsArchiveSchema,
+  projectUsersCreateSchema,
+  projectUsersUpdateSchema,
+  projectUsersDeleteSchema,
+  projectServiceAccountsCreateSchema,
+  projectServiceAccountsDeleteSchema,
+  projectApiKeysDeleteSchema,
+  projectRateLimitsUpdateSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
 
@@ -1925,6 +1993,821 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
           },
         }
       ),
+
+      organization: {
+        admin_api_keys: Object.assign(
+          async function admin_api_keys(
+            req: OpenAiAdminApiKeyCreateRequest,
+            signal?: AbortSignal
+          ): Promise<OpenAiAdminApiKey> {
+            return await makeRequest<OpenAiAdminApiKey>(
+              "/organization/admin_api_keys",
+              jsonRequest(req),
+              signal
+            );
+          },
+          {
+            payloadSchema: adminApiKeysCreateSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, adminApiKeysCreateSchema);
+            },
+            list: async function list(
+              opts?: OpenAiAdminApiKeyListOptions,
+              signal?: AbortSignal
+            ): Promise<OpenAiAdminApiKeyListResponse> {
+              const query: Record<string, string | undefined> = {};
+              if (opts?.after) query.after = opts.after;
+              if (opts?.order) query.order = opts.order;
+              if (opts?.limit !== undefined)
+                query.limit = String(opts.limit);
+              return await makeGetRequest<OpenAiAdminApiKeyListResponse>(
+                "/organization/admin_api_keys",
+                query,
+                signal
+              );
+            },
+            retrieve: async function retrieve(
+              keyId: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiAdminApiKey> {
+              return await makeGetRequest<OpenAiAdminApiKey>(
+                `/organization/admin_api_keys/${encodeURIComponent(keyId)}`,
+                undefined,
+                signal
+              );
+            },
+            del: Object.assign(
+              async function del(
+                keyId: string,
+                signal?: AbortSignal
+              ): Promise<OpenAiAdminApiKeyDeleteResponse> {
+                return await makeDeleteRequest<OpenAiAdminApiKeyDeleteResponse>(
+                  `/organization/admin_api_keys/${encodeURIComponent(keyId)}`,
+                  signal
+                );
+              },
+              { payloadSchema: adminApiKeysDeleteSchema }
+            ),
+          }
+        ),
+
+        audit_logs: {
+          list: async function list(
+            opts?: OpenAiAuditLogListOptions,
+            signal?: AbortSignal
+          ): Promise<OpenAiAuditLogListResponse> {
+            const query: Record<
+              string,
+              string | string[] | undefined
+            > = {};
+            if (opts?.limit !== undefined)
+              query.limit = String(opts.limit);
+            if (opts?.after) query.after = opts.after;
+            if (opts?.before) query.before = opts.before;
+            if (opts?.project_ids) query.project_ids = opts.project_ids;
+            if (opts?.event_types) query.event_types = opts.event_types;
+            if (opts?.actor_ids) query.actor_ids = opts.actor_ids;
+            if (opts?.actor_emails)
+              query.actor_emails = opts.actor_emails;
+            if (opts?.resource_ids)
+              query.resource_ids = opts.resource_ids;
+            if (opts?.effective_at) {
+              if (opts.effective_at.gt !== undefined)
+                query["effective_at[gt]"] = String(
+                  opts.effective_at.gt
+                );
+              if (opts.effective_at.gte !== undefined)
+                query["effective_at[gte]"] = String(
+                  opts.effective_at.gte
+                );
+              if (opts.effective_at.lt !== undefined)
+                query["effective_at[lt]"] = String(
+                  opts.effective_at.lt
+                );
+              if (opts.effective_at.lte !== undefined)
+                query["effective_at[lte]"] = String(
+                  opts.effective_at.lte
+                );
+            }
+            return await makeGetRequest<OpenAiAuditLogListResponse>(
+              "/organization/audit_logs",
+              query,
+              signal
+            );
+          },
+        },
+
+        costs: async function costs(
+          opts: OpenAiCostsOptions,
+          signal?: AbortSignal
+        ): Promise<OpenAiUsageResponse> {
+          const query: Record<
+            string,
+            string | string[] | undefined
+          > = {};
+          query.start_time = String(opts.start_time);
+          if (opts.end_time !== undefined)
+            query.end_time = String(opts.end_time);
+          if (opts.bucket_width) query.bucket_width = opts.bucket_width;
+          if (opts.project_ids) query.project_ids = opts.project_ids;
+          if (opts.group_by) query.group_by = opts.group_by;
+          if (opts.limit !== undefined)
+            query.limit = String(opts.limit);
+          if (opts.page) query.page = opts.page;
+          return await makeGetRequest<OpenAiUsageResponse>(
+            "/organization/costs",
+            query,
+            signal
+          );
+        },
+
+        usage: {
+          completions: async function completions(
+            opts: OpenAiUsageCompletionsOptions,
+            signal?: AbortSignal
+          ): Promise<OpenAiUsageResponse> {
+            const query: Record<
+              string,
+              string | string[] | boolean | undefined
+            > = {};
+            query.start_time = String(opts.start_time);
+            if (opts.end_time !== undefined)
+              query.end_time = String(opts.end_time);
+            if (opts.bucket_width)
+              query.bucket_width = opts.bucket_width;
+            if (opts.project_ids)
+              query.project_ids = opts.project_ids;
+            if (opts.user_ids) query.user_ids = opts.user_ids;
+            if (opts.api_key_ids)
+              query.api_key_ids = opts.api_key_ids;
+            if (opts.models) query.models = opts.models;
+            if (opts.batch !== undefined) query.batch = opts.batch;
+            if (opts.group_by) query.group_by = opts.group_by;
+            if (opts.limit !== undefined)
+              query.limit = String(opts.limit);
+            if (opts.page) query.page = opts.page;
+            return await makeGetRequest<OpenAiUsageResponse>(
+              "/organization/usage/completions",
+              query,
+              signal
+            );
+          },
+          embeddings: async function embeddings(
+            opts: OpenAiUsageEmbeddingsOptions,
+            signal?: AbortSignal
+          ): Promise<OpenAiUsageResponse> {
+            const query: Record<
+              string,
+              string | string[] | undefined
+            > = {};
+            query.start_time = String(opts.start_time);
+            if (opts.end_time !== undefined)
+              query.end_time = String(opts.end_time);
+            if (opts.bucket_width)
+              query.bucket_width = opts.bucket_width;
+            if (opts.project_ids)
+              query.project_ids = opts.project_ids;
+            if (opts.user_ids) query.user_ids = opts.user_ids;
+            if (opts.api_key_ids)
+              query.api_key_ids = opts.api_key_ids;
+            if (opts.models) query.models = opts.models;
+            if (opts.group_by) query.group_by = opts.group_by;
+            if (opts.limit !== undefined)
+              query.limit = String(opts.limit);
+            if (opts.page) query.page = opts.page;
+            return await makeGetRequest<OpenAiUsageResponse>(
+              "/organization/usage/embeddings",
+              query,
+              signal
+            );
+          },
+          moderations: async function moderations(
+            opts: OpenAiUsageModerationsOptions,
+            signal?: AbortSignal
+          ): Promise<OpenAiUsageResponse> {
+            const query: Record<
+              string,
+              string | string[] | undefined
+            > = {};
+            query.start_time = String(opts.start_time);
+            if (opts.end_time !== undefined)
+              query.end_time = String(opts.end_time);
+            if (opts.bucket_width)
+              query.bucket_width = opts.bucket_width;
+            if (opts.project_ids)
+              query.project_ids = opts.project_ids;
+            if (opts.user_ids) query.user_ids = opts.user_ids;
+            if (opts.api_key_ids)
+              query.api_key_ids = opts.api_key_ids;
+            if (opts.models) query.models = opts.models;
+            if (opts.group_by) query.group_by = opts.group_by;
+            if (opts.limit !== undefined)
+              query.limit = String(opts.limit);
+            if (opts.page) query.page = opts.page;
+            return await makeGetRequest<OpenAiUsageResponse>(
+              "/organization/usage/moderations",
+              query,
+              signal
+            );
+          },
+          images: async function images(
+            opts: OpenAiUsageImagesOptions,
+            signal?: AbortSignal
+          ): Promise<OpenAiUsageResponse> {
+            const query: Record<
+              string,
+              string | string[] | undefined
+            > = {};
+            query.start_time = String(opts.start_time);
+            if (opts.end_time !== undefined)
+              query.end_time = String(opts.end_time);
+            if (opts.bucket_width)
+              query.bucket_width = opts.bucket_width;
+            if (opts.sources) query.sources = opts.sources;
+            if (opts.sizes) query.sizes = opts.sizes;
+            if (opts.project_ids)
+              query.project_ids = opts.project_ids;
+            if (opts.user_ids) query.user_ids = opts.user_ids;
+            if (opts.api_key_ids)
+              query.api_key_ids = opts.api_key_ids;
+            if (opts.models) query.models = opts.models;
+            if (opts.group_by) query.group_by = opts.group_by;
+            if (opts.limit !== undefined)
+              query.limit = String(opts.limit);
+            if (opts.page) query.page = opts.page;
+            return await makeGetRequest<OpenAiUsageResponse>(
+              "/organization/usage/images",
+              query,
+              signal
+            );
+          },
+          audio_speeches: async function audio_speeches(
+            opts: OpenAiUsageAudioSpeechesOptions,
+            signal?: AbortSignal
+          ): Promise<OpenAiUsageResponse> {
+            const query: Record<
+              string,
+              string | string[] | undefined
+            > = {};
+            query.start_time = String(opts.start_time);
+            if (opts.end_time !== undefined)
+              query.end_time = String(opts.end_time);
+            if (opts.bucket_width)
+              query.bucket_width = opts.bucket_width;
+            if (opts.project_ids)
+              query.project_ids = opts.project_ids;
+            if (opts.user_ids) query.user_ids = opts.user_ids;
+            if (opts.api_key_ids)
+              query.api_key_ids = opts.api_key_ids;
+            if (opts.models) query.models = opts.models;
+            if (opts.group_by) query.group_by = opts.group_by;
+            if (opts.limit !== undefined)
+              query.limit = String(opts.limit);
+            if (opts.page) query.page = opts.page;
+            return await makeGetRequest<OpenAiUsageResponse>(
+              "/organization/usage/audio_speeches",
+              query,
+              signal
+            );
+          },
+          audio_transcriptions: async function audio_transcriptions(
+            opts: OpenAiUsageAudioTranscriptionsOptions,
+            signal?: AbortSignal
+          ): Promise<OpenAiUsageResponse> {
+            const query: Record<
+              string,
+              string | string[] | undefined
+            > = {};
+            query.start_time = String(opts.start_time);
+            if (opts.end_time !== undefined)
+              query.end_time = String(opts.end_time);
+            if (opts.bucket_width)
+              query.bucket_width = opts.bucket_width;
+            if (opts.project_ids)
+              query.project_ids = opts.project_ids;
+            if (opts.user_ids) query.user_ids = opts.user_ids;
+            if (opts.api_key_ids)
+              query.api_key_ids = opts.api_key_ids;
+            if (opts.models) query.models = opts.models;
+            if (opts.group_by) query.group_by = opts.group_by;
+            if (opts.limit !== undefined)
+              query.limit = String(opts.limit);
+            if (opts.page) query.page = opts.page;
+            return await makeGetRequest<OpenAiUsageResponse>(
+              "/organization/usage/audio_transcriptions",
+              query,
+              signal
+            );
+          },
+          vector_stores: async function vector_stores(
+            opts: OpenAiUsageVectorStoresOptions,
+            signal?: AbortSignal
+          ): Promise<OpenAiUsageResponse> {
+            const query: Record<
+              string,
+              string | string[] | undefined
+            > = {};
+            query.start_time = String(opts.start_time);
+            if (opts.end_time !== undefined)
+              query.end_time = String(opts.end_time);
+            if (opts.bucket_width)
+              query.bucket_width = opts.bucket_width;
+            if (opts.project_ids)
+              query.project_ids = opts.project_ids;
+            if (opts.group_by) query.group_by = opts.group_by;
+            if (opts.limit !== undefined)
+              query.limit = String(opts.limit);
+            if (opts.page) query.page = opts.page;
+            return await makeGetRequest<OpenAiUsageResponse>(
+              "/organization/usage/vector_stores",
+              query,
+              signal
+            );
+          },
+          code_interpreter_sessions:
+            async function code_interpreter_sessions(
+              opts: OpenAiUsageCodeInterpreterSessionsOptions,
+              signal?: AbortSignal
+            ): Promise<OpenAiUsageResponse> {
+              const query: Record<
+                string,
+                string | string[] | undefined
+              > = {};
+              query.start_time = String(opts.start_time);
+              if (opts.end_time !== undefined)
+                query.end_time = String(opts.end_time);
+              if (opts.bucket_width)
+                query.bucket_width = opts.bucket_width;
+              if (opts.project_ids)
+                query.project_ids = opts.project_ids;
+              if (opts.group_by) query.group_by = opts.group_by;
+              if (opts.limit !== undefined)
+                query.limit = String(opts.limit);
+              if (opts.page) query.page = opts.page;
+              return await makeGetRequest<OpenAiUsageResponse>(
+                "/organization/usage/code_interpreter_sessions",
+                query,
+                signal
+              );
+            },
+        },
+
+        invites: Object.assign(
+          async function invites(
+            req: OpenAiInviteCreateRequest,
+            signal?: AbortSignal
+          ): Promise<OpenAiInvite> {
+            return await makeRequest<OpenAiInvite>(
+              "/organization/invites",
+              jsonRequest(req),
+              signal
+            );
+          },
+          {
+            payloadSchema: invitesCreateSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, invitesCreateSchema);
+            },
+            list: async function list(
+              opts?: OpenAiInviteListOptions,
+              signal?: AbortSignal
+            ): Promise<OpenAiInviteListResponse> {
+              const query: Record<string, string | undefined> = {};
+              if (opts?.limit !== undefined)
+                query.limit = String(opts.limit);
+              if (opts?.after) query.after = opts.after;
+              return await makeGetRequest<OpenAiInviteListResponse>(
+                "/organization/invites",
+                query,
+                signal
+              );
+            },
+            retrieve: async function retrieve(
+              inviteId: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiInvite> {
+              return await makeGetRequest<OpenAiInvite>(
+                `/organization/invites/${encodeURIComponent(inviteId)}`,
+                undefined,
+                signal
+              );
+            },
+            del: Object.assign(
+              async function del(
+                inviteId: string,
+                signal?: AbortSignal
+              ): Promise<OpenAiInviteDeleteResponse> {
+                return await makeDeleteRequest<OpenAiInviteDeleteResponse>(
+                  `/organization/invites/${encodeURIComponent(inviteId)}`,
+                  signal
+                );
+              },
+              { payloadSchema: invitesDeleteSchema }
+            ),
+          }
+        ),
+
+        users: {
+          list: async function list(
+            opts?: OpenAiOrgUserListOptions,
+            signal?: AbortSignal
+          ): Promise<OpenAiOrgUserListResponse> {
+            const query: Record<
+              string,
+              string | string[] | undefined
+            > = {};
+            if (opts?.limit !== undefined)
+              query.limit = String(opts.limit);
+            if (opts?.after) query.after = opts.after;
+            if (opts?.emails) query.emails = opts.emails;
+            return await makeGetRequest<OpenAiOrgUserListResponse>(
+              "/organization/users",
+              query,
+              signal
+            );
+          },
+          retrieve: async function retrieve(
+            userId: string,
+            signal?: AbortSignal
+          ): Promise<OpenAiOrgUser> {
+            return await makeGetRequest<OpenAiOrgUser>(
+              `/organization/users/${encodeURIComponent(userId)}`,
+              undefined,
+              signal
+            );
+          },
+          update: Object.assign(
+            async function update(
+              userId: string,
+              req: OpenAiOrgUserUpdateRequest,
+              signal?: AbortSignal
+            ): Promise<OpenAiOrgUser> {
+              return await makeRequest<OpenAiOrgUser>(
+                `/organization/users/${encodeURIComponent(userId)}`,
+                jsonRequest(req),
+                signal
+              );
+            },
+            {
+              payloadSchema: orgUsersUpdateSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, orgUsersUpdateSchema);
+              },
+            }
+          ),
+          del: Object.assign(
+            async function del(
+              userId: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiOrgUserDeleteResponse> {
+              return await makeDeleteRequest<OpenAiOrgUserDeleteResponse>(
+                `/organization/users/${encodeURIComponent(userId)}`,
+                signal
+              );
+            },
+            { payloadSchema: orgUsersDeleteSchema }
+          ),
+        },
+
+        projects: Object.assign(
+          async function projects(
+            req: OpenAiProjectCreateRequest,
+            signal?: AbortSignal
+          ): Promise<OpenAiProject> {
+            return await makeRequest<OpenAiProject>(
+              "/organization/projects",
+              jsonRequest(req),
+              signal
+            );
+          },
+          {
+            payloadSchema: projectsCreateSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, projectsCreateSchema);
+            },
+            list: async function list(
+              opts?: OpenAiProjectListOptions,
+              signal?: AbortSignal
+            ): Promise<OpenAiProjectListResponse> {
+              const query: Record<
+                string,
+                string | boolean | undefined
+              > = {};
+              if (opts?.limit !== undefined)
+                query.limit = String(opts.limit);
+              if (opts?.after) query.after = opts.after;
+              if (opts?.include_archived !== undefined)
+                query.include_archived = opts.include_archived;
+              return await makeGetRequest<OpenAiProjectListResponse>(
+                "/organization/projects",
+                query,
+                signal
+              );
+            },
+            retrieve: async function retrieve(
+              projectId: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiProject> {
+              return await makeGetRequest<OpenAiProject>(
+                `/organization/projects/${encodeURIComponent(projectId)}`,
+                undefined,
+                signal
+              );
+            },
+            update: Object.assign(
+              async function update(
+                projectId: string,
+                req: OpenAiProjectUpdateRequest,
+                signal?: AbortSignal
+              ): Promise<OpenAiProject> {
+                return await makeRequest<OpenAiProject>(
+                  `/organization/projects/${encodeURIComponent(projectId)}`,
+                  jsonRequest(req),
+                  signal
+                );
+              },
+              {
+                payloadSchema: projectsUpdateSchema,
+                validatePayload(data: unknown): ValidationResult {
+                  return validatePayload(
+                    data,
+                    projectsUpdateSchema
+                  );
+                },
+              }
+            ),
+            archive: Object.assign(
+              async function archive(
+                projectId: string,
+                signal?: AbortSignal
+              ): Promise<OpenAiProject> {
+                return await makeEmptyPostRequest<OpenAiProject>(
+                  `/organization/projects/${encodeURIComponent(projectId)}/archive`,
+                  signal
+                );
+              },
+              { payloadSchema: projectsArchiveSchema }
+            ),
+
+            users: {
+              create: Object.assign(
+                async function create(
+                  projectId: string,
+                  req: OpenAiProjectUserCreateRequest,
+                  signal?: AbortSignal
+                ): Promise<OpenAiProjectUser> {
+                  return await makeRequest<OpenAiProjectUser>(
+                    `/organization/projects/${encodeURIComponent(projectId)}/users`,
+                    jsonRequest(req),
+                    signal
+                  );
+                },
+                {
+                  payloadSchema: projectUsersCreateSchema,
+                  validatePayload(data: unknown): ValidationResult {
+                    return validatePayload(
+                      data,
+                      projectUsersCreateSchema
+                    );
+                  },
+                }
+              ),
+              list: async function list(
+                projectId: string,
+                opts?: OpenAiProjectUserListOptions,
+                signal?: AbortSignal
+              ): Promise<OpenAiProjectUserListResponse> {
+                const query: Record<
+                  string,
+                  string | undefined
+                > = {};
+                if (opts?.limit !== undefined)
+                  query.limit = String(opts.limit);
+                if (opts?.after) query.after = opts.after;
+                return await makeGetRequest<OpenAiProjectUserListResponse>(
+                  `/organization/projects/${encodeURIComponent(projectId)}/users`,
+                  query,
+                  signal
+                );
+              },
+              retrieve: async function retrieve(
+                projectId: string,
+                userId: string,
+                signal?: AbortSignal
+              ): Promise<OpenAiProjectUser> {
+                return await makeGetRequest<OpenAiProjectUser>(
+                  `/organization/projects/${encodeURIComponent(projectId)}/users/${encodeURIComponent(userId)}`,
+                  undefined,
+                  signal
+                );
+              },
+              update: Object.assign(
+                async function update(
+                  projectId: string,
+                  userId: string,
+                  req: OpenAiProjectUserUpdateRequest,
+                  signal?: AbortSignal
+                ): Promise<OpenAiProjectUser> {
+                  return await makeRequest<OpenAiProjectUser>(
+                    `/organization/projects/${encodeURIComponent(projectId)}/users/${encodeURIComponent(userId)}`,
+                    jsonRequest(req),
+                    signal
+                  );
+                },
+                {
+                  payloadSchema: projectUsersUpdateSchema,
+                  validatePayload(
+                    data: unknown
+                  ): ValidationResult {
+                    return validatePayload(
+                      data,
+                      projectUsersUpdateSchema
+                    );
+                  },
+                }
+              ),
+              del: Object.assign(
+                async function del(
+                  projectId: string,
+                  userId: string,
+                  signal?: AbortSignal
+                ): Promise<OpenAiProjectUserDeleteResponse> {
+                  return await makeDeleteRequest<OpenAiProjectUserDeleteResponse>(
+                    `/organization/projects/${encodeURIComponent(projectId)}/users/${encodeURIComponent(userId)}`,
+                    signal
+                  );
+                },
+                { payloadSchema: projectUsersDeleteSchema }
+              ),
+            },
+
+            service_accounts: {
+              create: Object.assign(
+                async function create(
+                  projectId: string,
+                  req: OpenAiProjectServiceAccountCreateRequest,
+                  signal?: AbortSignal
+                ): Promise<OpenAiProjectServiceAccountCreateResponse> {
+                  return await makeRequest<OpenAiProjectServiceAccountCreateResponse>(
+                    `/organization/projects/${encodeURIComponent(projectId)}/service_accounts`,
+                    jsonRequest(req),
+                    signal
+                  );
+                },
+                {
+                  payloadSchema:
+                    projectServiceAccountsCreateSchema,
+                  validatePayload(
+                    data: unknown
+                  ): ValidationResult {
+                    return validatePayload(
+                      data,
+                      projectServiceAccountsCreateSchema
+                    );
+                  },
+                }
+              ),
+              list: async function list(
+                projectId: string,
+                opts?: OpenAiProjectServiceAccountListOptions,
+                signal?: AbortSignal
+              ): Promise<OpenAiProjectServiceAccountListResponse> {
+                const query: Record<
+                  string,
+                  string | undefined
+                > = {};
+                if (opts?.limit !== undefined)
+                  query.limit = String(opts.limit);
+                if (opts?.after) query.after = opts.after;
+                return await makeGetRequest<OpenAiProjectServiceAccountListResponse>(
+                  `/organization/projects/${encodeURIComponent(projectId)}/service_accounts`,
+                  query,
+                  signal
+                );
+              },
+              retrieve: async function retrieve(
+                projectId: string,
+                serviceAccountId: string,
+                signal?: AbortSignal
+              ): Promise<OpenAiProjectServiceAccount> {
+                return await makeGetRequest<OpenAiProjectServiceAccount>(
+                  `/organization/projects/${encodeURIComponent(projectId)}/service_accounts/${encodeURIComponent(serviceAccountId)}`,
+                  undefined,
+                  signal
+                );
+              },
+              del: Object.assign(
+                async function del(
+                  projectId: string,
+                  serviceAccountId: string,
+                  signal?: AbortSignal
+                ): Promise<OpenAiProjectServiceAccountDeleteResponse> {
+                  return await makeDeleteRequest<OpenAiProjectServiceAccountDeleteResponse>(
+                    `/organization/projects/${encodeURIComponent(projectId)}/service_accounts/${encodeURIComponent(serviceAccountId)}`,
+                    signal
+                  );
+                },
+                {
+                  payloadSchema:
+                    projectServiceAccountsDeleteSchema,
+                }
+              ),
+            },
+
+            api_keys: {
+              list: async function list(
+                projectId: string,
+                opts?: OpenAiProjectApiKeyListOptions,
+                signal?: AbortSignal
+              ): Promise<OpenAiProjectApiKeyListResponse> {
+                const query: Record<
+                  string,
+                  string | undefined
+                > = {};
+                if (opts?.limit !== undefined)
+                  query.limit = String(opts.limit);
+                if (opts?.after) query.after = opts.after;
+                return await makeGetRequest<OpenAiProjectApiKeyListResponse>(
+                  `/organization/projects/${encodeURIComponent(projectId)}/api_keys`,
+                  query,
+                  signal
+                );
+              },
+              retrieve: async function retrieve(
+                projectId: string,
+                keyId: string,
+                signal?: AbortSignal
+              ): Promise<OpenAiProjectApiKey> {
+                return await makeGetRequest<OpenAiProjectApiKey>(
+                  `/organization/projects/${encodeURIComponent(projectId)}/api_keys/${encodeURIComponent(keyId)}`,
+                  undefined,
+                  signal
+                );
+              },
+              del: Object.assign(
+                async function del(
+                  projectId: string,
+                  keyId: string,
+                  signal?: AbortSignal
+                ): Promise<OpenAiProjectApiKeyDeleteResponse> {
+                  return await makeDeleteRequest<OpenAiProjectApiKeyDeleteResponse>(
+                    `/organization/projects/${encodeURIComponent(projectId)}/api_keys/${encodeURIComponent(keyId)}`,
+                    signal
+                  );
+                },
+                { payloadSchema: projectApiKeysDeleteSchema }
+              ),
+            },
+
+            rate_limits: {
+              list: async function list(
+                projectId: string,
+                opts?: OpenAiProjectRateLimitListOptions,
+                signal?: AbortSignal
+              ): Promise<OpenAiProjectRateLimitListResponse> {
+                const query: Record<
+                  string,
+                  string | undefined
+                > = {};
+                if (opts?.limit !== undefined)
+                  query.limit = String(opts.limit);
+                if (opts?.after) query.after = opts.after;
+                if (opts?.before) query.before = opts.before;
+                return await makeGetRequest<OpenAiProjectRateLimitListResponse>(
+                  `/organization/projects/${encodeURIComponent(projectId)}/rate_limits`,
+                  query,
+                  signal
+                );
+              },
+              update: Object.assign(
+                async function update(
+                  projectId: string,
+                  rateLimitId: string,
+                  req: OpenAiProjectRateLimitUpdateRequest,
+                  signal?: AbortSignal
+                ): Promise<OpenAiProjectRateLimit> {
+                  return await makeRequest<OpenAiProjectRateLimit>(
+                    `/organization/projects/${encodeURIComponent(projectId)}/rate_limits/${encodeURIComponent(rateLimitId)}`,
+                    jsonRequest(req),
+                    signal
+                  );
+                },
+                {
+                  payloadSchema: projectRateLimitsUpdateSchema,
+                  validatePayload(
+                    data: unknown
+                  ): ValidationResult {
+                    return validatePayload(
+                      data,
+                      projectRateLimitsUpdateSchema
+                    );
+                  },
+                }
+              ),
+            },
+          }
+        ),
+      },
     },
   };
 }

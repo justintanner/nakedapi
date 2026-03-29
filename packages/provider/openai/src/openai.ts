@@ -13,6 +13,8 @@ import {
   OpenAiImageEditResponse,
   OpenAiImageGenerationRequest,
   OpenAiImageGenerationResponse,
+  OpenAiImageVariationRequest,
+  OpenAiImageVariationResponse,
   OpenAiFileListRequest,
   OpenAiFileListResponse,
   OpenAiFile,
@@ -56,6 +58,33 @@ import {
   OpenAiStoredCompletionUpdateRequest,
   OpenAiStoredCompletionMessageListOptions,
   OpenAiStoredCompletionMessageListResponse,
+  OpenAiCompletionRequest,
+  OpenAiCompletionResponse,
+  OpenAiVoice,
+  OpenAiVoiceCreateRequest,
+  OpenAiVoiceListOptions,
+  OpenAiVoiceListResponse,
+  OpenAiVoiceConsent,
+  OpenAiVoiceConsentCreateRequest,
+  OpenAiVoiceConsentUpdateRequest,
+  OpenAiVoiceConsentListOptions,
+  OpenAiVoiceConsentListResponse,
+  OpenAiVoiceConsentDeleteResponse,
+  OpenAiVideo,
+  OpenAiVideoCreateRequest,
+  OpenAiVideoListOptions,
+  OpenAiVideoListResponse,
+  OpenAiVideoDeleteResponse,
+  OpenAiVideoContentOptions,
+  OpenAiVideoEditRequest,
+  OpenAiVideoExtensionRequest,
+  OpenAiVideoRemixRequest,
+  OpenAiVideoCharacterCreateRequest,
+  OpenAiVideoCharacter,
+  OpenAiGraderValidateRequest,
+  OpenAiGraderValidateResponse,
+  OpenAiGraderRunRequest,
+  OpenAiGraderRunResponse,
   OpenAiProvider,
   OpenAiError,
 } from "./types";
@@ -67,6 +96,7 @@ import {
   filesDeleteSchema,
   imageEditsSchema,
   imageGenerationsSchema,
+  imageVariationsSchema,
   modelsDeleteSchema,
   moderationsSchema,
   audioSpeechSchema,
@@ -83,6 +113,17 @@ import {
   checkpointPermissionsCreateSchema,
   storedCompletionsUpdateSchema,
   storedCompletionsDeleteSchema,
+  completionsSchema,
+  voicesCreateSchema,
+  voiceConsentsCreateSchema,
+  voiceConsentsUpdateSchema,
+  videosCreateSchema,
+  videoEditsSchema,
+  videoExtensionsSchema,
+  videoRemixSchema,
+  videoCharactersCreateSchema,
+  graderValidateSchema,
+  graderRunSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
 
@@ -408,6 +449,72 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
     }
   }
 
+  async function makeFormPostRequest<T>(
+    path: string,
+    form: FormData,
+    signal?: AbortSignal
+  ): Promise<T> {
+    return await makeRequest<T>(path, { headers: {}, body: form }, signal);
+  }
+
+  async function makeBinaryGetRequest(
+    path: string,
+    query?: Record<string, string | undefined>,
+    signal?: AbortSignal
+  ): Promise<ArrayBuffer> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    if (signal) {
+      signal.addEventListener("abort", () => controller.abort());
+    }
+
+    const params = new URLSearchParams();
+    if (query) {
+      for (const [key, value] of Object.entries(query)) {
+        if (value === undefined) continue;
+        params.append(key, value);
+      }
+    }
+    const qs = params.toString();
+    const url = `${baseURL}${path}${qs ? `?${qs}` : ""}`;
+
+    try {
+      const res = await doFetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${opts.apiKey}`,
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        let message = `OpenAI API error: ${res.status}`;
+        let body: unknown = null;
+        try {
+          body = await res.json();
+          if (typeof body === "object" && body !== null && "error" in body) {
+            const err = (body as { error: { message?: string } }).error;
+            if (err?.message) {
+              message = `OpenAI API error ${res.status}: ${err.message}`;
+            }
+          }
+        } catch {
+          // ignore parse errors
+        }
+        throw new OpenAiError(message, res.status, body);
+      }
+
+      return await res.arrayBuffer();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof OpenAiError) throw error;
+      throw new OpenAiError(`OpenAI request failed: ${error}`, 500);
+    }
+  }
+
   return {
     v1: {
       chat: {
@@ -665,6 +772,36 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             payloadSchema: imageGenerationsSchema,
             validatePayload(data: unknown): ValidationResult {
               return validatePayload(data, imageGenerationsSchema);
+            },
+          }
+        ),
+        variations: Object.assign(
+          async function variations(
+            req: OpenAiImageVariationRequest,
+            signal?: AbortSignal
+          ): Promise<OpenAiImageVariationResponse> {
+            const form = new FormData();
+            form.append("image", req.image);
+            if (req.model !== undefined && req.model !== null)
+              form.append("model", req.model);
+            if (req.n !== undefined && req.n !== null)
+              form.append("n", String(req.n));
+            if (req.response_format !== undefined && req.response_format !== null)
+              form.append("response_format", req.response_format);
+            if (req.size !== undefined && req.size !== null)
+              form.append("size", req.size);
+            if (req.user !== undefined) form.append("user", req.user);
+
+            return await makeRequest<OpenAiImageVariationResponse>(
+              "/images/variations",
+              { headers: {}, body: form },
+              signal
+            );
+          },
+          {
+            payloadSchema: imageVariationsSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, imageVariationsSchema);
             },
           }
         ),
@@ -971,6 +1108,124 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             },
           }
         ),
+        voices: Object.assign(
+          async function voices(
+            req: OpenAiVoiceCreateRequest,
+            signal?: AbortSignal
+          ): Promise<OpenAiVoice> {
+            const form = new FormData();
+            form.append("name", req.name);
+            form.append("consent", req.consent);
+            form.append("audio_sample", req.audio_sample);
+            return await makeFormPostRequest<OpenAiVoice>(
+              "/audio/voices",
+              form,
+              signal
+            );
+          },
+          {
+            payloadSchema: voicesCreateSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, voicesCreateSchema);
+            },
+            list: async function list(
+              listOpts?: OpenAiVoiceListOptions,
+              signal?: AbortSignal
+            ): Promise<OpenAiVoiceListResponse> {
+              const query: Record<string, string | undefined> = {};
+              if (listOpts?.limit !== undefined)
+                query.limit = String(listOpts.limit);
+              return await makeGetRequest<OpenAiVoiceListResponse>(
+                "/audio/voices",
+                query,
+                signal
+              );
+            },
+            retrieve: async function retrieve(
+              voiceId: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiVoice> {
+              return await makeGetRequest<OpenAiVoice>(
+                `/audio/voices/${encodeURIComponent(voiceId)}`,
+                undefined,
+                signal
+              );
+            },
+          }
+        ),
+        voice_consents: Object.assign(
+          async function voice_consents(
+            req: OpenAiVoiceConsentCreateRequest,
+            signal?: AbortSignal
+          ): Promise<OpenAiVoiceConsent> {
+            const form = new FormData();
+            form.append("recording", req.recording);
+            form.append("name", req.name);
+            form.append("language", req.language);
+            return await makeFormPostRequest<OpenAiVoiceConsent>(
+              "/audio/voice_consents",
+              form,
+              signal
+            );
+          },
+          {
+            payloadSchema: voiceConsentsCreateSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, voiceConsentsCreateSchema);
+            },
+            list: async function list(
+              listOpts?: OpenAiVoiceConsentListOptions,
+              signal?: AbortSignal
+            ): Promise<OpenAiVoiceConsentListResponse> {
+              const query: Record<string, string | undefined> = {};
+              if (listOpts?.limit !== undefined)
+                query.limit = String(listOpts.limit);
+              return await makeGetRequest<OpenAiVoiceConsentListResponse>(
+                "/audio/voice_consents",
+                query,
+                signal
+              );
+            },
+            retrieve: async function retrieve(
+              consentId: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiVoiceConsent> {
+              return await makeGetRequest<OpenAiVoiceConsent>(
+                `/audio/voice_consents/${encodeURIComponent(consentId)}`,
+                undefined,
+                signal
+              );
+            },
+            update: Object.assign(
+              async function update(
+                consentId: string,
+                req: OpenAiVoiceConsentUpdateRequest,
+                signal?: AbortSignal
+              ): Promise<OpenAiVoiceConsent> {
+                return await makeRequest<OpenAiVoiceConsent>(
+                  `/audio/voice_consents/${encodeURIComponent(consentId)}`,
+                  jsonRequest(req),
+                  signal
+                );
+              },
+              {
+                payloadSchema: voiceConsentsUpdateSchema,
+                validatePayload(data: unknown): ValidationResult {
+                  return validatePayload(data, voiceConsentsUpdateSchema);
+                },
+              }
+            ),
+            del: async function del(
+              consentId: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiVoiceConsentDeleteResponse> {
+              return await makeDeleteRequest<OpenAiVoiceConsentDeleteResponse>(
+                `/audio/voice_consents/${encodeURIComponent(consentId)}`,
+                signal
+              );
+            },
+          }
+        ),
       },
       fine_tuning: {
         jobs: Object.assign(
@@ -1126,7 +1381,230 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             }
           ),
         },
+        alpha: {
+          graders: {
+            validate: Object.assign(
+              async function validate(
+                req: OpenAiGraderValidateRequest,
+                signal?: AbortSignal
+              ): Promise<OpenAiGraderValidateResponse> {
+                return await makeRequest<OpenAiGraderValidateResponse>(
+                  "/fine_tuning/alpha/graders/validate",
+                  jsonRequest(req),
+                  signal
+                );
+              },
+              {
+                payloadSchema: graderValidateSchema,
+                validatePayload(data: unknown): ValidationResult {
+                  return validatePayload(data, graderValidateSchema);
+                },
+              }
+            ),
+            run: Object.assign(
+              async function run(
+                req: OpenAiGraderRunRequest,
+                signal?: AbortSignal
+              ): Promise<OpenAiGraderRunResponse> {
+                return await makeRequest<OpenAiGraderRunResponse>(
+                  "/fine_tuning/alpha/graders/run",
+                  jsonRequest(req),
+                  signal
+                );
+              },
+              {
+                payloadSchema: graderRunSchema,
+                validatePayload(data: unknown): ValidationResult {
+                  return validatePayload(data, graderRunSchema);
+                },
+              }
+            ),
+          },
+        },
       },
+      completions: Object.assign(
+        async function completions(
+          req: OpenAiCompletionRequest,
+          signal?: AbortSignal
+        ): Promise<OpenAiCompletionResponse> {
+          return await makeRequest<OpenAiCompletionResponse>(
+            "/completions",
+            jsonRequest(req),
+            signal
+          );
+        },
+        {
+          payloadSchema: completionsSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, completionsSchema);
+          },
+        }
+      ),
+      videos: Object.assign(
+        async function videos(
+          req: OpenAiVideoCreateRequest,
+          signal?: AbortSignal
+        ): Promise<OpenAiVideo> {
+          if (req.input_reference instanceof Blob) {
+            const form = new FormData();
+            form.append("prompt", req.prompt);
+            if (req.model !== undefined) form.append("model", req.model);
+            if (req.seconds !== undefined)
+              form.append("seconds", String(req.seconds));
+            if (req.size !== undefined) form.append("size", req.size);
+            form.append("input_reference", req.input_reference);
+            return await makeFormPostRequest<OpenAiVideo>(
+              "/videos",
+              form,
+              signal
+            );
+          }
+          return await makeRequest<OpenAiVideo>(
+            "/videos",
+            jsonRequest(req),
+            signal
+          );
+        },
+        {
+          payloadSchema: videosCreateSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, videosCreateSchema);
+          },
+          list: async function list(
+            listOpts?: OpenAiVideoListOptions,
+            signal?: AbortSignal
+          ): Promise<OpenAiVideoListResponse> {
+            const query: Record<string, string | undefined> = {};
+            if (listOpts?.after) query.after = listOpts.after;
+            if (listOpts?.limit !== undefined)
+              query.limit = String(listOpts.limit);
+            if (listOpts?.order) query.order = listOpts.order;
+            return await makeGetRequest<OpenAiVideoListResponse>(
+              "/videos",
+              query,
+              signal
+            );
+          },
+          retrieve: async function retrieve(
+            videoId: string,
+            signal?: AbortSignal
+          ): Promise<OpenAiVideo> {
+            return await makeGetRequest<OpenAiVideo>(
+              `/videos/${encodeURIComponent(videoId)}`,
+              undefined,
+              signal
+            );
+          },
+          del: async function del(
+            videoId: string,
+            signal?: AbortSignal
+          ): Promise<OpenAiVideoDeleteResponse> {
+            return await makeDeleteRequest<OpenAiVideoDeleteResponse>(
+              `/videos/${encodeURIComponent(videoId)}`,
+              signal
+            );
+          },
+          content: async function content(
+            videoId: string,
+            contentOpts?: OpenAiVideoContentOptions,
+            signal?: AbortSignal
+          ): Promise<ArrayBuffer> {
+            const query: Record<string, string | undefined> = {};
+            if (contentOpts?.variant) query.variant = contentOpts.variant;
+            return await makeBinaryGetRequest(
+              `/videos/${encodeURIComponent(videoId)}/content`,
+              query,
+              signal
+            );
+          },
+          edits: Object.assign(
+            async function edits(
+              req: OpenAiVideoEditRequest,
+              signal?: AbortSignal
+            ): Promise<OpenAiVideo> {
+              return await makeRequest<OpenAiVideo>(
+                "/videos/edits",
+                jsonRequest(req),
+                signal
+              );
+            },
+            {
+              payloadSchema: videoEditsSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, videoEditsSchema);
+              },
+            }
+          ),
+          extensions: Object.assign(
+            async function extensions(
+              req: OpenAiVideoExtensionRequest,
+              signal?: AbortSignal
+            ): Promise<OpenAiVideo> {
+              return await makeRequest<OpenAiVideo>(
+                "/videos/extensions",
+                jsonRequest(req),
+                signal
+              );
+            },
+            {
+              payloadSchema: videoExtensionsSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, videoExtensionsSchema);
+              },
+            }
+          ),
+          remix: Object.assign(
+            async function remix(
+              videoId: string,
+              req: OpenAiVideoRemixRequest,
+              signal?: AbortSignal
+            ): Promise<OpenAiVideo> {
+              return await makeRequest<OpenAiVideo>(
+                `/videos/${encodeURIComponent(videoId)}/remix`,
+                jsonRequest(req),
+                signal
+              );
+            },
+            {
+              payloadSchema: videoRemixSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, videoRemixSchema);
+              },
+            }
+          ),
+          characters: Object.assign(
+            async function characters(
+              req: OpenAiVideoCharacterCreateRequest,
+              signal?: AbortSignal
+            ): Promise<OpenAiVideoCharacter> {
+              const form = new FormData();
+              form.append("name", req.name);
+              form.append("video", req.video);
+              return await makeFormPostRequest<OpenAiVideoCharacter>(
+                "/videos/characters",
+                form,
+                signal
+              );
+            },
+            {
+              payloadSchema: videoCharactersCreateSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, videoCharactersCreateSchema);
+              },
+              retrieve: async function retrieve(
+                characterId: string,
+                signal?: AbortSignal
+              ): Promise<OpenAiVideoCharacter> {
+                return await makeGetRequest<OpenAiVideoCharacter>(
+                  `/videos/characters/${encodeURIComponent(characterId)}`,
+                  undefined,
+                  signal
+                );
+              },
+            }
+          ),
+        }
+      ),
     },
   };
 }

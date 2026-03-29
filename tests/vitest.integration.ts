@@ -29,6 +29,10 @@ export default defineConfig({
         __dirname,
         "../packages/provider/fireworks/src"
       ),
+      "@nakedapi/mistral": path.resolve(
+        __dirname,
+        "../packages/provider/mistral/src"
+      ),
     },
   },
 });

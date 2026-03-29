@@ -70,6 +70,8 @@ importers:
 
   packages/provider/kimicoding: {}
 
+  packages/provider/mistral: {}
+
   packages/provider/openai: {}
 
   packages/provider/xai: {}

@@ -2418,6 +2418,884 @@ interface OpenAiVectorStoreFileBatchesNamespace {
   files: OpenAiVectorStoreFileBatchesFilesMethod;
 }
 
+// Organization: Admin API Keys
+
+export interface OpenAiAdminApiKeyOwner {
+  type: string;
+  id: string;
+  name: string;
+  created_at: number;
+  role: string;
+}
+
+export interface OpenAiAdminApiKey {
+  object: "organization.admin_api_key";
+  id: string;
+  name: string;
+  redacted_value: string;
+  value?: string;
+  created_at: number;
+  owner: OpenAiAdminApiKeyOwner;
+}
+
+export interface OpenAiAdminApiKeyCreateRequest {
+  name: string;
+}
+
+export interface OpenAiAdminApiKeyListOptions {
+  after?: string;
+  order?: "asc" | "desc";
+  limit?: number;
+}
+
+export interface OpenAiAdminApiKeyListResponse {
+  object: "list";
+  data: OpenAiAdminApiKey[];
+  has_more: boolean;
+  first_id: string;
+  last_id: string;
+}
+
+export interface OpenAiAdminApiKeyDeleteResponse {
+  id: string;
+  object: "organization.admin_api_key.deleted";
+  deleted: boolean;
+}
+
+// Organization: Audit Logs
+
+export interface OpenAiAuditLogActor {
+  type: string;
+  session?: { user?: { id: string; email: string }; ip_address?: string };
+  api_key?: { id: string; type: string; user?: { id: string; email: string }; service_account?: { id: string } };
+}
+
+export interface OpenAiAuditLog {
+  id: string;
+  type: "audit_log";
+  effective_at: number;
+  project?: { id: string; name: string };
+  actor: OpenAiAuditLogActor;
+  [key: string]: unknown;
+}
+
+export interface OpenAiAuditLogEffectiveAt {
+  gt?: number;
+  gte?: number;
+  lt?: number;
+  lte?: number;
+}
+
+export interface OpenAiAuditLogListOptions {
+  effective_at?: OpenAiAuditLogEffectiveAt;
+  project_ids?: string[];
+  event_types?: string[];
+  actor_ids?: string[];
+  actor_emails?: string[];
+  resource_ids?: string[];
+  limit?: number;
+  after?: string;
+  before?: string;
+}
+
+export interface OpenAiAuditLogListResponse {
+  object: "list";
+  data: OpenAiAuditLog[];
+  first_id: string;
+  last_id: string;
+  has_more: boolean;
+}
+
+// Organization: Costs
+
+export interface OpenAiCostsAmount {
+  value: number;
+  currency: string;
+}
+
+export interface OpenAiCostsResult {
+  object: string;
+  amount: OpenAiCostsAmount;
+  line_item?: string | null;
+  project_id?: string | null;
+}
+
+export interface OpenAiUsageTimeBucket {
+  object: "bucket";
+  start_time: number;
+  end_time: number;
+  result: Record<string, unknown>[];
+}
+
+export interface OpenAiUsageResponse {
+  object: "page";
+  data: OpenAiUsageTimeBucket[];
+  has_more: boolean;
+  next_page?: string;
+}
+
+export interface OpenAiCostsOptions {
+  start_time: number;
+  end_time?: number;
+  bucket_width?: "1d";
+  project_ids?: string[];
+  group_by?: ("project_id" | "line_item")[];
+  limit?: number;
+  page?: string;
+}
+
+// Organization: Usage
+
+export interface OpenAiUsageCompletionsOptions {
+  start_time: number;
+  end_time?: number;
+  bucket_width?: "1m" | "1h" | "1d";
+  project_ids?: string[];
+  user_ids?: string[];
+  api_key_ids?: string[];
+  models?: string[];
+  batch?: boolean;
+  group_by?: (
+    | "project_id"
+    | "user_id"
+    | "api_key_id"
+    | "model"
+    | "batch"
+  )[];
+  limit?: number;
+  page?: string;
+}
+
+export interface OpenAiUsageEmbeddingsOptions {
+  start_time: number;
+  end_time?: number;
+  bucket_width?: "1m" | "1h" | "1d";
+  project_ids?: string[];
+  user_ids?: string[];
+  api_key_ids?: string[];
+  models?: string[];
+  group_by?: ("project_id" | "user_id" | "api_key_id" | "model")[];
+  limit?: number;
+  page?: string;
+}
+
+export interface OpenAiUsageModerationsOptions {
+  start_time: number;
+  end_time?: number;
+  bucket_width?: "1m" | "1h" | "1d";
+  project_ids?: string[];
+  user_ids?: string[];
+  api_key_ids?: string[];
+  models?: string[];
+  group_by?: ("project_id" | "user_id" | "api_key_id" | "model")[];
+  limit?: number;
+  page?: string;
+}
+
+export interface OpenAiUsageImagesOptions {
+  start_time: number;
+  end_time?: number;
+  bucket_width?: "1m" | "1h" | "1d";
+  sources?: (
+    | "image.generation"
+    | "image.edit"
+    | "image.variation"
+  )[];
+  sizes?: (
+    | "256x256"
+    | "512x512"
+    | "1024x1024"
+    | "1792x1792"
+    | "1024x1792"
+  )[];
+  project_ids?: string[];
+  user_ids?: string[];
+  api_key_ids?: string[];
+  models?: string[];
+  group_by?: (
+    | "project_id"
+    | "user_id"
+    | "api_key_id"
+    | "model"
+    | "size"
+    | "source"
+  )[];
+  limit?: number;
+  page?: string;
+}
+
+export interface OpenAiUsageAudioSpeechesOptions {
+  start_time: number;
+  end_time?: number;
+  bucket_width?: "1m" | "1h" | "1d";
+  project_ids?: string[];
+  user_ids?: string[];
+  api_key_ids?: string[];
+  models?: string[];
+  group_by?: ("project_id" | "user_id" | "api_key_id" | "model")[];
+  limit?: number;
+  page?: string;
+}
+
+export interface OpenAiUsageAudioTranscriptionsOptions {
+  start_time: number;
+  end_time?: number;
+  bucket_width?: "1m" | "1h" | "1d";
+  project_ids?: string[];
+  user_ids?: string[];
+  api_key_ids?: string[];
+  models?: string[];
+  group_by?: ("project_id" | "user_id" | "api_key_id" | "model")[];
+  limit?: number;
+  page?: string;
+}
+
+export interface OpenAiUsageVectorStoresOptions {
+  start_time: number;
+  end_time?: number;
+  bucket_width?: "1m" | "1h" | "1d";
+  project_ids?: string[];
+  group_by?: "project_id"[];
+  limit?: number;
+  page?: string;
+}
+
+export interface OpenAiUsageCodeInterpreterSessionsOptions {
+  start_time: number;
+  end_time?: number;
+  bucket_width?: "1m" | "1h" | "1d";
+  project_ids?: string[];
+  group_by?: "project_id"[];
+  limit?: number;
+  page?: string;
+}
+
+// Organization: Invites
+
+export interface OpenAiInviteProject {
+  id: string;
+  role: "member" | "owner";
+}
+
+export interface OpenAiInvite {
+  object: "organization.invite";
+  id: string;
+  email: string;
+  role: "owner" | "reader";
+  status: "accepted" | "expired" | "pending";
+  invited_at: number;
+  expires_at: number;
+  accepted_at?: number | null;
+  projects?: OpenAiInviteProject[];
+}
+
+export interface OpenAiInviteCreateRequest {
+  email: string;
+  role: "reader" | "owner";
+  projects?: OpenAiInviteProject[];
+}
+
+export interface OpenAiInviteListOptions {
+  limit?: number;
+  after?: string;
+}
+
+export interface OpenAiInviteListResponse {
+  object: "list";
+  data: OpenAiInvite[];
+  first_id: string;
+  last_id: string;
+  has_more: boolean;
+}
+
+export interface OpenAiInviteDeleteResponse {
+  object: "organization.invite.deleted";
+  id: string;
+  deleted: boolean;
+}
+
+// Organization: Users
+
+export interface OpenAiOrgUser {
+  object: "organization.user";
+  id: string;
+  name: string;
+  email: string;
+  role: "owner" | "reader";
+  added_at: number;
+}
+
+export interface OpenAiOrgUserUpdateRequest {
+  role: "owner" | "reader";
+}
+
+export interface OpenAiOrgUserListOptions {
+  limit?: number;
+  after?: string;
+  emails?: string[];
+}
+
+export interface OpenAiOrgUserListResponse {
+  object: "list";
+  data: OpenAiOrgUser[];
+  first_id: string;
+  last_id: string;
+  has_more: boolean;
+}
+
+export interface OpenAiOrgUserDeleteResponse {
+  object: "organization.user.deleted";
+  id: string;
+  deleted: boolean;
+}
+
+// Organization: Projects
+
+export interface OpenAiProject {
+  id: string;
+  object: "organization.project";
+  name: string;
+  created_at: number;
+  archived_at?: number | null;
+  status: "active" | "archived";
+}
+
+export interface OpenAiProjectCreateRequest {
+  name: string;
+}
+
+export interface OpenAiProjectUpdateRequest {
+  name: string;
+}
+
+export interface OpenAiProjectListOptions {
+  limit?: number;
+  after?: string;
+  include_archived?: boolean;
+}
+
+export interface OpenAiProjectListResponse {
+  object: "list";
+  data: OpenAiProject[];
+  first_id: string;
+  last_id: string;
+  has_more: boolean;
+}
+
+// Organization: Project Users
+
+export interface OpenAiProjectUser {
+  object: "organization.project.user";
+  id: string;
+  name: string;
+  email: string;
+  role: "owner" | "member";
+  added_at: number;
+}
+
+export interface OpenAiProjectUserCreateRequest {
+  user_id: string;
+  role: "owner" | "member";
+}
+
+export interface OpenAiProjectUserUpdateRequest {
+  role: "owner" | "member";
+}
+
+export interface OpenAiProjectUserListOptions {
+  limit?: number;
+  after?: string;
+}
+
+export interface OpenAiProjectUserListResponse {
+  object: "list";
+  data: OpenAiProjectUser[];
+  first_id: string;
+  last_id: string;
+  has_more: boolean;
+}
+
+export interface OpenAiProjectUserDeleteResponse {
+  object: "organization.project.user.deleted";
+  id: string;
+  deleted: boolean;
+}
+
+// Organization: Project Service Accounts
+
+export interface OpenAiProjectServiceAccount {
+  object: "organization.project.service_account";
+  id: string;
+  name: string;
+  role: "owner" | "member";
+  created_at: number;
+}
+
+export interface OpenAiProjectServiceAccountApiKey {
+  object: "organization.project.service_account.api_key";
+  value: string;
+  name: string;
+  created_at: number;
+  id: string;
+}
+
+export interface OpenAiProjectServiceAccountCreateRequest {
+  name: string;
+}
+
+export interface OpenAiProjectServiceAccountCreateResponse {
+  object: "organization.project.service_account";
+  id: string;
+  name: string;
+  role: "member";
+  created_at: number;
+  api_key: OpenAiProjectServiceAccountApiKey;
+}
+
+export interface OpenAiProjectServiceAccountListOptions {
+  limit?: number;
+  after?: string;
+}
+
+export interface OpenAiProjectServiceAccountListResponse {
+  object: "list";
+  data: OpenAiProjectServiceAccount[];
+  first_id: string;
+  last_id: string;
+  has_more: boolean;
+}
+
+export interface OpenAiProjectServiceAccountDeleteResponse {
+  object: "organization.project.service_account.deleted";
+  id: string;
+  deleted: boolean;
+}
+
+// Organization: Project API Keys
+
+export interface OpenAiProjectApiKeyOwner {
+  type: "user" | "service_account";
+  user?: OpenAiProjectUser;
+  service_account?: OpenAiProjectServiceAccount;
+}
+
+export interface OpenAiProjectApiKey {
+  object: "organization.project.api_key";
+  redacted_value: string;
+  name: string;
+  created_at: number;
+  id: string;
+  owner: OpenAiProjectApiKeyOwner;
+}
+
+export interface OpenAiProjectApiKeyListOptions {
+  limit?: number;
+  after?: string;
+}
+
+export interface OpenAiProjectApiKeyListResponse {
+  object: "list";
+  data: OpenAiProjectApiKey[];
+  first_id: string;
+  last_id: string;
+  has_more: boolean;
+}
+
+export interface OpenAiProjectApiKeyDeleteResponse {
+  object: "organization.project.api_key.deleted";
+  id: string;
+  deleted: boolean;
+}
+
+// Organization: Project Rate Limits
+
+export interface OpenAiProjectRateLimit {
+  object: "organization.project.rate_limit";
+  id: string;
+  model: string;
+  max_requests_per_1_minute: number;
+  max_tokens_per_1_minute: number;
+  max_images_per_1_minute: number;
+  max_audio_megabytes_per_1_minute: number;
+  max_requests_per_1_day: number;
+  batch_1_day_max_input_tokens: number;
+}
+
+export interface OpenAiProjectRateLimitUpdateRequest {
+  max_requests_per_1_minute?: number;
+  max_tokens_per_1_minute?: number;
+  max_images_per_1_minute?: number;
+  max_audio_megabytes_per_1_minute?: number;
+  max_requests_per_1_day?: number;
+  batch_1_day_max_input_tokens?: number;
+}
+
+export interface OpenAiProjectRateLimitListOptions {
+  limit?: number;
+  after?: string;
+  before?: string;
+}
+
+export interface OpenAiProjectRateLimitListResponse {
+  object: "list";
+  data: OpenAiProjectRateLimit[];
+  first_id: string;
+  last_id: string;
+  has_more: boolean;
+}
+
+// Organization: Method interfaces
+
+interface OpenAiAdminApiKeysCreateMethod {
+  (
+    req: OpenAiAdminApiKeyCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiAdminApiKey>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  list: OpenAiAdminApiKeysListMethod;
+  retrieve: OpenAiAdminApiKeysRetrieveMethod;
+  del: OpenAiAdminApiKeysDeleteMethod;
+}
+
+interface OpenAiAdminApiKeysListMethod {
+  (
+    opts?: OpenAiAdminApiKeyListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiAdminApiKeyListResponse>;
+}
+
+interface OpenAiAdminApiKeysRetrieveMethod {
+  (keyId: string, signal?: AbortSignal): Promise<OpenAiAdminApiKey>;
+}
+
+interface OpenAiAdminApiKeysDeleteMethod {
+  (keyId: string, signal?: AbortSignal): Promise<OpenAiAdminApiKeyDeleteResponse>;
+  payloadSchema: PayloadSchema;
+}
+
+interface OpenAiAuditLogsListMethod {
+  (
+    opts?: OpenAiAuditLogListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiAuditLogListResponse>;
+}
+
+interface OpenAiAuditLogsNamespace {
+  list: OpenAiAuditLogsListMethod;
+}
+
+interface OpenAiCostsMethod {
+  (
+    opts: OpenAiCostsOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiUsageResponse>;
+}
+
+interface OpenAiUsageCompletionsMethod {
+  (
+    opts: OpenAiUsageCompletionsOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiUsageResponse>;
+}
+
+interface OpenAiUsageEmbeddingsMethod {
+  (
+    opts: OpenAiUsageEmbeddingsOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiUsageResponse>;
+}
+
+interface OpenAiUsageModerationsMethod {
+  (
+    opts: OpenAiUsageModerationsOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiUsageResponse>;
+}
+
+interface OpenAiUsageImagesMethod {
+  (
+    opts: OpenAiUsageImagesOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiUsageResponse>;
+}
+
+interface OpenAiUsageAudioSpeechesMethod {
+  (
+    opts: OpenAiUsageAudioSpeechesOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiUsageResponse>;
+}
+
+interface OpenAiUsageAudioTranscriptionsMethod {
+  (
+    opts: OpenAiUsageAudioTranscriptionsOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiUsageResponse>;
+}
+
+interface OpenAiUsageVectorStoresMethod {
+  (
+    opts: OpenAiUsageVectorStoresOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiUsageResponse>;
+}
+
+interface OpenAiUsageCodeInterpreterSessionsMethod {
+  (
+    opts: OpenAiUsageCodeInterpreterSessionsOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiUsageResponse>;
+}
+
+interface OpenAiOrgUsageNamespace {
+  completions: OpenAiUsageCompletionsMethod;
+  embeddings: OpenAiUsageEmbeddingsMethod;
+  moderations: OpenAiUsageModerationsMethod;
+  images: OpenAiUsageImagesMethod;
+  audio_speeches: OpenAiUsageAudioSpeechesMethod;
+  audio_transcriptions: OpenAiUsageAudioTranscriptionsMethod;
+  vector_stores: OpenAiUsageVectorStoresMethod;
+  code_interpreter_sessions: OpenAiUsageCodeInterpreterSessionsMethod;
+}
+
+interface OpenAiInvitesCreateMethod {
+  (
+    req: OpenAiInviteCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiInvite>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  list: OpenAiInvitesListMethod;
+  retrieve: OpenAiInvitesRetrieveMethod;
+  del: OpenAiInvitesDeleteMethod;
+}
+
+interface OpenAiInvitesListMethod {
+  (
+    opts?: OpenAiInviteListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiInviteListResponse>;
+}
+
+interface OpenAiInvitesRetrieveMethod {
+  (inviteId: string, signal?: AbortSignal): Promise<OpenAiInvite>;
+}
+
+interface OpenAiInvitesDeleteMethod {
+  (inviteId: string, signal?: AbortSignal): Promise<OpenAiInviteDeleteResponse>;
+  payloadSchema: PayloadSchema;
+}
+
+interface OpenAiOrgUsersUpdateMethod {
+  (
+    userId: string,
+    req: OpenAiOrgUserUpdateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiOrgUser>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiOrgUsersDeleteMethod {
+  (userId: string, signal?: AbortSignal): Promise<OpenAiOrgUserDeleteResponse>;
+  payloadSchema: PayloadSchema;
+}
+
+interface OpenAiOrgUsersNamespace {
+  list: OpenAiOrgUsersListMethod;
+  retrieve: OpenAiOrgUsersRetrieveMethod;
+  update: OpenAiOrgUsersUpdateMethod;
+  del: OpenAiOrgUsersDeleteMethod;
+}
+
+interface OpenAiOrgUsersListMethod {
+  (
+    opts?: OpenAiOrgUserListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiOrgUserListResponse>;
+}
+
+interface OpenAiOrgUsersRetrieveMethod {
+  (userId: string, signal?: AbortSignal): Promise<OpenAiOrgUser>;
+}
+
+interface OpenAiProjectsCreateMethod {
+  (
+    req: OpenAiProjectCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiProject>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  list: OpenAiProjectsListMethod;
+  retrieve: OpenAiProjectsRetrieveMethod;
+  update: OpenAiProjectsUpdateMethod;
+  archive: OpenAiProjectsArchiveMethod;
+  users: OpenAiProjectUsersNamespace;
+  service_accounts: OpenAiProjectServiceAccountsNamespace;
+  api_keys: OpenAiProjectApiKeysNamespace;
+  rate_limits: OpenAiProjectRateLimitsNamespace;
+}
+
+interface OpenAiProjectsListMethod {
+  (
+    opts?: OpenAiProjectListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiProjectListResponse>;
+}
+
+interface OpenAiProjectsRetrieveMethod {
+  (projectId: string, signal?: AbortSignal): Promise<OpenAiProject>;
+}
+
+interface OpenAiProjectsUpdateMethod {
+  (
+    projectId: string,
+    req: OpenAiProjectUpdateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiProject>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiProjectsArchiveMethod {
+  (projectId: string, signal?: AbortSignal): Promise<OpenAiProject>;
+  payloadSchema: PayloadSchema;
+}
+
+interface OpenAiProjectUsersCreateMethod {
+  (
+    projectId: string,
+    req: OpenAiProjectUserCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiProjectUser>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiProjectUsersUpdateMethod {
+  (
+    projectId: string,
+    userId: string,
+    req: OpenAiProjectUserUpdateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiProjectUser>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiProjectUsersDeleteMethod {
+  (
+    projectId: string,
+    userId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiProjectUserDeleteResponse>;
+  payloadSchema: PayloadSchema;
+}
+
+interface OpenAiProjectUsersNamespace {
+  create: OpenAiProjectUsersCreateMethod;
+  list(
+    projectId: string,
+    opts?: OpenAiProjectUserListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiProjectUserListResponse>;
+  retrieve(
+    projectId: string,
+    userId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiProjectUser>;
+  update: OpenAiProjectUsersUpdateMethod;
+  del: OpenAiProjectUsersDeleteMethod;
+}
+
+interface OpenAiProjectServiceAccountsCreateMethod {
+  (
+    projectId: string,
+    req: OpenAiProjectServiceAccountCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiProjectServiceAccountCreateResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiProjectServiceAccountsDeleteMethod {
+  (
+    projectId: string,
+    serviceAccountId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiProjectServiceAccountDeleteResponse>;
+  payloadSchema: PayloadSchema;
+}
+
+interface OpenAiProjectServiceAccountsNamespace {
+  create: OpenAiProjectServiceAccountsCreateMethod;
+  list(
+    projectId: string,
+    opts?: OpenAiProjectServiceAccountListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiProjectServiceAccountListResponse>;
+  retrieve(
+    projectId: string,
+    serviceAccountId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiProjectServiceAccount>;
+  del: OpenAiProjectServiceAccountsDeleteMethod;
+}
+
+interface OpenAiProjectApiKeysDeleteMethod {
+  (
+    projectId: string,
+    keyId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiProjectApiKeyDeleteResponse>;
+  payloadSchema: PayloadSchema;
+}
+
+interface OpenAiProjectApiKeysNamespace {
+  list(
+    projectId: string,
+    opts?: OpenAiProjectApiKeyListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiProjectApiKeyListResponse>;
+  retrieve(
+    projectId: string,
+    keyId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiProjectApiKey>;
+  del: OpenAiProjectApiKeysDeleteMethod;
+}
+
+interface OpenAiProjectRateLimitsUpdateMethod {
+  (
+    projectId: string,
+    rateLimitId: string,
+    req: OpenAiProjectRateLimitUpdateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiProjectRateLimit>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiProjectRateLimitsNamespace {
+  list(
+    projectId: string,
+    opts?: OpenAiProjectRateLimitListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiProjectRateLimitListResponse>;
+  update: OpenAiProjectRateLimitsUpdateMethod;
+}
+
+interface OpenAiOrganizationNamespace {
+  admin_api_keys: OpenAiAdminApiKeysCreateMethod;
+  audit_logs: OpenAiAuditLogsNamespace;
+  costs: OpenAiCostsMethod;
+  usage: OpenAiOrgUsageNamespace;
+  invites: OpenAiInvitesCreateMethod;
+  users: OpenAiOrgUsersNamespace;
+  projects: OpenAiProjectsCreateMethod;
+}
+
 interface OpenAiV1Namespace {
   chat: OpenAiChatNamespace;
   audio: OpenAiAudioNamespace;
@@ -2433,6 +3311,7 @@ interface OpenAiV1Namespace {
   realtime: OpenAiRealtimeNamespace;
   evals: OpenAiEvalsCreateMethod;
   vector_stores: OpenAiVectorStoresCreateMethod;
+  organization: OpenAiOrganizationNamespace;
 }
 
 // Provider interface

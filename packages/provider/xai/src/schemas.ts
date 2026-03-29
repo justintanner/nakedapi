@@ -649,6 +649,187 @@ export const apiKeyUpdateSchema: PayloadSchema = {
   },
 };
 
+export const completionsSchema: PayloadSchema = {
+  method: "POST",
+  path: "/completions",
+  contentType: "application/json",
+  fields: {
+    model: {
+      type: "string",
+      required: true,
+      description: "Model identifier",
+    },
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Input text prompt",
+    },
+    max_tokens: {
+      type: "number",
+      description: "Maximum number of tokens to generate",
+    },
+    temperature: {
+      type: "number",
+      description: "Sampling temperature (0-2)",
+    },
+    top_p: {
+      type: "number",
+      description: "Nucleus sampling threshold",
+    },
+    n: {
+      type: "number",
+      description: "Number of completions to generate",
+    },
+    stop: {
+      type: "array",
+      description: "Up to 4 stop sequences",
+      items: { type: "string" },
+    },
+    echo: {
+      type: "boolean",
+      description: "Include prompt in response",
+    },
+    stream: {
+      type: "boolean",
+      description: "Enable streaming",
+    },
+    frequency_penalty: {
+      type: "number",
+      description: "Frequency penalty (-2.0 to 2.0)",
+    },
+    presence_penalty: {
+      type: "number",
+      description: "Presence penalty (-2.0 to 2.0)",
+    },
+    logprobs: {
+      type: "boolean",
+      description: "Return log probabilities",
+    },
+    seed: {
+      type: "number",
+      description: "Deterministic sampling seed",
+    },
+    user: {
+      type: "string",
+      description: "End-user identifier",
+    },
+  },
+};
+
+export const messagesSchema: PayloadSchema = {
+  method: "POST",
+  path: "/messages",
+  contentType: "application/json",
+  fields: {
+    model: {
+      type: "string",
+      required: true,
+      description: "Model name",
+    },
+    messages: {
+      type: "array",
+      required: true,
+      description: "Conversation messages",
+      items: {
+        type: "object",
+        properties: {
+          role: { type: "string", required: true },
+          content: { type: "string", required: true },
+        },
+      },
+    },
+    max_tokens: {
+      type: "number",
+      required: true,
+      description: "Maximum output tokens",
+    },
+    system: {
+      type: "string",
+      description: "System prompt",
+    },
+    temperature: {
+      type: "number",
+      description: "Sampling temperature (0-2)",
+    },
+    top_p: {
+      type: "number",
+      description: "Nucleus sampling parameter",
+    },
+    stop_sequences: {
+      type: "array",
+      description: "Up to 4 stop sequences",
+      items: { type: "string" },
+    },
+    stream: {
+      type: "boolean",
+      description: "Enable streaming",
+    },
+    tools: {
+      type: "array",
+      description: "Up to 128 function definitions",
+      items: { type: "object" },
+    },
+    tool_choice: {
+      type: "object",
+      description: "Tool selection strategy",
+    },
+    metadata: {
+      type: "object",
+      description: "Metadata with user_id for abuse monitoring",
+      properties: {
+        user_id: { type: "string" },
+      },
+    },
+  },
+};
+
+export const completeSchema: PayloadSchema = {
+  method: "POST",
+  path: "/complete",
+  contentType: "application/json",
+  fields: {
+    model: {
+      type: "string",
+      required: true,
+      description: "Completion model identifier",
+    },
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Input for completion",
+    },
+    max_tokens_to_sample: {
+      type: "number",
+      required: true,
+      description: "Output token limit",
+    },
+    temperature: {
+      type: "number",
+      description: "Sampling temperature (0-2)",
+    },
+    top_p: {
+      type: "number",
+      description: "Nucleus sampling threshold",
+    },
+    stop_sequences: {
+      type: "array",
+      description: "Up to 4 stop sequences",
+      items: { type: "string" },
+    },
+    stream: {
+      type: "boolean",
+      description: "Enable streaming (unsupported)",
+    },
+    metadata: {
+      type: "object",
+      description: "Metadata with user_id",
+      properties: {
+        user_id: { type: "string" },
+      },
+    },
+  },
+};
+
 export const videoExtensionsSchema: PayloadSchema = {
   method: "POST",
   path: "/videos/extensions",

@@ -1335,6 +1335,137 @@ export interface XaiManagementKeyValidationResponse {
   } | null;
 }
 
+// Legacy completions types (POST /v1/completions — deprecated)
+
+export interface XaiCompletionsRequest {
+  model: string;
+  prompt: string | string[];
+  max_tokens?: number;
+  temperature?: number;
+  top_p?: number;
+  n?: number;
+  stop?: string[];
+  echo?: boolean;
+  stream?: boolean;
+  frequency_penalty?: number;
+  presence_penalty?: number;
+  logprobs?: boolean;
+  seed?: number;
+  user?: string;
+}
+
+export interface XaiCompletionsChoice {
+  index: number;
+  text: string;
+  finish_reason: string | null;
+}
+
+export interface XaiCompletionsUsageDetails {
+  text_tokens: number;
+  audio_tokens: number;
+  image_tokens: number;
+  cached_tokens: number;
+}
+
+export interface XaiCompletionsCompletionDetails {
+  reasoning_tokens: number;
+  audio_tokens: number;
+  accepted_prediction_tokens: number;
+  rejected_prediction_tokens: number;
+}
+
+export interface XaiCompletionsUsage {
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+  prompt_tokens_details?: XaiCompletionsUsageDetails;
+  completion_tokens_details?: XaiCompletionsCompletionDetails;
+  cost_in_usd_ticks?: number;
+  num_sources_used?: number;
+}
+
+export interface XaiCompletionsResponse {
+  id: string;
+  object: string;
+  created: number;
+  model: string;
+  choices: XaiCompletionsChoice[];
+  system_fingerprint?: string | null;
+  usage?: XaiCompletionsUsage;
+}
+
+// Anthropic-compatible messages types (POST /v1/messages — deprecated)
+
+export interface XaiMessagesRequest {
+  model: string;
+  messages: { role: string; content: string | Record<string, unknown>[] }[];
+  max_tokens: number;
+  system?: string | Record<string, unknown>[];
+  temperature?: number;
+  top_p?: number;
+  stop_sequences?: string[];
+  stream?: boolean;
+  tools?: Record<string, unknown>[];
+  tool_choice?: Record<string, unknown>;
+  metadata?: { user_id?: string };
+}
+
+export interface XaiMessagesUsage {
+  input_tokens: number;
+  output_tokens: number;
+  cache_creation_input_tokens?: number;
+  cache_read_input_tokens?: number;
+}
+
+export interface XaiMessagesResponse {
+  id: string;
+  type: string;
+  role: string;
+  content: Record<string, unknown>[];
+  model: string;
+  stop_reason: string | null;
+  stop_sequence: string | null;
+  usage: XaiMessagesUsage;
+}
+
+// Anthropic-compatible text completion types (POST /v1/complete — deprecated)
+
+export interface XaiCompleteRequest {
+  model: string;
+  prompt: string;
+  max_tokens_to_sample: number;
+  temperature?: number;
+  top_p?: number;
+  stop_sequences?: string[];
+  stream?: boolean;
+  metadata?: { user_id?: string };
+}
+
+export interface XaiCompleteResponse {
+  type: string;
+  id: string;
+  completion: string;
+  stop_reason: string | null;
+  model: string;
+}
+
+// API key info types (GET /v1/api-key)
+
+export interface XaiApiKeyInfo {
+  acls: string[];
+  api_key_blocked: boolean;
+  api_key_disabled: boolean;
+  api_key_id: string;
+  create_time: string;
+  modified_by: string;
+  modify_time: string;
+  name: string;
+  redacted_api_key: string;
+  team_blocked: boolean;
+  team_id: string;
+  user_id: string;
+}
+
 // Payload schema types
 export interface PayloadFieldSchema {
   type: "string" | "number" | "boolean" | "array" | "object";
@@ -1622,6 +1753,27 @@ interface XaiRealtimeNamespace {
   connect(opts?: XaiRealtimeConnectOptions): XaiRealtimeConnection;
 }
 
+interface XaiCompletionsMethod {
+  (
+    req: XaiCompletionsRequest,
+    signal?: AbortSignal
+  ): Promise<XaiCompletionsResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface XaiMessagesMethod {
+  (req: XaiMessagesRequest, signal?: AbortSignal): Promise<XaiMessagesResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface XaiCompleteMethod {
+  (req: XaiCompleteRequest, signal?: AbortSignal): Promise<XaiCompleteResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
 interface XaiAuthApiKeysCreateMethod {
   (
     teamId: string,
@@ -1692,6 +1844,10 @@ interface XaiV1Namespace {
   "tokenize-text": XaiTokenizeTextMethod;
   realtime: XaiRealtimeNamespace;
   auth: XaiAuthNamespace;
+  completions: XaiCompletionsMethod;
+  messages: XaiMessagesMethod;
+  complete: XaiCompleteMethod;
+  "api-key": (signal?: AbortSignal) => Promise<XaiApiKeyInfo>;
 }
 
 // Provider interface

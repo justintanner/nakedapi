@@ -61,6 +61,13 @@ import {
   XaiTeamModelsResponse,
   XaiTeamEndpointsResponse,
   XaiManagementKeyValidationResponse,
+  XaiCompletionsRequest,
+  XaiCompletionsResponse,
+  XaiMessagesRequest,
+  XaiMessagesResponse,
+  XaiCompleteRequest,
+  XaiCompleteResponse,
+  XaiApiKeyInfo,
   XaiProvider,
   XaiError,
 } from "./types";
@@ -84,6 +91,9 @@ import {
   realtimeClientSecretsSchema,
   apiKeyCreateSchema,
   apiKeyUpdateSchema,
+  completionsSchema,
+  messagesSchema,
+  completeSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
 
@@ -1201,6 +1211,73 @@ export function xai(opts: XaiOptions): XaiProvider {
         apiKeys: authApiKeys as XaiProvider["v1"]["auth"]["apiKeys"],
         teams: authTeams,
         managementKeys: authManagementKeys,
+      },
+      completions: Object.assign(
+        async function completions(
+          req: XaiCompletionsRequest,
+          signal?: AbortSignal
+        ): Promise<XaiCompletionsResponse> {
+          return await makeRequest<XaiCompletionsResponse>(
+            "POST",
+            "/completions",
+            req,
+            signal
+          );
+        },
+        {
+          payloadSchema: completionsSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, completionsSchema);
+          },
+        }
+      ),
+      messages: Object.assign(
+        async function messages(
+          req: XaiMessagesRequest,
+          signal?: AbortSignal
+        ): Promise<XaiMessagesResponse> {
+          return await makeRequest<XaiMessagesResponse>(
+            "POST",
+            "/messages",
+            req,
+            signal
+          );
+        },
+        {
+          payloadSchema: messagesSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, messagesSchema);
+          },
+        }
+      ),
+      complete: Object.assign(
+        async function complete(
+          req: XaiCompleteRequest,
+          signal?: AbortSignal
+        ): Promise<XaiCompleteResponse> {
+          return await makeRequest<XaiCompleteResponse>(
+            "POST",
+            "/complete",
+            req,
+            signal
+          );
+        },
+        {
+          payloadSchema: completeSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, completeSchema);
+          },
+        }
+      ),
+      "api-key": async function apiKey(
+        signal?: AbortSignal
+      ): Promise<XaiApiKeyInfo> {
+        return await makeRequest<XaiApiKeyInfo>(
+          "GET",
+          "/api-key",
+          undefined,
+          signal
+        );
       },
     },
   };

@@ -1773,10 +1773,7 @@ interface OpenAiFineTuningNamespace {
 
 // Uploads namespace types
 interface OpenAiUploadsCreateMethod {
-  (
-    req: OpenAiUploadCreateRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiUpload>;
+  (req: OpenAiUploadCreateRequest, signal?: AbortSignal): Promise<OpenAiUpload>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
   addPart: OpenAiUploadsAddPartMethod;
@@ -1878,11 +1875,7 @@ interface OpenAiContainerFilesDeleteMethod {
 }
 
 interface OpenAiContainerFilesContentMethod {
-  (
-    containerId: string,
-    fileId: string,
-    signal?: AbortSignal
-  ): Promise<string>;
+  (containerId: string, fileId: string, signal?: AbortSignal): Promise<string>;
 }
 
 interface OpenAiContainerFilesNamespace {

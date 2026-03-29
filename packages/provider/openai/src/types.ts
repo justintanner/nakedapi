@@ -1331,7 +1331,7 @@ export interface OpenAiVectorStoreFileContentResponse {
 // Vector store file batch object
 export interface OpenAiVectorStoreFileBatch {
   id: string;
-  object: "vector_store.files_batch";
+  object: "vector_store.file_batch";
   created_at: number;
   vector_store_id: string;
   status: "in_progress" | "completed" | "cancelled" | "failed";

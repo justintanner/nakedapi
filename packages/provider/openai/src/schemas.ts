@@ -946,3 +946,260 @@ export const audioTranslationsSchema: PayloadSchema = {
     temperature: { type: "number", description: "Sampling temperature 0-1" },
   },
 };
+
+export const vectorStoresCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/vector_stores",
+  contentType: "application/json",
+  fields: {
+    file_ids: {
+      type: "array",
+      description: "List of file IDs to add (max 500)",
+      items: { type: "string" },
+    },
+    name: {
+      type: "string",
+      description: "Name of the vector store",
+    },
+    description: {
+      type: "string",
+      description: "Description of the vector store",
+    },
+    expires_after: {
+      type: "object",
+      description: "Expiration policy",
+      properties: {
+        anchor: {
+          type: "string",
+          required: true,
+          enum: ["last_active_at"],
+        },
+        days: {
+          type: "number",
+          required: true,
+          description: "Days until expiration (1-365)",
+        },
+      },
+    },
+    chunking_strategy: {
+      type: "object",
+      description: "Chunking strategy for file processing",
+      properties: {
+        type: {
+          type: "string",
+          required: true,
+          enum: ["auto", "static"],
+        },
+      },
+    },
+    metadata: {
+      type: "object",
+      description: "Key-value metadata pairs (max 16)",
+    },
+  },
+};
+
+export const vectorStoresUpdateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/vector_stores/{vector_store_id}",
+  contentType: "application/json",
+  fields: {
+    name: {
+      type: "string",
+      description: "Name of the vector store",
+    },
+    expires_after: {
+      type: "object",
+      description: "Expiration policy",
+      properties: {
+        anchor: {
+          type: "string",
+          required: true,
+          enum: ["last_active_at"],
+        },
+        days: {
+          type: "number",
+          required: true,
+          description: "Days until expiration (1-365)",
+        },
+      },
+    },
+    metadata: {
+      type: "object",
+      description: "Key-value metadata pairs (max 16)",
+    },
+  },
+};
+
+export const vectorStoresDeleteSchema: PayloadSchema = {
+  method: "DELETE",
+  path: "/vector_stores/{vector_store_id}",
+  contentType: "application/json",
+  fields: {
+    vector_store_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the vector store to delete",
+    },
+  },
+};
+
+export const vectorStoresSearchSchema: PayloadSchema = {
+  method: "POST",
+  path: "/vector_stores/{vector_store_id}/search",
+  contentType: "application/json",
+  fields: {
+    query: {
+      type: "string",
+      required: true,
+      description: "Search query string or array of strings",
+    },
+    rewrite_query: {
+      type: "boolean",
+      description: "Whether to rewrite the query for better results",
+    },
+    max_num_results: {
+      type: "number",
+      description: "Maximum number of results (1-50, default 10)",
+    },
+    filters: {
+      type: "object",
+      description:
+        "Filter by file attributes (comparison or compound filter)",
+    },
+    ranking_options: {
+      type: "object",
+      description: "Ranking configuration",
+      properties: {
+        ranker: {
+          type: "string",
+          enum: ["none", "auto", "default-2024-11-15"],
+        },
+        score_threshold: {
+          type: "number",
+          description: "Minimum score threshold (0-1)",
+        },
+      },
+    },
+  },
+};
+
+export const vectorStoreFilesCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/vector_stores/{vector_store_id}/files",
+  contentType: "application/json",
+  fields: {
+    file_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the file to add",
+    },
+    chunking_strategy: {
+      type: "object",
+      description: "Chunking strategy for file processing",
+      properties: {
+        type: {
+          type: "string",
+          required: true,
+          enum: ["auto", "static"],
+        },
+      },
+    },
+    attributes: {
+      type: "object",
+      description:
+        "File attributes for filtering (max 16 key-value pairs)",
+    },
+  },
+};
+
+export const vectorStoreFilesUpdateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/vector_stores/{vector_store_id}/files/{file_id}",
+  contentType: "application/json",
+  fields: {
+    attributes: {
+      type: "object",
+      required: true,
+      description:
+        "File attributes for filtering (max 16 key-value pairs)",
+    },
+  },
+};
+
+export const vectorStoreFilesDeleteSchema: PayloadSchema = {
+  method: "DELETE",
+  path: "/vector_stores/{vector_store_id}/files/{file_id}",
+  contentType: "application/json",
+  fields: {
+    vector_store_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the vector store",
+    },
+    file_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the file to delete",
+    },
+  },
+};
+
+export const vectorStoreFileBatchesCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/vector_stores/{vector_store_id}/file_batches",
+  contentType: "application/json",
+  fields: {
+    file_ids: {
+      type: "array",
+      description: "List of file IDs to add (max 2000)",
+      items: { type: "string" },
+    },
+    files: {
+      type: "array",
+      description:
+        "List of file objects with per-file overrides (max 2000)",
+      items: {
+        type: "object",
+        properties: {
+          file_id: { type: "string", required: true },
+          chunking_strategy: { type: "object" },
+          attributes: { type: "object" },
+        },
+      },
+    },
+    chunking_strategy: {
+      type: "object",
+      description: "Global chunking strategy (ignored if using files)",
+      properties: {
+        type: {
+          type: "string",
+          required: true,
+          enum: ["auto", "static"],
+        },
+      },
+    },
+    attributes: {
+      type: "object",
+      description: "Global file attributes (ignored if using files)",
+    },
+  },
+};
+
+export const vectorStoreFileBatchesCancelSchema: PayloadSchema = {
+  method: "POST",
+  path: "/vector_stores/{vector_store_id}/file_batches/{batch_id}/cancel",
+  contentType: "application/json",
+  fields: {
+    vector_store_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the vector store",
+    },
+    batch_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the file batch to cancel",
+    },
+  },
+};

@@ -532,4 +532,13 @@ export interface KieProvider {
   suno: import("./suno").SunoProvider;
   chat: import("./chat").KieChatProvider;
   claude: import("./claude").KieClaudeProvider["claude"];
+  codex: import("./codex").KieCodexProvider["codex"];
+  "gemini-2.5-pro": import("./gemini").KieGeminiProvider["gemini-2.5-pro"];
+  "gemini-2.5-flash": import("./gemini").KieGeminiProvider["gemini-2.5-flash"];
+  "gemini-3-pro": import("./gemini").KieGeminiProvider["gemini-3-pro"];
+  "gemini-3.1-pro": import("./gemini").KieGeminiProvider["gemini-3.1-pro"];
+  "gemini-3-flash": import("./gemini").KieGeminiProvider["gemini-3-flash"];
+  gpt4oImage: import("./gpt4o-image").Gpt4oImageProvider;
+  flux: import("./flux").FluxProvider;
+  runway: import("./runway").RunwayProvider;
 }

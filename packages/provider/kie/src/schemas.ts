@@ -130,6 +130,21 @@ export const veoGenerateSchema: PayloadSchema = {
   },
 };
 
+export const veoGet4kVideoSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/veo/get-4k-video",
+  contentType: "application/json",
+  fields: {
+    taskId: {
+      type: "string",
+      required: true,
+      description: "Task ID of the Veo video to upscale to 4K",
+    },
+    index: { type: "number", description: "Video index (for multi-output)" },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+  },
+};
+
 export const veoExtendSchema: PayloadSchema = {
   method: "POST",
   path: "/api/v1/veo/extend",
@@ -154,6 +169,393 @@ export const veoExtendSchema: PayloadSchema = {
     watermark: { type: "string", description: "Watermark text" },
   },
 };
+
+// ---------------------------------------------------------------------------
+// Suno extended schemas
+// ---------------------------------------------------------------------------
+
+export const sunoExtendSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/extend",
+  contentType: "application/json",
+  fields: {
+    audioId: {
+      type: "string",
+      required: true,
+      description: "Audio ID to extend",
+    },
+    prompt: { type: "string", required: true, description: "Lyrics/prompt" },
+    model: {
+      type: "string",
+      required: true,
+      enum: ["V4", "V4_5", "V4_5PLUS", "V4_5ALL", "V5"],
+      description: "Suno model version",
+    },
+    defaultParamFlag: {
+      type: "boolean",
+      required: true,
+      description: "Use default parameters",
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+    style: { type: "string", description: "Music style" },
+    title: { type: "string", description: "Song title" },
+    continueAt: {
+      type: "number",
+      description: "Continue from timestamp (seconds)",
+    },
+    negativeTags: { type: "string", description: "Styles to avoid" },
+  },
+};
+
+export const sunoUploadCoverSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/upload-cover",
+  contentType: "application/json",
+  fields: {
+    uploadUrl: {
+      type: "string",
+      required: true,
+      description: "URL of uploaded audio (max 8 min)",
+    },
+    prompt: { type: "string", required: true, description: "Lyrics/prompt" },
+    customMode: {
+      type: "boolean",
+      required: true,
+      description: "Enable custom mode",
+    },
+    instrumental: {
+      type: "boolean",
+      required: true,
+      description: "Instrumental only",
+    },
+    model: {
+      type: "string",
+      required: true,
+      enum: ["V4", "V4_5", "V4_5PLUS", "V4_5ALL", "V5"],
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+    style: { type: "string", description: "Music style" },
+    title: { type: "string", description: "Song title" },
+    negativeTags: { type: "string", description: "Styles to avoid" },
+  },
+};
+
+export const sunoUploadExtendSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/upload-extend",
+  contentType: "application/json",
+  fields: {
+    uploadUrl: {
+      type: "string",
+      required: true,
+      description: "URL of uploaded audio (max 8 min)",
+    },
+    defaultParamFlag: {
+      type: "boolean",
+      required: true,
+      description: "Use default parameters",
+    },
+    instrumental: {
+      type: "boolean",
+      required: true,
+      description: "Instrumental only",
+    },
+    continueAt: {
+      type: "number",
+      required: true,
+      description: "Continue from timestamp (seconds)",
+    },
+    model: {
+      type: "string",
+      required: true,
+      enum: ["V4", "V4_5", "V4_5PLUS", "V4_5ALL", "V5"],
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+    prompt: { type: "string", description: "Lyrics/prompt" },
+    style: { type: "string", description: "Music style" },
+    title: { type: "string", description: "Song title" },
+    negativeTags: { type: "string", description: "Styles to avoid" },
+  },
+};
+
+export const sunoAddInstrumentalSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/add-instrumental",
+  contentType: "application/json",
+  fields: {
+    uploadUrl: {
+      type: "string",
+      required: true,
+      description: "URL of uploaded audio",
+    },
+    title: { type: "string", required: true, description: "Song title" },
+    tags: {
+      type: "string",
+      required: true,
+      description: "Music style tags",
+    },
+    negativeTags: { type: "string", description: "Styles to avoid" },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+    model: {
+      type: "string",
+      enum: ["V4", "V4_5", "V4_5PLUS", "V4_5ALL", "V5"],
+    },
+  },
+};
+
+export const sunoAddVocalsSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/add-vocals",
+  contentType: "application/json",
+  fields: {
+    prompt: { type: "string", required: true, description: "Lyrics" },
+    title: { type: "string", required: true, description: "Song title" },
+    style: {
+      type: "string",
+      required: true,
+      description: "Music style",
+    },
+    uploadUrl: {
+      type: "string",
+      required: true,
+      description: "URL of uploaded audio",
+    },
+    negativeTags: { type: "string", description: "Styles to avoid" },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+    model: {
+      type: "string",
+      enum: ["V4", "V4_5", "V4_5PLUS", "V4_5ALL", "V5"],
+    },
+    vocalGender: {
+      type: "string",
+      enum: ["male", "female"],
+      description: "Vocal gender preference",
+    },
+  },
+};
+
+export const sunoReplaceSectionSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/replace-section",
+  contentType: "application/json",
+  fields: {
+    taskId: { type: "string", required: true, description: "Task ID" },
+    audioId: { type: "string", required: true, description: "Audio ID" },
+    prompt: { type: "string", required: true, description: "Lyrics/prompt" },
+    tags: { type: "string", required: true, description: "Music style tags" },
+    title: { type: "string", required: true, description: "Song title" },
+    infillStartS: {
+      type: "number",
+      required: true,
+      description: "Section start (seconds)",
+    },
+    infillEndS: {
+      type: "number",
+      required: true,
+      description: "Section end (seconds)",
+    },
+    negativeTags: { type: "string", description: "Styles to avoid" },
+    fullLyrics: { type: "string", description: "Full lyrics context" },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+  },
+};
+
+export const sunoTimestampedLyricsSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/get-timestamped-lyrics",
+  contentType: "application/json",
+  fields: {
+    taskId: { type: "string", required: true, description: "Task ID" },
+    audioId: { type: "string", required: true, description: "Audio ID" },
+  },
+};
+
+export const sunoGeneratePersonaSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/generate-persona",
+  contentType: "application/json",
+  fields: {
+    taskId: { type: "string", required: true, description: "Task ID" },
+    audioId: { type: "string", required: true, description: "Audio ID" },
+    name: { type: "string", required: true, description: "Persona name" },
+    description: {
+      type: "string",
+      required: true,
+      description: "Persona description",
+    },
+    vocalStart: {
+      type: "number",
+      description: "Vocal sample start (seconds)",
+    },
+    vocalEnd: {
+      type: "number",
+      description: "Vocal sample end (seconds)",
+    },
+    style: { type: "string", description: "Music style" },
+  },
+};
+
+export const sunoMashupSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/mashup",
+  contentType: "application/json",
+  fields: {
+    uploadUrlList: {
+      type: "array",
+      required: true,
+      description: "Two audio URLs to mashup",
+      items: { type: "string" },
+    },
+    customMode: {
+      type: "boolean",
+      required: true,
+      description: "Enable custom mode",
+    },
+    model: {
+      type: "string",
+      required: true,
+      enum: ["V4", "V4_5", "V4_5PLUS", "V4_5ALL", "V5"],
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+    prompt: { type: "string", description: "Lyrics/prompt" },
+    style: { type: "string", description: "Music style" },
+    title: { type: "string", description: "Song title" },
+    instrumental: {
+      type: "boolean",
+      description: "Instrumental only",
+    },
+    negativeTags: { type: "string", description: "Styles to avoid" },
+  },
+};
+
+export const sunoSoundsSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/sounds",
+  contentType: "application/json",
+  fields: {
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Sound description",
+    },
+    model: {
+      type: "string",
+      required: true,
+      enum: ["V5", "V5_5"],
+      description: "Model version",
+    },
+    soundLoop: { type: "boolean", description: "Loop the sound" },
+    soundTempo: { type: "number", description: "Tempo in BPM" },
+    soundKey: { type: "string", description: "Musical key" },
+    grabLyrics: { type: "boolean", description: "Extract lyrics" },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+  },
+};
+
+export const sunoCoverGenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/suno/cover/generate",
+  contentType: "application/json",
+  fields: {
+    taskId: { type: "string", required: true, description: "Task ID" },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+  },
+};
+
+export const lyricsGenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/lyrics",
+  contentType: "application/json",
+  fields: {
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Lyrics prompt (max 200 chars)",
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Audio processing schemas
+// ---------------------------------------------------------------------------
+
+export const vocalRemovalGenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/vocal-removal/generate",
+  contentType: "application/json",
+  fields: {
+    taskId: { type: "string", required: true, description: "Task ID" },
+    audioId: { type: "string", required: true, description: "Audio ID" },
+    type: {
+      type: "string",
+      required: true,
+      enum: ["separate_vocal", "split_stem"],
+      description: "Separation type",
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+  },
+};
+
+export const midiGenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/midi/generate",
+  contentType: "application/json",
+  fields: {
+    taskId: { type: "string", required: true, description: "Task ID" },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+    audioId: { type: "string", description: "Audio ID" },
+  },
+};
+
+export const wavGenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/wav/generate",
+  contentType: "application/json",
+  fields: {
+    taskId: { type: "string", required: true, description: "Task ID" },
+    audioId: {
+      type: "string",
+      required: true,
+      description: "Audio ID",
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+  },
+};
+
+export const mp4GenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/mp4/generate",
+  contentType: "application/json",
+  fields: {
+    taskId: { type: "string", required: true, description: "Task ID" },
+    audioId: {
+      type: "string",
+      required: true,
+      description: "Audio ID",
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+    author: { type: "string", description: "Author name" },
+    domainName: { type: "string", description: "Domain name overlay" },
+  },
+};
+
+export const styleGenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/style/generate",
+  contentType: "application/json",
+  fields: {
+    content: {
+      type: "string",
+      required: true,
+      description: "Content to generate style tags for",
+    },
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Original schemas
+// ---------------------------------------------------------------------------
 
 export const sunoGenerateSchema: PayloadSchema = {
   method: "POST",
@@ -281,6 +683,268 @@ export const claudeMessagesSchema: PayloadSchema = {
 
 // claudeHaiku uses the same schema as claude (same endpoint shape, different base URL)
 export const claudeHaikuMessagesSchema: PayloadSchema = claudeMessagesSchema;
+
+// ---------------------------------------------------------------------------
+// GPT-4o Image schemas
+// ---------------------------------------------------------------------------
+
+export const gpt4oImageGenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/gpt4o-image/generate",
+  contentType: "application/json",
+  fields: {
+    prompt: { type: "string", description: "Image generation prompt" },
+    filesUrl: {
+      type: "array",
+      description: "Input image URLs (max 5)",
+      items: { type: "string" },
+    },
+    size: {
+      type: "string",
+      enum: ["1:1", "3:2", "2:3"],
+      description: "Output size/aspect ratio",
+    },
+    maskUrl: { type: "string", description: "Mask image URL for inpainting" },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+    isEnhance: {
+      type: "boolean",
+      description: "Enable prompt enhancement",
+    },
+    enableFallback: {
+      type: "boolean",
+      description: "Enable fallback model",
+    },
+    fallbackModel: {
+      type: "string",
+      description: "Fallback model name",
+    },
+  },
+};
+
+export const gpt4oImageDownloadUrlSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/gpt4o-image/download-url",
+  contentType: "application/json",
+  fields: {
+    taskId: { type: "string", required: true, description: "Task ID" },
+    url: {
+      type: "string",
+      required: true,
+      description: "Image URL to generate download link for",
+    },
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Flux Kontext schemas
+// ---------------------------------------------------------------------------
+
+export const fluxKontextGenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/flux/kontext/generate",
+  contentType: "application/json",
+  fields: {
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Generation/editing prompt",
+    },
+    inputImage: {
+      type: "string",
+      description: "Input image URL for editing",
+    },
+    aspectRatio: { type: "string", description: "Output aspect ratio" },
+    model: {
+      type: "string",
+      enum: ["flux-kontext-pro", "flux-kontext-max"],
+      description: "Flux model variant",
+    },
+    safetyTolerance: {
+      type: "number",
+      description: "Safety tolerance level",
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Runway / Aleph schemas
+// ---------------------------------------------------------------------------
+
+export const runwayGenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/runway/generate",
+  contentType: "application/json",
+  fields: {
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Video generation prompt",
+    },
+    duration: {
+      type: "number",
+      enum: [5, 10],
+      description: "Duration in seconds",
+    },
+    quality: {
+      type: "string",
+      enum: ["720p", "1080p"],
+      description: "Output quality",
+    },
+    aspectRatio: { type: "string", description: "Output aspect ratio" },
+    imageUrl: { type: "string", description: "Reference image URL" },
+    waterMark: { type: "string", description: "Watermark text" },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+  },
+};
+
+export const runwayExtendSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/runway/extend",
+  contentType: "application/json",
+  fields: {
+    taskId: {
+      type: "string",
+      required: true,
+      description: "Task ID of video to extend",
+    },
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Extension prompt",
+    },
+    quality: {
+      type: "string",
+      enum: ["720p", "1080p"],
+      description: "Output quality",
+    },
+    waterMark: { type: "string", description: "Watermark text" },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+  },
+};
+
+export const alephGenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/aleph/generate",
+  contentType: "application/json",
+  fields: {
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Video generation prompt",
+    },
+    videoUrl: {
+      type: "string",
+      required: true,
+      description: "Source video URL",
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+    aspectRatio: { type: "string", description: "Output aspect ratio" },
+    seed: { type: "number", description: "Random seed" },
+    referenceImage: {
+      type: "string",
+      description: "Reference image URL",
+    },
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Codex Responses schema
+// ---------------------------------------------------------------------------
+
+export const codexResponsesSchema: PayloadSchema = {
+  method: "POST",
+  path: "/codex/v1/responses",
+  contentType: "application/json",
+  fields: {
+    model: {
+      type: "string",
+      required: true,
+      description: "Model name",
+      enum: ["gpt-5-4", "gpt-5-codex", "gpt-5.1-codex"],
+    },
+    input: {
+      type: "string",
+      required: true,
+      description: "Input text or message array",
+    },
+    stream: { type: "boolean", description: "Enable streaming" },
+    reasoning: {
+      type: "object",
+      description: "Reasoning configuration",
+      properties: {
+        effort: {
+          type: "string",
+          enum: ["low", "medium", "high"],
+        },
+      },
+    },
+    tools: {
+      type: "array",
+      description: "Available tools",
+      items: {
+        type: "object",
+        properties: {
+          type: { type: "string", required: true },
+          name: { type: "string" },
+          description: { type: "string" },
+        },
+      },
+    },
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Gemini Chat Completions schema
+// ---------------------------------------------------------------------------
+
+export const geminiChatCompletionsSchema: PayloadSchema = {
+  method: "POST",
+  path: "/<model>/v1/chat/completions",
+  contentType: "application/json",
+  fields: {
+    messages: {
+      type: "array",
+      required: true,
+      description: "Array of chat messages",
+      items: {
+        type: "object",
+        properties: {
+          role: {
+            type: "string",
+            required: true,
+            enum: ["user", "assistant", "system"],
+          },
+          content: { type: "string", required: true },
+        },
+      },
+    },
+    temperature: { type: "number", description: "Sampling temperature" },
+    max_tokens: { type: "number", description: "Max tokens to generate" },
+    stream: { type: "boolean", description: "Enable streaming" },
+    include_thoughts: {
+      type: "boolean",
+      description: "Include thinking/reasoning in response",
+    },
+    reasoning_effort: {
+      type: "string",
+      enum: ["low", "medium", "high"],
+      description: "Reasoning effort level",
+    },
+    response_format: {
+      type: "object",
+      description: "Response format configuration",
+      properties: {
+        type: {
+          type: "string",
+          required: true,
+          enum: ["text", "json_object", "json_schema"],
+        },
+        json_schema: { type: "object" },
+      },
+    },
+  },
+};
 
 export const modelInputSchemas: Record<KieMediaModel, ModelInputSchema> = {
   "kling-3.0/video": {

@@ -13,6 +13,11 @@ export { createVeoProvider } from "./veo";
 export { createSunoProvider } from "./suno";
 export { createChatProvider } from "./chat";
 export { createClaudeProvider } from "./claude";
+export { createGpt4oImageProvider } from "./gpt4o-image";
+export { createFluxProvider } from "./flux";
+export { createRunwayProvider } from "./runway";
+export { createCodexProvider } from "./codex";
+export { createGeminiProvider } from "./gemini";
 
 // Export SSE utility
 export { sseToIterable } from "./sse";
@@ -64,17 +69,63 @@ export type {
   ModelInputSchema,
 } from "./types";
 
-// Export sub-provider types
+// Export sub-provider types — Veo
 export type {
   VeoModel,
   VeoGenerationType,
   VeoGenerateRequest,
   VeoExtendRequest,
+  VeoGet4kVideoRequest,
+  VeoRecordInfoData,
+  VeoRecordInfoResponse,
+  Veo1080pResponse,
+  Veo4kResponse,
   VeoProvider,
 } from "./veo";
 
-export type { SunoModel, SunoGenerateRequest, SunoProvider } from "./suno";
+// Export sub-provider types — Suno
+export type {
+  SunoModel,
+  SunoGenerateRequest,
+  SunoExtendRequest,
+  SunoUploadCoverRequest,
+  SunoUploadExtendRequest,
+  SunoAddInstrumentalRequest,
+  SunoAddVocalsRequest,
+  SunoReplaceSectionRequest,
+  SunoTimestampedLyricsRequest,
+  SunoGeneratePersonaRequest,
+  SunoMashupRequest,
+  SunoSoundsRequest,
+  SunoCoverArtRequest,
+  LyricsGenerateRequest,
+  VocalRemovalRequest,
+  MidiGenerateRequest,
+  WavGenerateRequest,
+  Mp4GenerateRequest,
+  StyleGenerateRequest,
+  SunoRecordInfoSunoData,
+  SunoRecordInfoData,
+  SunoRecordInfoResponse,
+  SunoTimestampedLyricsWord,
+  SunoTimestampedLyricsResponse,
+  SunoPersonaResponse,
+  SunoCoverArtRecordInfoData,
+  SunoCoverArtRecordInfoResponse,
+  LyricsRecordInfoData,
+  LyricsRecordInfoResponse,
+  VocalRemovalRecordInfoData,
+  VocalRemovalRecordInfoResponse,
+  MidiRecordInfoInstrument,
+  MidiRecordInfoData,
+  MidiRecordInfoResponse,
+  WavRecordInfoResponse,
+  Mp4RecordInfoResponse,
+  StyleGenerateResponse,
+  SunoProvider,
+} from "./suno";
 
+// Export sub-provider types — Chat
 export type {
   KieChatContentPart,
   KieChatMessage,
@@ -85,6 +136,7 @@ export type {
   KieChatProvider,
 } from "./chat";
 
+// Export sub-provider types — Claude
 export type {
   KieClaudeToolInputSchema,
   KieClaudeTool,
@@ -98,3 +150,59 @@ export type {
   KieClaudeResponse,
   KieClaudeProvider,
 } from "./claude";
+
+// Export sub-provider types — GPT-4o Image
+export type {
+  Gpt4oImageGenerateRequest,
+  Gpt4oImageDownloadUrlRequest,
+  Gpt4oImageRecordInfoData,
+  Gpt4oImageRecordInfoResponse,
+  Gpt4oImageGenerateResponse,
+  Gpt4oImageDownloadUrlResponse,
+  Gpt4oImageProvider,
+} from "./gpt4o-image";
+
+// Export sub-provider types — Flux Kontext
+export type {
+  FluxKontextModel,
+  FluxKontextGenerateRequest,
+  FluxKontextRecordInfoData,
+  FluxKontextRecordInfoResponse,
+  FluxKontextGenerateResponse,
+  FluxProvider,
+} from "./flux";
+
+// Export sub-provider types — Runway / Aleph
+export type {
+  RunwayGenerateRequest,
+  RunwayExtendRequest,
+  AlephGenerateRequest,
+  RunwayRecordDetailVideoInfo,
+  RunwayRecordDetailData,
+  RunwayRecordDetailResponse,
+  RunwaySubmitResponse,
+  AlephRecordInfoData,
+  AlephRecordInfoResponse,
+  RunwayProvider,
+} from "./runway";
+
+// Export sub-provider types — Codex
+export type {
+  KieCodexModel,
+  KieCodexTool,
+  KieCodexRequest,
+  KieCodexOutputItem,
+  KieCodexResponse,
+  KieCodexProvider,
+} from "./codex";
+
+// Export sub-provider types — Gemini
+export type {
+  KieGeminiModel,
+  KieGeminiChatMessage,
+  KieGeminiChatRequest,
+  KieGeminiChatChoice,
+  KieGeminiChatUsage,
+  KieGeminiChatResponse,
+  KieGeminiProvider,
+} from "./gemini";

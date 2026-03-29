@@ -27,6 +27,11 @@ import { createVeoProvider } from "./veo";
 import { createSunoProvider } from "./suno";
 import { createChatProvider } from "./chat";
 import { createClaudeProvider } from "./claude";
+import { createGpt4oImageProvider } from "./gpt4o-image";
+import { createFluxProvider } from "./flux";
+import { createRunwayProvider } from "./runway";
+import { createCodexProvider } from "./codex";
+import { createGeminiProvider } from "./gemini";
 
 const MIME_TYPES: Record<string, string> = {
   jpg: "image/jpeg",
@@ -387,11 +392,32 @@ export function kie(opts: KieOptions): KieProvider {
     return (await res.json()) as KieCreditsResponse;
   }
 
+  const gpt4oImage = createGpt4oImageProvider(
+    baseURL,
+    opts.apiKey,
+    doFetch,
+    timeout
+  );
+  const flux = createFluxProvider(baseURL, opts.apiKey, doFetch, timeout);
+  const runwayProv = createRunwayProvider(
+    baseURL,
+    opts.apiKey,
+    doFetch,
+    timeout
+  );
+  const suno = createSunoProvider(baseURL, opts.apiKey, doFetch, timeout);
+  const veo = createVeoProvider(baseURL, opts.apiKey, doFetch, timeout);
+
   return {
-    veo: createVeoProvider(baseURL, opts.apiKey, doFetch, timeout),
-    suno: createSunoProvider(baseURL, opts.apiKey, doFetch, timeout),
+    veo,
+    suno,
     chat: createChatProvider(baseURL, opts.apiKey, doFetch, timeout),
     ...createClaudeProvider(baseURL, opts.apiKey, doFetch, timeout),
+    ...createCodexProvider(baseURL, opts.apiKey, doFetch, timeout),
+    ...createGeminiProvider(baseURL, opts.apiKey, doFetch, timeout),
+    gpt4oImage,
+    flux,
+    runway: runwayProv,
     modelInputSchemas,
     api: {
       v1: {

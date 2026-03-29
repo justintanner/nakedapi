@@ -1421,3 +1421,295 @@ export const vectorStoreFileBatchesCancelSchema: PayloadSchema = {
     },
   },
 };
+
+// Organization: Admin API Keys
+
+export const adminApiKeysCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/organization/admin_api_keys",
+  contentType: "application/json",
+  fields: {
+    name: {
+      type: "string",
+      required: true,
+      description: "Name for the admin API key",
+    },
+  },
+};
+
+export const adminApiKeysDeleteSchema: PayloadSchema = {
+  method: "DELETE",
+  path: "/organization/admin_api_keys/{key_id}",
+  contentType: "application/json",
+  fields: {
+    key_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the admin API key to delete",
+    },
+  },
+};
+
+// Organization: Invites
+
+export const invitesCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/organization/invites",
+  contentType: "application/json",
+  fields: {
+    email: {
+      type: "string",
+      required: true,
+      description: "Email address to invite",
+    },
+    role: {
+      type: "string",
+      required: true,
+      enum: ["reader", "owner"],
+      description: "Organization role for the invitee",
+    },
+    projects: {
+      type: "array",
+      description: "Projects to add the user to upon acceptance",
+      items: {
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+            required: true,
+            description: "Project ID",
+          },
+          role: {
+            type: "string",
+            required: true,
+            enum: ["member", "owner"],
+            description: "Project role",
+          },
+        },
+      },
+    },
+  },
+};
+
+export const invitesDeleteSchema: PayloadSchema = {
+  method: "DELETE",
+  path: "/organization/invites/{invite_id}",
+  contentType: "application/json",
+  fields: {
+    invite_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the invite to delete",
+    },
+  },
+};
+
+// Organization: Users
+
+export const orgUsersUpdateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/organization/users/{user_id}",
+  contentType: "application/json",
+  fields: {
+    role: {
+      type: "string",
+      required: true,
+      enum: ["owner", "reader"],
+      description: "The new role for the user",
+    },
+  },
+};
+
+export const orgUsersDeleteSchema: PayloadSchema = {
+  method: "DELETE",
+  path: "/organization/users/{user_id}",
+  contentType: "application/json",
+  fields: {
+    user_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the user to delete",
+    },
+  },
+};
+
+// Organization: Projects
+
+export const projectsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/organization/projects",
+  contentType: "application/json",
+  fields: {
+    name: {
+      type: "string",
+      required: true,
+      description: "Name of the project",
+    },
+  },
+};
+
+export const projectsUpdateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/organization/projects/{project_id}",
+  contentType: "application/json",
+  fields: {
+    name: {
+      type: "string",
+      required: true,
+      description: "Updated name for the project",
+    },
+  },
+};
+
+export const projectsArchiveSchema: PayloadSchema = {
+  method: "POST",
+  path: "/organization/projects/{project_id}/archive",
+  contentType: "application/json",
+  fields: {
+    project_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the project to archive",
+    },
+  },
+};
+
+// Organization: Project Users
+
+export const projectUsersCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/organization/projects/{project_id}/users",
+  contentType: "application/json",
+  fields: {
+    user_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the user to add",
+    },
+    role: {
+      type: "string",
+      required: true,
+      enum: ["owner", "member"],
+      description: "Role for the user in the project",
+    },
+  },
+};
+
+export const projectUsersUpdateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/organization/projects/{project_id}/users/{user_id}",
+  contentType: "application/json",
+  fields: {
+    role: {
+      type: "string",
+      required: true,
+      enum: ["owner", "member"],
+      description: "Updated role for the user",
+    },
+  },
+};
+
+export const projectUsersDeleteSchema: PayloadSchema = {
+  method: "DELETE",
+  path: "/organization/projects/{project_id}/users/{user_id}",
+  contentType: "application/json",
+  fields: {
+    project_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the project",
+    },
+    user_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the user to remove",
+    },
+  },
+};
+
+// Organization: Project Service Accounts
+
+export const projectServiceAccountsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/organization/projects/{project_id}/service_accounts",
+  contentType: "application/json",
+  fields: {
+    name: {
+      type: "string",
+      required: true,
+      description: "Name for the service account",
+    },
+  },
+};
+
+export const projectServiceAccountsDeleteSchema: PayloadSchema = {
+  method: "DELETE",
+  path: "/organization/projects/{project_id}/service_accounts/{service_account_id}",
+  contentType: "application/json",
+  fields: {
+    project_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the project",
+    },
+    service_account_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the service account to delete",
+    },
+  },
+};
+
+// Organization: Project API Keys
+
+export const projectApiKeysDeleteSchema: PayloadSchema = {
+  method: "DELETE",
+  path: "/organization/projects/{project_id}/api_keys/{key_id}",
+  contentType: "application/json",
+  fields: {
+    project_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the project",
+    },
+    key_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the API key to delete",
+    },
+  },
+};
+
+// Organization: Project Rate Limits
+
+export const projectRateLimitsUpdateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/organization/projects/{project_id}/rate_limits/{rate_limit_id}",
+  contentType: "application/json",
+  fields: {
+    max_requests_per_1_minute: {
+      type: "number",
+      description: "Max requests per minute",
+    },
+    max_tokens_per_1_minute: {
+      type: "number",
+      description: "Max tokens per minute",
+    },
+    max_images_per_1_minute: {
+      type: "number",
+      description: "Max images per minute",
+    },
+    max_audio_megabytes_per_1_minute: {
+      type: "number",
+      description: "Max audio megabytes per minute",
+    },
+    max_requests_per_1_day: {
+      type: "number",
+      description: "Max requests per day",
+    },
+    batch_1_day_max_input_tokens: {
+      type: "number",
+      description: "Max batch input tokens per day",
+    },
+  },
+};

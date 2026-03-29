@@ -4,6 +4,7 @@ export interface FireworksOptions {
   baseURL?: string;
   audioBaseURL?: string;
   audioStreamingBaseURL?: string;
+  audioStreamingV2BaseURL?: string;
   timeout?: number;
   fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
   WebSocket?: new (
@@ -820,6 +821,10 @@ export interface FireworksAudioBatchTranslationRequest {
 
 export interface FireworksAudioBatchSubmitResponse {
   batch_id: string;
+  status?: string;
+  account_id?: string;
+  endpoint_id?: string;
+  message?: string;
 }
 
 export type FireworksAudioBatchJobStatus =
@@ -1424,6 +1429,7 @@ interface FireworksTranscriptionsMethod {
     signal?: AbortSignal
   ): Promise<FireworksTranscriptionResponse>;
   streaming: FireworksStreamingTranscriptionsMethod;
+  streamingV2: FireworksStreamingTranscriptionsMethod;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
 }

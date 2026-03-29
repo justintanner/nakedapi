@@ -88,6 +88,23 @@ import {
   OpenAiEvalRunOutputItem,
   OpenAiEvalRunOutputItemListOptions,
   OpenAiEvalRunOutputItemListResponse,
+  OpenAiVectorStoreCreateRequest,
+  OpenAiVectorStore,
+  OpenAiVectorStoreUpdateRequest,
+  OpenAiVectorStoreListOptions,
+  OpenAiVectorStoreListResponse,
+  OpenAiVectorStoreDeleteResponse,
+  OpenAiVectorStoreSearchRequest,
+  OpenAiVectorStoreSearchResponse,
+  OpenAiVectorStoreFileCreateRequest,
+  OpenAiVectorStoreFile,
+  OpenAiVectorStoreFileUpdateRequest,
+  OpenAiVectorStoreFileListOptions,
+  OpenAiVectorStoreFileListResponse,
+  OpenAiVectorStoreFileDeleteResponse,
+  OpenAiVectorStoreFileContentResponse,
+  OpenAiVectorStoreFileBatchCreateRequest,
+  OpenAiVectorStoreFileBatch,
   OpenAiProvider,
   OpenAiError,
 } from "./types";
@@ -127,6 +144,15 @@ import {
   evalsCreateSchema,
   evalsUpdateSchema,
   evalRunsCreateSchema,
+  vectorStoresCreateSchema,
+  vectorStoresUpdateSchema,
+  vectorStoresDeleteSchema,
+  vectorStoresSearchSchema,
+  vectorStoreFilesCreateSchema,
+  vectorStoreFilesUpdateSchema,
+  vectorStoreFilesDeleteSchema,
+  vectorStoreFileBatchesCreateSchema,
+  vectorStoreFileBatchesCancelSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
 
@@ -1272,6 +1298,14 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
           return await makeRequest<OpenAiConversation>(
             "/conversations",
             jsonRequest(req ?? {}),
+      vector_stores: Object.assign(
+        async function vector_stores(
+          req: OpenAiVectorStoreCreateRequest,
+          signal?: AbortSignal
+        ): Promise<OpenAiVectorStore> {
+          return await makeRequest<OpenAiVectorStore>(
+            "/vector_stores",
+            jsonRequest(req),
             signal
           );
         },
@@ -1279,6 +1313,25 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
           payloadSchema: conversationsCreateSchema,
           validatePayload(data: unknown): ValidationResult {
             return validatePayload(data, conversationsCreateSchema);
+          payloadSchema: vectorStoresCreateSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, vectorStoresCreateSchema);
+          },
+          list: async function list(
+            listOpts?: OpenAiVectorStoreListOptions,
+            signal?: AbortSignal
+          ): Promise<OpenAiVectorStoreListResponse> {
+            const query: Record<string, string | undefined> = {};
+            if (listOpts?.limit !== undefined)
+              query.limit = String(listOpts.limit);
+            if (listOpts?.order) query.order = listOpts.order;
+            if (listOpts?.after) query.after = listOpts.after;
+            if (listOpts?.before) query.before = listOpts.before;
+            return await makeGetRequest<OpenAiVectorStoreListResponse>(
+              "/vector_stores",
+              query,
+              signal
+            );
           },
           retrieve: async function retrieve(
             id: string,
@@ -1286,6 +1339,9 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
           ): Promise<OpenAiConversation> {
             return await makeGetRequest<OpenAiConversation>(
               `/conversations/${encodeURIComponent(id)}`,
+          ): Promise<OpenAiVectorStore> {
+            return await makeGetRequest<OpenAiVectorStore>(
+              `/vector_stores/${encodeURIComponent(id)}`,
               undefined,
               signal
             );
@@ -1298,6 +1354,11 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             ): Promise<OpenAiConversation> {
               return await makeRequest<OpenAiConversation>(
                 `/conversations/${encodeURIComponent(id)}`,
+              req: OpenAiVectorStoreUpdateRequest,
+              signal?: AbortSignal
+            ): Promise<OpenAiVectorStore> {
+              return await makeRequest<OpenAiVectorStore>(
+                `/vector_stores/${encodeURIComponent(id)}`,
                 jsonRequest(req),
                 signal
               );
@@ -1327,6 +1388,54 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
               ): Promise<OpenAiConversationItemListResponse> {
                 return await makeRequest<OpenAiConversationItemListResponse>(
                   `/conversations/${encodeURIComponent(conversationId)}/items`,
+              payloadSchema: vectorStoresUpdateSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, vectorStoresUpdateSchema);
+              },
+            }
+          ),
+          del: Object.assign(
+            async function del(
+              id: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiVectorStoreDeleteResponse> {
+              return await makeDeleteRequest<OpenAiVectorStoreDeleteResponse>(
+                `/vector_stores/${encodeURIComponent(id)}`,
+                signal
+              );
+            },
+            {
+              payloadSchema: vectorStoresDeleteSchema,
+            }
+          ),
+          search: Object.assign(
+            async function search(
+              id: string,
+              req: OpenAiVectorStoreSearchRequest,
+              signal?: AbortSignal
+            ): Promise<OpenAiVectorStoreSearchResponse> {
+              return await makeRequest<OpenAiVectorStoreSearchResponse>(
+                `/vector_stores/${encodeURIComponent(id)}/search`,
+                jsonRequest(req),
+                signal
+              );
+            },
+            {
+              payloadSchema: vectorStoresSearchSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, vectorStoresSearchSchema);
+              },
+            }
+          ),
+          files: {
+            create: Object.assign(
+              async function create(
+                vectorStoreId: string,
+                req: OpenAiVectorStoreFileCreateRequest,
+                signal?: AbortSignal
+              ): Promise<OpenAiVectorStoreFile> {
+                return await makeRequest<OpenAiVectorStoreFile>(
+                  `/vector_stores/${encodeURIComponent(vectorStoreId)}/files`,
                   jsonRequest(req),
                   signal
                 );
@@ -1364,6 +1473,29 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
               if (opts?.include) query.include = opts.include;
               return await makeGetRequest<OpenAiConversationItemListResponse>(
                 `/conversations/${encodeURIComponent(conversationId)}/items`,
+                payloadSchema: vectorStoreFilesCreateSchema,
+                validatePayload(data: unknown): ValidationResult {
+                  return validatePayload(
+                    data,
+                    vectorStoreFilesCreateSchema
+                  );
+                },
+              }
+            ),
+            list: async function list(
+              vectorStoreId: string,
+              listOpts?: OpenAiVectorStoreFileListOptions,
+              signal?: AbortSignal
+            ): Promise<OpenAiVectorStoreFileListResponse> {
+              const query: Record<string, string | undefined> = {};
+              if (listOpts?.limit !== undefined)
+                query.limit = String(listOpts.limit);
+              if (listOpts?.order) query.order = listOpts.order;
+              if (listOpts?.after) query.after = listOpts.after;
+              if (listOpts?.before) query.before = listOpts.before;
+              if (listOpts?.filter) query.filter = listOpts.filter;
+              return await makeGetRequest<OpenAiVectorStoreFileListResponse>(
+                `/vector_stores/${encodeURIComponent(vectorStoreId)}/files`,
                 query,
                 signal
               );
@@ -1604,6 +1736,13 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             ): Promise<OpenAiEvalRun> {
               return await makeGetRequest<OpenAiEvalRun>(
                 `/evals/${encodeURIComponent(evalId)}/runs/${encodeURIComponent(runId)}`,
+            retrieve: async function retrieve(
+              vectorStoreId: string,
+              fileId: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiVectorStoreFile> {
+              return await makeGetRequest<OpenAiVectorStoreFile>(
+                `/vector_stores/${encodeURIComponent(vectorStoreId)}/files/${encodeURIComponent(fileId)}`,
                 undefined,
                 signal
               );
@@ -1620,6 +1759,120 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
               if (opts?.status) query.status = opts.status;
               return await makeGetRequest<OpenAiEvalRunListResponse>(
                 `/evals/${encodeURIComponent(evalId)}/runs`,
+            update: Object.assign(
+              async function update(
+                vectorStoreId: string,
+                fileId: string,
+                req: OpenAiVectorStoreFileUpdateRequest,
+                signal?: AbortSignal
+              ): Promise<OpenAiVectorStoreFile> {
+                return await makeRequest<OpenAiVectorStoreFile>(
+                  `/vector_stores/${encodeURIComponent(vectorStoreId)}/files/${encodeURIComponent(fileId)}`,
+                  jsonRequest(req),
+                  signal
+                );
+              },
+              {
+                payloadSchema: vectorStoreFilesUpdateSchema,
+                validatePayload(data: unknown): ValidationResult {
+                  return validatePayload(
+                    data,
+                    vectorStoreFilesUpdateSchema
+                  );
+                },
+              }
+            ),
+            del: Object.assign(
+              async function del(
+                vectorStoreId: string,
+                fileId: string,
+                signal?: AbortSignal
+              ): Promise<OpenAiVectorStoreFileDeleteResponse> {
+                return await makeDeleteRequest<OpenAiVectorStoreFileDeleteResponse>(
+                  `/vector_stores/${encodeURIComponent(vectorStoreId)}/files/${encodeURIComponent(fileId)}`,
+                  signal
+                );
+              },
+              {
+                payloadSchema: vectorStoreFilesDeleteSchema,
+              }
+            ),
+            content: async function content(
+              vectorStoreId: string,
+              fileId: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiVectorStoreFileContentResponse> {
+              return await makeGetRequest<OpenAiVectorStoreFileContentResponse>(
+                `/vector_stores/${encodeURIComponent(vectorStoreId)}/files/${encodeURIComponent(fileId)}/content`,
+                undefined,
+                signal
+              );
+            },
+          },
+          file_batches: {
+            create: Object.assign(
+              async function create(
+                vectorStoreId: string,
+                req: OpenAiVectorStoreFileBatchCreateRequest,
+                signal?: AbortSignal
+              ): Promise<OpenAiVectorStoreFileBatch> {
+                return await makeRequest<OpenAiVectorStoreFileBatch>(
+                  `/vector_stores/${encodeURIComponent(vectorStoreId)}/file_batches`,
+                  jsonRequest(req),
+                  signal
+                );
+              },
+              {
+                payloadSchema: vectorStoreFileBatchesCreateSchema,
+                validatePayload(data: unknown): ValidationResult {
+                  return validatePayload(
+                    data,
+                    vectorStoreFileBatchesCreateSchema
+                  );
+                },
+              }
+            ),
+            retrieve: async function retrieve(
+              vectorStoreId: string,
+              batchId: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiVectorStoreFileBatch> {
+              return await makeGetRequest<OpenAiVectorStoreFileBatch>(
+                `/vector_stores/${encodeURIComponent(vectorStoreId)}/file_batches/${encodeURIComponent(batchId)}`,
+                undefined,
+                signal
+              );
+            },
+            cancel: Object.assign(
+              async function cancel(
+                vectorStoreId: string,
+                batchId: string,
+                signal?: AbortSignal
+              ): Promise<OpenAiVectorStoreFileBatch> {
+                return await makeEmptyPostRequest<OpenAiVectorStoreFileBatch>(
+                  `/vector_stores/${encodeURIComponent(vectorStoreId)}/file_batches/${encodeURIComponent(batchId)}/cancel`,
+                  signal
+                );
+              },
+              {
+                payloadSchema: vectorStoreFileBatchesCancelSchema,
+              }
+            ),
+            files: async function files(
+              vectorStoreId: string,
+              batchId: string,
+              listOpts?: OpenAiVectorStoreFileListOptions,
+              signal?: AbortSignal
+            ): Promise<OpenAiVectorStoreFileListResponse> {
+              const query: Record<string, string | undefined> = {};
+              if (listOpts?.limit !== undefined)
+                query.limit = String(listOpts.limit);
+              if (listOpts?.order) query.order = listOpts.order;
+              if (listOpts?.after) query.after = listOpts.after;
+              if (listOpts?.before) query.before = listOpts.before;
+              if (listOpts?.filter) query.filter = listOpts.filter;
+              return await makeGetRequest<OpenAiVectorStoreFileListResponse>(
+                `/vector_stores/${encodeURIComponent(vectorStoreId)}/file_batches/${encodeURIComponent(batchId)}/files`,
                 query,
                 signal
               );

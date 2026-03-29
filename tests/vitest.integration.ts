@@ -29,6 +29,10 @@ export default defineConfig({
         __dirname,
         "../packages/provider/fireworks/src"
       ),
+      "@nakedapi/cohere": path.resolve(
+        __dirname,
+        "../packages/provider/cohere/src"
+      ),
     },
   },
 });

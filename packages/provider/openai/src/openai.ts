@@ -848,9 +848,8 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
               `/responses/${encodeURIComponent(id)}/input_items`,
               {
                 after: opts?.after,
-                limit: opts?.limit !== undefined
-                  ? String(opts.limit)
-                  : undefined,
+                limit:
+                  opts?.limit !== undefined ? String(opts.limit) : undefined,
                 order: opts?.order,
                 include: opts?.include,
               },

@@ -1417,7 +1417,8 @@ export function xai(opts: XaiOptions): XaiProvider {
               signal
             );
           },
-          topUp: billingPrepaidTopUp as XaiProvider["v1"]["billing"]["prepaid"]["topUp"],
+          topUp:
+            billingPrepaidTopUp as XaiProvider["v1"]["billing"]["prepaid"]["topUp"],
         },
         usage: billingUsage as XaiProvider["v1"]["billing"]["usage"],
       },

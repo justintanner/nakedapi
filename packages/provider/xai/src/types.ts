@@ -1388,12 +1388,7 @@ export interface XaiInvoiceLineItem {
 export interface XaiInvoice {
   invoiceId: string;
   teamId: string;
-  status:
-    | "INVALID"
-    | "PENDING"
-    | "PAID"
-    | "WILL_NEVER_BE_CHARGED"
-    | "FAILED";
+  status: "INVALID" | "PENDING" | "PAID" | "WILL_NEVER_BE_CHARGED" | "FAILED";
   billingCycle?: XaiBillingCycle;
   lineItems?: XaiInvoiceLineItem[];
   subtotal?: XaiUsdCents;
@@ -1485,12 +1480,7 @@ export interface XaiInvoicePreviewResponse {
 // Balance change record
 export interface XaiBalanceChange {
   changeId: string;
-  origin:
-    | "PURCHASE"
-    | "SPEND"
-    | "REFUND"
-    | "MANUAL"
-    | "AUTO_PURCHASE";
+  origin: "PURCHASE" | "SPEND" | "REFUND" | "MANUAL" | "AUTO_PURCHASE";
   amount?: XaiUsdCents;
   balance?: XaiUsdCents;
   createTime?: string;
@@ -1538,14 +1528,7 @@ export interface XaiUsageFilter {
 // POST /v1/billing/teams/{teamId}/usage request
 export interface XaiUsageRequest {
   timeRange: XaiUsageTimeRange;
-  timeUnit?:
-    | "MONTH"
-    | "WEEK"
-    | "DAY"
-    | "HOUR"
-    | "MINUTE"
-    | "SECOND"
-    | "NONE";
+  timeUnit?: "MONTH" | "WEEK" | "DAY" | "HOUR" | "MINUTE" | "SECOND" | "NONE";
   values?: XaiUsageValueSpec[];
   groupBy?: string[];
   filters?: XaiUsageFilter[];

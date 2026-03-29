@@ -1621,10 +1621,7 @@ interface OpenAiAudioTranslationsMethod {
 
 // Audio voices namespace types
 interface OpenAiVoicesCreateMethod {
-  (
-    req: OpenAiVoiceCreateRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiVoice>;
+  (req: OpenAiVoiceCreateRequest, signal?: AbortSignal): Promise<OpenAiVoice>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
   list: OpenAiVoicesListMethod;
@@ -2005,10 +2002,7 @@ interface OpenAiCompletionsMethod {
 
 // Videos/Sora namespace types (deprecated Sept 2026)
 interface OpenAiVideosCreateMethod {
-  (
-    req: OpenAiVideoCreateRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiVideo>;
+  (req: OpenAiVideoCreateRequest, signal?: AbortSignal): Promise<OpenAiVideo>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
   list: OpenAiVideosListMethod;
@@ -2045,10 +2039,7 @@ interface OpenAiVideosContentMethod {
 }
 
 interface OpenAiVideoEditsMethod {
-  (
-    req: OpenAiVideoEditRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiVideo>;
+  (req: OpenAiVideoEditRequest, signal?: AbortSignal): Promise<OpenAiVideo>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
 }

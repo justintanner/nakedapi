@@ -786,7 +786,10 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
               form.append("model", req.model);
             if (req.n !== undefined && req.n !== null)
               form.append("n", String(req.n));
-            if (req.response_format !== undefined && req.response_format !== null)
+            if (
+              req.response_format !== undefined &&
+              req.response_format !== null
+            )
               form.append("response_format", req.response_format);
             if (req.size !== undefined && req.size !== null)
               form.append("size", req.size);

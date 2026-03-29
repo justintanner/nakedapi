@@ -893,4 +893,8 @@ export interface KieProvider {
   chat: import("./chat").KieChatProvider;
   claude: import("./claude").KieClaudeProvider["claude"];
   gemini: import("./gemini").KieGeminiProvider;
+  gpt4oImage: import("./gpt4o-image").Gpt4oImageProvider;
+  fluxKontext: import("./flux-kontext").FluxKontextProvider;
+  runway: import("./runway").RunwayProvider;
+  aleph: import("./aleph").AlephProvider;
 }

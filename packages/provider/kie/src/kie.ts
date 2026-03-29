@@ -39,6 +39,10 @@ import { createSunoProvider } from "./suno";
 import { createChatProvider } from "./chat";
 import { createClaudeProvider } from "./claude";
 import { createGeminiProvider } from "./gemini";
+import { createGpt4oImageProvider } from "./gpt4o-image";
+import { createFluxKontextProvider } from "./flux-kontext";
+import { createRunwayProvider } from "./runway";
+import { createAlephProvider } from "./aleph";
 
 const MIME_TYPES: Record<string, string> = {
   jpg: "image/jpeg",
@@ -494,6 +498,20 @@ export function kie(opts: KieOptions): KieProvider {
     chat: createChatProvider(baseURL, opts.apiKey, doFetch, timeout),
     ...createClaudeProvider(baseURL, opts.apiKey, doFetch, timeout),
     gemini: createGeminiProvider(baseURL, opts.apiKey, doFetch, timeout),
+    gpt4oImage: createGpt4oImageProvider(
+      baseURL,
+      opts.apiKey,
+      doFetch,
+      timeout
+    ),
+    fluxKontext: createFluxKontextProvider(
+      baseURL,
+      opts.apiKey,
+      doFetch,
+      timeout
+    ),
+    runway: createRunwayProvider(baseURL, opts.apiKey, doFetch, timeout),
+    aleph: createAlephProvider(baseURL, opts.apiKey, doFetch, timeout),
     modelInputSchemas,
     api: {
       v1: {

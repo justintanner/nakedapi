@@ -959,6 +959,217 @@ export const mp4GenerateSchema: PayloadSchema = {
   },
 };
 
+export const gpt4oImageGenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/gpt4o-image/generate",
+  contentType: "application/json",
+  fields: {
+    prompt: { type: "string", description: "Text description for generation" },
+    filesUrl: {
+      type: "array",
+      description: "Input image URLs (max 5)",
+      items: { type: "string" },
+    },
+    size: {
+      type: "string",
+      required: true,
+      enum: ["1:1", "3:2", "2:3"],
+      description: "Output aspect ratio",
+    },
+    maskUrl: {
+      type: "string",
+      description: "Mask image URL (white=preserve, black=modify)",
+    },
+    nVariants: {
+      type: "number",
+      enum: [1, 2, 4],
+      description: "Number of output variants",
+    },
+    isEnhance: {
+      type: "boolean",
+      description: "Enable prompt enhancement",
+    },
+    enableFallback: {
+      type: "boolean",
+      description: "Auto-fallback to backup model",
+    },
+    fallbackModel: {
+      type: "string",
+      enum: ["GPT_IMAGE_1", "FLUX_MAX"],
+      description: "Backup model when primary unavailable",
+    },
+    uploadCn: {
+      type: "boolean",
+      description: "Upload to China servers",
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+  },
+};
+
+export const gpt4oImageDownloadUrlSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/gpt4o-image/download-url",
+  contentType: "application/json",
+  fields: {
+    taskId: {
+      type: "string",
+      required: true,
+      description: "Task ID",
+    },
+    url: {
+      type: "string",
+      required: true,
+      description: "CDN URL to convert to a temporary download link",
+    },
+  },
+};
+export const fluxKontextGenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/flux/kontext/generate",
+  contentType: "application/json",
+  fields: {
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Text describing desired image or edits (English only)",
+    },
+    inputImage: {
+      type: "string",
+      description: "URL of image to edit",
+    },
+    model: {
+      type: "string",
+      enum: ["flux-kontext-pro", "flux-kontext-max"],
+      description: "Model version (default flux-kontext-pro)",
+    },
+    aspectRatio: {
+      type: "string",
+      enum: ["21:9", "16:9", "4:3", "1:1", "3:4", "9:16"],
+      description: "Output aspect ratio (default 16:9)",
+    },
+    outputFormat: {
+      type: "string",
+      enum: ["jpeg", "png"],
+      description: "Image format (default jpeg)",
+    },
+    promptUpsampling: {
+      type: "boolean",
+      description: "Enable prompt upsampling",
+    },
+    safetyTolerance: {
+      type: "number",
+      description: "Moderation level (0-6 generation, 0-2 editing)",
+    },
+    watermark: { type: "string", description: "Watermark text" },
+    enableTranslation: {
+      type: "boolean",
+      description: "Auto-translate non-English prompts (default true)",
+    },
+    uploadCn: {
+      type: "boolean",
+      description: "Upload to China servers",
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+  },
+};
+
+export const runwayGenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/runway/generate",
+  contentType: "application/json",
+  fields: {
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Video generation prompt (max 1800 chars)",
+    },
+    imageUrl: {
+      type: "string",
+      description: "Reference image URL for animation",
+    },
+    duration: {
+      type: "number",
+      required: true,
+      enum: [5, 10],
+      description: "Video length in seconds",
+    },
+    quality: {
+      type: "string",
+      required: true,
+      enum: ["720p", "1080p"],
+      description: "Output resolution (10s videos cannot use 1080p)",
+    },
+    aspectRatio: {
+      type: "string",
+      enum: ["16:9", "4:3", "1:1", "3:4", "9:16"],
+      description:
+        "Output aspect ratio (required for text-only, not needed with imageUrl)",
+    },
+    waterMark: { type: "string", description: "Watermark text" },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+  },
+};
+
+export const runwayExtendSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/runway/extend",
+  contentType: "application/json",
+  fields: {
+    taskId: {
+      type: "string",
+      required: true,
+      description: "Task ID of original video to extend",
+    },
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Continuation prompt",
+    },
+    quality: {
+      type: "string",
+      required: true,
+      enum: ["720p", "1080p"],
+      description: "Output resolution",
+    },
+    waterMark: { type: "string", description: "Watermark text" },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+  },
+};
+
+export const alephGenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/aleph/generate",
+  contentType: "application/json",
+  fields: {
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Text guiding the video transformation",
+    },
+    videoUrl: {
+      type: "string",
+      required: true,
+      description: "Reference video URL (max 5 seconds processed)",
+    },
+    referenceImage: {
+      type: "string",
+      description: "Reference image influencing output style",
+    },
+    aspectRatio: {
+      type: "string",
+      enum: ["16:9", "9:16", "4:3", "3:4", "1:1", "21:9"],
+      description: "Output aspect ratio",
+    },
+    seed: { type: "number", description: "Random seed for reproducibility" },
+    waterMark: { type: "string", description: "Watermark text" },
+    uploadCn: {
+      type: "boolean",
+      description: "Upload to China servers",
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+  },
+};
+
 export const modelInputSchemas: Record<KieMediaModel, ModelInputSchema> = {
   "kling-3.0/video": {
     type: "video",

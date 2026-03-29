@@ -924,11 +924,7 @@ export function fal(opts: FalOptions): FalProvider {
       } catch (error) {
         clearTimeout(timeoutId);
         if (error instanceof FalError) throw error;
-        throw new FalError(
-          `Fal request failed: ${error}`,
-          500,
-          "server_error"
-        );
+        throw new FalError(`Fal request failed: ${error}`, 500, "server_error");
       }
     },
   };

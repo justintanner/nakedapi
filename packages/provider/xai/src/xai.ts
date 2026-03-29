@@ -44,6 +44,13 @@ import {
   XaiResponseRequest,
   XaiResponseResponse,
   XaiResponseDeleteResponse,
+  XaiTtsRequest,
+  XaiVoice,
+  XaiVoiceListResponse,
+  XaiTtsConnectOptions,
+  XaiTtsConnection,
+  XaiTtsClientEvent,
+  XaiTtsServerEvent,
   XaiRealtimeClientSecretRequest,
   XaiRealtimeClientSecretResponse,
   XaiTokenizeTextRequest,
@@ -89,6 +96,7 @@ import {
   documentSearchSchema,
   tokenizeTextSchema,
   realtimeClientSecretsSchema,
+  ttsSchema,
   apiKeyCreateSchema,
   apiKeyUpdateSchema,
   completionsSchema,
@@ -854,6 +862,195 @@ export function xai(opts: XaiOptions): XaiProvider {
     },
   };
 
+  async function makeBinaryRequest(
+    path: string,
+    body: unknown,
+    signal?: AbortSignal
+  ): Promise<ArrayBuffer> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    if (signal) {
+      signal.addEventListener("abort", () => controller.abort());
+    }
+
+    try {
+      const res = await doFetch(`${baseURL}${path}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${opts.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        let message = `XAI API error: ${res.status}`;
+        let errBody: unknown = null;
+        try {
+          errBody = await res.json();
+          if (
+            typeof errBody === "object" &&
+            errBody !== null &&
+            "error" in errBody
+          ) {
+            const err = (errBody as { error: { message?: string } }).error;
+            if (err?.message) {
+              message = `XAI API error ${res.status}: ${err.message}`;
+            }
+          }
+        } catch {
+          // ignore parse errors
+        }
+        throw new XaiError(message, res.status, errBody);
+      }
+
+      return await res.arrayBuffer();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof XaiError) throw error;
+      throw new XaiError(`XAI request failed: ${error}`, 500);
+    }
+  }
+
+  function ttsVoices(
+    voiceIdOrSignal?: string | AbortSignal,
+    signal?: AbortSignal
+  ): Promise<XaiVoiceListResponse | XaiVoice> {
+    if (typeof voiceIdOrSignal === "string") {
+      return makeRequest<XaiVoice>(
+        "GET",
+        `/tts/voices/${encodeURIComponent(voiceIdOrSignal)}`,
+        undefined,
+        signal
+      );
+    }
+    return makeRequest<XaiVoiceListResponse>(
+      "GET",
+      "/tts/voices",
+      undefined,
+      voiceIdOrSignal
+    );
+  }
+
+  function ttsConnect(connectOpts: XaiTtsConnectOptions): XaiTtsConnection {
+    const wsBaseURL = baseURL.replace(/^http/, "ws");
+    const params: string[] = [];
+    params.push(`language=${encodeURIComponent(connectOpts.language)}`);
+    if (connectOpts.voice !== undefined) {
+      params.push(`voice=${encodeURIComponent(connectOpts.voice)}`);
+    }
+    if (connectOpts.codec !== undefined) {
+      params.push(`codec=${encodeURIComponent(connectOpts.codec)}`);
+    }
+    if (connectOpts.sample_rate !== undefined) {
+      params.push(
+        `sample_rate=${encodeURIComponent(String(connectOpts.sample_rate))}`
+      );
+    }
+    if (connectOpts.bit_rate !== undefined) {
+      params.push(
+        `bit_rate=${encodeURIComponent(String(connectOpts.bit_rate))}`
+      );
+    }
+    const query = params.length > 0 ? `?${params.join("&")}` : "";
+
+    const ws = new WebSocket(`${wsBaseURL}/tts${query}`, [
+      `openai-insecure-api-key.${opts.apiKey}`,
+    ]);
+
+    let resolveNext:
+      | ((value: IteratorResult<XaiTtsServerEvent>) => void)
+      | null = null;
+    const eventQueue: XaiTtsServerEvent[] = [];
+    let closed = false;
+
+    ws.onmessage = (ev: MessageEvent) => {
+      const event = JSON.parse(
+        typeof ev.data === "string" ? ev.data : String(ev.data)
+      ) as XaiTtsServerEvent;
+      if (resolveNext) {
+        const resolve = resolveNext;
+        resolveNext = null;
+        resolve({ value: event, done: false });
+      } else {
+        eventQueue.push(event);
+      }
+    };
+
+    ws.onclose = () => {
+      closed = true;
+      if (resolveNext) {
+        const resolve = resolveNext;
+        resolveNext = null;
+        resolve({ value: undefined as never, done: true });
+      }
+    };
+
+    ws.onerror = () => {
+      closed = true;
+      if (resolveNext) {
+        const resolve = resolveNext;
+        resolveNext = null;
+        resolve({ value: undefined as never, done: true });
+      }
+    };
+
+    return {
+      send(event: XaiTtsClientEvent): void {
+        ws.send(JSON.stringify(event));
+      },
+      close(): void {
+        closed = true;
+        ws.close();
+      },
+      [Symbol.asyncIterator](): AsyncIterableIterator<XaiTtsServerEvent> {
+        return {
+          next(): Promise<IteratorResult<XaiTtsServerEvent>> {
+            if (eventQueue.length > 0) {
+              return Promise.resolve({
+                value: eventQueue.shift()!,
+                done: false,
+              });
+            }
+            if (closed) {
+              return Promise.resolve({
+                value: undefined as never,
+                done: true,
+              });
+            }
+            return new Promise((resolve) => {
+              resolveNext = resolve;
+            });
+          },
+          [Symbol.asyncIterator]() {
+            return this;
+          },
+        };
+      },
+    };
+  }
+
+  const tts = Object.assign(
+    async function tts(
+      req: XaiTtsRequest,
+      signal?: AbortSignal
+    ): Promise<ArrayBuffer> {
+      return await makeBinaryRequest("/tts", req, signal);
+    },
+    {
+      payloadSchema: ttsSchema,
+      validatePayload(data: unknown): ValidationResult {
+        return validatePayload(data, ttsSchema);
+      },
+      voices: ttsVoices as XaiProvider["v1"]["tts"]["voices"],
+      connect: ttsConnect,
+    }
+  );
+
   function buildManagementQuery(params: object): string {
     const parts: string[] = [];
     for (const [key, value] of Object.entries(params)) {
@@ -1206,6 +1403,7 @@ export function xai(opts: XaiOptions): XaiProvider {
           },
         }
       ),
+      tts: tts as XaiProvider["v1"]["tts"],
       realtime,
       auth: {
         apiKeys: authApiKeys as XaiProvider["v1"]["auth"]["apiKeys"],

@@ -830,6 +830,52 @@ export const completeSchema: PayloadSchema = {
   },
 };
 
+export const ttsSchema: PayloadSchema = {
+  method: "POST",
+  path: "/tts",
+  contentType: "application/json",
+  fields: {
+    text: {
+      type: "string",
+      required: true,
+      description: "Text to synthesize (max 15,000 characters)",
+    },
+    voice_id: {
+      type: "string",
+      description: "Voice identifier (default: eve)",
+      enum: ["eve", "ara", "rex", "sal", "leo"],
+    },
+    language: {
+      type: "string",
+      required: true,
+      description: "BCP-47 language code or 'auto'",
+    },
+    output_format: {
+      type: "object",
+      required: true,
+      description: "Audio output format configuration",
+      properties: {
+        codec: {
+          type: "string",
+          required: true,
+          enum: ["mp3", "wav", "pcm", "mulaw", "alaw"],
+          description: "Audio codec",
+        },
+        sample_rate: {
+          type: "number",
+          description: "Sample rate in Hz (default 24000)",
+          enum: [8000, 16000, 22050, 24000, 44100, 48000],
+        },
+        bit_rate: {
+          type: "number",
+          description: "Bit rate in bps (MP3 only, default 128000)",
+          enum: [32000, 64000, 96000, 128000, 192000],
+        },
+      },
+    },
+  },
+};
+
 export const videoExtensionsSchema: PayloadSchema = {
   method: "POST",
   path: "/videos/extensions",

@@ -282,6 +282,81 @@ export const claudeMessagesSchema: PayloadSchema = {
 // claudeHaiku uses the same schema as claude (same endpoint shape, different base URL)
 export const claudeHaikuMessagesSchema: PayloadSchema = claudeMessagesSchema;
 
+export const vocalRemovalGenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/vocal-removal/generate",
+  contentType: "application/json",
+  fields: {
+    taskId: {
+      type: "string",
+      required: true,
+      description: "Task ID from a completed music generation task",
+    },
+    audioId: {
+      type: "string",
+      required: true,
+      description: "Audio track ID to process",
+    },
+    type: {
+      type: "string",
+      required: true,
+      enum: ["separate_vocal", "split_stem"],
+      description:
+        "Separation type: separate_vocal (2 stems) or split_stem (12 stems)",
+    },
+    callBackUrl: {
+      type: "string",
+      required: true,
+      description: "Webhook URL for results",
+    },
+  },
+};
+
+export const midiGenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/midi/generate",
+  contentType: "application/json",
+  fields: {
+    taskId: {
+      type: "string",
+      required: true,
+      description: "Task ID from a completed vocal separation task",
+    },
+    callBackUrl: {
+      type: "string",
+      required: true,
+      description: "Webhook URL for results",
+    },
+    audioId: {
+      type: "string",
+      description: "Specific separated track to convert",
+    },
+  },
+};
+
+export const wavGenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/wav/generate",
+  contentType: "application/json",
+  fields: {
+    taskId: {
+      type: "string",
+      required: true,
+      description: "Task ID from a completed music generation task",
+    },
+    audioId: {
+      type: "string",
+      required: true,
+      description: "Audio track ID to convert",
+    },
+    callBackUrl: {
+      type: "string",
+      required: true,
+      description: "Webhook URL for results",
+    },
+  },
+};
+
 export const modelInputSchemas: Record<KieMediaModel, ModelInputSchema> = {
   "kling-3.0/video": {
     type: "video",
@@ -808,6 +883,17 @@ export const modelInputSchemas: Record<KieMediaModel, ModelInputSchema> = {
       duration_seconds: {
         type: "number",
         description: "Target duration in seconds",
+      },
+    },
+  },
+
+  "elevenlabs/audio-isolation": {
+    type: "audio",
+    fields: {
+      audio_url: {
+        type: "string",
+        required: true,
+        description: "URL to audio file for vocal isolation",
       },
     },
   },

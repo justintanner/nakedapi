@@ -17,6 +17,7 @@ export type KieMediaModel =
   | "grok-imagine/extend"
   | "grok-imagine/upscale"
   | "qwen2/text-to-image"
+  | "elevenlabs/audio-isolation"
   | "sora-watermark-remover";
 
 // Media generation types
@@ -313,6 +314,14 @@ export interface ElevenLabsSttRequest extends MediaRequest {
   };
 }
 
+// ElevenLabs audio isolation request
+export interface ElevenLabsAudioIsolationRequest extends MediaRequest {
+  model: "elevenlabs/audio-isolation";
+  input: {
+    audio_url: string;
+  };
+}
+
 // Sora watermark remover request
 export interface SoraWatermarkRequest extends MediaRequest {
   model: "sora-watermark-remover";
@@ -320,6 +329,103 @@ export interface SoraWatermarkRequest extends MediaRequest {
     video_url: string;
   };
 }
+
+// Vocal removal separation type
+export type VocalRemovalType = "separate_vocal" | "split_stem";
+
+// Vocal removal generate request
+export interface VocalRemovalRequest {
+  taskId: string;
+  audioId: string;
+  type: VocalRemovalType;
+  callBackUrl: string;
+}
+
+// Vocal separation info (2-stem)
+export interface VocalSeparationInfo {
+  vocal_url?: string;
+  instrumental_url?: string;
+  origin_url?: string;
+}
+
+// Split stem info (12-stem)
+export interface SplitStemInfo extends VocalSeparationInfo {
+  backing_vocals_url?: string;
+  drums_url?: string;
+  bass_url?: string;
+  guitar_url?: string;
+  keyboard_url?: string;
+  strings_url?: string;
+  brass_url?: string;
+  woodwinds_url?: string;
+  percussion_url?: string;
+  synth_url?: string;
+  fx_url?: string;
+}
+
+// Vocal removal record-info response data
+export interface VocalRemovalInfoData {
+  taskId?: string;
+  successFlag?: string;
+  vocal_separation_info?: SplitStemInfo;
+}
+
+// Vocal removal responses
+export type VocalRemovalResponse = KieApiEnvelope<{ taskId: string }>;
+export type VocalRemovalInfo = KieApiEnvelope<VocalRemovalInfoData>;
+
+// MIDI generate request
+export interface MidiGenerateRequest {
+  taskId: string;
+  callBackUrl: string;
+  audioId?: string;
+}
+
+// MIDI note
+export interface MidiNote {
+  pitch: number;
+  start: number;
+  end: number;
+  velocity: number;
+}
+
+// MIDI instrument
+export interface MidiInstrument {
+  name: string;
+  notes: MidiNote[];
+}
+
+// MIDI record-info response data
+export interface MidiInfoData {
+  taskId?: string;
+  successFlag?: number;
+  midiData?: {
+    state?: string;
+    instruments?: MidiInstrument[];
+  };
+}
+
+// MIDI responses
+export type MidiGenerateResponse = KieApiEnvelope<{ taskId: string }>;
+export type MidiInfo = KieApiEnvelope<MidiInfoData>;
+
+// WAV generate request
+export interface WavGenerateRequest {
+  taskId: string;
+  audioId: string;
+  callBackUrl: string;
+}
+
+// WAV record-info response data
+export interface WavInfoData {
+  taskId?: string;
+  successFlag?: string;
+  audioWavUrl?: string;
+}
+
+// WAV responses
+export type WavGenerateResponse = KieApiEnvelope<{ taskId: string }>;
+export type WavInfo = KieApiEnvelope<WavInfoData>;
 
 // Union type for all media requests
 export type MediaGenerationRequest =
@@ -339,6 +445,7 @@ export type MediaGenerationRequest =
   | ElevenLabsDialogueRequest
   | ElevenLabsSfxRequest
   | ElevenLabsSttRequest
+  | ElevenLabsAudioIsolationRequest
   | Qwen2TextToImageRequest
   | SoraWatermarkRequest;
 

@@ -1,0 +1,37 @@
+{
+  "name": "@nakedapi/google-gemini",
+  "version": "0.1.0",
+  "description": "Google Gemini provider for content generation, embeddings, and more.",
+  "license": "MIT",
+  "repository": "github:justintanner/nakedapi",
+  "type": "module",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "keywords": [
+    "ai",
+    "google",
+    "gemini",
+    "generative-ai",
+    "nakedapi"
+  ],
+  "author": "Justin Tanner",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/dist.mjs",
+    "prepublishOnly": "pnpm run build"
+  }
+}

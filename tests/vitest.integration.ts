@@ -29,6 +29,10 @@ export default defineConfig({
         __dirname,
         "../packages/provider/fireworks/src"
       ),
+      "@nakedapi/google-gemini": path.resolve(
+        __dirname,
+        "../packages/provider/google-gemini/src"
+      ),
     },
   },
 });

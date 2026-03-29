@@ -66,6 +66,8 @@ importers:
 
   packages/provider/fireworks: {}
 
+  packages/provider/google-gemini: {}
+
   packages/provider/kie: {}
 
   packages/provider/kimicoding: {}

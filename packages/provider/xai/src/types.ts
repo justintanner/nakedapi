@@ -145,6 +145,46 @@ export interface XaiFileListResponse {
   object: string;
 }
 
+// POST /v1/files:initialize request (chunked upload init)
+export interface XaiFileInitializeRequest {
+  name: string;
+  content_type: string;
+  team_id?: string;
+  file_path?: string;
+}
+
+// POST /v1/files:initialize response
+export interface XaiFileInitializeResponse {
+  file_id: string;
+  metadata: XaiDocumentFileMetadata;
+}
+
+// POST /v1/files:uploadChunks request
+export interface XaiFileUploadChunksRequest {
+  file_id: string;
+  chunk: string;
+}
+
+// PUT /v1/files/{id} request (update metadata/content)
+export interface XaiFileUpdateRequest {
+  team_id?: string;
+  name?: string;
+  content_type?: string;
+  data?: string;
+}
+
+// GET /v1/files/{id}/content query params
+export interface XaiFileContentParams {
+  team_id?: string;
+  format?: "DOWNLOAD_FORMAT_ORIGINAL" | "DOWNLOAD_FORMAT_TEXT";
+  page_number?: number;
+}
+
+// GET /v1/files/{id}/content response
+export interface XaiFileContentResponse {
+  data: string;
+}
+
 // Video reference (image-to-video, editing, extension, reference images)
 export interface XaiVideoReference {
   url: string;
@@ -1426,6 +1466,34 @@ interface XaiVideosNamespace {
   extensions: XaiVideoExtensionsMethod;
 }
 
+interface XaiFilesInitializeMethod {
+  (
+    req: XaiFileInitializeRequest,
+    signal?: AbortSignal
+  ): Promise<XaiFileInitializeResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface XaiFilesUploadChunksMethod {
+  (
+    req: XaiFileUploadChunksRequest,
+    signal?: AbortSignal
+  ): Promise<XaiDocumentFileMetadata>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface XaiFilesUpdateMethod {
+  (
+    fileId: string,
+    req: XaiFileUpdateRequest,
+    signal?: AbortSignal
+  ): Promise<XaiDocumentFileMetadata>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
 interface XaiFilesNamespace {
   upload(
     file: Blob,
@@ -1439,6 +1507,14 @@ interface XaiFilesNamespace {
     fileId: string,
     signal?: AbortSignal
   ): Promise<{ id: string; deleted: boolean }>;
+  initialize: XaiFilesInitializeMethod;
+  uploadChunks: XaiFilesUploadChunksMethod;
+  update: XaiFilesUpdateMethod;
+  content(
+    fileId: string,
+    params?: XaiFileContentParams,
+    signal?: AbortSignal
+  ): Promise<XaiFileContentResponse>;
 }
 
 interface XaiModelsNamespace {

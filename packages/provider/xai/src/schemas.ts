@@ -649,6 +649,62 @@ export const apiKeyUpdateSchema: PayloadSchema = {
   },
 };
 
+export const fileInitializeSchema: PayloadSchema = {
+  method: "POST",
+  path: "/files:initialize",
+  contentType: "application/json",
+  fields: {
+    name: {
+      type: "string",
+      required: true,
+      description: "File name",
+    },
+    content_type: {
+      type: "string",
+      required: true,
+      description: "MIME type of the file",
+    },
+    team_id: { type: "string", description: "Team ownership" },
+    file_path: {
+      type: "string",
+      description: "Hierarchical path relative to team root",
+    },
+  },
+};
+
+export const fileUploadChunksSchema: PayloadSchema = {
+  method: "POST",
+  path: "/files:uploadChunks",
+  contentType: "application/json",
+  fields: {
+    file_id: {
+      type: "string",
+      required: true,
+      description: "File ID from the initialize response",
+    },
+    chunk: {
+      type: "string",
+      required: true,
+      description: "Base64-encoded file data segment",
+    },
+  },
+};
+
+export const fileUpdateSchema: PayloadSchema = {
+  method: "PUT",
+  path: "/files/{file_id}",
+  contentType: "application/json",
+  fields: {
+    team_id: { type: "string", description: "Team ownership" },
+    name: { type: "string", description: "Updated document name" },
+    content_type: { type: "string", description: "Updated MIME type" },
+    data: {
+      type: "string",
+      description: "Replacement document bytes (base64-encoded)",
+    },
+  },
+};
+
 export const videoExtensionsSchema: PayloadSchema = {
   method: "POST",
   path: "/videos/extensions",

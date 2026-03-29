@@ -61,6 +61,13 @@ import {
   XaiTeamModelsResponse,
   XaiTeamEndpointsResponse,
   XaiManagementKeyValidationResponse,
+  XaiFileInitializeRequest,
+  XaiFileInitializeResponse,
+  XaiFileUploadChunksRequest,
+  XaiFileUpdateRequest,
+  XaiFileContentParams,
+  XaiFileContentResponse,
+  XaiDocumentFileMetadata,
   XaiProvider,
   XaiError,
 } from "./types";
@@ -84,6 +91,9 @@ import {
   realtimeClientSecretsSchema,
   apiKeyCreateSchema,
   apiKeyUpdateSchema,
+  fileInitializeSchema,
+  fileUploadChunksSchema,
+  fileUpdateSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
 
@@ -96,7 +106,7 @@ export function xai(opts: XaiOptions): XaiProvider {
   const timeout = opts.timeout ?? 30000;
 
   async function makeRequest<T>(
-    method: "GET" | "POST" | "DELETE",
+    method: "GET" | "POST" | "PUT" | "DELETE",
     path: string,
     body?: unknown,
     signal?: AbortSignal
@@ -306,6 +316,120 @@ export function xai(opts: XaiOptions): XaiProvider {
         }
 
         return (await res.json()) as { id: string; deleted: boolean };
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof XaiError) throw error;
+        throw new XaiError(`XAI request failed: ${error}`, 500);
+      }
+    },
+
+    initialize: Object.assign(
+      async function initialize(
+        req: XaiFileInitializeRequest,
+        signal?: AbortSignal
+      ): Promise<XaiFileInitializeResponse> {
+        return await makeManagementRequest(
+          "POST",
+          "/files:initialize",
+          req,
+          signal
+        );
+      },
+      {
+        payloadSchema: fileInitializeSchema,
+        validatePayload(data: unknown): ValidationResult {
+          return validatePayload(data, fileInitializeSchema);
+        },
+      }
+    ),
+
+    uploadChunks: Object.assign(
+      async function uploadChunks(
+        req: XaiFileUploadChunksRequest,
+        signal?: AbortSignal
+      ): Promise<XaiDocumentFileMetadata> {
+        return await makeManagementRequest(
+          "POST",
+          "/files:uploadChunks",
+          req,
+          signal
+        );
+      },
+      {
+        payloadSchema: fileUploadChunksSchema,
+        validatePayload(data: unknown): ValidationResult {
+          return validatePayload(data, fileUploadChunksSchema);
+        },
+      }
+    ),
+
+    update: Object.assign(
+      async function update(
+        fileId: string,
+        req: XaiFileUpdateRequest,
+        signal?: AbortSignal
+      ): Promise<XaiDocumentFileMetadata> {
+        return await makeManagementRequest(
+          "PUT",
+          `/files/${encodeURIComponent(fileId)}`,
+          req,
+          signal
+        );
+      },
+      {
+        payloadSchema: fileUpdateSchema,
+        validatePayload(data: unknown): ValidationResult {
+          return validatePayload(data, fileUpdateSchema);
+        },
+      }
+    ),
+
+    async content(
+      fileId: string,
+      params?: XaiFileContentParams,
+      signal?: AbortSignal
+    ): Promise<XaiFileContentResponse> {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      if (signal) {
+        signal.addEventListener("abort", () => controller.abort());
+      }
+
+      try {
+        const query = buildQuery(params ?? {});
+        const res = await doFetch(
+          `${baseURL}/files/${encodeURIComponent(fileId)}/content${query}`,
+          {
+            method: "GET",
+            headers: { Authorization: `Bearer ${opts.apiKey}` },
+            signal: controller.signal,
+          }
+        );
+
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          let message = `XAI API error: ${res.status}`;
+          let errBody: unknown = null;
+          try {
+            errBody = await res.json();
+            if (
+              typeof errBody === "object" &&
+              errBody !== null &&
+              "error" in errBody
+            ) {
+              const err = (errBody as { error: { message?: string } }).error;
+              if (err?.message) {
+                message = `XAI API error ${res.status}: ${err.message}`;
+              }
+            }
+          } catch {
+            // ignore parse errors
+          }
+          throw new XaiError(message, res.status, errBody);
+        }
+
+        return { data: await res.text() };
       } catch (error) {
         clearTimeout(timeoutId);
         if (error instanceof XaiError) throw error;

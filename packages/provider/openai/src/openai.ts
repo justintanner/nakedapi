@@ -56,6 +56,32 @@ import {
   OpenAiStoredCompletionUpdateRequest,
   OpenAiStoredCompletionMessageListOptions,
   OpenAiStoredCompletionMessageListResponse,
+  OpenAiAssistantCreateRequest,
+  OpenAiAssistant,
+  OpenAiAssistantUpdateRequest,
+  OpenAiAssistantListParams,
+  OpenAiAssistantListResponse,
+  OpenAiAssistantDeleteResponse,
+  OpenAiThreadCreateRequest,
+  OpenAiThread,
+  OpenAiThreadUpdateRequest,
+  OpenAiThreadDeleteResponse,
+  OpenAiThreadMessageCreateRequest,
+  OpenAiThreadMessage,
+  OpenAiThreadMessageUpdateRequest,
+  OpenAiThreadMessageListParams,
+  OpenAiThreadMessageListResponse,
+  OpenAiThreadMessageDeleteResponse,
+  OpenAiRunCreateRequest,
+  OpenAiRun,
+  OpenAiRunUpdateRequest,
+  OpenAiRunListParams,
+  OpenAiRunListResponse,
+  OpenAiRunSubmitToolOutputsRequest,
+  OpenAiCreateThreadAndRunRequest,
+  OpenAiRunStep,
+  OpenAiRunStepListParams,
+  OpenAiRunStepListResponse,
   OpenAiProvider,
   OpenAiError,
 } from "./types";
@@ -83,6 +109,20 @@ import {
   checkpointPermissionsCreateSchema,
   storedCompletionsUpdateSchema,
   storedCompletionsDeleteSchema,
+  assistantsCreateSchema,
+  assistantsUpdateSchema,
+  assistantsDeleteSchema,
+  threadsCreateSchema,
+  threadsUpdateSchema,
+  threadsDeleteSchema,
+  threadMessagesCreateSchema,
+  threadMessagesUpdateSchema,
+  threadMessagesDeleteSchema,
+  runsCreateSchema,
+  runsUpdateSchema,
+  runsCancelSchema,
+  runsSubmitToolOutputsSchema,
+  createThreadAndRunSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
 
@@ -151,6 +191,21 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
     };
   }
 
+  const betaHeaders = { "OpenAI-Beta": "assistants=v2" } as const;
+
+  function betaJsonRequest(body: unknown): {
+    headers: Record<string, string>;
+    body: string;
+  } {
+    return {
+      headers: {
+        "Content-Type": "application/json",
+        "OpenAI-Beta": "assistants=v2",
+      },
+      body: JSON.stringify(body),
+    };
+  }
+
   async function makeBinaryRequest(
     path: string,
     init: { headers: Record<string, string>; body: BodyInit },
@@ -204,7 +259,8 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
   async function makeGetRequest<T>(
     path: string,
     query?: Record<string, string | string[] | boolean | undefined>,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    extraHeaders?: Record<string, string>
   ): Promise<T> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -234,6 +290,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
         method: "GET",
         headers: {
           Authorization: `Bearer ${opts.apiKey}`,
+          ...extraHeaders,
         },
         signal: controller.signal,
       });
@@ -267,7 +324,8 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
 
   async function makeEmptyPostRequest<T>(
     path: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    extraHeaders?: Record<string, string>
   ): Promise<T> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -281,6 +339,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
         method: "POST",
         headers: {
           Authorization: `Bearer ${opts.apiKey}`,
+          ...extraHeaders,
         },
         signal: controller.signal,
       });
@@ -314,7 +373,8 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
 
   async function makeDeleteRequest<T>(
     path: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    extraHeaders?: Record<string, string>
   ): Promise<T> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -328,6 +388,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${opts.apiKey}`,
+          ...extraHeaders,
         },
         signal: controller.signal,
       });
@@ -1127,6 +1188,392 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
           ),
         },
       },
+      assistants: Object.assign(
+        async function assistants(
+          req: OpenAiAssistantCreateRequest,
+          signal?: AbortSignal
+        ): Promise<OpenAiAssistant> {
+          return await makeRequest<OpenAiAssistant>(
+            "/assistants",
+            betaJsonRequest(req),
+            signal
+          );
+        },
+        {
+          payloadSchema: assistantsCreateSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, assistantsCreateSchema);
+          },
+          list: async function list(
+            listOpts?: OpenAiAssistantListParams,
+            signal?: AbortSignal
+          ): Promise<OpenAiAssistantListResponse> {
+            const query: Record<string, string | undefined> = {};
+            if (listOpts?.limit !== undefined)
+              query.limit = String(listOpts.limit);
+            if (listOpts?.order) query.order = listOpts.order;
+            if (listOpts?.after) query.after = listOpts.after;
+            if (listOpts?.before) query.before = listOpts.before;
+            return await makeGetRequest<OpenAiAssistantListResponse>(
+              "/assistants",
+              query,
+              signal,
+              betaHeaders
+            );
+          },
+          retrieve: async function retrieve(
+            id: string,
+            signal?: AbortSignal
+          ): Promise<OpenAiAssistant> {
+            return await makeGetRequest<OpenAiAssistant>(
+              `/assistants/${encodeURIComponent(id)}`,
+              undefined,
+              signal,
+              betaHeaders
+            );
+          },
+          update: Object.assign(
+            async function update(
+              id: string,
+              req: OpenAiAssistantUpdateRequest,
+              signal?: AbortSignal
+            ): Promise<OpenAiAssistant> {
+              return await makeRequest<OpenAiAssistant>(
+                `/assistants/${encodeURIComponent(id)}`,
+                betaJsonRequest(req),
+                signal
+              );
+            },
+            {
+              payloadSchema: assistantsUpdateSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, assistantsUpdateSchema);
+              },
+            }
+          ),
+          del: Object.assign(
+            async function del(
+              id: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiAssistantDeleteResponse> {
+              return await makeDeleteRequest<OpenAiAssistantDeleteResponse>(
+                `/assistants/${encodeURIComponent(id)}`,
+                signal,
+                betaHeaders
+              );
+            },
+            {
+              payloadSchema: assistantsDeleteSchema,
+            }
+          ),
+        }
+      ),
+      threads: Object.assign(
+        async function threads(
+          req?: OpenAiThreadCreateRequest,
+          signal?: AbortSignal
+        ): Promise<OpenAiThread> {
+          return await makeRequest<OpenAiThread>(
+            "/threads",
+            betaJsonRequest(req ?? {}),
+            signal
+          );
+        },
+        {
+          payloadSchema: threadsCreateSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, threadsCreateSchema);
+          },
+          retrieve: async function retrieve(
+            id: string,
+            signal?: AbortSignal
+          ): Promise<OpenAiThread> {
+            return await makeGetRequest<OpenAiThread>(
+              `/threads/${encodeURIComponent(id)}`,
+              undefined,
+              signal,
+              betaHeaders
+            );
+          },
+          update: Object.assign(
+            async function update(
+              id: string,
+              req: OpenAiThreadUpdateRequest,
+              signal?: AbortSignal
+            ): Promise<OpenAiThread> {
+              return await makeRequest<OpenAiThread>(
+                `/threads/${encodeURIComponent(id)}`,
+                betaJsonRequest(req),
+                signal
+              );
+            },
+            {
+              payloadSchema: threadsUpdateSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, threadsUpdateSchema);
+              },
+            }
+          ),
+          del: Object.assign(
+            async function del(
+              id: string,
+              signal?: AbortSignal
+            ): Promise<OpenAiThreadDeleteResponse> {
+              return await makeDeleteRequest<OpenAiThreadDeleteResponse>(
+                `/threads/${encodeURIComponent(id)}`,
+                signal,
+                betaHeaders
+              );
+            },
+            {
+              payloadSchema: threadsDeleteSchema,
+            }
+          ),
+          messages: Object.assign(
+            async function messages(
+              threadId: string,
+              req: OpenAiThreadMessageCreateRequest,
+              signal?: AbortSignal
+            ): Promise<OpenAiThreadMessage> {
+              return await makeRequest<OpenAiThreadMessage>(
+                `/threads/${encodeURIComponent(threadId)}/messages`,
+                betaJsonRequest(req),
+                signal
+              );
+            },
+            {
+              payloadSchema: threadMessagesCreateSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, threadMessagesCreateSchema);
+              },
+              list: async function list(
+                threadId: string,
+                listOpts?: OpenAiThreadMessageListParams,
+                signal?: AbortSignal
+              ): Promise<OpenAiThreadMessageListResponse> {
+                const query: Record<string, string | undefined> = {};
+                if (listOpts?.limit !== undefined)
+                  query.limit = String(listOpts.limit);
+                if (listOpts?.order) query.order = listOpts.order;
+                if (listOpts?.after) query.after = listOpts.after;
+                if (listOpts?.before) query.before = listOpts.before;
+                if (listOpts?.run_id) query.run_id = listOpts.run_id;
+                return await makeGetRequest<OpenAiThreadMessageListResponse>(
+                  `/threads/${encodeURIComponent(threadId)}/messages`,
+                  query,
+                  signal,
+                  betaHeaders
+                );
+              },
+              retrieve: async function retrieve(
+                threadId: string,
+                messageId: string,
+                signal?: AbortSignal
+              ): Promise<OpenAiThreadMessage> {
+                return await makeGetRequest<OpenAiThreadMessage>(
+                  `/threads/${encodeURIComponent(threadId)}/messages/${encodeURIComponent(messageId)}`,
+                  undefined,
+                  signal,
+                  betaHeaders
+                );
+              },
+              update: Object.assign(
+                async function update(
+                  threadId: string,
+                  messageId: string,
+                  req: OpenAiThreadMessageUpdateRequest,
+                  signal?: AbortSignal
+                ): Promise<OpenAiThreadMessage> {
+                  return await makeRequest<OpenAiThreadMessage>(
+                    `/threads/${encodeURIComponent(threadId)}/messages/${encodeURIComponent(messageId)}`,
+                    betaJsonRequest(req),
+                    signal
+                  );
+                },
+                {
+                  payloadSchema: threadMessagesUpdateSchema,
+                  validatePayload(data: unknown): ValidationResult {
+                    return validatePayload(data, threadMessagesUpdateSchema);
+                  },
+                }
+              ),
+              del: Object.assign(
+                async function del(
+                  threadId: string,
+                  messageId: string,
+                  signal?: AbortSignal
+                ): Promise<OpenAiThreadMessageDeleteResponse> {
+                  return await makeDeleteRequest<OpenAiThreadMessageDeleteResponse>(
+                    `/threads/${encodeURIComponent(threadId)}/messages/${encodeURIComponent(messageId)}`,
+                    signal,
+                    betaHeaders
+                  );
+                },
+                {
+                  payloadSchema: threadMessagesDeleteSchema,
+                }
+              ),
+            }
+          ),
+          runs: Object.assign(
+            async function runs(
+              threadId: string,
+              req: OpenAiRunCreateRequest,
+              signal?: AbortSignal
+            ): Promise<OpenAiRun> {
+              return await makeRequest<OpenAiRun>(
+                `/threads/${encodeURIComponent(threadId)}/runs`,
+                betaJsonRequest(req),
+                signal
+              );
+            },
+            {
+              payloadSchema: runsCreateSchema,
+              validatePayload(data: unknown): ValidationResult {
+                return validatePayload(data, runsCreateSchema);
+              },
+              list: async function list(
+                threadId: string,
+                listOpts?: OpenAiRunListParams,
+                signal?: AbortSignal
+              ): Promise<OpenAiRunListResponse> {
+                const query: Record<string, string | undefined> = {};
+                if (listOpts?.limit !== undefined)
+                  query.limit = String(listOpts.limit);
+                if (listOpts?.order) query.order = listOpts.order;
+                if (listOpts?.after) query.after = listOpts.after;
+                if (listOpts?.before) query.before = listOpts.before;
+                return await makeGetRequest<OpenAiRunListResponse>(
+                  `/threads/${encodeURIComponent(threadId)}/runs`,
+                  query,
+                  signal,
+                  betaHeaders
+                );
+              },
+              retrieve: async function retrieve(
+                threadId: string,
+                runId: string,
+                signal?: AbortSignal
+              ): Promise<OpenAiRun> {
+                return await makeGetRequest<OpenAiRun>(
+                  `/threads/${encodeURIComponent(threadId)}/runs/${encodeURIComponent(runId)}`,
+                  undefined,
+                  signal,
+                  betaHeaders
+                );
+              },
+              update: Object.assign(
+                async function update(
+                  threadId: string,
+                  runId: string,
+                  req: OpenAiRunUpdateRequest,
+                  signal?: AbortSignal
+                ): Promise<OpenAiRun> {
+                  return await makeRequest<OpenAiRun>(
+                    `/threads/${encodeURIComponent(threadId)}/runs/${encodeURIComponent(runId)}`,
+                    betaJsonRequest(req),
+                    signal
+                  );
+                },
+                {
+                  payloadSchema: runsUpdateSchema,
+                  validatePayload(data: unknown): ValidationResult {
+                    return validatePayload(data, runsUpdateSchema);
+                  },
+                }
+              ),
+              cancel: Object.assign(
+                async function cancel(
+                  threadId: string,
+                  runId: string,
+                  signal?: AbortSignal
+                ): Promise<OpenAiRun> {
+                  return await makeEmptyPostRequest<OpenAiRun>(
+                    `/threads/${encodeURIComponent(threadId)}/runs/${encodeURIComponent(runId)}/cancel`,
+                    signal,
+                    betaHeaders
+                  );
+                },
+                {
+                  payloadSchema: runsCancelSchema,
+                }
+              ),
+              submit_tool_outputs: Object.assign(
+                async function submit_tool_outputs(
+                  threadId: string,
+                  runId: string,
+                  req: OpenAiRunSubmitToolOutputsRequest,
+                  signal?: AbortSignal
+                ): Promise<OpenAiRun> {
+                  return await makeRequest<OpenAiRun>(
+                    `/threads/${encodeURIComponent(threadId)}/runs/${encodeURIComponent(runId)}/submit_tool_outputs`,
+                    betaJsonRequest(req),
+                    signal
+                  );
+                },
+                {
+                  payloadSchema: runsSubmitToolOutputsSchema,
+                  validatePayload(data: unknown): ValidationResult {
+                    return validatePayload(data, runsSubmitToolOutputsSchema);
+                  },
+                }
+              ),
+              create_and_run: Object.assign(
+                async function create_and_run(
+                  req: OpenAiCreateThreadAndRunRequest,
+                  signal?: AbortSignal
+                ): Promise<OpenAiRun> {
+                  return await makeRequest<OpenAiRun>(
+                    "/threads/runs",
+                    betaJsonRequest(req),
+                    signal
+                  );
+                },
+                {
+                  payloadSchema: createThreadAndRunSchema,
+                  validatePayload(data: unknown): ValidationResult {
+                    return validatePayload(data, createThreadAndRunSchema);
+                  },
+                }
+              ),
+              steps: {
+                list: async function list(
+                  threadId: string,
+                  runId: string,
+                  listOpts?: OpenAiRunStepListParams,
+                  signal?: AbortSignal
+                ): Promise<OpenAiRunStepListResponse> {
+                  const query: Record<string, string | undefined> = {};
+                  if (listOpts?.limit !== undefined)
+                    query.limit = String(listOpts.limit);
+                  if (listOpts?.order) query.order = listOpts.order;
+                  if (listOpts?.after) query.after = listOpts.after;
+                  if (listOpts?.before) query.before = listOpts.before;
+                  return await makeGetRequest<OpenAiRunStepListResponse>(
+                    `/threads/${encodeURIComponent(threadId)}/runs/${encodeURIComponent(runId)}/steps`,
+                    query,
+                    signal,
+                    betaHeaders
+                  );
+                },
+                retrieve: async function retrieve(
+                  threadId: string,
+                  runId: string,
+                  stepId: string,
+                  signal?: AbortSignal
+                ): Promise<OpenAiRunStep> {
+                  return await makeGetRequest<OpenAiRunStep>(
+                    `/threads/${encodeURIComponent(threadId)}/runs/${encodeURIComponent(runId)}/steps/${encodeURIComponent(stepId)}`,
+                    undefined,
+                    signal,
+                    betaHeaders
+                  );
+                },
+              },
+            }
+          ),
+        }
+      ),
     },
   };
 }

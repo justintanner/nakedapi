@@ -946,3 +946,328 @@ export const audioTranslationsSchema: PayloadSchema = {
     temperature: { type: "number", description: "Sampling temperature 0-1" },
   },
 };
+
+// --- Assistants API schemas (deprecated Aug 2026, requires OpenAI-Beta: assistants=v2) ---
+
+export const assistantsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/assistants",
+  contentType: "application/json",
+  fields: {
+    model: {
+      type: "string",
+      required: true,
+      description: "Model ID (e.g. gpt-4o)",
+    },
+    name: { type: "string", description: "Name of the assistant (max 256)" },
+    description: {
+      type: "string",
+      description: "Description of the assistant (max 512)",
+    },
+    instructions: {
+      type: "string",
+      description: "System instructions (max 256000)",
+    },
+    tools: {
+      type: "array",
+      description: "Tools enabled (code_interpreter, file_search, function)",
+      items: {
+        type: "object",
+        properties: {
+          type: {
+            type: "string",
+            required: true,
+            enum: ["code_interpreter", "file_search", "function"],
+          },
+        },
+      },
+    },
+    tool_resources: {
+      type: "object",
+      description: "Tool resources (file_ids, vector_store_ids)",
+    },
+    metadata: {
+      type: "object",
+      description: "Key-value metadata (max 16 pairs)",
+    },
+    temperature: { type: "number", description: "Sampling temperature 0-2" },
+    top_p: { type: "number", description: "Nucleus sampling 0-1" },
+    response_format: {
+      type: "string",
+      description: 'Response format: "auto" or object with type',
+    },
+  },
+};
+
+export const assistantsUpdateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/assistants/{assistant_id}",
+  contentType: "application/json",
+  fields: {
+    model: { type: "string", description: "Model ID" },
+    name: { type: "string", description: "Name (max 256)" },
+    description: { type: "string", description: "Description (max 512)" },
+    instructions: { type: "string", description: "System instructions" },
+    tools: { type: "array", description: "Tools enabled" },
+    tool_resources: { type: "object", description: "Tool resources" },
+    metadata: { type: "object", description: "Key-value metadata" },
+    temperature: { type: "number", description: "Sampling temperature 0-2" },
+    top_p: { type: "number", description: "Nucleus sampling 0-1" },
+    response_format: { type: "string", description: "Response format" },
+  },
+};
+
+export const assistantsDeleteSchema: PayloadSchema = {
+  method: "DELETE",
+  path: "/assistants/{assistant_id}",
+  contentType: "application/json",
+  fields: {
+    assistant_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the assistant to delete",
+    },
+  },
+};
+
+export const threadsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/threads",
+  contentType: "application/json",
+  fields: {
+    messages: {
+      type: "array",
+      description: "Initial messages for the thread",
+      items: {
+        type: "object",
+        properties: {
+          role: {
+            type: "string",
+            required: true,
+            enum: ["user", "assistant"],
+          },
+          content: { type: "string", required: true },
+        },
+      },
+    },
+    tool_resources: { type: "object", description: "Tool resources" },
+    metadata: { type: "object", description: "Key-value metadata" },
+  },
+};
+
+export const threadsUpdateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/threads/{thread_id}",
+  contentType: "application/json",
+  fields: {
+    metadata: { type: "object", description: "Key-value metadata" },
+    tool_resources: { type: "object", description: "Tool resources" },
+  },
+};
+
+export const threadsDeleteSchema: PayloadSchema = {
+  method: "DELETE",
+  path: "/threads/{thread_id}",
+  contentType: "application/json",
+  fields: {
+    thread_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the thread to delete",
+    },
+  },
+};
+
+export const threadMessagesCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/threads/{thread_id}/messages",
+  contentType: "application/json",
+  fields: {
+    role: {
+      type: "string",
+      required: true,
+      description: "Role of the message sender",
+      enum: ["user", "assistant"],
+    },
+    content: {
+      type: "string",
+      required: true,
+      description: "Message content (string or content array)",
+    },
+    attachments: {
+      type: "array",
+      description: "File attachments with tools",
+    },
+    metadata: { type: "object", description: "Key-value metadata" },
+  },
+};
+
+export const threadMessagesUpdateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/threads/{thread_id}/messages/{message_id}",
+  contentType: "application/json",
+  fields: {
+    metadata: { type: "object", description: "Key-value metadata" },
+  },
+};
+
+export const threadMessagesDeleteSchema: PayloadSchema = {
+  method: "DELETE",
+  path: "/threads/{thread_id}/messages/{message_id}",
+  contentType: "application/json",
+  fields: {
+    thread_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the thread",
+    },
+    message_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the message to delete",
+    },
+  },
+};
+
+export const runsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/threads/{thread_id}/runs",
+  contentType: "application/json",
+  fields: {
+    assistant_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the assistant to run",
+    },
+    model: { type: "string", description: "Model override" },
+    instructions: { type: "string", description: "Instructions override" },
+    additional_instructions: {
+      type: "string",
+      description: "Additional instructions appended to the run",
+    },
+    additional_messages: {
+      type: "array",
+      description: "Additional messages to add before the run",
+    },
+    tools: { type: "array", description: "Tools override" },
+    metadata: { type: "object", description: "Key-value metadata" },
+    temperature: { type: "number", description: "Sampling temperature 0-2" },
+    top_p: { type: "number", description: "Nucleus sampling 0-1" },
+    stream: { type: "boolean", description: "Whether to stream the run" },
+    max_prompt_tokens: { type: "number", description: "Max prompt tokens" },
+    max_completion_tokens: {
+      type: "number",
+      description: "Max completion tokens",
+    },
+    truncation_strategy: {
+      type: "object",
+      description: "Truncation strategy",
+    },
+    tool_choice: { type: "string", description: "Tool choice strategy" },
+    parallel_tool_calls: {
+      type: "boolean",
+      description: "Enable parallel tool calls",
+    },
+    response_format: { type: "string", description: "Response format" },
+  },
+};
+
+export const runsUpdateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/threads/{thread_id}/runs/{run_id}",
+  contentType: "application/json",
+  fields: {
+    metadata: { type: "object", description: "Key-value metadata" },
+  },
+};
+
+export const runsCancelSchema: PayloadSchema = {
+  method: "POST",
+  path: "/threads/{thread_id}/runs/{run_id}/cancel",
+  contentType: "application/json",
+  fields: {
+    thread_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the thread",
+    },
+    run_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the run to cancel",
+    },
+  },
+};
+
+export const runsSubmitToolOutputsSchema: PayloadSchema = {
+  method: "POST",
+  path: "/threads/{thread_id}/runs/{run_id}/submit_tool_outputs",
+  contentType: "application/json",
+  fields: {
+    tool_outputs: {
+      type: "array",
+      required: true,
+      description: "Tool outputs to submit",
+      items: {
+        type: "object",
+        properties: {
+          tool_call_id: {
+            type: "string",
+            required: true,
+            description: "The ID of the tool call",
+          },
+          output: {
+            type: "string",
+            description: "Output of the tool call",
+          },
+        },
+      },
+    },
+    stream: { type: "boolean", description: "Whether to stream the run" },
+  },
+};
+
+export const createThreadAndRunSchema: PayloadSchema = {
+  method: "POST",
+  path: "/threads/runs",
+  contentType: "application/json",
+  fields: {
+    assistant_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the assistant to run",
+    },
+    thread: {
+      type: "object",
+      description: "Thread to create",
+      properties: {
+        messages: { type: "array", description: "Initial messages" },
+        tool_resources: { type: "object", description: "Tool resources" },
+        metadata: { type: "object", description: "Key-value metadata" },
+      },
+    },
+    model: { type: "string", description: "Model override" },
+    instructions: { type: "string", description: "Instructions override" },
+    tools: { type: "array", description: "Tools override" },
+    tool_resources: { type: "object", description: "Tool resources" },
+    metadata: { type: "object", description: "Key-value metadata" },
+    temperature: { type: "number", description: "Sampling temperature 0-2" },
+    top_p: { type: "number", description: "Nucleus sampling 0-1" },
+    stream: { type: "boolean", description: "Whether to stream" },
+    max_prompt_tokens: { type: "number", description: "Max prompt tokens" },
+    max_completion_tokens: {
+      type: "number",
+      description: "Max completion tokens",
+    },
+    truncation_strategy: {
+      type: "object",
+      description: "Truncation strategy",
+    },
+    tool_choice: { type: "string", description: "Tool choice strategy" },
+    parallel_tool_calls: {
+      type: "boolean",
+      description: "Enable parallel tool calls",
+    },
+    response_format: { type: "string", description: "Response format" },
+  },
+};

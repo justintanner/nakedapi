@@ -1114,6 +1114,508 @@ export interface OpenAiFileDeleteResponse {
   deleted: boolean;
 }
 
+// --- Assistants API types (deprecated Aug 2026, requires OpenAI-Beta: assistants=v2) ---
+
+// Response format shared by assistants and runs
+export type OpenAiAssistantsResponseFormat =
+  | "auto"
+  | { type: "text" }
+  | { type: "json_object" }
+  | { type: "json_schema"; json_schema: Record<string, unknown> };
+
+// Tool choice shared by runs
+export type OpenAiAssistantsToolChoice =
+  | "auto"
+  | "none"
+  | "required"
+  | { type: "function"; function: { name: string } };
+
+// Assistant tool types
+export interface OpenAiAssistantCodeInterpreterTool {
+  type: "code_interpreter";
+}
+
+export interface OpenAiAssistantFileSearchTool {
+  type: "file_search";
+  file_search?: {
+    max_num_results?: number;
+    ranking_options?: {
+      ranker?: "auto" | "default_2024_08_21";
+      score_threshold?: number;
+    };
+  };
+}
+
+export interface OpenAiAssistantFunctionTool {
+  type: "function";
+  function: {
+    name: string;
+    description?: string;
+    parameters?: Record<string, unknown>;
+    strict?: boolean;
+  };
+}
+
+export type OpenAiAssistantTool =
+  | OpenAiAssistantCodeInterpreterTool
+  | OpenAiAssistantFileSearchTool
+  | OpenAiAssistantFunctionTool;
+
+// Tool resources (shared by assistants, threads, runs)
+export interface OpenAiToolResources {
+  code_interpreter?: {
+    file_ids?: string[];
+  };
+  file_search?: {
+    vector_store_ids?: string[];
+  };
+}
+
+// Assistant object
+export interface OpenAiAssistant {
+  id: string;
+  object: "assistant";
+  created_at: number;
+  name: string | null;
+  description: string | null;
+  model: string;
+  instructions: string | null;
+  tools: OpenAiAssistantTool[];
+  tool_resources: OpenAiToolResources | null;
+  metadata: Record<string, string> | null;
+  temperature: number | null;
+  top_p: number | null;
+  response_format: OpenAiAssistantsResponseFormat | null;
+}
+
+// Create assistant request
+export interface OpenAiAssistantCreateRequest {
+  model: string;
+  name?: string | null;
+  description?: string | null;
+  instructions?: string | null;
+  tools?: OpenAiAssistantTool[];
+  tool_resources?: OpenAiToolResources | null;
+  metadata?: Record<string, string> | null;
+  temperature?: number | null;
+  top_p?: number | null;
+  response_format?: OpenAiAssistantsResponseFormat;
+}
+
+// Modify assistant request
+export interface OpenAiAssistantUpdateRequest {
+  model?: string;
+  name?: string | null;
+  description?: string | null;
+  instructions?: string | null;
+  tools?: OpenAiAssistantTool[];
+  tool_resources?: OpenAiToolResources | null;
+  metadata?: Record<string, string> | null;
+  temperature?: number | null;
+  top_p?: number | null;
+  response_format?: OpenAiAssistantsResponseFormat;
+}
+
+// List assistants params
+export interface OpenAiAssistantListParams {
+  limit?: number;
+  order?: "asc" | "desc";
+  after?: string;
+  before?: string;
+}
+
+// List assistants response
+export interface OpenAiAssistantListResponse {
+  object: "list";
+  data: OpenAiAssistant[];
+  first_id: string | null;
+  last_id: string | null;
+  has_more: boolean;
+}
+
+// Delete assistant response
+export interface OpenAiAssistantDeleteResponse {
+  id: string;
+  object: "assistant.deleted";
+  deleted: true;
+}
+
+// Thread object
+export interface OpenAiThread {
+  id: string;
+  object: "thread";
+  created_at: number;
+  metadata: Record<string, string> | null;
+  tool_resources: OpenAiToolResources | null;
+}
+
+// Create thread request
+export interface OpenAiThreadCreateRequest {
+  messages?: OpenAiThreadMessageCreateRequest[];
+  tool_resources?: OpenAiToolResources | null;
+  metadata?: Record<string, string> | null;
+}
+
+// Modify thread request
+export interface OpenAiThreadUpdateRequest {
+  metadata?: Record<string, string> | null;
+  tool_resources?: OpenAiToolResources | null;
+}
+
+// Delete thread response
+export interface OpenAiThreadDeleteResponse {
+  id: string;
+  object: "thread.deleted";
+  deleted: true;
+}
+
+// Message content types
+export interface OpenAiMessageTextContent {
+  type: "text";
+  text: {
+    value: string;
+    annotations: OpenAiMessageAnnotation[];
+  };
+}
+
+export interface OpenAiMessageImageFileContent {
+  type: "image_file";
+  image_file: {
+    file_id: string;
+    detail?: "auto" | "low" | "high";
+  };
+}
+
+export interface OpenAiMessageImageUrlContent {
+  type: "image_url";
+  image_url: {
+    url: string;
+    detail?: "auto" | "low" | "high";
+  };
+}
+
+export type OpenAiMessageContent =
+  | OpenAiMessageTextContent
+  | OpenAiMessageImageFileContent
+  | OpenAiMessageImageUrlContent;
+
+// Message annotations
+export interface OpenAiMessageFileCitationAnnotation {
+  type: "file_citation";
+  text: string;
+  file_citation: {
+    file_id: string;
+    quote?: string;
+  };
+  start_index: number;
+  end_index: number;
+}
+
+export interface OpenAiMessageFilePathAnnotation {
+  type: "file_path";
+  text: string;
+  file_path: {
+    file_id: string;
+  };
+  start_index: number;
+  end_index: number;
+}
+
+export type OpenAiMessageAnnotation =
+  | OpenAiMessageFileCitationAnnotation
+  | OpenAiMessageFilePathAnnotation;
+
+// Message attachment
+export interface OpenAiMessageAttachment {
+  file_id?: string;
+  tools?: ({ type: "code_interpreter" } | { type: "file_search" })[];
+}
+
+// Thread message object
+export interface OpenAiThreadMessage {
+  id: string;
+  object: "thread.message";
+  created_at: number;
+  thread_id: string;
+  status: "in_progress" | "incomplete" | "completed";
+  incomplete_details: { reason: string } | null;
+  completed_at: number | null;
+  incomplete_at: number | null;
+  role: "user" | "assistant";
+  content: OpenAiMessageContent[];
+  assistant_id: string | null;
+  run_id: string | null;
+  attachments: OpenAiMessageAttachment[] | null;
+  metadata: Record<string, string> | null;
+}
+
+// Create thread message request
+export interface OpenAiThreadMessageCreateRequest {
+  role: "user" | "assistant";
+  content: string | OpenAiMessageContent[];
+  attachments?: OpenAiMessageAttachment[] | null;
+  metadata?: Record<string, string> | null;
+}
+
+// Modify thread message request
+export interface OpenAiThreadMessageUpdateRequest {
+  metadata?: Record<string, string> | null;
+}
+
+// List thread messages params
+export interface OpenAiThreadMessageListParams {
+  limit?: number;
+  order?: "asc" | "desc";
+  after?: string;
+  before?: string;
+  run_id?: string;
+}
+
+// List thread messages response
+export interface OpenAiThreadMessageListResponse {
+  object: "list";
+  data: OpenAiThreadMessage[];
+  first_id: string | null;
+  last_id: string | null;
+  has_more: boolean;
+}
+
+// Delete thread message response
+export interface OpenAiThreadMessageDeleteResponse {
+  id: string;
+  object: "thread.message.deleted";
+  deleted: true;
+}
+
+// Run required action
+export interface OpenAiRunRequiredAction {
+  type: "submit_tool_outputs";
+  submit_tool_outputs: {
+    tool_calls: OpenAiRunToolCall[];
+  };
+}
+
+// Run tool call
+export interface OpenAiRunToolCall {
+  id: string;
+  type: "function";
+  function: {
+    name: string;
+    arguments: string;
+  };
+}
+
+// Run last error
+export interface OpenAiRunLastError {
+  code: "server_error" | "rate_limit_exceeded" | "invalid_prompt";
+  message: string;
+}
+
+// Run truncation strategy
+export interface OpenAiRunTruncationStrategy {
+  type: "auto" | "last_messages";
+  last_messages: number | null;
+}
+
+// Run object
+export interface OpenAiRun {
+  id: string;
+  object: "thread.run";
+  created_at: number;
+  thread_id: string;
+  assistant_id: string;
+  status:
+    | "queued"
+    | "in_progress"
+    | "requires_action"
+    | "cancelling"
+    | "cancelled"
+    | "failed"
+    | "completed"
+    | "incomplete"
+    | "expired";
+  required_action: OpenAiRunRequiredAction | null;
+  last_error: OpenAiRunLastError | null;
+  expires_at: number | null;
+  started_at: number | null;
+  cancelled_at: number | null;
+  failed_at: number | null;
+  completed_at: number | null;
+  incomplete_details: { reason: string } | null;
+  model: string;
+  instructions: string | null;
+  tools: OpenAiAssistantTool[];
+  metadata: Record<string, string> | null;
+  usage: OpenAiUsage | null;
+  temperature: number | null;
+  top_p: number | null;
+  max_prompt_tokens: number | null;
+  max_completion_tokens: number | null;
+  truncation_strategy: OpenAiRunTruncationStrategy;
+  response_format: OpenAiAssistantsResponseFormat | null;
+  tool_choice: OpenAiAssistantsToolChoice | null;
+  parallel_tool_calls: boolean;
+}
+
+// Create run request
+export interface OpenAiRunCreateRequest {
+  assistant_id: string;
+  model?: string | null;
+  instructions?: string | null;
+  additional_instructions?: string | null;
+  additional_messages?: OpenAiThreadMessageCreateRequest[] | null;
+  tools?: OpenAiAssistantTool[] | null;
+  metadata?: Record<string, string> | null;
+  temperature?: number | null;
+  top_p?: number | null;
+  stream?: boolean | null;
+  max_prompt_tokens?: number | null;
+  max_completion_tokens?: number | null;
+  truncation_strategy?: OpenAiRunTruncationStrategy;
+  tool_choice?: OpenAiAssistantsToolChoice;
+  parallel_tool_calls?: boolean;
+  response_format?: OpenAiAssistantsResponseFormat;
+}
+
+// Modify run request
+export interface OpenAiRunUpdateRequest {
+  metadata?: Record<string, string> | null;
+}
+
+// List runs params
+export interface OpenAiRunListParams {
+  limit?: number;
+  order?: "asc" | "desc";
+  after?: string;
+  before?: string;
+}
+
+// List runs response
+export interface OpenAiRunListResponse {
+  object: "list";
+  data: OpenAiRun[];
+  first_id: string | null;
+  last_id: string | null;
+  has_more: boolean;
+}
+
+// Submit tool outputs request
+export interface OpenAiRunSubmitToolOutputsRequest {
+  tool_outputs: {
+    tool_call_id: string;
+    output?: string;
+  }[];
+  stream?: boolean | null;
+}
+
+// Create thread and run request
+export interface OpenAiCreateThreadAndRunRequest {
+  assistant_id: string;
+  thread?: OpenAiThreadCreateRequest;
+  model?: string | null;
+  instructions?: string | null;
+  tools?: OpenAiAssistantTool[] | null;
+  tool_resources?: OpenAiToolResources | null;
+  metadata?: Record<string, string> | null;
+  temperature?: number | null;
+  top_p?: number | null;
+  stream?: boolean | null;
+  max_prompt_tokens?: number | null;
+  max_completion_tokens?: number | null;
+  truncation_strategy?: OpenAiRunTruncationStrategy;
+  tool_choice?: OpenAiAssistantsToolChoice;
+  parallel_tool_calls?: boolean;
+  response_format?: OpenAiAssistantsResponseFormat;
+}
+
+// Run step tool call types
+export interface OpenAiRunStepToolCallFunction {
+  id: string;
+  type: "function";
+  function: {
+    name: string;
+    arguments: string;
+    output: string | null;
+  };
+}
+
+export interface OpenAiRunStepToolCallCodeInterpreter {
+  id: string;
+  type: "code_interpreter";
+  code_interpreter: {
+    input: string;
+    outputs: (
+      | { type: "logs"; logs: string }
+      | { type: "image"; image: { file_id: string } }
+    )[];
+  };
+}
+
+export interface OpenAiRunStepToolCallFileSearch {
+  id: string;
+  type: "file_search";
+  file_search: Record<string, unknown>;
+}
+
+export type OpenAiRunStepToolCall =
+  | OpenAiRunStepToolCallFunction
+  | OpenAiRunStepToolCallCodeInterpreter
+  | OpenAiRunStepToolCallFileSearch;
+
+// Run step details
+export interface OpenAiRunStepMessageCreationDetails {
+  type: "message_creation";
+  message_creation: {
+    message_id: string;
+  };
+}
+
+export interface OpenAiRunStepToolCallsDetails {
+  type: "tool_calls";
+  tool_calls: OpenAiRunStepToolCall[];
+}
+
+export type OpenAiRunStepDetails =
+  | OpenAiRunStepMessageCreationDetails
+  | OpenAiRunStepToolCallsDetails;
+
+// Run step object
+export interface OpenAiRunStep {
+  id: string;
+  object: "thread.run.step";
+  created_at: number;
+  assistant_id: string;
+  thread_id: string;
+  run_id: string;
+  type: "message_creation" | "tool_calls";
+  status: "in_progress" | "cancelled" | "failed" | "completed" | "expired";
+  step_details: OpenAiRunStepDetails;
+  last_error: OpenAiRunLastError | null;
+  expired_at: number | null;
+  cancelled_at: number | null;
+  failed_at: number | null;
+  completed_at: number | null;
+  metadata: Record<string, string> | null;
+  usage: OpenAiUsage | null;
+}
+
+// List run steps params
+export interface OpenAiRunStepListParams {
+  limit?: number;
+  order?: "asc" | "desc";
+  after?: string;
+  before?: string;
+}
+
+// List run steps response
+export interface OpenAiRunStepListResponse {
+  object: "list";
+  data: OpenAiRunStep[];
+  first_id: string | null;
+  last_id: string | null;
+  has_more: boolean;
+}
+
 // Payload schema types
 export interface PayloadFieldSchema {
   type: "string" | "number" | "boolean" | "array" | "object";
@@ -1495,6 +1997,221 @@ interface OpenAiFineTuningNamespace {
   checkpoints: OpenAiFineTuningCheckpointsNamespace;
 }
 
+// Assistants namespace types
+interface OpenAiAssistantsCreateMethod {
+  (
+    req: OpenAiAssistantCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiAssistant>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  list: OpenAiAssistantsListMethod;
+  retrieve: OpenAiAssistantsRetrieveMethod;
+  update: OpenAiAssistantsUpdateMethod;
+  del: OpenAiAssistantsDeleteMethod;
+}
+
+interface OpenAiAssistantsListMethod {
+  (
+    opts?: OpenAiAssistantListParams,
+    signal?: AbortSignal
+  ): Promise<OpenAiAssistantListResponse>;
+}
+
+interface OpenAiAssistantsRetrieveMethod {
+  (id: string, signal?: AbortSignal): Promise<OpenAiAssistant>;
+}
+
+interface OpenAiAssistantsUpdateMethod {
+  (
+    id: string,
+    req: OpenAiAssistantUpdateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiAssistant>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiAssistantsDeleteMethod {
+  (id: string, signal?: AbortSignal): Promise<OpenAiAssistantDeleteResponse>;
+  payloadSchema: PayloadSchema;
+}
+
+// Run steps namespace
+interface OpenAiRunStepsListMethod {
+  (
+    threadId: string,
+    runId: string,
+    opts?: OpenAiRunStepListParams,
+    signal?: AbortSignal
+  ): Promise<OpenAiRunStepListResponse>;
+}
+
+interface OpenAiRunStepsRetrieveMethod {
+  (
+    threadId: string,
+    runId: string,
+    stepId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiRunStep>;
+}
+
+interface OpenAiRunStepsNamespace {
+  list: OpenAiRunStepsListMethod;
+  retrieve: OpenAiRunStepsRetrieveMethod;
+}
+
+// Runs namespace (callable = create run)
+interface OpenAiThreadRunsCreateMethod {
+  (
+    threadId: string,
+    req: OpenAiRunCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiRun>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  list: OpenAiThreadRunsListMethod;
+  retrieve: OpenAiThreadRunsRetrieveMethod;
+  update: OpenAiThreadRunsUpdateMethod;
+  cancel: OpenAiThreadRunsCancelMethod;
+  submit_tool_outputs: OpenAiThreadRunsSubmitToolOutputsMethod;
+  create_and_run: OpenAiThreadRunsCreateAndRunMethod;
+  steps: OpenAiRunStepsNamespace;
+}
+
+interface OpenAiThreadRunsListMethod {
+  (
+    threadId: string,
+    opts?: OpenAiRunListParams,
+    signal?: AbortSignal
+  ): Promise<OpenAiRunListResponse>;
+}
+
+interface OpenAiThreadRunsRetrieveMethod {
+  (threadId: string, runId: string, signal?: AbortSignal): Promise<OpenAiRun>;
+}
+
+interface OpenAiThreadRunsUpdateMethod {
+  (
+    threadId: string,
+    runId: string,
+    req: OpenAiRunUpdateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiRun>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiThreadRunsCancelMethod {
+  (threadId: string, runId: string, signal?: AbortSignal): Promise<OpenAiRun>;
+  payloadSchema: PayloadSchema;
+}
+
+interface OpenAiThreadRunsSubmitToolOutputsMethod {
+  (
+    threadId: string,
+    runId: string,
+    req: OpenAiRunSubmitToolOutputsRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiRun>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiThreadRunsCreateAndRunMethod {
+  (
+    req: OpenAiCreateThreadAndRunRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiRun>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+// Messages namespace (callable = create message)
+interface OpenAiThreadMessagesCreateMethod {
+  (
+    threadId: string,
+    req: OpenAiThreadMessageCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiThreadMessage>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  list: OpenAiThreadMessagesListMethod;
+  retrieve: OpenAiThreadMessagesRetrieveMethod;
+  update: OpenAiThreadMessagesUpdateMethod;
+  del: OpenAiThreadMessagesDeleteMethod;
+}
+
+interface OpenAiThreadMessagesListMethod {
+  (
+    threadId: string,
+    opts?: OpenAiThreadMessageListParams,
+    signal?: AbortSignal
+  ): Promise<OpenAiThreadMessageListResponse>;
+}
+
+interface OpenAiThreadMessagesRetrieveMethod {
+  (
+    threadId: string,
+    messageId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiThreadMessage>;
+}
+
+interface OpenAiThreadMessagesUpdateMethod {
+  (
+    threadId: string,
+    messageId: string,
+    req: OpenAiThreadMessageUpdateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiThreadMessage>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiThreadMessagesDeleteMethod {
+  (
+    threadId: string,
+    messageId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiThreadMessageDeleteResponse>;
+  payloadSchema: PayloadSchema;
+}
+
+// Threads namespace (callable = create thread)
+interface OpenAiThreadsCreateMethod {
+  (
+    req?: OpenAiThreadCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiThread>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  retrieve: OpenAiThreadsRetrieveMethod;
+  update: OpenAiThreadsUpdateMethod;
+  del: OpenAiThreadsDeleteMethod;
+  messages: OpenAiThreadMessagesCreateMethod;
+  runs: OpenAiThreadRunsCreateMethod;
+}
+
+interface OpenAiThreadsRetrieveMethod {
+  (id: string, signal?: AbortSignal): Promise<OpenAiThread>;
+}
+
+interface OpenAiThreadsUpdateMethod {
+  (
+    id: string,
+    req: OpenAiThreadUpdateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiThread>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiThreadsDeleteMethod {
+  (id: string, signal?: AbortSignal): Promise<OpenAiThreadDeleteResponse>;
+  payloadSchema: PayloadSchema;
+}
+
 interface OpenAiV1Namespace {
   chat: OpenAiChatNamespace;
   audio: OpenAiAudioNamespace;
@@ -1506,6 +2223,8 @@ interface OpenAiV1Namespace {
   responses: OpenAiResponsesMethod;
   fine_tuning: OpenAiFineTuningNamespace;
   batches: OpenAiBatchesCreateMethod;
+  assistants: OpenAiAssistantsCreateMethod;
+  threads: OpenAiThreadsCreateMethod;
 }
 
 // Provider interface

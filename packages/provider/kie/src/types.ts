@@ -321,6 +321,226 @@ export interface SoraWatermarkRequest extends MediaRequest {
   };
 }
 
+// Codex model names
+export type CodexModel =
+  | "gpt-5-codex"
+  | "gpt-5.1-codex"
+  | "gpt-5.2-codex"
+  | "gpt-5.3-codex"
+  | "gpt-5.4-codex";
+
+// Codex input content parts
+export interface CodexInputText {
+  type: "input_text";
+  text: string;
+}
+
+export interface CodexInputImage {
+  type: "input_image";
+  image_url: string;
+}
+
+export interface CodexInputFile {
+  type: "input_file";
+  file_url: string;
+}
+
+export type CodexInputPart = CodexInputText | CodexInputImage | CodexInputFile;
+
+// Codex input message
+export interface CodexInputMessage {
+  role: "user" | "assistant" | "system" | "developer" | "tool";
+  content: CodexInputPart[];
+}
+
+// Codex tools
+export interface CodexWebSearchTool {
+  type: "web_search";
+}
+
+export interface CodexFunctionTool {
+  type: "function";
+  name: string;
+  description: string;
+  parameters: Record<string, unknown>;
+}
+
+export type CodexTool = CodexWebSearchTool | CodexFunctionTool;
+
+// Codex request
+export interface CodexResponsesRequest {
+  model: CodexModel;
+  input: string | CodexInputMessage[];
+  stream?: boolean;
+  reasoning?: {
+    effort: "minimal" | "low" | "medium" | "high" | "xhigh";
+  };
+  tools?: CodexTool[];
+  tool_choice?: string;
+}
+
+// Codex response output blocks
+export interface CodexReasoningOutput {
+  type: "reasoning";
+  id: string;
+  summary: unknown[];
+}
+
+export interface CodexOutputText {
+  type: "output_text";
+  text: string;
+}
+
+export interface CodexMessageOutput {
+  type: "message";
+  role: "assistant";
+  id: string;
+  content: CodexOutputText[];
+  status: string;
+}
+
+export type CodexOutputBlock = CodexReasoningOutput | CodexMessageOutput;
+
+export interface CodexUsage {
+  input_tokens?: number;
+  output_tokens?: number;
+  total_tokens?: number;
+}
+
+export interface CodexResponsesResponse {
+  output?: CodexOutputBlock[];
+  usage?: CodexUsage;
+  credits_consumed?: number;
+  status?: string;
+}
+
+// Gemini model names
+export type GeminiModel =
+  | "gemini-2.5-flash"
+  | "gemini-2.5-pro"
+  | "gemini-3-pro"
+  | "gemini-3.1-pro"
+  | "gemini-3-flash";
+
+// Gemini chat content parts
+export interface GeminiChatContentPart {
+  type: "text" | "image_url";
+  text?: string;
+  image_url?: { url: string };
+}
+
+// Gemini chat message
+export interface GeminiChatMessage {
+  role: "user" | "assistant" | "system" | "developer" | "tool";
+  content: string | GeminiChatContentPart[];
+}
+
+// Gemini tools
+export interface GeminiFunctionTool {
+  type: "function";
+  function: {
+    name: string;
+    description?: string;
+    parameters?: Record<string, unknown>;
+  };
+}
+
+export type GeminiTool = GeminiFunctionTool;
+
+// Gemini chat request
+export interface GeminiChatRequest {
+  messages: GeminiChatMessage[];
+  stream?: boolean;
+  tools?: GeminiTool[];
+  include_thoughts?: boolean;
+  reasoning_effort?: "low" | "high";
+  response_format?: {
+    type: "json_schema";
+    json_schema: {
+      name: string;
+      strict?: boolean;
+      schema: Record<string, unknown>;
+    };
+  };
+}
+
+// Gemini chat response (OpenAI-compatible format)
+export interface GeminiChatChoice {
+  index?: number;
+  message?: {
+    role?: string;
+    content?: string;
+  };
+  finish_reason?: string;
+}
+
+export interface GeminiChatUsage {
+  prompt_tokens?: number;
+  completion_tokens?: number;
+  total_tokens?: number;
+}
+
+export interface GeminiChatResponse {
+  id?: string;
+  object?: string;
+  created?: number;
+  model?: string;
+  choices?: GeminiChatChoice[];
+  usage?: GeminiChatUsage;
+  error?: string;
+  code?: number;
+}
+
+// Style generate request/response
+export interface StyleGenerateRequest {
+  content: string;
+}
+
+export interface StyleGenerateData {
+  taskId?: string;
+  param?: string;
+  result?: string;
+  creditsConsumed?: number;
+  creditsRemaining?: number;
+  successFlag?: "0" | "1" | "2";
+  errorCode?: number;
+  errorMessage?: string;
+  createTime?: string;
+}
+
+export type StyleGenerateResponse = KieApiEnvelope<StyleGenerateData>;
+
+// MP4 generate request/response
+export interface Mp4GenerateRequest {
+  taskId: string;
+  audioId: string;
+  callBackUrl: string;
+  author?: string;
+  domainName?: string;
+}
+
+export type Mp4GenerateResponse = KieApiEnvelope<{ taskId: string }>;
+
+// MP4 record-info response
+export interface Mp4RecordInfoData {
+  taskId?: string;
+  musicId?: string;
+  callbackUrl?: string;
+  musicIndex?: number;
+  completeTime?: string;
+  response?: { videoUrl?: string };
+  successFlag?:
+    | "PENDING"
+    | "SUCCESS"
+    | "CREATE_TASK_FAILED"
+    | "GENERATE_MP4_FAILED";
+  createTime?: string;
+  errorCode?: number;
+  errorMessage?: string;
+}
+
+export type Mp4RecordInfoResponse = KieApiEnvelope<Mp4RecordInfoData>;
+
 // Union type for all media requests
 export type MediaGenerationRequest =
   | KlingVideoRequest
@@ -493,10 +713,43 @@ interface KieCreditNamespace {
   credit(): Promise<KieCreditsResponse>;
 }
 
+interface KieCodexResponsesMethod {
+  (
+    req: CodexResponsesRequest,
+    signal?: AbortSignal
+  ): Promise<CodexResponsesResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface KieStyleGenerateMethod {
+  (req: StyleGenerateRequest): Promise<StyleGenerateResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface KieStyleNamespace {
+  generate: KieStyleGenerateMethod;
+}
+
+interface KieMp4GenerateMethod {
+  (req: Mp4GenerateRequest): Promise<Mp4GenerateResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface KieMp4Namespace {
+  generate: KieMp4GenerateMethod;
+  recordInfo(taskId: string): Promise<Mp4RecordInfoResponse>;
+}
+
 interface KieV1Namespace {
   jobs: KieJobsNamespace;
   common: KieCommonNamespace;
   chat: KieCreditNamespace;
+  responses: KieCodexResponsesMethod;
+  style: KieStyleNamespace;
+  mp4: KieMp4Namespace;
 }
 
 interface KieFileStreamUploadMethod {
@@ -532,4 +785,5 @@ export interface KieProvider {
   suno: import("./suno").SunoProvider;
   chat: import("./chat").KieChatProvider;
   claude: import("./claude").KieClaudeProvider["claude"];
+  gemini: import("./gemini").KieGeminiProvider;
 }

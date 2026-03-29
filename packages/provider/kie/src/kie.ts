@@ -12,6 +12,13 @@ import {
   FileUrlUploadRequest,
   FileBase64UploadRequest,
   KieTaskInfo,
+  CodexResponsesRequest,
+  CodexResponsesResponse,
+  StyleGenerateRequest,
+  StyleGenerateResponse,
+  Mp4GenerateRequest,
+  Mp4GenerateResponse,
+  Mp4RecordInfoResponse,
 } from "./types";
 import type { ValidationResult } from "./types";
 import {
@@ -20,13 +27,18 @@ import {
   fileStreamUploadSchema,
   fileUrlUploadSchema,
   fileBase64UploadSchema,
+  codexResponsesSchema,
+  styleGenerateSchema,
+  mp4GenerateSchema,
   modelInputSchemas,
 } from "./schemas";
 import { validatePayload } from "./validate";
+import { kieRequest } from "./request";
 import { createVeoProvider } from "./veo";
 import { createSunoProvider } from "./suno";
 import { createChatProvider } from "./chat";
 import { createClaudeProvider } from "./claude";
+import { createGeminiProvider } from "./gemini";
 
 const MIME_TYPES: Record<string, string> = {
   jpg: "image/jpeg",
@@ -387,11 +399,101 @@ export function kie(opts: KieOptions): KieProvider {
     return (await res.json()) as KieCreditsResponse;
   }
 
+  const requestOpts = { apiKey: opts.apiKey, doFetch, timeout };
+
+  async function codexResponses(
+    req: CodexResponsesRequest,
+    signal?: AbortSignal
+  ): Promise<CodexResponsesResponse> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    if (signal) {
+      signal.addEventListener("abort", () => controller.abort());
+    }
+
+    try {
+      const res = await doFetch(`${baseURL}/api/v1/responses`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${opts.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(req),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        let message = `Kie Codex API error: ${res.status}`;
+        let body: unknown = null;
+        try {
+          body = await res.json();
+          if (
+            typeof body === "object" &&
+            body !== null &&
+            "msg" in body &&
+            typeof (body as { msg?: string }).msg === "string"
+          ) {
+            message = `Kie Codex API error ${res.status}: ${(body as { msg: string }).msg}`;
+          }
+        } catch {
+          // ignore parse errors
+        }
+        throw new KieError(message, res.status, body);
+      }
+
+      return (await res.json()) as CodexResponsesResponse;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof KieError) throw error;
+      if (error instanceof SyntaxError) {
+        throw new KieError("Failed to parse Codex response", 500);
+      }
+      throw new KieError(`Codex request failed: ${error}`, 500);
+    }
+  }
+
+  async function styleGenerate(
+    req: StyleGenerateRequest
+  ): Promise<StyleGenerateResponse> {
+    return kieRequest<StyleGenerateResponse>(
+      `${baseURL}/api/v1/style/generate`,
+      {
+        method: "POST",
+        body: req,
+        ...requestOpts,
+      }
+    );
+  }
+
+  async function mp4Generate(
+    req: Mp4GenerateRequest
+  ): Promise<Mp4GenerateResponse> {
+    return kieRequest<Mp4GenerateResponse>(`${baseURL}/api/v1/mp4/generate`, {
+      method: "POST",
+      body: req,
+      ...requestOpts,
+    });
+  }
+
+  async function mp4RecordInfo(taskId: string): Promise<Mp4RecordInfoResponse> {
+    return kieRequest<Mp4RecordInfoResponse>(
+      `${baseURL}/api/v1/mp4/record-info?taskId=${encodeURIComponent(taskId)}`,
+      {
+        method: "GET",
+        ...requestOpts,
+      }
+    );
+  }
+
   return {
     veo: createVeoProvider(baseURL, opts.apiKey, doFetch, timeout),
     suno: createSunoProvider(baseURL, opts.apiKey, doFetch, timeout),
     chat: createChatProvider(baseURL, opts.apiKey, doFetch, timeout),
     ...createClaudeProvider(baseURL, opts.apiKey, doFetch, timeout),
+    gemini: createGeminiProvider(baseURL, opts.apiKey, doFetch, timeout),
     modelInputSchemas,
     api: {
       v1: {
@@ -413,6 +515,29 @@ export function kie(opts: KieOptions): KieProvider {
           }),
         },
         chat: { credit },
+        responses: Object.assign(codexResponses, {
+          payloadSchema: codexResponsesSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, codexResponsesSchema);
+          },
+        }),
+        style: {
+          generate: Object.assign(styleGenerate, {
+            payloadSchema: styleGenerateSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, styleGenerateSchema);
+            },
+          }),
+        },
+        mp4: {
+          generate: Object.assign(mp4Generate, {
+            payloadSchema: mp4GenerateSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, mp4GenerateSchema);
+            },
+          }),
+          recordInfo: mp4RecordInfo,
+        },
       },
       "file-stream-upload": Object.assign(fileStreamUpload, {
         payloadSchema: fileStreamUploadSchema,

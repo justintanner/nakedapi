@@ -25,6 +25,10 @@ import {
   FalQueueResultResponse,
   FalQueueCancelParams,
   FalQueueCancelResponse,
+  FalRunParams,
+  FalRunResponse,
+  FalRealtimeOptions,
+  FalRealtimeConnection,
   FalLogsHistoryParams,
   FalLogsHistoryResponse,
   FalLogsStreamParams,
@@ -54,6 +58,7 @@ import {
   pricingEstimateSchema,
   deletePayloadsSchema,
   queueSubmitSchema,
+  runSchema,
   logsHistorySchema,
   logsStreamSchema,
   filesUploadUrlSchema,
@@ -366,6 +371,64 @@ export function fal(opts: FalOptions): FalProvider {
     return res;
   }
 
+  async function makeStreamGetRequest(
+    path: string,
+    queryParams?: Record<string, unknown>,
+    signal?: AbortSignal,
+    customBaseURL?: string
+  ): Promise<Response> {
+    const base = customBaseURL ?? baseURL;
+    const qs = queryParams ? buildQueryString(queryParams) : "";
+    const url = `${base}${path}${qs}`;
+
+    const controller = new AbortController();
+    // No timeout for stream — connections are long-lived
+
+    if (signal) {
+      signal.addEventListener("abort", () => controller.abort());
+    }
+
+    const res = await doFetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Key ${opts.apiKey}`,
+        Accept: "text/event-stream",
+      },
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      let errorData: unknown;
+      try {
+        errorData = await res.json();
+      } catch {
+        errorData = null;
+      }
+
+      if (isFalApiErrorResponse(errorData)) {
+        throw new FalError(
+          errorData.error.message,
+          res.status,
+          errorData.error.type,
+          errorData.error.request_id,
+          errorData.error.docs_url,
+          errorData
+        );
+      }
+
+      throw new FalError(
+        `Fal API error: ${res.status}`,
+        res.status,
+        "server_error",
+        undefined,
+        undefined,
+        errorData
+      );
+    }
+
+    return res;
+  }
+
   async function makeRawRequest(
     method: "GET" | "POST",
     path: string,
@@ -556,6 +619,8 @@ export function fal(opts: FalOptions): FalProvider {
   );
 
   const queueBaseURL = opts.queueBaseURL ?? "https://queue.fal.run";
+  const runBaseURL = opts.runBaseURL ?? "https://fal.run";
+  const realtimeBaseURL = opts.realtimeBaseURL ?? "wss://ws.fal.run";
 
   const queue = {
     submit: Object.assign(
@@ -605,23 +670,43 @@ export function fal(opts: FalOptions): FalProvider {
       }
     ),
 
-    async status(
-      params: FalQueueStatusParams,
-      signal?: AbortSignal
-    ): Promise<FalQueueStatusResponse> {
-      const queryParams: Record<string, unknown> = {};
-      if (params.logs) {
-        queryParams.logs = "1";
+    status: Object.assign(
+      async function status(
+        params: FalQueueStatusParams,
+        signal?: AbortSignal
+      ): Promise<FalQueueStatusResponse> {
+        const queryParams: Record<string, unknown> = {};
+        if (params.logs) {
+          queryParams.logs = "1";
+        }
+        return makeRequest<FalQueueStatusResponse>(
+          "GET",
+          `/${params.endpoint_id}/requests/${params.request_id}/status`,
+          Object.keys(queryParams).length > 0 ? queryParams : undefined,
+          signal,
+          undefined,
+          queueBaseURL
+        );
+      },
+      {
+        async stream(
+          params: FalQueueStatusParams,
+          signal?: AbortSignal
+        ): Promise<AsyncIterable<FalQueueStatusResponse>> {
+          const queryParams: Record<string, unknown> = {};
+          if (params.logs) {
+            queryParams.logs = "1";
+          }
+          const res = await makeStreamGetRequest(
+            `/${params.endpoint_id}/requests/${params.request_id}/status/stream`,
+            Object.keys(queryParams).length > 0 ? queryParams : undefined,
+            signal,
+            queueBaseURL
+          );
+          return sseToIterable<FalQueueStatusResponse>(res);
+        },
       }
-      return makeRequest<FalQueueStatusResponse>(
-        "GET",
-        `/${params.endpoint_id}/requests/${params.request_id}/status`,
-        Object.keys(queryParams).length > 0 ? queryParams : undefined,
-        signal,
-        undefined,
-        queueBaseURL
-      );
-    },
+    ),
 
     async result(
       params: FalQueueResultParams,
@@ -1029,10 +1114,89 @@ export function fal(opts: FalOptions): FalProvider {
     instances: computeInstances,
   };
 
+  const run = Object.assign(
+    async function run(
+      params: FalRunParams,
+      signal?: AbortSignal
+    ): Promise<FalRunResponse> {
+      const headers: Record<string, string> = {};
+      if (params.timeout !== undefined) {
+        headers["X-Fal-Request-Timeout"] = String(params.timeout);
+      }
+      if (params.store_io) {
+        headers["X-Fal-Store-IO"] = params.store_io;
+      }
+      if (params.object_lifecycle_preference) {
+        headers["X-Fal-Object-Lifecycle-Preference"] =
+          params.object_lifecycle_preference;
+      }
+
+      return makeRequest<FalRunResponse>(
+        "POST",
+        `/${params.endpoint_id}`,
+        params.input,
+        signal,
+        headers,
+        runBaseURL
+      );
+    },
+    {
+      payloadSchema: runSchema,
+      validatePayload(data: unknown): ValidationResult {
+        return validatePayload(data, runSchema);
+      },
+    }
+  );
+
+  const realtime = {
+    connect(options: FalRealtimeOptions): FalRealtimeConnection {
+      const url = `${realtimeBaseURL}/${options.endpoint_id}`;
+      const ws = new WebSocket(url, ["fal-auth", `fal_key_${opts.apiKey}`]);
+
+      ws.onmessage = (event: MessageEvent) => {
+        if (options.onResult) {
+          try {
+            const data = JSON.parse(
+              typeof event.data === "string" ? event.data : String(event.data)
+            ) as Record<string, unknown>;
+            options.onResult(data);
+          } catch (err) {
+            options.onError?.(
+              new FalError(
+                `Failed to parse WebSocket message: ${err}`,
+                0,
+                "server_error"
+              )
+            );
+          }
+        }
+      };
+
+      ws.onerror = () => {
+        options.onError?.(new FalError("WebSocket error", 0, "server_error"));
+      };
+
+      ws.onclose = () => {
+        options.onClose?.();
+      };
+
+      return {
+        send(input: Record<string, unknown>) {
+          ws.send(JSON.stringify(input));
+        },
+        close() {
+          ws.close();
+        },
+      };
+    },
+  };
+
   return {
     v1: {
       models,
       queue,
+      run,
+      realtime,
       serverless,
       workflows,
       compute,

@@ -3,6 +3,8 @@ export interface FalOptions {
   apiKey: string;
   baseURL?: string;
   queueBaseURL?: string;
+  runBaseURL?: string;
+  realtimeBaseURL?: string;
   timeout?: number;
   fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 }
@@ -621,6 +623,38 @@ export interface FalQueueCancelResponse {
   status: string;
 }
 
+// ==================== Sync Run ====================
+
+// Synchronous run parameters (non-queue inference via fal.run)
+export interface FalRunParams {
+  endpoint_id: string;
+  input: Record<string, unknown>;
+  timeout?: number;
+  store_io?: string;
+  object_lifecycle_preference?: string;
+}
+
+// Synchronous run response (model-specific output)
+export interface FalRunResponse {
+  [key: string]: unknown;
+}
+
+// ==================== Real-time (WebSocket) ====================
+
+// Options for establishing a real-time WebSocket connection
+export interface FalRealtimeOptions {
+  endpoint_id: string;
+  onResult?: (data: Record<string, unknown>) => void;
+  onError?: (error: FalError) => void;
+  onClose?: () => void;
+}
+
+// Active real-time WebSocket connection
+export interface FalRealtimeConnection {
+  send(input: Record<string, unknown>): void;
+  close(): void;
+}
+
 // ==================== Serverless Apps Queue ====================
 
 // Get queue size parameters
@@ -698,12 +732,20 @@ interface FalQueueSubmitMethod {
   validatePayload(data: unknown): ValidationResult;
 }
 
-interface FalQueueNamespace {
-  submit: FalQueueSubmitMethod;
-  status(
+interface FalQueueStatusMethod {
+  (
     params: FalQueueStatusParams,
     signal?: AbortSignal
   ): Promise<FalQueueStatusResponse>;
+  stream(
+    params: FalQueueStatusParams,
+    signal?: AbortSignal
+  ): Promise<AsyncIterable<FalQueueStatusResponse>>;
+}
+
+interface FalQueueNamespace {
+  submit: FalQueueSubmitMethod;
+  status: FalQueueStatusMethod;
   result(
     params: FalQueueResultParams,
     signal?: AbortSignal
@@ -832,9 +874,21 @@ interface FalComputeNamespace {
   instances: FalComputeInstancesNamespace;
 }
 
+interface FalRunMethod {
+  (params: FalRunParams, signal?: AbortSignal): Promise<FalRunResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface FalRealtimeNamespace {
+  connect(options: FalRealtimeOptions): FalRealtimeConnection;
+}
+
 interface FalV1Namespace {
   models: FalModelsNamespace;
   queue: FalQueueNamespace;
+  run: FalRunMethod;
+  realtime: FalRealtimeNamespace;
   serverless: FalServerlessNamespace;
   workflows: FalWorkflowsNamespace;
   compute: FalComputeNamespace;

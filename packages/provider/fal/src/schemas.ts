@@ -55,6 +55,36 @@ export const queueSubmitSchema: PayloadSchema = {
   },
 };
 
+export const runSchema: PayloadSchema = {
+  method: "POST",
+  path: "/{endpoint_id}",
+  contentType: "application/json",
+  fields: {
+    endpoint_id: {
+      type: "string",
+      required: true,
+      description: "Model endpoint ID (e.g. fal-ai/flux/schnell)",
+    },
+    input: {
+      type: "object",
+      required: true,
+      description: "Model-specific input payload",
+    },
+    timeout: {
+      type: "number",
+      description: "Server-side request timeout in seconds",
+    },
+    store_io: {
+      type: "string",
+      description: "Store I/O preference",
+    },
+    object_lifecycle_preference: {
+      type: "string",
+      description: "Object lifecycle preference",
+    },
+  },
+};
+
 export const logsHistorySchema: PayloadSchema = {
   method: "POST",
   path: "/serverless/logs/history",

@@ -90,6 +90,50 @@ export const fetchSchema: PayloadSchema = {
   },
 };
 
+export const chatCompletionsSchema: PayloadSchema = {
+  method: "POST",
+  path: "/v1/chat/completions",
+  contentType: "application/json",
+  fields: {
+    model: {
+      type: "string",
+      required: true,
+      description: "Model ID (e.g. kimi-for-coding)",
+    },
+    messages: {
+      type: "array",
+      required: true,
+      description: "Array of chat messages",
+      items: {
+        type: "object",
+        properties: {
+          role: {
+            type: "string",
+            required: true,
+            enum: ["system", "user", "assistant"],
+          },
+          content: { type: "string", required: true },
+        },
+      },
+    },
+    temperature: { type: "number", description: "Sampling temperature" },
+    top_p: { type: "number", description: "Nucleus sampling threshold" },
+    n: { type: "number", description: "Number of completions to generate" },
+    stream: { type: "boolean", description: "Enable streaming" },
+    stop: { type: "string", description: "Stop sequences" },
+    max_tokens: { type: "number", description: "Maximum tokens to generate" },
+    presence_penalty: {
+      type: "number",
+      description: "Presence penalty (-2.0 to 2.0)",
+    },
+    frequency_penalty: {
+      type: "number",
+      description: "Frequency penalty (-2.0 to 2.0)",
+    },
+    user: { type: "string", description: "End-user identifier" },
+  },
+};
+
 export const messagesSchema: PayloadSchema = {
   method: "POST",
   path: "/v1/messages",

@@ -151,6 +151,71 @@ export interface FetchRequest {
   url: string;
 }
 
+// Chat completions types (OpenAI-compatible)
+export interface ChatCompletionMessage {
+  role: "system" | "user" | "assistant";
+  content: string;
+}
+
+export interface ChatCompletionRequest {
+  model: string;
+  messages: ChatCompletionMessage[];
+  temperature?: number;
+  top_p?: number;
+  n?: number;
+  stream?: boolean;
+  stop?: string | string[];
+  max_tokens?: number;
+  presence_penalty?: number;
+  frequency_penalty?: number;
+  user?: string;
+  [key: string]: unknown;
+}
+
+export interface ChatCompletionResponseMessage {
+  role: string;
+  content: string;
+  reasoning_content?: string;
+}
+
+export interface ChatCompletionChoice {
+  index: number;
+  message: ChatCompletionResponseMessage;
+  finish_reason: string | null;
+}
+
+export interface ChatCompletionResponse {
+  id: string;
+  object: "chat.completion";
+  created: number;
+  model: string;
+  choices: ChatCompletionChoice[];
+  usage: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
+}
+
+export interface ChatCompletionStreamDelta {
+  role?: string;
+  content?: string;
+}
+
+export interface ChatCompletionStreamChoice {
+  index: number;
+  delta: ChatCompletionStreamDelta;
+  finish_reason: string | null;
+}
+
+export interface ChatCompletionStreamEvent {
+  id: string;
+  object: "chat.completion.chunk";
+  created: number;
+  model: string;
+  choices: ChatCompletionStreamChoice[];
+}
+
 // Embeddings request (OpenAI-compatible)
 export interface EmbeddingRequest {
   input: string | string[] | number[] | number[][];
@@ -244,6 +309,29 @@ interface KimiCodingFetchMethod {
   validatePayload(data: unknown): ValidationResult;
 }
 
+interface KimiCodingChatCompletionsStreamMethod {
+  (
+    req: ChatCompletionRequest,
+    signal?: AbortSignal
+  ): AsyncIterable<ChatCompletionStreamEvent>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface KimiCodingChatCompletionsMethod {
+  (
+    req: ChatCompletionRequest,
+    signal?: AbortSignal
+  ): Promise<ChatCompletionResponse>;
+  stream: KimiCodingChatCompletionsStreamMethod;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface KimiCodingChatNamespace {
+  completions: KimiCodingChatCompletionsMethod;
+}
+
 interface KimiCodingV1Namespace {
   messages: KimiCodingMessagesNamespace;
   models: KimiCodingModelsNamespace;
@@ -251,6 +339,7 @@ interface KimiCodingV1Namespace {
   files: KimiCodingFilesNamespace;
   search: KimiCodingSearchMethod;
   fetch: KimiCodingFetchMethod;
+  chat: KimiCodingChatNamespace;
 }
 
 interface KimiCodingCodingNamespace {

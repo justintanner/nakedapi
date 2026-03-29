@@ -124,7 +124,28 @@ export type {
   VeoProvider,
 } from "./veo";
 
-export type { SunoModel, SunoGenerateRequest, SunoProvider } from "./suno";
+export type {
+  SunoModel,
+  SunoVocalGender,
+  SunoSoundKey,
+  SunoGenerateRequest,
+  SunoExtendRequest,
+  SunoUploadCoverRequest,
+  SunoUploadExtendRequest,
+  SunoAddInstrumentalRequest,
+  SunoAddVocalsRequest,
+  SunoReplaceSectionRequest,
+  SunoTimestampedLyricsRequest,
+  SunoAlignedWord,
+  SunoTimestampedLyricsData,
+  SunoGeneratePersonaRequest,
+  SunoPersonaData,
+  SunoMashupRequest,
+  SunoSoundsRequest,
+  SunoCoverGenerateRequest,
+  SunoLyricsRequest,
+  SunoProvider,
+} from "./suno";
 
 export type {
   KieChatContentPart,

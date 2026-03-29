@@ -155,6 +155,35 @@ export const veoExtendSchema: PayloadSchema = {
   },
 };
 
+const sunoModelEnum = [
+  "V4",
+  "V4_5",
+  "V4_5PLUS",
+  "V4_5ALL",
+  "V5",
+  "V5_5",
+] as const;
+
+const sunoMixFields: Record<string, import("./types").PayloadFieldSchema> = {
+  vocalGender: {
+    type: "string",
+    enum: ["m", "f"],
+    description: "Vocal gender",
+  },
+  styleWeight: {
+    type: "number",
+    description: "Style weight (0-1)",
+  },
+  weirdnessConstraint: {
+    type: "number",
+    description: "Weirdness constraint (0-1)",
+  },
+  audioWeight: {
+    type: "number",
+    description: "Audio weight (0-1)",
+  },
+};
+
 export const sunoGenerateSchema: PayloadSchema = {
   method: "POST",
   path: "/api/v1/generate",
@@ -168,7 +197,7 @@ export const sunoGenerateSchema: PayloadSchema = {
     model: {
       type: "string",
       required: true,
-      enum: ["V4", "V4_5", "V4_5PLUS", "V4_5ALL", "V5"],
+      enum: [...sunoModelEnum],
       description: "Suno model version",
     },
     instrumental: {
@@ -181,12 +210,428 @@ export const sunoGenerateSchema: PayloadSchema = {
       required: true,
       description: "Enable custom mode",
     },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
     style: { type: "string", description: "Music style/genre" },
+    negativeTags: { type: "string", description: "Styles to avoid" },
+    title: { type: "string", description: "Song title" },
+    personaId: {
+      type: "string",
+      description: "Persona ID (custom mode only)",
+    },
+    ...sunoMixFields,
+  },
+};
+
+export const sunoExtendSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/extend",
+  contentType: "application/json",
+  fields: {
+    audioId: {
+      type: "string",
+      required: true,
+      description: "UUID of audio to extend",
+    },
+    defaultParamFlag: {
+      type: "boolean",
+      required: true,
+      description: "true=use custom params, false=use original",
+    },
+    model: {
+      type: "string",
+      required: true,
+      enum: [...sunoModelEnum],
+      description: "Suno model version",
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+    continueAt: {
+      type: "number",
+      description: "Continue at position in seconds",
+    },
+    prompt: { type: "string", description: "Text prompt or lyrics" },
+    style: { type: "string", description: "Music style/genre" },
+    title: { type: "string", description: "Song title" },
+    negativeTags: { type: "string", description: "Styles to avoid" },
+    personaId: { type: "string", description: "Persona ID" },
+    ...sunoMixFields,
+  },
+};
+
+export const sunoUploadCoverSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/upload-cover",
+  contentType: "application/json",
+  fields: {
+    uploadUrl: {
+      type: "string",
+      required: true,
+      description: "Audio file URL (max 8 min)",
+    },
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Text prompt or lyrics",
+    },
+    customMode: {
+      type: "boolean",
+      required: true,
+      description: "Enable custom mode",
+    },
+    instrumental: {
+      type: "boolean",
+      required: true,
+      description: "Generate instrumental (no vocals)",
+    },
+    model: {
+      type: "string",
+      required: true,
+      enum: [...sunoModelEnum],
+      description: "Suno model version",
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+    style: { type: "string", description: "Music style/genre" },
+    title: { type: "string", description: "Song title" },
+    negativeTags: { type: "string", description: "Styles to avoid" },
+    personaId: {
+      type: "string",
+      description: "Persona ID (custom mode only)",
+    },
+    ...sunoMixFields,
+  },
+};
+
+export const sunoUploadExtendSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/upload-extend",
+  contentType: "application/json",
+  fields: {
+    uploadUrl: {
+      type: "string",
+      required: true,
+      description: "Audio file URL (max 8 min)",
+    },
+    defaultParamFlag: {
+      type: "boolean",
+      required: true,
+      description: "true=use custom params, false=use original",
+    },
+    instrumental: {
+      type: "boolean",
+      required: true,
+      description: "Generate instrumental (no vocals)",
+    },
+    continueAt: {
+      type: "number",
+      required: true,
+      description: "Continue at position in seconds",
+    },
+    model: {
+      type: "string",
+      required: true,
+      enum: [...sunoModelEnum],
+      description: "Suno model version",
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+    prompt: { type: "string", description: "Text prompt or lyrics" },
+    style: { type: "string", description: "Music style/genre" },
+    title: { type: "string", description: "Song title" },
+    negativeTags: { type: "string", description: "Styles to avoid" },
+    personaId: { type: "string", description: "Persona ID" },
+    ...sunoMixFields,
+  },
+};
+
+export const sunoAddInstrumentalSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/add-instrumental",
+  contentType: "application/json",
+  fields: {
+    uploadUrl: {
+      type: "string",
+      required: true,
+      description: "Source audio URL",
+    },
+    title: { type: "string", required: true, description: "Song title" },
+    tags: {
+      type: "string",
+      required: true,
+      description: "Music styles to include",
+    },
     negativeTags: {
       type: "string",
-      description: "Styles to avoid",
+      required: true,
+      description: "Styles to exclude",
     },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+    model: {
+      type: "string",
+      enum: ["V4_5PLUS", "V5", "V5_5"],
+      description: "Suno model version (default V4_5PLUS)",
+    },
+    ...sunoMixFields,
+  },
+};
+
+export const sunoAddVocalsSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/add-vocals",
+  contentType: "application/json",
+  fields: {
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Lyric content/style guidance",
+    },
+    title: { type: "string", required: true, description: "Song title" },
+    negativeTags: {
+      type: "string",
+      required: true,
+      description: "Styles to exclude",
+    },
+    style: {
+      type: "string",
+      required: true,
+      description: "Music genre",
+    },
+    uploadUrl: {
+      type: "string",
+      required: true,
+      description: "Source audio URL",
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+    model: {
+      type: "string",
+      enum: ["V4_5PLUS", "V5", "V5_5"],
+      description: "Suno model version (default V4_5PLUS)",
+    },
+    ...sunoMixFields,
+  },
+};
+
+export const sunoReplaceSectionSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/replace-section",
+  contentType: "application/json",
+  fields: {
+    taskId: {
+      type: "string",
+      required: true,
+      description: "Parent task ID",
+    },
+    audioId: {
+      type: "string",
+      required: true,
+      description: "Audio UUID",
+    },
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Replacement segment description",
+    },
+    tags: {
+      type: "string",
+      required: true,
+      description: "Music style tags",
+    },
+    title: { type: "string", required: true, description: "Song title" },
+    infillStartS: {
+      type: "number",
+      required: true,
+      description: "Start time in seconds",
+    },
+    infillEndS: {
+      type: "number",
+      required: true,
+      description: "End time in seconds",
+    },
+    negativeTags: { type: "string", description: "Styles to avoid" },
+    fullLyrics: {
+      type: "string",
+      description: "Complete lyrics with modified section",
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+  },
+};
+
+export const sunoTimestampedLyricsSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/get-timestamped-lyrics",
+  contentType: "application/json",
+  fields: {
+    taskId: {
+      type: "string",
+      required: true,
+      description: "Task ID",
+    },
+    audioId: {
+      type: "string",
+      required: true,
+      description: "Audio UUID",
+    },
+  },
+};
+
+export const sunoGeneratePersonaSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/generate-persona",
+  contentType: "application/json",
+  fields: {
+    taskId: {
+      type: "string",
+      required: true,
+      description: "Original music task ID",
+    },
+    audioId: {
+      type: "string",
+      required: true,
+      description: "Audio track UUID",
+    },
+    name: {
+      type: "string",
+      required: true,
+      description: "Persona name",
+    },
+    description: {
+      type: "string",
+      required: true,
+      description: "Detailed persona description",
+    },
+    vocalStart: {
+      type: "number",
+      description: "Vocal sample start (seconds, default 0)",
+    },
+    vocalEnd: {
+      type: "number",
+      description: "Vocal sample end (10-30s from vocalStart)",
+    },
+    style: {
+      type: "string",
+      description: "Supplemental style tag",
+    },
+  },
+};
+
+export const sunoMashupSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/mashup",
+  contentType: "application/json",
+  fields: {
+    uploadUrlList: {
+      type: "array",
+      required: true,
+      description: "Exactly 2 audio URLs to mashup",
+      items: { type: "string" },
+    },
+    customMode: {
+      type: "boolean",
+      required: true,
+      description: "Enable custom mode",
+    },
+    model: {
+      type: "string",
+      required: true,
+      enum: [...sunoModelEnum],
+      description: "Suno model version",
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+    instrumental: {
+      type: "boolean",
+      description: "Generate instrumental (no vocals)",
+    },
+    prompt: { type: "string", description: "Text prompt or lyrics" },
+    style: { type: "string", description: "Music style/genre" },
     title: { type: "string", description: "Song title" },
+    ...sunoMixFields,
+  },
+};
+
+export const sunoSoundsSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/generate/sounds",
+  contentType: "application/json",
+  fields: {
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Sound description (max 500 chars)",
+    },
+    model: {
+      type: "string",
+      enum: ["V5", "V5_5"],
+      description: "Suno model version",
+    },
+    soundLoop: {
+      type: "boolean",
+      description: "Loop the sound (default false)",
+    },
+    soundTempo: {
+      type: "number",
+      description: "Tempo in BPM (1-300)",
+    },
+    soundKey: {
+      type: "string",
+      enum: [
+        "Cm",
+        "C#m",
+        "Dm",
+        "D#m",
+        "Em",
+        "Fm",
+        "F#m",
+        "Gm",
+        "G#m",
+        "Am",
+        "A#m",
+        "Bm",
+        "C",
+        "C#",
+        "D",
+        "D#",
+        "E",
+        "F",
+        "F#",
+        "G",
+        "G#",
+        "A",
+        "A#",
+        "B",
+        "Any",
+      ],
+      description: "Musical key",
+    },
+    grabLyrics: {
+      type: "boolean",
+      description: "Grab lyrics (default false)",
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+  },
+};
+
+export const sunoCoverGenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/suno/cover/generate",
+  contentType: "application/json",
+  fields: {
+    taskId: {
+      type: "string",
+      required: true,
+      description: "Original music task ID",
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
+  },
+};
+
+export const sunoLyricsSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/lyrics",
+  contentType: "application/json",
+  fields: {
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Lyrics prompt (max 200 chars)",
+    },
+    callBackUrl: { type: "string", description: "Webhook callback URL" },
   },
 };
 

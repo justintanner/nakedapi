@@ -65,7 +65,7 @@ describe("fal billing-events and requests/search", () => {
       apiKey: process.env.FAL_API_KEY ?? "fal-test-key",
     });
     const result = await provider.v1.models.requests.search({
-      endpoint_id: "fal-ai/flux/dev",
+      endpoint: "fal-ai/flux/dev",
       limit: 5,
     });
     expect(result).toBeDefined();

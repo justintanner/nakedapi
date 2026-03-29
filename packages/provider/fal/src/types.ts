@@ -252,8 +252,10 @@ export interface FalAnalyticsResponse {
 // Billing events parameters
 export interface FalBillingEventsParams extends FalPaginatedParams {
   endpoint_id?: string | string[];
+  request_id?: string | string[];
   start?: string;
   end?: string;
+  expand?: string[];
 }
 
 // Billing event record
@@ -261,10 +263,11 @@ export interface FalBillingEvent {
   request_id: string;
   endpoint_id: string;
   timestamp: string;
-  output_units: number;
-  unit_price: number;
-  percent_discount: number;
+  output_units: number | null;
+  unit_price: number | null;
+  percent_discount: number | null;
   cost_estimate_nano_usd: number;
+  auth_method?: string;
 }
 
 // Billing events response
@@ -287,16 +290,15 @@ export interface FalRequestsParams extends FalPaginatedParams {
   sort_by?: "ended_at" | "duration";
 }
 
-// Requests search parameters (broader search, endpoint_id optional)
+// Requests search parameters (semantic search + browse)
 export interface FalRequestsSearchParams extends FalPaginatedParams {
-  endpoint_id?: string | string[];
-  start?: string;
-  end?: string;
-  status?: "success" | "error" | "user_error";
-  request_id?: string;
-  q?: string;
-  expand?: string[];
-  sort_by?: "ended_at" | "duration";
+  query?: string;
+  image_url?: string;
+  video_url?: string;
+  endpoint?: string;
+  exclude_api_requests?: boolean;
+  only_api_requests?: boolean;
+  min_similarity?: number | null;
 }
 
 // Request item
@@ -310,6 +312,7 @@ export interface FalRequestItem {
   duration?: number;
   json_input?: unknown;
   json_output?: unknown;
+  similarity?: number;
 }
 
 // Requests response

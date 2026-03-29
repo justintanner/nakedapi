@@ -39,6 +39,12 @@ import {
   FalWorkflowListResponse,
   FalWorkflowGetParams,
   FalWorkflowGetResponse,
+  FalComputeInstancesListParams,
+  FalComputeInstancesListResponse,
+  FalComputeInstanceGetParams,
+  FalComputeInstance,
+  FalComputeInstanceCreateParams,
+  FalComputeInstanceDeleteParams,
 } from "./types";
 import type { ValidationResult } from "./types";
 import {
@@ -49,6 +55,7 @@ import {
   logsStreamSchema,
   filesUploadUrlSchema,
   filesUploadLocalSchema,
+  computeInstanceCreateSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
 
@@ -207,6 +214,10 @@ export function fal(opts: FalOptions): FalProvider {
           undefined,
           errorData
         );
+      }
+
+      if (res.status === 204) {
+        return undefined as T;
       }
 
       return (await res.json()) as T;
@@ -801,12 +812,76 @@ export function fal(opts: FalOptions): FalProvider {
     }
   );
 
+  const computeInstances = Object.assign(
+    async function instances(
+      params?: FalComputeInstancesListParams,
+      signal?: AbortSignal
+    ): Promise<FalComputeInstancesListResponse> {
+      return makeRequest<FalComputeInstancesListResponse>(
+        "GET",
+        "/compute/instances",
+        params as unknown as Record<string, unknown>,
+        signal
+      );
+    },
+    {
+      async get(
+        params: FalComputeInstanceGetParams,
+        signal?: AbortSignal
+      ): Promise<FalComputeInstance> {
+        return makeRequest<FalComputeInstance>(
+          "GET",
+          `/compute/instances/${encodeURIComponent(params.id)}`,
+          undefined,
+          signal
+        );
+      },
+
+      create: Object.assign(
+        async function create(
+          params: FalComputeInstanceCreateParams,
+          signal?: AbortSignal
+        ): Promise<FalComputeInstance> {
+          return makeRequest<FalComputeInstance>(
+            "POST",
+            "/compute/instances",
+            params as unknown as Record<string, unknown>,
+            signal
+          );
+        },
+        {
+          payloadSchema: computeInstanceCreateSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, computeInstanceCreateSchema);
+          },
+        }
+      ),
+
+      async terminate(
+        params: FalComputeInstanceDeleteParams,
+        signal?: AbortSignal
+      ): Promise<void> {
+        return makeRequest<void>(
+          "DELETE",
+          `/compute/instances/${encodeURIComponent(params.id)}`,
+          undefined,
+          signal
+        );
+      },
+    }
+  );
+
+  const compute = {
+    instances: computeInstances,
+  };
+
   return {
     v1: {
       models,
       queue,
       serverless,
       workflows,
+      compute,
     },
   };
 }

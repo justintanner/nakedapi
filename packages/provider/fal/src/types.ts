@@ -346,6 +346,72 @@ export interface FalWorkflowGetResponse {
   workflow: FalWorkflowDetail;
 }
 
+// ==================== Compute Instances ====================
+
+// Compute instance type
+export type FalComputeInstanceType =
+  | "gpu_8x_h100_sxm5"
+  | "gpu_1x_h100_sxm5";
+
+// Compute region
+export type FalComputeRegion =
+  | "us-west"
+  | "us-central"
+  | "us-east"
+  | "eu-north"
+  | "eu-west"
+  | "other";
+
+// Compute sector
+export type FalComputeSector = "sector_1" | "sector_2" | "sector_3";
+
+// Compute instance status
+export type FalComputeInstanceStatus =
+  | "ready"
+  | "init"
+  | "pending"
+  | "provisioning"
+  | "stopped"
+  | "unknown";
+
+// Compute instance
+export interface FalComputeInstance {
+  id: string;
+  instance_type: FalComputeInstanceType;
+  region: FalComputeRegion;
+  sector?: FalComputeSector;
+  ip?: string;
+  status: FalComputeInstanceStatus;
+  creator_user_nickname?: string;
+}
+
+// List compute instances parameters
+export interface FalComputeInstancesListParams extends FalPaginatedParams {}
+
+// List compute instances response
+export interface FalComputeInstancesListResponse {
+  instances: FalComputeInstance[];
+  next_cursor: string | null;
+  has_more: boolean;
+}
+
+// Get compute instance parameters
+export interface FalComputeInstanceGetParams {
+  id: string;
+}
+
+// Create compute instance parameters
+export interface FalComputeInstanceCreateParams {
+  instance_type: FalComputeInstanceType;
+  ssh_key: string;
+  sector?: FalComputeSector;
+}
+
+// Delete compute instance parameters
+export interface FalComputeInstanceDeleteParams {
+  id: string;
+}
+
 // Payload schema types
 export interface PayloadFieldSchema {
   type: "string" | "number" | "boolean" | "array" | "object";
@@ -698,11 +764,42 @@ interface FalWorkflowsNamespace {
   ): Promise<FalWorkflowGetResponse>;
 }
 
+// Compute instances namespace types
+interface FalComputeInstanceCreateMethod {
+  (
+    params: FalComputeInstanceCreateParams,
+    signal?: AbortSignal
+  ): Promise<FalComputeInstance>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface FalComputeInstancesNamespace {
+  (
+    params?: FalComputeInstancesListParams,
+    signal?: AbortSignal
+  ): Promise<FalComputeInstancesListResponse>;
+  get(
+    params: FalComputeInstanceGetParams,
+    signal?: AbortSignal
+  ): Promise<FalComputeInstance>;
+  create: FalComputeInstanceCreateMethod;
+  terminate(
+    params: FalComputeInstanceDeleteParams,
+    signal?: AbortSignal
+  ): Promise<void>;
+}
+
+interface FalComputeNamespace {
+  instances: FalComputeInstancesNamespace;
+}
+
 interface FalV1Namespace {
   models: FalModelsNamespace;
   queue: FalQueueNamespace;
   serverless: FalServerlessNamespace;
   workflows: FalWorkflowsNamespace;
+  compute: FalComputeNamespace;
 }
 
 // Provider interface

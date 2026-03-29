@@ -1,5 +1,9 @@
 import { kieRequest } from "./request";
-import type { PayloadSchema, ValidationResult } from "./types";
+import type {
+  PayloadSchema,
+  ValidationResult,
+  KieTaskInfo,
+} from "./types";
 import { veoGenerateSchema, veoExtendSchema } from "./schemas";
 import { validatePayload } from "./validate";
 
@@ -51,6 +55,9 @@ interface VeoExtendMethod {
 interface VeoVeoNamespace {
   generate: VeoGenerateMethod;
   extend: VeoExtendMethod;
+  "record-info"(taskId: string): Promise<KieTaskInfo>;
+  "get-1080p"(taskId: string): Promise<VeoSubmitResponse>;
+  "get-4k"(taskId: string): Promise<VeoSubmitResponse>;
 }
 
 interface VeoV1Namespace {
@@ -93,6 +100,27 @@ export function createVeoProvider(
     });
   }
 
+  async function recordInfo(taskId: string): Promise<KieTaskInfo> {
+    return kieRequest<KieTaskInfo>(
+      `${baseURL}/api/v1/veo/record-info?taskId=${encodeURIComponent(taskId)}`,
+      { method: "GET", ...requestOpts }
+    );
+  }
+
+  async function get1080p(taskId: string): Promise<VeoSubmitResponse> {
+    return kieRequest<VeoSubmitResponse>(
+      `${baseURL}/api/v1/veo/get-1080p?taskId=${encodeURIComponent(taskId)}`,
+      { method: "GET", ...requestOpts }
+    );
+  }
+
+  async function get4k(taskId: string): Promise<VeoSubmitResponse> {
+    return kieRequest<VeoSubmitResponse>(
+      `${baseURL}/api/v1/veo/get-4k?taskId=${encodeURIComponent(taskId)}`,
+      { method: "GET", ...requestOpts }
+    );
+  }
+
   return {
     api: {
       v1: {
@@ -109,6 +137,9 @@ export function createVeoProvider(
               return validatePayload(data, veoExtendSchema);
             },
           }),
+          "record-info": recordInfo,
+          "get-1080p": get1080p,
+          "get-4k": get4k,
         },
       },
     },

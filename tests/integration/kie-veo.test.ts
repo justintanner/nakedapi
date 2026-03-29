@@ -65,4 +65,119 @@ describe("kie veo integration", () => {
     expect(result.works.length).toBeGreaterThan(0);
     expect(result.works[0].resource).toBeTruthy();
   }, 330_000);
+
+  it("should get record-info for a veo task", async () => {
+    ctx = setupPolly("kie/veo-record-info");
+    const provider = kie({
+      apiKey: process.env.KIE_API_KEY ?? "test-key",
+    });
+
+    // Submit a generation task first
+    const task = await provider.veo.api.v1.veo.generate({
+      prompt: "A bird flying over the ocean at sunset",
+      model: "veo3",
+      aspectRatio: "16:9",
+    });
+    expect(task.code).toBe(200);
+    expect(task.data?.taskId).toBeTruthy();
+
+    const taskId = task.data!.taskId!;
+    const deadline = Date.now() + 5 * 60 * 1000;
+    const pollIntervalMs = ctx.mode === "record" ? 5000 : 0;
+    let finalState: string | undefined;
+
+    // Poll veo record-info until success or fail
+    while (Date.now() < deadline) {
+      const info = await provider.veo.api.v1.veo["record-info"](taskId);
+
+      if (info.data && info.data.taskId) {
+        expect(info.data.taskId).toBe(taskId);
+        finalState = info.data.state;
+
+        if (finalState === "success" || finalState === "fail") {
+          break;
+        }
+      }
+
+      if (pollIntervalMs > 0) {
+        await sleep(pollIntervalMs);
+      }
+    }
+
+    expect(finalState).toBe("success");
+  }, 330_000);
+
+  it("should request get-1080p for a completed veo task", async () => {
+    ctx = setupPolly("kie/veo-get-1080p");
+    const provider = kie({
+      apiKey: process.env.KIE_API_KEY ?? "test-key",
+    });
+
+    // Submit a generation task first
+    const task = await provider.veo.api.v1.veo.generate({
+      prompt: "A slow-motion waterfall in a mountain forest",
+      model: "veo3_fast",
+      aspectRatio: "16:9",
+    });
+    expect(task.code).toBe(200);
+    const taskId = task.data!.taskId!;
+
+    // Poll until complete
+    const deadline = Date.now() + 5 * 60 * 1000;
+    const pollIntervalMs = ctx.mode === "record" ? 5000 : 0;
+    let done = false;
+
+    while (Date.now() < deadline) {
+      const info = await provider.veo.api.v1.veo["record-info"](taskId);
+      if (info.data?.state === "success") {
+        done = true;
+        break;
+      }
+      if (info.data?.state === "fail") break;
+      if (pollIntervalMs > 0) await sleep(pollIntervalMs);
+    }
+
+    expect(done).toBe(true);
+
+    // Request 1080p version
+    const res = await provider.veo.api.v1.veo["get-1080p"](taskId);
+    expect(res.code).toBe(200);
+  }, 330_000);
+
+  it("should request get-4k for a completed veo task", async () => {
+    ctx = setupPolly("kie/veo-get-4k");
+    const provider = kie({
+      apiKey: process.env.KIE_API_KEY ?? "test-key",
+    });
+
+    // Submit a generation task first
+    const task = await provider.veo.api.v1.veo.generate({
+      prompt: "A timelapse of clouds moving over a city skyline",
+      model: "veo3_fast",
+      aspectRatio: "16:9",
+    });
+    expect(task.code).toBe(200);
+    const taskId = task.data!.taskId!;
+
+    // Poll until complete
+    const deadline = Date.now() + 5 * 60 * 1000;
+    const pollIntervalMs = ctx.mode === "record" ? 5000 : 0;
+    let done = false;
+
+    while (Date.now() < deadline) {
+      const info = await provider.veo.api.v1.veo["record-info"](taskId);
+      if (info.data?.state === "success") {
+        done = true;
+        break;
+      }
+      if (info.data?.state === "fail") break;
+      if (pollIntervalMs > 0) await sleep(pollIntervalMs);
+    }
+
+    expect(done).toBe(true);
+
+    // Request 4K version
+    const res = await provider.veo.api.v1.veo["get-4k"](taskId);
+    expect(res.code).toBe(200);
+  }, 330_000);
 });

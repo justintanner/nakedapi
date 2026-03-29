@@ -10,10 +10,21 @@ import {
   AnthropicStreamEvent,
   EmbeddingRequest,
   EmbeddingResponse,
+  FileUploadRequest,
+  FileObject,
+  SearchRequest,
+  SearchResponse,
+  FetchRequest,
 } from "./types";
 import type { ValidationResult } from "./types";
 import { sseToIterable } from "./sse";
-import { messagesSchema, embeddingsSchema } from "./schemas";
+import {
+  messagesSchema,
+  embeddingsSchema,
+  filesUploadSchema,
+  searchSchema,
+  fetchSchema,
+} from "./schemas";
 import { validatePayload } from "./validate";
 
 interface AnthropicErrorBody {
@@ -239,6 +250,159 @@ export function kimicoding(opts: KimiCodingOptions): KimiCodingProvider {
     }
   }
 
+  function buildAuthHeaders(): Record<string, string> {
+    return {
+      Authorization: `Bearer ${opts.apiKey}`,
+      "x-api-key": opts.apiKey,
+    };
+  }
+
+  async function makeTextRequest(
+    path: string,
+    body: Record<string, unknown>,
+    signal?: AbortSignal
+  ): Promise<string> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    if (signal) {
+      signal.addEventListener("abort", () => controller.abort());
+    }
+
+    try {
+      const res = await doFetch(`${baseURL}${path}`, {
+        method: "POST",
+        headers: buildHeaders(),
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        let message = `KimiCoding error: ${res.status}`;
+        let errBody: unknown = null;
+        try {
+          errBody = await res.json();
+          if (
+            isAnthropicErrorBody(errBody) &&
+            typeof errBody.error?.message === "string"
+          ) {
+            message = `KimiCoding error ${res.status}: ${errBody.error.message}`;
+          }
+        } catch {
+          // ignore parse errors
+        }
+        throw new KimiCodingError(message, res.status, errBody);
+      }
+
+      return await res.text();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof KimiCodingError) throw error;
+      throw new KimiCodingError(`KimiCoding request failed: ${error}`, 500);
+    }
+  }
+
+  async function filesUploadImpl(
+    req: FileUploadRequest,
+    signal?: AbortSignal
+  ): Promise<FileObject> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    if (signal) {
+      signal.addEventListener("abort", () => controller.abort());
+    }
+
+    try {
+      const form = new FormData();
+      form.append("file", req.file);
+      form.append("purpose", req.purpose);
+
+      const res = await doFetch(`${baseURL}v1/files`, {
+        method: "POST",
+        headers: buildAuthHeaders(),
+        body: form,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        let message = `KimiCoding error: ${res.status}`;
+        let body: unknown = null;
+        try {
+          body = await res.json();
+          if (
+            isAnthropicErrorBody(body) &&
+            typeof body.error?.message === "string"
+          ) {
+            message = `KimiCoding error ${res.status}: ${body.error.message}`;
+          }
+        } catch {
+          // ignore parse errors
+        }
+        throw new KimiCodingError(message, res.status, body);
+      }
+
+      return (await res.json()) as FileObject;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  async function searchImpl(
+    req: SearchRequest,
+    signal?: AbortSignal
+  ): Promise<SearchResponse> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    if (signal) {
+      signal.addEventListener("abort", () => controller.abort());
+    }
+
+    try {
+      const res = await doFetch(`${baseURL}v1/search`, {
+        method: "POST",
+        headers: buildHeaders(),
+        body: JSON.stringify(req),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        let message = `KimiCoding error: ${res.status}`;
+        let body: unknown = null;
+        try {
+          body = await res.json();
+          if (
+            isAnthropicErrorBody(body) &&
+            typeof body.error?.message === "string"
+          ) {
+            message = `KimiCoding error ${res.status}: ${body.error.message}`;
+          }
+        } catch {
+          // ignore parse errors
+        }
+        throw new KimiCodingError(message, res.status, body);
+      }
+
+      return (await res.json()) as SearchResponse;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  async function fetchImpl(
+    req: FetchRequest,
+    signal?: AbortSignal
+  ): Promise<string> {
+    return makeTextRequest("v1/fetch", { url: req.url }, signal);
+  }
+
   const messages = Object.assign(chatImpl, {
     stream: Object.assign(streamImpl, {
       payloadSchema: messagesSchema,
@@ -259,6 +423,27 @@ export function kimicoding(opts: KimiCodingOptions): KimiCodingProvider {
     },
   });
 
+  const filesUpload = Object.assign(filesUploadImpl, {
+    payloadSchema: filesUploadSchema,
+    validatePayload(data: unknown): ValidationResult {
+      return validatePayload(data, filesUploadSchema);
+    },
+  });
+
+  const search = Object.assign(searchImpl, {
+    payloadSchema: searchSchema,
+    validatePayload(data: unknown): ValidationResult {
+      return validatePayload(data, searchSchema);
+    },
+  });
+
+  const fetchEndpoint = Object.assign(fetchImpl, {
+    payloadSchema: fetchSchema,
+    validatePayload(data: unknown): ValidationResult {
+      return validatePayload(data, fetchSchema);
+    },
+  });
+
   return {
     coding: {
       v1: {
@@ -274,6 +459,11 @@ export function kimicoding(opts: KimiCodingOptions): KimiCodingProvider {
           },
         },
         embeddings,
+        files: {
+          upload: filesUpload,
+        },
+        search,
+        fetch: fetchEndpoint,
       },
     },
   };

@@ -32,6 +32,64 @@ export const embeddingsSchema: PayloadSchema = {
   },
 };
 
+export const filesUploadSchema: PayloadSchema = {
+  method: "POST",
+  path: "/v1/files",
+  contentType: "multipart/form-data",
+  fields: {
+    file: {
+      type: "string",
+      required: true,
+      description: "File to upload (Blob or File object)",
+    },
+    purpose: {
+      type: "string",
+      required: true,
+      description: "Intended purpose of the uploaded file",
+      enum: ["image", "video", "file-extract"],
+    },
+  },
+};
+
+export const searchSchema: PayloadSchema = {
+  method: "POST",
+  path: "/v1/search",
+  contentType: "application/json",
+  fields: {
+    text_query: {
+      type: "string",
+      required: true,
+      description: "Search query text",
+    },
+    limit: {
+      type: "number",
+      description: "Number of results to return (1-20, default 5)",
+    },
+    enable_page_crawling: {
+      type: "boolean",
+      description:
+        "Whether to include full page content in results (default false)",
+    },
+    timeout_seconds: {
+      type: "number",
+      description: "Request timeout in seconds (default 30)",
+    },
+  },
+};
+
+export const fetchSchema: PayloadSchema = {
+  method: "POST",
+  path: "/v1/fetch",
+  contentType: "application/json",
+  fields: {
+    url: {
+      type: "string",
+      required: true,
+      description: "URL to fetch and extract content from",
+    },
+  },
+};
+
 export const messagesSchema: PayloadSchema = {
   method: "POST",
   path: "/v1/messages",

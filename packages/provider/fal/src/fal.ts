@@ -48,6 +48,15 @@ import {
   FalAppsQueueParams,
   FalAppsQueueResponse,
   FalAppsFlushQueueParams,
+  FalBillingParams,
+  FalBillingResponse,
+  FalFocusParams,
+  FalKeysListParams,
+  FalKeysListResponse,
+  FalKeyCreateRequest,
+  FalKeyCreateResponse,
+  FalKeyDeleteParams,
+  FalMetaResponse,
 } from "./types";
 import type { ValidationResult } from "./types";
 import {
@@ -60,6 +69,7 @@ import {
   filesUploadLocalSchema,
   computeInstanceCreateSchema,
   appsFlushQueueSchema,
+  keyCreateSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
 
@@ -1029,6 +1039,134 @@ export function fal(opts: FalOptions): FalProvider {
     instances: computeInstances,
   };
 
+  const account = {
+    async billing(
+      params?: FalBillingParams,
+      signal?: AbortSignal
+    ): Promise<FalBillingResponse> {
+      return makeRequest<FalBillingResponse>(
+        "GET",
+        "/account/billing",
+        params as unknown as Record<string, unknown>,
+        signal
+      );
+    },
+
+    async focus(params: FalFocusParams, signal?: AbortSignal): Promise<string> {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+      if (signal) {
+        signal.addEventListener("abort", () => controller.abort());
+      }
+
+      const qs = buildQueryString(params as unknown as Record<string, unknown>);
+      const url = `${baseURL}/account/focus${qs}`;
+
+      try {
+        const res = await doFetch(url, {
+          method: "GET",
+          headers: {
+            Authorization: `Key ${opts.apiKey}`,
+          },
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          let errorData: unknown;
+          try {
+            errorData = await res.json();
+          } catch {
+            errorData = null;
+          }
+
+          if (isFalApiErrorResponse(errorData)) {
+            throw new FalError(
+              errorData.error.message,
+              res.status,
+              errorData.error.type,
+              errorData.error.request_id,
+              errorData.error.docs_url,
+              errorData
+            );
+          }
+
+          throw new FalError(
+            `Fal API error: ${res.status}`,
+            res.status,
+            "server_error",
+            undefined,
+            undefined,
+            errorData
+          );
+        }
+
+        return await res.text();
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof FalError) throw error;
+        throw new FalError(`Fal request failed: ${error}`, 500, "server_error");
+      }
+    },
+  };
+
+  const keys = Object.assign(
+    async function keys(
+      params?: FalKeysListParams,
+      signal?: AbortSignal
+    ): Promise<FalKeysListResponse> {
+      return makeRequest<FalKeysListResponse>(
+        "GET",
+        "/keys",
+        params as unknown as Record<string, unknown>,
+        signal
+      );
+    },
+    {
+      create: Object.assign(
+        async function create(
+          req: FalKeyCreateRequest,
+          signal?: AbortSignal
+        ): Promise<FalKeyCreateResponse> {
+          return makeRequest<FalKeyCreateResponse>(
+            "POST",
+            "/keys",
+            req as unknown as Record<string, unknown>,
+            signal
+          );
+        },
+        {
+          payloadSchema: keyCreateSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, keyCreateSchema);
+          },
+        }
+      ),
+
+      async delete(
+        params: FalKeyDeleteParams,
+        signal?: AbortSignal
+      ): Promise<void> {
+        const headers: Record<string, string> = {};
+        if (params.idempotency_key) {
+          headers["Idempotency-Key"] = params.idempotency_key;
+        }
+        return makeRequest<void>(
+          "DELETE",
+          `/keys/${encodeURIComponent(params.key_id)}`,
+          undefined,
+          signal,
+          headers
+        );
+      },
+    }
+  );
+
+  async function meta(signal?: AbortSignal): Promise<FalMetaResponse> {
+    return makeRequest<FalMetaResponse>("GET", "/meta", undefined, signal);
+  }
+
   return {
     v1: {
       models,
@@ -1036,6 +1174,9 @@ export function fal(opts: FalOptions): FalProvider {
       serverless,
       workflows,
       compute,
+      account,
+      keys,
+      meta,
     },
   };
 }

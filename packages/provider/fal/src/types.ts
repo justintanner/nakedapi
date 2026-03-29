@@ -432,6 +432,81 @@ export interface ValidationResult {
   errors: string[];
 }
 
+// ==================== Account ====================
+
+// Billing parameters
+export interface FalBillingParams {
+  expand?: string[];
+}
+
+// Credit balance
+export interface FalCreditBalance {
+  current_balance: number;
+  currency: string;
+}
+
+// Billing response
+export interface FalBillingResponse {
+  username: string;
+  credits?: FalCreditBalance;
+}
+
+// FOCUS report parameters
+export interface FalFocusParams extends FalTimeRangeParams {
+  source: "invoice" | "estimate";
+  billing_month?: string;
+  charge_month?: string;
+}
+
+// ==================== API Keys ====================
+
+// Key list parameters
+export interface FalKeysListParams extends FalPaginatedParams {
+  expand?: string[];
+}
+
+// Key item
+export interface FalKeyItem {
+  key_id: string;
+  alias: string;
+  scope: string;
+  created_at: string;
+  creator_nickname?: string;
+  creator_email?: string;
+}
+
+// Keys list response
+export interface FalKeysListResponse {
+  keys: FalKeyItem[];
+  next_cursor: string | null;
+  has_more: boolean;
+}
+
+// Key create request
+export interface FalKeyCreateRequest {
+  alias: string;
+}
+
+// Key create response
+export interface FalKeyCreateResponse {
+  key_id: string;
+  key_secret: string;
+  key: string;
+}
+
+// Key delete parameters
+export interface FalKeyDeleteParams {
+  key_id: string;
+  idempotency_key?: string;
+}
+
+// ==================== Meta ====================
+
+// Meta response
+export interface FalMetaResponse {
+  webhook_ip_ranges: string[];
+}
+
 // ==================== Serverless Logs ====================
 
 // Label filter for log queries
@@ -832,12 +907,41 @@ interface FalComputeNamespace {
   instances: FalComputeInstancesNamespace;
 }
 
+interface FalAccountNamespace {
+  billing(
+    params?: FalBillingParams,
+    signal?: AbortSignal
+  ): Promise<FalBillingResponse>;
+  focus(params: FalFocusParams, signal?: AbortSignal): Promise<string>;
+}
+
+interface FalKeyCreateMethod {
+  (
+    req: FalKeyCreateRequest,
+    signal?: AbortSignal
+  ): Promise<FalKeyCreateResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface FalKeysNamespace {
+  (
+    params?: FalKeysListParams,
+    signal?: AbortSignal
+  ): Promise<FalKeysListResponse>;
+  create: FalKeyCreateMethod;
+  delete(params: FalKeyDeleteParams, signal?: AbortSignal): Promise<void>;
+}
+
 interface FalV1Namespace {
   models: FalModelsNamespace;
   queue: FalQueueNamespace;
   serverless: FalServerlessNamespace;
   workflows: FalWorkflowsNamespace;
   compute: FalComputeNamespace;
+  account: FalAccountNamespace;
+  keys: FalKeysNamespace;
+  meta(signal?: AbortSignal): Promise<FalMetaResponse>;
 }
 
 // Provider interface

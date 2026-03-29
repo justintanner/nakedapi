@@ -245,6 +245,19 @@ export const appsFlushQueueSchema: PayloadSchema = {
   },
 };
 
+export const keyCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/keys",
+  contentType: "application/json",
+  fields: {
+    alias: {
+      type: "string",
+      required: true,
+      description: "Friendly name for the API key (1-255 characters)",
+    },
+  },
+};
+
 export const deletePayloadsSchema: PayloadSchema = {
   method: "DELETE",
   path: "/models/requests/{request_id}/payloads",

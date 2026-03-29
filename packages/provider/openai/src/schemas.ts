@@ -1064,8 +1064,7 @@ export const vectorStoresSearchSchema: PayloadSchema = {
     },
     filters: {
       type: "object",
-      description:
-        "Filter by file attributes (comparison or compound filter)",
+      description: "Filter by file attributes (comparison or compound filter)",
     },
     ranking_options: {
       type: "object",
@@ -1107,8 +1106,7 @@ export const vectorStoreFilesCreateSchema: PayloadSchema = {
     },
     attributes: {
       type: "object",
-      description:
-        "File attributes for filtering (max 16 key-value pairs)",
+      description: "File attributes for filtering (max 16 key-value pairs)",
     },
   },
 };
@@ -1121,8 +1119,7 @@ export const vectorStoreFilesUpdateSchema: PayloadSchema = {
     attributes: {
       type: "object",
       required: true,
-      description:
-        "File attributes for filtering (max 16 key-value pairs)",
+      description: "File attributes for filtering (max 16 key-value pairs)",
     },
   },
 };
@@ -1157,8 +1154,7 @@ export const vectorStoreFileBatchesCreateSchema: PayloadSchema = {
     },
     files: {
       type: "array",
-      description:
-        "List of file objects with per-file overrides (max 2000)",
+      description: "List of file objects with per-file overrides (max 2000)",
       items: {
         type: "object",
         properties: {

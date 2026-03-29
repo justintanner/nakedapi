@@ -1114,6 +1114,282 @@ export interface OpenAiFileDeleteResponse {
   deleted: boolean;
 }
 
+// --- Uploads API types ---
+
+// Upload create request
+export interface OpenAiUploadCreateRequest {
+  filename: string;
+  purpose: "assistants" | "batch" | "fine-tune" | "vision";
+  bytes: number;
+  mime_type: string;
+  expires_after?: {
+    anchor: "created_at";
+    seconds: number;
+  };
+}
+
+// Upload object
+export interface OpenAiUpload {
+  id: string;
+  object: "upload";
+  bytes: number;
+  created_at: number;
+  filename: string;
+  purpose: string;
+  status: "pending" | "completed" | "cancelled" | "expired";
+  expires_at: number;
+  file?: OpenAiFile | null;
+}
+
+// Upload part request (multipart/form-data)
+export interface OpenAiUploadPartRequest {
+  data: Blob;
+}
+
+// Upload part object
+export interface OpenAiUploadPart {
+  id: string;
+  object: "upload.part";
+  created_at: number;
+  upload_id: string;
+}
+
+// Upload complete request
+export interface OpenAiUploadCompleteRequest {
+  part_ids: string[];
+  md5?: string;
+}
+
+// --- Containers API types ---
+
+// Container expiration policy
+export interface OpenAiContainerExpiresAfter {
+  anchor: "last_active_at";
+  minutes: number;
+}
+
+// Container network policy
+export interface OpenAiContainerNetworkPolicyDisabled {
+  type: "disabled";
+}
+
+export interface OpenAiContainerDomainSecret {
+  domain: string;
+  name: string;
+  value: string;
+}
+
+export interface OpenAiContainerNetworkPolicyAllowlist {
+  type: "allowlist";
+  allowed_domains: string[];
+  domain_secrets?: OpenAiContainerDomainSecret[];
+}
+
+export type OpenAiContainerNetworkPolicy =
+  | OpenAiContainerNetworkPolicyDisabled
+  | OpenAiContainerNetworkPolicyAllowlist;
+
+// Container skill reference
+export interface OpenAiContainerSkillReference {
+  type: "skill_reference";
+  skill_id: string;
+  version?: string;
+}
+
+export interface OpenAiContainerInlineSkillSource {
+  type: "base64";
+  media_type: "application/zip";
+  data: string;
+}
+
+export interface OpenAiContainerInlineSkill {
+  type: "inline";
+  name: string;
+  description: string;
+  source: OpenAiContainerInlineSkillSource;
+}
+
+export type OpenAiContainerSkill =
+  | OpenAiContainerSkillReference
+  | OpenAiContainerInlineSkill;
+
+// Container create request
+export interface OpenAiContainerCreateRequest {
+  name: string;
+  file_ids?: string[];
+  expires_after?: OpenAiContainerExpiresAfter;
+  skills?: OpenAiContainerSkill[];
+  memory_limit?: "1g" | "4g" | "16g" | "64g";
+  network_policy?: OpenAiContainerNetworkPolicy;
+}
+
+// Container object
+export interface OpenAiContainer {
+  id: string;
+  object: "container";
+  name: string;
+  created_at: number;
+  status: string;
+  last_active_at?: number;
+  expires_after?: OpenAiContainerExpiresAfter;
+  memory_limit?: string;
+  network_policy?: {
+    type: "allowlist" | "disabled";
+    allowed_domains?: string[];
+  };
+}
+
+// Container list options
+export interface OpenAiContainerListOptions {
+  limit?: number;
+  order?: "asc" | "desc";
+  after?: string;
+  name?: string;
+}
+
+// Container list response
+export interface OpenAiContainerListResponse {
+  object: "list";
+  data: OpenAiContainer[];
+  first_id: string | null;
+  last_id: string | null;
+  has_more: boolean;
+}
+
+// Container delete response
+export interface OpenAiContainerDeleteResponse {
+  id: string;
+  object: "container.deleted";
+  deleted: true;
+}
+
+// Container file create request (JSON variant)
+export interface OpenAiContainerFileCreateRequest {
+  file_id?: string;
+  file?: Blob;
+}
+
+// Container file object
+export interface OpenAiContainerFile {
+  id: string;
+  object: "container.file";
+  container_id: string;
+  created_at: number;
+  bytes: number;
+  path: string;
+  source: string;
+}
+
+// Container file list options
+export interface OpenAiContainerFileListOptions {
+  limit?: number;
+  order?: "asc" | "desc";
+  after?: string;
+}
+
+// Container file list response
+export interface OpenAiContainerFileListResponse {
+  object: "list";
+  data: OpenAiContainerFile[];
+  first_id: string | null;
+  last_id: string | null;
+  has_more: boolean;
+}
+
+// Container file delete response
+export interface OpenAiContainerFileDeleteResponse {
+  id: string;
+  object: "container.file.deleted";
+  deleted: true;
+}
+
+// --- Skills API types ---
+
+// Skill object
+export interface OpenAiSkill {
+  id: string;
+  object: "skill";
+  name: string;
+  description: string;
+  created_at: number;
+  default_version: string;
+  latest_version: string;
+}
+
+// Skill create request (multipart/form-data)
+export interface OpenAiSkillCreateRequest {
+  files: Blob | Blob[];
+}
+
+// Skill update request (set default version)
+export interface OpenAiSkillUpdateRequest {
+  default_version: string;
+}
+
+// Skill list options
+export interface OpenAiSkillListOptions {
+  limit?: number;
+  order?: "asc" | "desc";
+  after?: string;
+}
+
+// Skill list response
+export interface OpenAiSkillListResponse {
+  object: "list";
+  data: OpenAiSkill[];
+  first_id: string | null;
+  last_id: string | null;
+  has_more: boolean;
+}
+
+// Skill delete response
+export interface OpenAiSkillDeleteResponse {
+  id: string;
+  object: "skill.deleted";
+  deleted: true;
+}
+
+// Skill version object
+export interface OpenAiSkillVersion {
+  id: string;
+  object: "skill.version";
+  skill_id: string;
+  version: string;
+  created_at: number;
+  name: string;
+  description: string;
+}
+
+// Skill version create request (multipart/form-data)
+export interface OpenAiSkillVersionCreateRequest {
+  files: Blob | Blob[];
+  default?: boolean;
+}
+
+// Skill version list options
+export interface OpenAiSkillVersionListOptions {
+  limit?: number;
+  order?: "asc" | "desc";
+  after?: string;
+}
+
+// Skill version list response
+export interface OpenAiSkillVersionListResponse {
+  object: "list";
+  data: OpenAiSkillVersion[];
+  first_id: string | null;
+  last_id: string | null;
+  has_more: boolean;
+}
+
+// Skill version delete response
+export interface OpenAiSkillVersionDeleteResponse {
+  object: "skill.version.deleted";
+  id: string;
+  deleted: true;
+  version: string;
+}
+
 // Payload schema types
 export interface PayloadFieldSchema {
   type: "string" | "number" | "boolean" | "array" | "object";
@@ -1495,6 +1771,222 @@ interface OpenAiFineTuningNamespace {
   checkpoints: OpenAiFineTuningCheckpointsNamespace;
 }
 
+// Uploads namespace types
+interface OpenAiUploadsCreateMethod {
+  (
+    req: OpenAiUploadCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiUpload>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  addPart: OpenAiUploadsAddPartMethod;
+  complete: OpenAiUploadsCompleteMethod;
+  cancel: OpenAiUploadsCancelMethod;
+}
+
+interface OpenAiUploadsAddPartMethod {
+  (
+    uploadId: string,
+    req: OpenAiUploadPartRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiUploadPart>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiUploadsCompleteMethod {
+  (
+    uploadId: string,
+    req: OpenAiUploadCompleteRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiUpload>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiUploadsCancelMethod {
+  (uploadId: string, signal?: AbortSignal): Promise<OpenAiUpload>;
+  payloadSchema: PayloadSchema;
+}
+
+// Containers namespace types
+interface OpenAiContainersCreateMethod {
+  (
+    req: OpenAiContainerCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiContainer>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  list: OpenAiContainersListMethod;
+  retrieve: OpenAiContainersRetrieveMethod;
+  del: OpenAiContainersDeleteMethod;
+  files: OpenAiContainerFilesNamespace;
+}
+
+interface OpenAiContainersListMethod {
+  (
+    opts?: OpenAiContainerListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiContainerListResponse>;
+}
+
+interface OpenAiContainersRetrieveMethod {
+  (containerId: string, signal?: AbortSignal): Promise<OpenAiContainer>;
+}
+
+interface OpenAiContainersDeleteMethod {
+  (
+    containerId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiContainerDeleteResponse>;
+  payloadSchema: PayloadSchema;
+}
+
+interface OpenAiContainerFilesCreateMethod {
+  (
+    containerId: string,
+    req: OpenAiContainerFileCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiContainerFile>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiContainerFilesListMethod {
+  (
+    containerId: string,
+    opts?: OpenAiContainerFileListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiContainerFileListResponse>;
+}
+
+interface OpenAiContainerFilesRetrieveMethod {
+  (
+    containerId: string,
+    fileId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiContainerFile>;
+}
+
+interface OpenAiContainerFilesDeleteMethod {
+  (
+    containerId: string,
+    fileId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiContainerFileDeleteResponse>;
+  payloadSchema: PayloadSchema;
+}
+
+interface OpenAiContainerFilesContentMethod {
+  (
+    containerId: string,
+    fileId: string,
+    signal?: AbortSignal
+  ): Promise<string>;
+}
+
+interface OpenAiContainerFilesNamespace {
+  create: OpenAiContainerFilesCreateMethod;
+  list: OpenAiContainerFilesListMethod;
+  retrieve: OpenAiContainerFilesRetrieveMethod;
+  del: OpenAiContainerFilesDeleteMethod;
+  content: OpenAiContainerFilesContentMethod;
+}
+
+// Skills namespace types
+interface OpenAiSkillsCreateMethod {
+  (req: OpenAiSkillCreateRequest, signal?: AbortSignal): Promise<OpenAiSkill>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  list: OpenAiSkillsListMethod;
+  retrieve: OpenAiSkillsRetrieveMethod;
+  update: OpenAiSkillsUpdateMethod;
+  del: OpenAiSkillsDeleteMethod;
+  content: OpenAiSkillsContentMethod;
+  versions: OpenAiSkillVersionsNamespace;
+}
+
+interface OpenAiSkillsListMethod {
+  (
+    opts?: OpenAiSkillListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiSkillListResponse>;
+}
+
+interface OpenAiSkillsRetrieveMethod {
+  (skillId: string, signal?: AbortSignal): Promise<OpenAiSkill>;
+}
+
+interface OpenAiSkillsUpdateMethod {
+  (
+    skillId: string,
+    req: OpenAiSkillUpdateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiSkill>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiSkillsDeleteMethod {
+  (skillId: string, signal?: AbortSignal): Promise<OpenAiSkillDeleteResponse>;
+  payloadSchema: PayloadSchema;
+}
+
+interface OpenAiSkillsContentMethod {
+  (skillId: string, signal?: AbortSignal): Promise<ArrayBuffer>;
+}
+
+interface OpenAiSkillVersionsCreateMethod {
+  (
+    skillId: string,
+    req: OpenAiSkillVersionCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiSkillVersion>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiSkillVersionsListMethod {
+  (
+    skillId: string,
+    opts?: OpenAiSkillVersionListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiSkillVersionListResponse>;
+}
+
+interface OpenAiSkillVersionsRetrieveMethod {
+  (
+    skillId: string,
+    version: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiSkillVersion>;
+}
+
+interface OpenAiSkillVersionsDeleteMethod {
+  (
+    skillId: string,
+    version: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiSkillVersionDeleteResponse>;
+  payloadSchema: PayloadSchema;
+}
+
+interface OpenAiSkillVersionsContentMethod {
+  (
+    skillId: string,
+    version: string,
+    signal?: AbortSignal
+  ): Promise<ArrayBuffer>;
+}
+
+interface OpenAiSkillVersionsNamespace {
+  create: OpenAiSkillVersionsCreateMethod;
+  list: OpenAiSkillVersionsListMethod;
+  retrieve: OpenAiSkillVersionsRetrieveMethod;
+  del: OpenAiSkillVersionsDeleteMethod;
+  content: OpenAiSkillVersionsContentMethod;
+}
+
 interface OpenAiV1Namespace {
   chat: OpenAiChatNamespace;
   audio: OpenAiAudioNamespace;
@@ -1506,6 +1998,9 @@ interface OpenAiV1Namespace {
   responses: OpenAiResponsesMethod;
   fine_tuning: OpenAiFineTuningNamespace;
   batches: OpenAiBatchesCreateMethod;
+  uploads: OpenAiUploadsCreateMethod;
+  containers: OpenAiContainersCreateMethod;
+  skills: OpenAiSkillsCreateMethod;
 }
 
 // Provider interface

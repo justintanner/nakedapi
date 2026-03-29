@@ -946,3 +946,257 @@ export const audioTranslationsSchema: PayloadSchema = {
     temperature: { type: "number", description: "Sampling temperature 0-1" },
   },
 };
+
+// --- Uploads API schemas ---
+
+export const uploadsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/uploads",
+  contentType: "application/json",
+  fields: {
+    filename: {
+      type: "string",
+      required: true,
+      description: "The name of the file to upload",
+    },
+    purpose: {
+      type: "string",
+      required: true,
+      description: "Intended purpose of the uploaded file",
+      enum: ["assistants", "batch", "fine-tune", "vision"],
+    },
+    bytes: {
+      type: "number",
+      required: true,
+      description: "The number of bytes in the file",
+    },
+    mime_type: {
+      type: "string",
+      required: true,
+      description: "The MIME type of the file",
+    },
+    expires_after: {
+      type: "object",
+      description: "Expiration policy for the upload",
+      properties: {
+        anchor: {
+          type: "string",
+          required: true,
+          enum: ["created_at"],
+        },
+        seconds: {
+          type: "number",
+          required: true,
+          description: "Seconds after anchor time before expiry (3600-2592000)",
+        },
+      },
+    },
+  },
+};
+
+export const uploadsAddPartSchema: PayloadSchema = {
+  method: "POST",
+  path: "/uploads/{upload_id}/parts",
+  contentType: "multipart/form-data",
+  fields: {
+    data: {
+      type: "object",
+      required: true,
+      description: "The chunk of bytes for this Part (Blob)",
+    },
+  },
+};
+
+export const uploadsCompleteSchema: PayloadSchema = {
+  method: "POST",
+  path: "/uploads/{upload_id}/complete",
+  contentType: "application/json",
+  fields: {
+    part_ids: {
+      type: "array",
+      required: true,
+      description: "The ordered list of Part IDs",
+      items: { type: "string" },
+    },
+    md5: {
+      type: "string",
+      description:
+        "Optional md5 checksum to verify uploaded bytes match expected",
+    },
+  },
+};
+
+export const uploadsCancelSchema: PayloadSchema = {
+  method: "POST",
+  path: "/uploads/{upload_id}/cancel",
+  contentType: "application/json",
+  fields: {
+    upload_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the upload to cancel",
+    },
+  },
+};
+
+// --- Containers API schemas ---
+
+export const containersCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/containers",
+  contentType: "application/json",
+  fields: {
+    name: {
+      type: "string",
+      required: true,
+      description: "Name of the container to create",
+    },
+    file_ids: {
+      type: "array",
+      description: "IDs of files to copy to the container",
+      items: { type: "string" },
+    },
+    expires_after: {
+      type: "object",
+      description: "Container expiration policy",
+      properties: {
+        anchor: {
+          type: "string",
+          required: true,
+          enum: ["last_active_at"],
+        },
+        minutes: {
+          type: "number",
+          required: true,
+          description: "Minutes after anchor before container expires",
+        },
+      },
+    },
+    memory_limit: {
+      type: "string",
+      description: "Memory limit for the container",
+      enum: ["1g", "4g", "16g", "64g"],
+    },
+  },
+};
+
+export const containersDeleteSchema: PayloadSchema = {
+  method: "DELETE",
+  path: "/containers/{container_id}",
+  contentType: "application/json",
+  fields: {
+    container_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the container to delete",
+    },
+  },
+};
+
+export const containerFilesCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/containers/{container_id}/files",
+  contentType: "application/json",
+  fields: {
+    file_id: {
+      type: "string",
+      description: "ID of an existing file to copy into the container",
+    },
+  },
+};
+
+export const containerFilesDeleteSchema: PayloadSchema = {
+  method: "DELETE",
+  path: "/containers/{container_id}/files/{file_id}",
+  contentType: "application/json",
+  fields: {
+    container_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the container",
+    },
+    file_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the file to delete",
+    },
+  },
+};
+
+// --- Skills API schemas ---
+
+export const skillsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/skills",
+  contentType: "multipart/form-data",
+  fields: {
+    files: {
+      type: "object",
+      required: true,
+      description:
+        "Skill files to upload (Blob or Blob[] for directory, or single zip Blob)",
+    },
+  },
+};
+
+export const skillsUpdateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/skills/{skill_id}",
+  contentType: "application/json",
+  fields: {
+    default_version: {
+      type: "string",
+      required: true,
+      description: "The skill version number to set as default",
+    },
+  },
+};
+
+export const skillsDeleteSchema: PayloadSchema = {
+  method: "DELETE",
+  path: "/skills/{skill_id}",
+  contentType: "application/json",
+  fields: {
+    skill_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the skill to delete",
+    },
+  },
+};
+
+export const skillVersionsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/skills/{skill_id}/versions",
+  contentType: "multipart/form-data",
+  fields: {
+    files: {
+      type: "object",
+      required: true,
+      description:
+        "Skill version files to upload (Blob or Blob[] for directory, or single zip Blob)",
+    },
+    default: {
+      type: "boolean",
+      description: "Whether to set this version as the default",
+    },
+  },
+};
+
+export const skillVersionsDeleteSchema: PayloadSchema = {
+  method: "DELETE",
+  path: "/skills/{skill_id}/versions/{version}",
+  contentType: "application/json",
+  fields: {
+    skill_id: {
+      type: "string",
+      required: true,
+      description: "The ID of the skill",
+    },
+    version: {
+      type: "string",
+      required: true,
+      description: "The version number to delete",
+    },
+  },
+};

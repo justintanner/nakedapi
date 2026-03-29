@@ -946,3 +946,236 @@ export const audioTranslationsSchema: PayloadSchema = {
     temperature: { type: "number", description: "Sampling temperature 0-1" },
   },
 };
+
+// --- Conversations API schemas ---
+
+export const conversationsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/conversations",
+  contentType: "application/json",
+  fields: {
+    items: {
+      type: "array",
+      description: "Initial items to include in the conversation (max 20)",
+    },
+    metadata: {
+      type: "object",
+      description: "Key-value pairs for metadata (max 16 pairs)",
+    },
+  },
+};
+
+export const conversationsUpdateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/conversations/{conversation_id}",
+  contentType: "application/json",
+  fields: {
+    metadata: {
+      type: "object",
+      required: true,
+      description: "Key-value pairs for metadata (max 16 pairs)",
+    },
+  },
+};
+
+export const conversationItemsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/conversations/{conversation_id}/items",
+  contentType: "application/json",
+  fields: {
+    items: {
+      type: "array",
+      required: true,
+      description: "Items to add to the conversation (max 20)",
+    },
+  },
+};
+
+// --- Realtime REST API schemas ---
+
+export const realtimeSessionsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/realtime/sessions",
+  contentType: "application/json",
+  fields: {
+    model: { type: "string", description: "Realtime model ID" },
+    modalities: {
+      type: "array",
+      description: 'Array of modalities (e.g. ["audio", "text"])',
+    },
+    instructions: { type: "string", description: "System instructions" },
+    voice: { type: "string", description: "Voice for audio responses" },
+    input_audio_format: {
+      type: "string",
+      description: "Input audio format (e.g. pcm16)",
+    },
+    output_audio_format: {
+      type: "string",
+      description: "Output audio format (e.g. pcm16)",
+    },
+    input_audio_transcription: {
+      type: "object",
+      description: "Transcription config for input audio",
+    },
+    turn_detection: {
+      type: "object",
+      description: "Turn detection config (server_vad or semantic_vad)",
+    },
+    tools: { type: "array", description: "Tools available to the model" },
+    tool_choice: { type: "string", description: "Tool choice strategy" },
+    temperature: { type: "number", description: "Sampling temperature" },
+    max_response_output_tokens: {
+      type: "number",
+      description: "Max output tokens (or 'inf')",
+    },
+  },
+};
+
+export const realtimeTranscriptionSessionsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/realtime/transcription_sessions",
+  contentType: "application/json",
+  fields: {
+    input_audio_format: {
+      type: "string",
+      description: "Input audio format",
+    },
+    input_audio_transcription: {
+      type: "object",
+      description: "Transcription model config",
+    },
+    turn_detection: {
+      type: "object",
+      description: "Turn detection config",
+    },
+    include: {
+      type: "array",
+      description: "Additional fields to include in outputs",
+    },
+  },
+};
+
+export const realtimeClientSecretsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/realtime/client_secrets",
+  contentType: "application/json",
+  fields: {
+    expires_after: {
+      type: "object",
+      description: "Expiration config (anchor + seconds)",
+    },
+    session: {
+      type: "object",
+      description: "Session configuration for the client secret",
+    },
+  },
+};
+
+export const realtimeCallsAcceptSchema: PayloadSchema = {
+  method: "POST",
+  path: "/realtime/calls/{call_id}/accept",
+  contentType: "application/json",
+  fields: {
+    type: {
+      type: "string",
+      required: true,
+      description: "Session type, always 'realtime'",
+      enum: ["realtime"],
+    },
+    model: { type: "string", description: "Realtime model ID" },
+    instructions: { type: "string", description: "System instructions" },
+    modalities: { type: "array", description: "Response modalities" },
+    voice: { type: "string", description: "Voice for audio" },
+    max_output_tokens: {
+      type: "number",
+      description: "Max output tokens",
+    },
+    tools: { type: "array", description: "Tools for the session" },
+    tool_choice: { type: "string", description: "Tool choice strategy" },
+    audio: { type: "object", description: "Audio configuration" },
+    include: { type: "array", description: "Additional output fields" },
+    tracing: { type: "object", description: "Tracing configuration" },
+    truncation: { type: "object", description: "Truncation configuration" },
+  },
+};
+
+export const realtimeCallsReferSchema: PayloadSchema = {
+  method: "POST",
+  path: "/realtime/calls/{call_id}/refer",
+  contentType: "application/json",
+  fields: {
+    target_uri: {
+      type: "string",
+      required: true,
+      description: "SIP Refer-To URI (e.g. tel:+14155550123)",
+    },
+  },
+};
+
+export const realtimeCallsRejectSchema: PayloadSchema = {
+  method: "POST",
+  path: "/realtime/calls/{call_id}/reject",
+  contentType: "application/json",
+  fields: {
+    status_code: {
+      type: "number",
+      description: "SIP response code (defaults to 603 Decline)",
+    },
+  },
+};
+
+// --- Evals API schemas ---
+
+export const evalsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/evals",
+  contentType: "application/json",
+  fields: {
+    data_source_config: {
+      type: "object",
+      required: true,
+      description: "Data source configuration for the eval",
+    },
+    testing_criteria: {
+      type: "array",
+      required: true,
+      description: "List of graders/testing criteria",
+    },
+    metadata: {
+      type: "object",
+      description: "Key-value pairs for metadata (max 16 pairs)",
+    },
+    name: { type: "string", description: "Name of the evaluation" },
+  },
+};
+
+export const evalsUpdateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/evals/{eval_id}",
+  contentType: "application/json",
+  fields: {
+    metadata: {
+      type: "object",
+      description: "Key-value pairs for metadata",
+    },
+    name: { type: "string", description: "New name for the evaluation" },
+  },
+};
+
+export const evalRunsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/evals/{eval_id}/runs",
+  contentType: "application/json",
+  fields: {
+    data_source: {
+      type: "object",
+      required: true,
+      description: "Data source for the eval run",
+    },
+    metadata: {
+      type: "object",
+      description: "Key-value pairs for metadata",
+    },
+    name: { type: "string", description: "Name of the eval run" },
+  },
+};

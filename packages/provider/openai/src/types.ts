@@ -647,6 +647,307 @@ export interface OpenAiResponseInputTokensResponse {
   input_tokens: number;
 }
 
+// --- Conversations API types ---
+
+// Conversation object
+export interface OpenAiConversation {
+  id: string;
+  object: "conversation";
+  created_at: number;
+  metadata: Record<string, string> | null;
+}
+
+// Conversation deleted response
+export interface OpenAiConversationDeleteResponse {
+  id: string;
+  object: "conversation.deleted";
+  deleted: boolean;
+}
+
+// Create conversation request
+export interface OpenAiConversationCreateRequest {
+  items?: OpenAiResponseInputItem[] | null;
+  metadata?: Record<string, string> | null;
+}
+
+// Update conversation request
+export interface OpenAiConversationUpdateRequest {
+  metadata: Record<string, string> | null;
+}
+
+// Conversation item (same shape as response output items)
+export interface OpenAiConversationItem {
+  id: string;
+  type: string;
+  [key: string]: unknown;
+}
+
+// Create conversation items request
+export interface OpenAiConversationItemsCreateRequest {
+  items: OpenAiResponseInputItem[];
+  include?: string[];
+}
+
+// Conversation item list response
+export interface OpenAiConversationItemListResponse {
+  object: "list";
+  data: OpenAiConversationItem[];
+  first_id: string;
+  last_id: string;
+  has_more: boolean;
+}
+
+// List conversation items options
+export interface OpenAiConversationItemListOptions {
+  after?: string;
+  limit?: number;
+  order?: "asc" | "desc";
+  include?: string[];
+}
+
+// Retrieve conversation item options
+export interface OpenAiConversationItemRetrieveOptions {
+  include?: string[];
+}
+
+// --- Realtime REST API types ---
+
+// Realtime session create request
+export interface OpenAiRealtimeSessionCreateRequest {
+  model?: string;
+  modalities?: string[];
+  instructions?: string;
+  voice?: string;
+  input_audio_format?: string;
+  output_audio_format?: string;
+  input_audio_transcription?: Record<string, unknown> | null;
+  turn_detection?: Record<string, unknown> | null;
+  tools?: Record<string, unknown>[];
+  tool_choice?: string;
+  temperature?: number;
+  max_response_output_tokens?: number | "inf";
+}
+
+// Realtime session create response
+export interface OpenAiRealtimeSessionCreateResponse {
+  id: string;
+  object: "realtime.session";
+  model: string;
+  modalities: string[];
+  instructions: string;
+  voice: string;
+  input_audio_format: string;
+  output_audio_format: string;
+  input_audio_transcription: Record<string, unknown> | null;
+  turn_detection: Record<string, unknown> | null;
+  tools: Record<string, unknown>[];
+  tool_choice: string;
+  temperature: number;
+  max_response_output_tokens: number | "inf";
+  client_secret: {
+    value: string;
+    expires_at: number;
+  };
+}
+
+// Realtime transcription session create request
+export interface OpenAiRealtimeTranscriptionSessionCreateRequest {
+  input_audio_format?: string;
+  input_audio_transcription?: Record<string, unknown> | null;
+  turn_detection?: Record<string, unknown> | null;
+  include?: string[];
+}
+
+// Realtime transcription session create response
+export interface OpenAiRealtimeTranscriptionSessionCreateResponse {
+  id: string;
+  object: "realtime.transcription_session";
+  modalities: string[];
+  turn_detection: Record<string, unknown> | null;
+  input_audio_format: string;
+  input_audio_transcription: Record<string, unknown> | null;
+  client_secret: {
+    value: string;
+    expires_at: number;
+  } | null;
+}
+
+// Realtime client secret create request
+export interface OpenAiRealtimeClientSecretCreateRequest {
+  expires_after?: {
+    anchor?: "created_at";
+    seconds?: number;
+  };
+  session?:
+    | OpenAiRealtimeSessionCreateRequest
+    | OpenAiRealtimeTranscriptionSessionCreateRequest;
+}
+
+// Realtime client secret create response
+export interface OpenAiRealtimeClientSecretCreateResponse {
+  value: string;
+  expires_at: number;
+  session: Record<string, unknown>;
+}
+
+// Realtime call accept request
+export interface OpenAiRealtimeCallAcceptRequest {
+  type: "realtime";
+  model?: string;
+  instructions?: string;
+  modalities?: string[];
+  voice?: string;
+  max_output_tokens?: number | "inf";
+  tools?: Record<string, unknown>[];
+  tool_choice?: string;
+  audio?: Record<string, unknown>;
+  include?: string[];
+  tracing?: Record<string, unknown> | "auto" | null;
+  truncation?: Record<string, unknown>;
+  prompt?: Record<string, unknown> | null;
+}
+
+// Realtime call refer request
+export interface OpenAiRealtimeCallReferRequest {
+  target_uri: string;
+}
+
+// Realtime call reject request
+export interface OpenAiRealtimeCallRejectRequest {
+  status_code?: number;
+}
+
+// --- Evals API types ---
+
+// Eval object (response shape for create/retrieve/update/list)
+export interface OpenAiEval {
+  id: string;
+  object: "eval";
+  created_at: number;
+  name: string;
+  data_source_config: Record<string, unknown>;
+  testing_criteria: Record<string, unknown>[];
+  metadata: Record<string, string> | null;
+}
+
+// Eval delete response
+export interface OpenAiEvalDeleteResponse {
+  object: string;
+  eval_id: string;
+  deleted: boolean;
+}
+
+// Eval create request
+export interface OpenAiEvalCreateRequest {
+  data_source_config: Record<string, unknown>;
+  testing_criteria: Record<string, unknown>[];
+  metadata?: Record<string, string> | null;
+  name?: string;
+}
+
+// Eval update request
+export interface OpenAiEvalUpdateRequest {
+  metadata?: Record<string, string> | null;
+  name?: string;
+}
+
+// Eval list options
+export interface OpenAiEvalListOptions {
+  after?: string;
+  limit?: number;
+  order?: "asc" | "desc";
+  order_by?: "created_at" | "updated_at";
+}
+
+// Eval list response
+export interface OpenAiEvalListResponse {
+  object: "list";
+  data: OpenAiEval[];
+  has_more: boolean;
+  first_id: string;
+  last_id: string;
+}
+
+// Eval run object
+export interface OpenAiEvalRun {
+  id: string;
+  object: "eval.run";
+  eval_id: string;
+  created_at: number;
+  status: string;
+  model: string;
+  name: string;
+  data_source: Record<string, unknown>;
+  error: Record<string, unknown> | null;
+  metadata: Record<string, string> | null;
+  per_model_usage: Record<string, unknown>[];
+  per_testing_criteria_results: Record<string, unknown>[];
+  report_url: string;
+  result_counts: Record<string, unknown>;
+}
+
+// Eval run create request
+export interface OpenAiEvalRunCreateRequest {
+  data_source: Record<string, unknown>;
+  metadata?: Record<string, string> | null;
+  name?: string;
+}
+
+// Eval run delete response
+export interface OpenAiEvalRunDeleteResponse {
+  object: string;
+  run_id: string;
+  deleted: boolean;
+}
+
+// Eval run list options
+export interface OpenAiEvalRunListOptions {
+  after?: string;
+  limit?: number;
+  order?: "asc" | "desc";
+  status?: string;
+}
+
+// Eval run list response
+export interface OpenAiEvalRunListResponse {
+  object: "list";
+  data: OpenAiEvalRun[];
+  has_more: boolean;
+  first_id: string;
+  last_id: string;
+}
+
+// Eval run output item
+export interface OpenAiEvalRunOutputItem {
+  id: string;
+  object: "eval.run.output_item";
+  run_id: string;
+  eval_id: string;
+  created_at: number;
+  status: string;
+  datasource_item: Record<string, unknown>;
+  datasource_item_id: number;
+  results: Record<string, unknown>[];
+  sample: Record<string, unknown>;
+}
+
+// Eval run output item list options
+export interface OpenAiEvalRunOutputItemListOptions {
+  after?: string;
+  limit?: number;
+  order?: "asc" | "desc";
+  status?: string;
+}
+
+// Eval run output item list response
+export interface OpenAiEvalRunOutputItemListResponse {
+  object: "list";
+  data: OpenAiEvalRunOutputItem[];
+  has_more: boolean;
+  first_id: string;
+  last_id: string;
+}
+
 // --- Fine-Tuning API types ---
 
 // Fine-tuning job error
@@ -1495,6 +1796,259 @@ interface OpenAiFineTuningNamespace {
   checkpoints: OpenAiFineTuningCheckpointsNamespace;
 }
 
+// Conversations namespace types
+interface OpenAiConversationsCreateMethod {
+  (
+    req?: OpenAiConversationCreateRequest | null,
+    signal?: AbortSignal
+  ): Promise<OpenAiConversation>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  retrieve: OpenAiConversationsRetrieveMethod;
+  update: OpenAiConversationsUpdateMethod;
+  del: OpenAiConversationsDeleteMethod;
+  items: OpenAiConversationItemsNamespace;
+}
+
+interface OpenAiConversationsRetrieveMethod {
+  (id: string, signal?: AbortSignal): Promise<OpenAiConversation>;
+}
+
+interface OpenAiConversationsUpdateMethod {
+  (
+    id: string,
+    req: OpenAiConversationUpdateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiConversation>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiConversationsDeleteMethod {
+  (id: string, signal?: AbortSignal): Promise<OpenAiConversationDeleteResponse>;
+}
+
+interface OpenAiConversationItemsCreateMethod {
+  (
+    conversationId: string,
+    req: OpenAiConversationItemsCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiConversationItemListResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiConversationItemsRetrieveMethod {
+  (
+    conversationId: string,
+    itemId: string,
+    opts?: OpenAiConversationItemRetrieveOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiConversationItem>;
+}
+
+interface OpenAiConversationItemsListMethod {
+  (
+    conversationId: string,
+    opts?: OpenAiConversationItemListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiConversationItemListResponse>;
+}
+
+interface OpenAiConversationItemsDeleteMethod {
+  (
+    conversationId: string,
+    itemId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiConversation>;
+}
+
+interface OpenAiConversationItemsNamespace {
+  create: OpenAiConversationItemsCreateMethod;
+  retrieve: OpenAiConversationItemsRetrieveMethod;
+  list: OpenAiConversationItemsListMethod;
+  del: OpenAiConversationItemsDeleteMethod;
+}
+
+// Realtime namespace types
+interface OpenAiRealtimeSessionsCreateMethod {
+  (
+    req: OpenAiRealtimeSessionCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiRealtimeSessionCreateResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiRealtimeTranscriptionSessionsCreateMethod {
+  (
+    req?: OpenAiRealtimeTranscriptionSessionCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiRealtimeTranscriptionSessionCreateResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiRealtimeClientSecretsCreateMethod {
+  (
+    req?: OpenAiRealtimeClientSecretCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiRealtimeClientSecretCreateResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiRealtimeCallsAcceptMethod {
+  (
+    callId: string,
+    req: OpenAiRealtimeCallAcceptRequest,
+    signal?: AbortSignal
+  ): Promise<void>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiRealtimeCallsHangupMethod {
+  (callId: string, signal?: AbortSignal): Promise<void>;
+}
+
+interface OpenAiRealtimeCallsReferMethod {
+  (
+    callId: string,
+    req: OpenAiRealtimeCallReferRequest,
+    signal?: AbortSignal
+  ): Promise<void>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiRealtimeCallsRejectMethod {
+  (
+    callId: string,
+    req?: OpenAiRealtimeCallRejectRequest | null,
+    signal?: AbortSignal
+  ): Promise<void>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiRealtimeCallsNamespace {
+  accept: OpenAiRealtimeCallsAcceptMethod;
+  hangup: OpenAiRealtimeCallsHangupMethod;
+  refer: OpenAiRealtimeCallsReferMethod;
+  reject: OpenAiRealtimeCallsRejectMethod;
+}
+
+interface OpenAiRealtimeNamespace {
+  sessions: OpenAiRealtimeSessionsCreateMethod;
+  transcription_sessions: OpenAiRealtimeTranscriptionSessionsCreateMethod;
+  client_secrets: OpenAiRealtimeClientSecretsCreateMethod;
+  calls: OpenAiRealtimeCallsNamespace;
+}
+
+// Evals namespace types
+interface OpenAiEvalsCreateMethod {
+  (req: OpenAiEvalCreateRequest, signal?: AbortSignal): Promise<OpenAiEval>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  retrieve: OpenAiEvalsRetrieveMethod;
+  update: OpenAiEvalsUpdateMethod;
+  list: OpenAiEvalsListMethod;
+  del: OpenAiEvalsDeleteMethod;
+  runs: OpenAiEvalRunsNamespace;
+}
+
+interface OpenAiEvalsRetrieveMethod {
+  (evalId: string, signal?: AbortSignal): Promise<OpenAiEval>;
+}
+
+interface OpenAiEvalsUpdateMethod {
+  (
+    evalId: string,
+    req: OpenAiEvalUpdateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiEval>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiEvalsListMethod {
+  (
+    opts?: OpenAiEvalListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiEvalListResponse>;
+}
+
+interface OpenAiEvalsDeleteMethod {
+  (evalId: string, signal?: AbortSignal): Promise<OpenAiEvalDeleteResponse>;
+}
+
+interface OpenAiEvalRunsCreateMethod {
+  (
+    evalId: string,
+    req: OpenAiEvalRunCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiEvalRun>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiEvalRunsRetrieveMethod {
+  (evalId: string, runId: string, signal?: AbortSignal): Promise<OpenAiEvalRun>;
+}
+
+interface OpenAiEvalRunsListMethod {
+  (
+    evalId: string,
+    opts?: OpenAiEvalRunListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiEvalRunListResponse>;
+}
+
+interface OpenAiEvalRunsDeleteMethod {
+  (
+    evalId: string,
+    runId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiEvalRunDeleteResponse>;
+}
+
+interface OpenAiEvalRunsCancelMethod {
+  (evalId: string, runId: string, signal?: AbortSignal): Promise<OpenAiEvalRun>;
+}
+
+interface OpenAiEvalRunOutputItemsRetrieveMethod {
+  (
+    evalId: string,
+    runId: string,
+    outputItemId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiEvalRunOutputItem>;
+}
+
+interface OpenAiEvalRunOutputItemsListMethod {
+  (
+    evalId: string,
+    runId: string,
+    opts?: OpenAiEvalRunOutputItemListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiEvalRunOutputItemListResponse>;
+}
+
+interface OpenAiEvalRunOutputItemsNamespace {
+  retrieve: OpenAiEvalRunOutputItemsRetrieveMethod;
+  list: OpenAiEvalRunOutputItemsListMethod;
+}
+
+interface OpenAiEvalRunsNamespace {
+  create: OpenAiEvalRunsCreateMethod;
+  retrieve: OpenAiEvalRunsRetrieveMethod;
+  list: OpenAiEvalRunsListMethod;
+  del: OpenAiEvalRunsDeleteMethod;
+  cancel: OpenAiEvalRunsCancelMethod;
+  output_items: OpenAiEvalRunOutputItemsNamespace;
+}
+
 interface OpenAiV1Namespace {
   chat: OpenAiChatNamespace;
   audio: OpenAiAudioNamespace;
@@ -1506,6 +2060,9 @@ interface OpenAiV1Namespace {
   responses: OpenAiResponsesMethod;
   fine_tuning: OpenAiFineTuningNamespace;
   batches: OpenAiBatchesCreateMethod;
+  conversations: OpenAiConversationsCreateMethod;
+  realtime: OpenAiRealtimeNamespace;
+  evals: OpenAiEvalsCreateMethod;
 }
 
 // Provider interface

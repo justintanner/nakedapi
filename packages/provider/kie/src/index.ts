@@ -13,6 +13,7 @@ export { createVeoProvider } from "./veo";
 export { createSunoProvider } from "./suno";
 export { createChatProvider } from "./chat";
 export { createClaudeProvider } from "./claude";
+export { createGeminiProvider } from "./gemini";
 
 // Export SSE utility
 export { sseToIterable } from "./sse";
@@ -80,6 +81,38 @@ export type {
   PayloadSchema,
   ValidationResult,
   ModelInputSchema,
+  CodexModel,
+  CodexInputText,
+  CodexInputImage,
+  CodexInputFile,
+  CodexInputPart,
+  CodexInputMessage,
+  CodexWebSearchTool,
+  CodexFunctionTool,
+  CodexTool,
+  CodexResponsesRequest,
+  CodexReasoningOutput,
+  CodexOutputText,
+  CodexMessageOutput,
+  CodexOutputBlock,
+  CodexUsage,
+  CodexResponsesResponse,
+  GeminiModel,
+  GeminiChatContentPart,
+  GeminiChatMessage,
+  GeminiFunctionTool,
+  GeminiTool,
+  GeminiChatRequest,
+  GeminiChatChoice,
+  GeminiChatUsage,
+  GeminiChatResponse,
+  StyleGenerateRequest,
+  StyleGenerateData,
+  StyleGenerateResponse,
+  Mp4GenerateRequest,
+  Mp4GenerateResponse,
+  Mp4RecordInfoData,
+  Mp4RecordInfoResponse,
 } from "./types";
 
 // Export sub-provider types
@@ -116,3 +149,5 @@ export type {
   KieClaudeResponse,
   KieClaudeProvider,
 } from "./claude";
+
+export type { KieGeminiProvider } from "./gemini";

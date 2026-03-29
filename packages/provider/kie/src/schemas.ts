@@ -357,6 +357,163 @@ export const wavGenerateSchema: PayloadSchema = {
   },
 };
 
+export const codexResponsesSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/responses",
+  contentType: "application/json",
+  fields: {
+    model: {
+      type: "string",
+      required: true,
+      description: "Codex model name",
+      enum: [
+        "gpt-5-codex",
+        "gpt-5.1-codex",
+        "gpt-5.2-codex",
+        "gpt-5.3-codex",
+        "gpt-5.4-codex",
+      ],
+    },
+    input: {
+      type: "string",
+      required: true,
+      description: "Plain text or array of input messages",
+    },
+    stream: { type: "boolean", description: "Enable SSE streaming" },
+    reasoning: {
+      type: "object",
+      description: "Reasoning configuration",
+      properties: {
+        effort: {
+          type: "string",
+          required: true,
+          enum: ["minimal", "low", "medium", "high", "xhigh"],
+        },
+      },
+    },
+    tools: {
+      type: "array",
+      description: "Web search or function tools",
+      items: {
+        type: "object",
+        properties: {
+          type: {
+            type: "string",
+            required: true,
+            enum: ["web_search", "function"],
+          },
+        },
+      },
+    },
+    tool_choice: { type: "string", description: "Tool selection mode" },
+  },
+};
+
+export const geminiChatCompletionsSchema: PayloadSchema = {
+  method: "POST",
+  path: "/<model>/v1/chat/completions",
+  contentType: "application/json",
+  fields: {
+    messages: {
+      type: "array",
+      required: true,
+      description: "Array of chat messages",
+      items: {
+        type: "object",
+        properties: {
+          role: {
+            type: "string",
+            required: true,
+            enum: ["user", "assistant", "system", "developer", "tool"],
+          },
+          content: { type: "string", required: true },
+        },
+      },
+    },
+    stream: { type: "boolean", description: "Enable streaming" },
+    tools: {
+      type: "array",
+      description: "Function calling tools",
+      items: {
+        type: "object",
+        properties: {
+          type: { type: "string", required: true, enum: ["function"] },
+          function: {
+            type: "object",
+            required: true,
+            properties: {
+              name: { type: "string", required: true },
+              description: { type: "string" },
+              parameters: { type: "object" },
+            },
+          },
+        },
+      },
+    },
+    include_thoughts: {
+      type: "boolean",
+      description: "Include reasoning thoughts",
+    },
+    reasoning_effort: {
+      type: "string",
+      enum: ["low", "high"],
+      description: "Reasoning effort level",
+    },
+    response_format: {
+      type: "object",
+      description: "Structured output format",
+      properties: {
+        type: { type: "string", required: true, enum: ["json_schema"] },
+        json_schema: { type: "object", required: true },
+      },
+    },
+  },
+};
+
+export const styleGenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/style/generate",
+  contentType: "application/json",
+  fields: {
+    content: {
+      type: "string",
+      required: true,
+      description: "Style description to enhance",
+    },
+  },
+};
+
+export const mp4GenerateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/api/v1/mp4/generate",
+  contentType: "application/json",
+  fields: {
+    taskId: {
+      type: "string",
+      required: true,
+      description: "Task ID from music generation",
+    },
+    audioId: {
+      type: "string",
+      required: true,
+      description: "Audio track ID from music generation",
+    },
+    callBackUrl: {
+      type: "string",
+      required: true,
+      description: "Webhook URL for completion notification",
+    },
+    author: {
+      type: "string",
+      description: "Artist name (max 50 chars)",
+    },
+    domainName: {
+      type: "string",
+      description: "Brand watermark (max 50 chars)",
+    },
+  },
+};
+
 export const modelInputSchemas: Record<KieMediaModel, ModelInputSchema> = {
   "kling-3.0/video": {
     type: "video",

@@ -582,13 +582,11 @@ export const responsesCompactSchema: PayloadSchema = {
     },
     input: {
       type: "string",
-      description:
-        "Text string or array of input items to compact",
+      description: "Text string or array of input items to compact",
     },
     instructions: {
       type: "string",
-      description:
-        "System/developer instructions for compaction context",
+      description: "System/developer instructions for compaction context",
     },
     previous_response_id: {
       type: "string",
@@ -628,8 +626,7 @@ export const responsesInputTokensSchema: PayloadSchema = {
     },
     tools: {
       type: "array",
-      description:
-        "Tools available to the model (affects token count)",
+      description: "Tools available to the model (affects token count)",
       items: {
         type: "object",
         properties: {
@@ -649,7 +646,8 @@ export const responsesInputTokensSchema: PayloadSchema = {
     },
     tool_choice: {
       type: "string",
-      description: "Tool choice strategy: auto, none, required, or specific tool",
+      description:
+        "Tool choice strategy: auto, none, required, or specific tool",
     },
     parallel_tool_calls: {
       type: "boolean",

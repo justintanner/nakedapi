@@ -61,6 +61,8 @@ import {
   XaiTeamModelsResponse,
   XaiTeamEndpointsResponse,
   XaiManagementKeyValidationResponse,
+  XaiAuditEventsParams,
+  XaiAuditEventsResponse,
   XaiProvider,
   XaiError,
 } from "./types";
@@ -992,6 +994,22 @@ export function xai(opts: XaiOptions): XaiProvider {
     },
   };
 
+  const auditTeams = {
+    async events(
+      teamId: string,
+      params?: XaiAuditEventsParams,
+      signal?: AbortSignal
+    ): Promise<XaiAuditEventsResponse> {
+      const query = buildManagementQuery(params ?? {});
+      return await makeManagementRequest(
+        "GET",
+        `/audit/teams/${encodeURIComponent(teamId)}/events${query}`,
+        undefined,
+        signal
+      );
+    },
+  };
+
   return {
     v1: {
       chat: {
@@ -1201,6 +1219,9 @@ export function xai(opts: XaiOptions): XaiProvider {
         apiKeys: authApiKeys as XaiProvider["v1"]["auth"]["apiKeys"],
         teams: authTeams,
         managementKeys: authManagementKeys,
+      },
+      audit: {
+        teams: auditTeams,
       },
     },
   };

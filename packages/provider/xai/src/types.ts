@@ -1335,6 +1335,39 @@ export interface XaiManagementKeyValidationResponse {
   } | null;
 }
 
+// GET /audit/teams/{teamId}/events types
+export interface XaiAuditEventUser {
+  userId?: string;
+  email?: string;
+  profileImage?: string;
+  givenName?: string;
+  familyName?: string;
+  profileImageUrl?: string;
+}
+
+export interface XaiAuditEvent {
+  eventTime: string;
+  eventId: string;
+  description: string;
+  user?: XaiAuditEventUser;
+}
+
+export interface XaiAuditEventsParams {
+  pageSize?: number;
+  pageToken?: string;
+  "eventFilter.userId"?: string;
+  "eventFilter.query"?: string;
+  "eventFilter.eventId"?: string;
+  eventTimeFrom?: string;
+  eventTimeTo?: string;
+  orderBy?: string;
+}
+
+export interface XaiAuditEventsResponse {
+  events: XaiAuditEvent[];
+  nextPageToken?: string;
+}
+
 // Payload schema types
 export interface PayloadFieldSchema {
   type: "string" | "number" | "boolean" | "array" | "object";
@@ -1676,6 +1709,18 @@ interface XaiAuthNamespace {
   managementKeys: XaiAuthManagementKeysNamespace;
 }
 
+interface XaiAuditTeamsNamespace {
+  events(
+    teamId: string,
+    params?: XaiAuditEventsParams,
+    signal?: AbortSignal
+  ): Promise<XaiAuditEventsResponse>;
+}
+
+interface XaiAuditNamespace {
+  teams: XaiAuditTeamsNamespace;
+}
+
 interface XaiV1Namespace {
   chat: XaiChatNamespace;
   images: XaiImagesNamespace;
@@ -1692,6 +1737,7 @@ interface XaiV1Namespace {
   "tokenize-text": XaiTokenizeTextMethod;
   realtime: XaiRealtimeNamespace;
   auth: XaiAuthNamespace;
+  audit: XaiAuditNamespace;
 }
 
 // Provider interface

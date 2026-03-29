@@ -649,6 +649,154 @@ export const apiKeyUpdateSchema: PayloadSchema = {
   },
 };
 
+export const billingInfoUpdateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/billing/teams/{teamId}/billing-info",
+  contentType: "application/json",
+  fields: {
+    billingInfo: {
+      type: "object",
+      required: true,
+      description: "Billing information to update",
+      properties: {
+        customerName: { type: "string", description: "Customer name" },
+        customerEmail: { type: "string", description: "Customer email" },
+        address: {
+          type: "object",
+          description: "Billing address",
+          properties: {
+            line1: { type: "string" },
+            line2: { type: "string" },
+            city: { type: "string" },
+            country: {
+              type: "string",
+              description: "ISO 3166-1 alpha-2 country code",
+            },
+            postalCode: { type: "string" },
+            state: { type: "string" },
+          },
+        },
+        taxId: { type: "string", description: "Tax ID" },
+      },
+    },
+  },
+};
+
+export const paymentMethodSetDefaultSchema: PayloadSchema = {
+  method: "POST",
+  path: "/billing/teams/{teamId}/payment-method/default",
+  contentType: "application/json",
+  fields: {
+    paymentMethodId: {
+      type: "string",
+      required: true,
+      description: "ID of the payment method to set as default",
+    },
+  },
+};
+
+export const spendingLimitsUpdateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/billing/teams/{teamId}/postpaid/spending-limits",
+  contentType: "application/json",
+  fields: {
+    desiredSoftSpendingLimit: {
+      type: "object",
+      required: true,
+      description: "Desired soft spending limit in USD cents",
+      properties: {
+        val: {
+          type: "string",
+          required: true,
+          description: "Amount in USD cents",
+        },
+      },
+    },
+  },
+};
+
+export const prepaidTopUpSchema: PayloadSchema = {
+  method: "POST",
+  path: "/billing/teams/{teamId}/prepaid/top-up",
+  contentType: "application/json",
+  fields: {
+    amount: {
+      type: "object",
+      required: true,
+      description: "Amount to top up in USD cents",
+      properties: {
+        val: {
+          type: "string",
+          required: true,
+          description: "Amount in USD cents",
+        },
+      },
+    },
+  },
+};
+
+export const usageSchema: PayloadSchema = {
+  method: "POST",
+  path: "/billing/teams/{teamId}/usage",
+  contentType: "application/json",
+  fields: {
+    timeRange: {
+      type: "object",
+      required: true,
+      description: "Time range for usage query",
+      properties: {
+        startTime: {
+          type: "string",
+          required: true,
+          description: "Start time (YYYY-MM-DD HH:MM:SS)",
+        },
+        endTime: {
+          type: "string",
+          required: true,
+          description: "End time (YYYY-MM-DD HH:MM:SS)",
+        },
+        timezone: {
+          type: "string",
+          description: "IANA timezone identifier",
+        },
+      },
+    },
+    timeUnit: {
+      type: "string",
+      enum: ["MONTH", "WEEK", "DAY", "HOUR", "MINUTE", "SECOND", "NONE"],
+      description: "Aggregation interval",
+    },
+    values: {
+      type: "array",
+      description: "Fields to measure with aggregation methods",
+      items: {
+        type: "object",
+        properties: {
+          field: { type: "string", required: true },
+          aggregation: { type: "string", required: true },
+        },
+      },
+    },
+    groupBy: {
+      type: "array",
+      description: "Dimensions to segment data",
+      items: { type: "string" },
+    },
+    filters: {
+      type: "array",
+      description: "Filter conditions",
+      items: {
+        type: "object",
+        properties: {
+          field: { type: "string", required: true },
+          operator: { type: "string", required: true },
+          value: { type: "string", required: true },
+        },
+      },
+    },
+  },
+};
+
 export const videoExtensionsSchema: PayloadSchema = {
   method: "POST",
   path: "/videos/extensions",

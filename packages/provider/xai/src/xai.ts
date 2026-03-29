@@ -61,6 +61,22 @@ import {
   XaiTeamModelsResponse,
   XaiTeamEndpointsResponse,
   XaiManagementKeyValidationResponse,
+  XaiBillingInfoUpdateRequest,
+  XaiBillingInfoResponse,
+  XaiInvoiceListParams,
+  XaiInvoiceListResponse,
+  XaiPaymentMethodListResponse,
+  XaiPaymentMethodSetDefaultRequest,
+  XaiPaymentMethodSetDefaultResponse,
+  XaiSpendingLimitsResponse,
+  XaiSpendingLimitsUpdateRequest,
+  XaiSpendingLimitsUpdateResponse,
+  XaiInvoicePreviewResponse,
+  XaiPrepaidBalanceResponse,
+  XaiPrepaidTopUpRequest,
+  XaiPrepaidTopUpResponse,
+  XaiUsageRequest,
+  XaiUsageResponse,
   XaiProvider,
   XaiError,
 } from "./types";
@@ -84,6 +100,11 @@ import {
   realtimeClientSecretsSchema,
   apiKeyCreateSchema,
   apiKeyUpdateSchema,
+  billingInfoUpdateSchema,
+  paymentMethodSetDefaultSchema,
+  spendingLimitsUpdateSchema,
+  prepaidTopUpSchema,
+  usageSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
 
@@ -992,6 +1013,156 @@ export function xai(opts: XaiOptions): XaiProvider {
     },
   };
 
+  const billingInfo = Object.assign(
+    async function getBillingInfo(
+      teamId: string,
+      signal?: AbortSignal
+    ): Promise<XaiBillingInfoResponse> {
+      return await makeManagementRequest(
+        "GET",
+        `/billing/teams/${encodeURIComponent(teamId)}/billing-info`,
+        undefined,
+        signal
+      );
+    },
+    {
+      update: Object.assign(
+        async function updateBillingInfo(
+          teamId: string,
+          req: XaiBillingInfoUpdateRequest,
+          signal?: AbortSignal
+        ): Promise<XaiBillingInfoResponse> {
+          return await makeManagementRequest(
+            "POST",
+            `/billing/teams/${encodeURIComponent(teamId)}/billing-info`,
+            req,
+            signal
+          );
+        },
+        {
+          payloadSchema: billingInfoUpdateSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, billingInfoUpdateSchema);
+          },
+        }
+      ),
+    }
+  );
+
+  const billingPaymentMethod = Object.assign(
+    async function getPaymentMethods(
+      teamId: string,
+      signal?: AbortSignal
+    ): Promise<XaiPaymentMethodListResponse> {
+      return await makeManagementRequest(
+        "GET",
+        `/billing/teams/${encodeURIComponent(teamId)}/payment-method`,
+        undefined,
+        signal
+      );
+    },
+    {
+      setDefault: Object.assign(
+        async function setDefaultPaymentMethod(
+          teamId: string,
+          req: XaiPaymentMethodSetDefaultRequest,
+          signal?: AbortSignal
+        ): Promise<XaiPaymentMethodSetDefaultResponse> {
+          return await makeManagementRequest(
+            "POST",
+            `/billing/teams/${encodeURIComponent(teamId)}/payment-method/default`,
+            req,
+            signal
+          );
+        },
+        {
+          payloadSchema: paymentMethodSetDefaultSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, paymentMethodSetDefaultSchema);
+          },
+        }
+      ),
+    }
+  );
+
+  const billingSpendingLimits = Object.assign(
+    async function getSpendingLimits(
+      teamId: string,
+      signal?: AbortSignal
+    ): Promise<XaiSpendingLimitsResponse> {
+      return await makeManagementRequest(
+        "GET",
+        `/billing/teams/${encodeURIComponent(teamId)}/postpaid/spending-limits`,
+        undefined,
+        signal
+      );
+    },
+    {
+      update: Object.assign(
+        async function updateSpendingLimits(
+          teamId: string,
+          req: XaiSpendingLimitsUpdateRequest,
+          signal?: AbortSignal
+        ): Promise<XaiSpendingLimitsUpdateResponse> {
+          return await makeManagementRequest(
+            "POST",
+            `/billing/teams/${encodeURIComponent(teamId)}/postpaid/spending-limits`,
+            req,
+            signal
+          );
+        },
+        {
+          payloadSchema: spendingLimitsUpdateSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, spendingLimitsUpdateSchema);
+          },
+        }
+      ),
+    }
+  );
+
+  const billingPrepaidTopUp = Object.assign(
+    async function topUp(
+      teamId: string,
+      req: XaiPrepaidTopUpRequest,
+      signal?: AbortSignal
+    ): Promise<XaiPrepaidTopUpResponse> {
+      return await makeManagementRequest(
+        "POST",
+        `/billing/teams/${encodeURIComponent(teamId)}/prepaid/top-up`,
+        req,
+        signal
+      );
+    },
+    {
+      payloadSchema: prepaidTopUpSchema,
+      validatePayload(data: unknown): ValidationResult {
+        return validatePayload(data, prepaidTopUpSchema);
+      },
+    }
+  );
+
+  const billingUsage = Object.assign(
+    async function getUsage(
+      teamId: string,
+      req: XaiUsageRequest,
+      signal?: AbortSignal
+    ): Promise<XaiUsageResponse> {
+      return await makeManagementRequest(
+        "POST",
+        `/billing/teams/${encodeURIComponent(teamId)}/usage`,
+        req,
+        signal
+      );
+    },
+    {
+      payloadSchema: usageSchema,
+      validatePayload(data: unknown): ValidationResult {
+        return validatePayload(data, usageSchema);
+      },
+    }
+  );
+
   return {
     v1: {
       chat: {
@@ -1201,6 +1372,54 @@ export function xai(opts: XaiOptions): XaiProvider {
         apiKeys: authApiKeys as XaiProvider["v1"]["auth"]["apiKeys"],
         teams: authTeams,
         managementKeys: authManagementKeys,
+      },
+      billing: {
+        info: billingInfo as XaiProvider["v1"]["billing"]["info"],
+        async invoices(
+          teamId: string,
+          params?: XaiInvoiceListParams,
+          signal?: AbortSignal
+        ): Promise<XaiInvoiceListResponse> {
+          const query = buildManagementQuery(params ?? {});
+          return await makeManagementRequest(
+            "GET",
+            `/billing/teams/${encodeURIComponent(teamId)}/invoices${query}`,
+            undefined,
+            signal
+          );
+        },
+        paymentMethod:
+          billingPaymentMethod as XaiProvider["v1"]["billing"]["paymentMethod"],
+        postpaid: {
+          spendingLimits:
+            billingSpendingLimits as XaiProvider["v1"]["billing"]["postpaid"]["spendingLimits"],
+          async invoicePreview(
+            teamId: string,
+            signal?: AbortSignal
+          ): Promise<XaiInvoicePreviewResponse> {
+            return await makeManagementRequest(
+              "GET",
+              `/billing/teams/${encodeURIComponent(teamId)}/postpaid/invoice/preview`,
+              undefined,
+              signal
+            );
+          },
+        },
+        prepaid: {
+          async balance(
+            teamId: string,
+            signal?: AbortSignal
+          ): Promise<XaiPrepaidBalanceResponse> {
+            return await makeManagementRequest(
+              "GET",
+              `/billing/teams/${encodeURIComponent(teamId)}/prepaid/balance`,
+              undefined,
+              signal
+            );
+          },
+          topUp: billingPrepaidTopUp as XaiProvider["v1"]["billing"]["prepaid"]["topUp"],
+        },
+        usage: billingUsage as XaiProvider["v1"]["billing"]["usage"],
       },
     },
   };

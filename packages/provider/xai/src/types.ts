@@ -1335,6 +1335,233 @@ export interface XaiManagementKeyValidationResponse {
   } | null;
 }
 
+// Billing API types
+
+// Shared USD cents representation
+export interface XaiUsdCents {
+  val: string;
+}
+
+// Billing address
+export interface XaiBillingAddress {
+  line1?: string;
+  line2?: string;
+  city?: string;
+  country?: string;
+  postalCode?: string;
+  state?: string;
+}
+
+// Billing info object
+export interface XaiBillingInfo {
+  customerName?: string;
+  customerEmail?: string;
+  address?: XaiBillingAddress;
+  taxId?: string;
+}
+
+// GET /v1/billing/teams/{teamId}/billing-info response
+export interface XaiBillingInfoResponse {
+  billingInfo: XaiBillingInfo;
+}
+
+// POST /v1/billing/teams/{teamId}/billing-info request
+export interface XaiBillingInfoUpdateRequest {
+  billingInfo: XaiBillingInfo;
+}
+
+// Billing cycle
+export interface XaiBillingCycle {
+  year: number;
+  month: number;
+}
+
+// Invoice line item
+export interface XaiInvoiceLineItem {
+  description?: string;
+  amount?: XaiUsdCents;
+  quantity?: string;
+  unitPrice?: XaiUsdCents;
+}
+
+// Invoice object
+export interface XaiInvoice {
+  invoiceId: string;
+  teamId: string;
+  status:
+    | "INVALID"
+    | "PENDING"
+    | "PAID"
+    | "WILL_NEVER_BE_CHARGED"
+    | "FAILED";
+  billingCycle?: XaiBillingCycle;
+  lineItems?: XaiInvoiceLineItem[];
+  subtotal?: XaiUsdCents;
+  tax?: XaiUsdCents;
+  total?: XaiUsdCents;
+  amountDue?: XaiUsdCents;
+  amountPaid?: XaiUsdCents;
+  createTime?: string;
+  payTime?: string;
+  assetSuffix?: string;
+}
+
+// GET /v1/billing/teams/{teamId}/invoices query params
+export interface XaiInvoiceListParams {
+  "billingCycle.year"?: number;
+  "billingCycle.month"?: number;
+  "since.year"?: number;
+  "since.month"?: number;
+  "invoiceIds.invoiceIds"?: string[];
+}
+
+// GET /v1/billing/teams/{teamId}/invoices response
+export interface XaiInvoiceListResponse {
+  invoices: XaiInvoice[];
+}
+
+// Payment method card details
+export interface XaiPaymentMethodCard {
+  brand?: string;
+  last4?: string;
+  expMonth?: number;
+  expYear?: number;
+}
+
+// Payment method object
+export interface XaiPaymentMethod {
+  paymentMethodId: string;
+  type?: string;
+  card?: XaiPaymentMethodCard;
+  isDefault?: boolean;
+  processor?: string;
+}
+
+// GET /v1/billing/teams/{teamId}/payment-method response
+export interface XaiPaymentMethodListResponse {
+  paymentMethods: XaiPaymentMethod[];
+  pendingPaymentMethod?: XaiPaymentMethod;
+}
+
+// POST /v1/billing/teams/{teamId}/payment-method/default request
+export interface XaiPaymentMethodSetDefaultRequest {
+  paymentMethodId: string;
+}
+
+// POST /v1/billing/teams/{teamId}/payment-method/default response
+export interface XaiPaymentMethodSetDefaultResponse {
+  paymentMethodId: string;
+}
+
+// Spending limits object
+export interface XaiSpendingLimits {
+  hardSpendingLimit?: XaiUsdCents;
+  softSpendingLimit?: XaiUsdCents;
+  effectiveSpendingLimit?: XaiUsdCents;
+}
+
+// GET /v1/billing/teams/{teamId}/postpaid/spending-limits response
+export interface XaiSpendingLimitsResponse {
+  spendingLimits: XaiSpendingLimits;
+}
+
+// POST /v1/billing/teams/{teamId}/postpaid/spending-limits request
+export interface XaiSpendingLimitsUpdateRequest {
+  desiredSoftSpendingLimit: XaiUsdCents;
+}
+
+// POST /v1/billing/teams/{teamId}/postpaid/spending-limits response
+export interface XaiSpendingLimitsUpdateResponse {
+  softSpendingLimit: XaiUsdCents;
+}
+
+// GET /v1/billing/teams/{teamId}/postpaid/invoice/preview response
+export interface XaiInvoicePreviewResponse {
+  invoice: XaiInvoice;
+  effectiveSpendingLimit?: XaiUsdCents;
+  credits?: XaiUsdCents;
+}
+
+// Balance change record
+export interface XaiBalanceChange {
+  changeId: string;
+  origin:
+    | "PURCHASE"
+    | "SPEND"
+    | "REFUND"
+    | "MANUAL"
+    | "AUTO_PURCHASE";
+  amount?: XaiUsdCents;
+  balance?: XaiUsdCents;
+  createTime?: string;
+  description?: string;
+  status?: string;
+}
+
+// GET /v1/billing/teams/{teamId}/prepaid/balance response
+export interface XaiPrepaidBalanceResponse {
+  balance: XaiUsdCents;
+  changes?: XaiBalanceChange[];
+  topUpStatus?: string;
+}
+
+// POST /v1/billing/teams/{teamId}/prepaid/top-up request
+export interface XaiPrepaidTopUpRequest {
+  amount: XaiUsdCents;
+}
+
+// POST /v1/billing/teams/{teamId}/prepaid/top-up response
+export interface XaiPrepaidTopUpResponse {
+  change: XaiBalanceChange;
+}
+
+// Usage time range
+export interface XaiUsageTimeRange {
+  startTime: string;
+  endTime: string;
+  timezone?: string;
+}
+
+// Usage value specification
+export interface XaiUsageValueSpec {
+  field: string;
+  aggregation: string;
+}
+
+// Usage filter condition
+export interface XaiUsageFilter {
+  field: string;
+  operator: string;
+  value: string;
+}
+
+// POST /v1/billing/teams/{teamId}/usage request
+export interface XaiUsageRequest {
+  timeRange: XaiUsageTimeRange;
+  timeUnit?:
+    | "MONTH"
+    | "WEEK"
+    | "DAY"
+    | "HOUR"
+    | "MINUTE"
+    | "SECOND"
+    | "NONE";
+  values?: XaiUsageValueSpec[];
+  groupBy?: string[];
+  filters?: XaiUsageFilter[];
+}
+
+// Usage data point
+export interface XaiUsageDataPoint {
+  timestamp?: string;
+  values?: Record<string, string>;
+}
+
+// POST /v1/billing/teams/{teamId}/usage response
+export interface XaiUsageResponse {
+  timeSeries?: XaiUsageDataPoint[];
+}
+
 // Payload schema types
 export interface PayloadFieldSchema {
   type: "string" | "number" | "boolean" | "array" | "object";
@@ -1676,6 +1903,100 @@ interface XaiAuthNamespace {
   managementKeys: XaiAuthManagementKeysNamespace;
 }
 
+interface XaiBillingInfoUpdateMethod {
+  (
+    teamId: string,
+    req: XaiBillingInfoUpdateRequest,
+    signal?: AbortSignal
+  ): Promise<XaiBillingInfoResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface XaiBillingInfoNamespace {
+  (teamId: string, signal?: AbortSignal): Promise<XaiBillingInfoResponse>;
+  update: XaiBillingInfoUpdateMethod;
+}
+
+interface XaiBillingPaymentMethodSetDefaultMethod {
+  (
+    teamId: string,
+    req: XaiPaymentMethodSetDefaultRequest,
+    signal?: AbortSignal
+  ): Promise<XaiPaymentMethodSetDefaultResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface XaiBillingPaymentMethodNamespace {
+  (teamId: string, signal?: AbortSignal): Promise<XaiPaymentMethodListResponse>;
+  setDefault: XaiBillingPaymentMethodSetDefaultMethod;
+}
+
+interface XaiBillingSpendingLimitsUpdateMethod {
+  (
+    teamId: string,
+    req: XaiSpendingLimitsUpdateRequest,
+    signal?: AbortSignal
+  ): Promise<XaiSpendingLimitsUpdateResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface XaiBillingSpendingLimitsNamespace {
+  (teamId: string, signal?: AbortSignal): Promise<XaiSpendingLimitsResponse>;
+  update: XaiBillingSpendingLimitsUpdateMethod;
+}
+
+interface XaiBillingPostpaidNamespace {
+  spendingLimits: XaiBillingSpendingLimitsNamespace;
+  invoicePreview(
+    teamId: string,
+    signal?: AbortSignal
+  ): Promise<XaiInvoicePreviewResponse>;
+}
+
+interface XaiBillingPrepaidTopUpMethod {
+  (
+    teamId: string,
+    req: XaiPrepaidTopUpRequest,
+    signal?: AbortSignal
+  ): Promise<XaiPrepaidTopUpResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface XaiBillingPrepaidNamespace {
+  balance(
+    teamId: string,
+    signal?: AbortSignal
+  ): Promise<XaiPrepaidBalanceResponse>;
+  topUp: XaiBillingPrepaidTopUpMethod;
+}
+
+interface XaiBillingUsageMethod {
+  (
+    teamId: string,
+    req: XaiUsageRequest,
+    signal?: AbortSignal
+  ): Promise<XaiUsageResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface XaiBillingNamespace {
+  info: XaiBillingInfoNamespace;
+  invoices(
+    teamId: string,
+    params?: XaiInvoiceListParams,
+    signal?: AbortSignal
+  ): Promise<XaiInvoiceListResponse>;
+  paymentMethod: XaiBillingPaymentMethodNamespace;
+  postpaid: XaiBillingPostpaidNamespace;
+  prepaid: XaiBillingPrepaidNamespace;
+  usage: XaiBillingUsageMethod;
+}
+
 interface XaiV1Namespace {
   chat: XaiChatNamespace;
   images: XaiImagesNamespace;
@@ -1692,6 +2013,7 @@ interface XaiV1Namespace {
   "tokenize-text": XaiTokenizeTextMethod;
   realtime: XaiRealtimeNamespace;
   auth: XaiAuthNamespace;
+  billing: XaiBillingNamespace;
 }
 
 // Provider interface

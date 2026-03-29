@@ -104,6 +104,53 @@ export interface KimiCodingModelListResponse {
   has_more: boolean;
 }
 
+// File upload types
+export type FileUploadPurpose = "image" | "video" | "file-extract";
+
+export interface FileUploadRequest {
+  file: Blob;
+  purpose: FileUploadPurpose;
+}
+
+export interface FileObject {
+  id: string;
+  bytes: number;
+  created_at: number;
+  filename: string;
+  object: "file";
+  purpose: FileUploadPurpose;
+  status: "ok" | "error" | "created";
+  status_details: string;
+}
+
+// Search types
+export interface SearchRequest {
+  text_query: string;
+  limit?: number;
+  enable_page_crawling?: boolean;
+  timeout_seconds?: number;
+}
+
+export interface SearchResult {
+  site_name: string;
+  title: string;
+  url: string;
+  snippet: string;
+  content: string;
+  date: string;
+  icon: string;
+  mime: string;
+}
+
+export interface SearchResponse {
+  search_results: SearchResult[];
+}
+
+// Fetch types
+export interface FetchRequest {
+  url: string;
+}
+
 // Embeddings request (OpenAI-compatible)
 export interface EmbeddingRequest {
   input: string | string[] | number[] | number[][];
@@ -175,10 +222,35 @@ interface KimiCodingEmbeddingsMethod {
   validatePayload(data: unknown): ValidationResult;
 }
 
+interface KimiCodingFilesUploadMethod {
+  (req: FileUploadRequest, signal?: AbortSignal): Promise<FileObject>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface KimiCodingFilesNamespace {
+  upload: KimiCodingFilesUploadMethod;
+}
+
+interface KimiCodingSearchMethod {
+  (req: SearchRequest, signal?: AbortSignal): Promise<SearchResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface KimiCodingFetchMethod {
+  (req: FetchRequest, signal?: AbortSignal): Promise<string>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
 interface KimiCodingV1Namespace {
   messages: KimiCodingMessagesNamespace;
   models: KimiCodingModelsNamespace;
   embeddings: KimiCodingEmbeddingsMethod;
+  files: KimiCodingFilesNamespace;
+  search: KimiCodingSearchMethod;
+  fetch: KimiCodingFetchMethod;
 }
 
 interface KimiCodingCodingNamespace {

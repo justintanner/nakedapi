@@ -11,13 +11,7 @@ export interface AlephGenerateRequest {
   prompt: string;
   videoUrl: string;
   referenceImage?: string;
-  aspectRatio?:
-    | "16:9"
-    | "9:16"
-    | "4:3"
-    | "3:4"
-    | "1:1"
-    | "21:9";
+  aspectRatio?: "16:9" | "9:16" | "4:3" | "3:4" | "1:1" | "21:9";
   seed?: number;
   waterMark?: string;
   uploadCn?: boolean;
@@ -93,15 +87,14 @@ export function createAlephProvider(
   async function generate(
     req: AlephGenerateRequest
   ): Promise<AlephSubmitResponse> {
-    return kieRequest<AlephSubmitResponse>(
-      `${baseURL}/api/v1/aleph/generate`,
-      { method: "POST", body: req, ...requestOpts }
-    );
+    return kieRequest<AlephSubmitResponse>(`${baseURL}/api/v1/aleph/generate`, {
+      method: "POST",
+      body: req,
+      ...requestOpts,
+    });
   }
 
-  async function recordInfo(
-    taskId: string
-  ): Promise<AlephRecordInfo> {
+  async function recordInfo(taskId: string): Promise<AlephRecordInfo> {
     return kieRequest<AlephRecordInfo>(
       `${baseURL}/api/v1/aleph/record-info?taskId=${encodeURIComponent(taskId)}`,
       { method: "GET", ...requestOpts }

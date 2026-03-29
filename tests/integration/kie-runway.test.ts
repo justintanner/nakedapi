@@ -33,20 +33,15 @@ describe("kie runway integration", () => {
     const deadline = Date.now() + 5 * 60 * 1000;
     const pollIntervalMs = ctx.mode === "record" ? 10000 : 0;
     let info: Awaited<
-      ReturnType<typeof provider.runway.api.v1.runway["record-detail"]>
+      ReturnType<(typeof provider.runway.api.v1.runway)["record-detail"]>
     >;
 
     // Poll record-detail until success or fail
     while (Date.now() < deadline) {
-      info = await provider.runway.api.v1.runway["record-detail"](
-        taskId
-      );
+      info = await provider.runway.api.v1.runway["record-detail"](taskId);
 
       if (info.data) {
-        if (
-          info.data.state === "success" ||
-          info.data.state === "fail"
-        ) {
+        if (info.data.state === "success" || info.data.state === "fail") {
           break;
         }
       }
@@ -65,9 +60,7 @@ describe("kie runway integration", () => {
     const method = provider.runway.api.v1.runway.generate;
 
     expect(method.payloadSchema.method).toBe("POST");
-    expect(method.payloadSchema.path).toBe(
-      "/api/v1/runway/generate"
-    );
+    expect(method.payloadSchema.path).toBe("/api/v1/runway/generate");
     expect(method.payloadSchema.fields.prompt.required).toBe(true);
     expect(method.payloadSchema.fields.duration.required).toBe(true);
     expect(method.payloadSchema.fields.quality.required).toBe(true);

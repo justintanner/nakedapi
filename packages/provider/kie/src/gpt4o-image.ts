@@ -40,11 +40,7 @@ export interface Gpt4oImageRecordInfoData {
   createTime?: number;
   completeTime?: number;
   progress?: string;
-  status?:
-    | "GENERATING"
-    | "SUCCESS"
-    | "CREATE_TASK_FAILED"
-    | "GENERATE_FAILED";
+  status?: "GENERATING" | "SUCCESS" | "CREATE_TASK_FAILED" | "GENERATE_FAILED";
   successFlag?: number;
   response?: {
     resultUrls?: string[];
@@ -117,9 +113,7 @@ export function createGpt4oImageProvider(
     );
   }
 
-  async function recordInfo(
-    taskId: string
-  ): Promise<Gpt4oImageRecordInfo> {
+  async function recordInfo(taskId: string): Promise<Gpt4oImageRecordInfo> {
     return kieRequest<Gpt4oImageRecordInfo>(
       `${baseURL}/api/v1/gpt4o-image/record-info?taskId=${encodeURIComponent(taskId)}`,
       { method: "GET", ...requestOpts }

@@ -118,15 +118,14 @@ export function createRunwayProvider(
   async function extend(
     req: RunwayExtendRequest
   ): Promise<RunwaySubmitResponse> {
-    return kieRequest<RunwaySubmitResponse>(
-      `${baseURL}/api/v1/runway/extend`,
-      { method: "POST", body: req, ...requestOpts }
-    );
+    return kieRequest<RunwaySubmitResponse>(`${baseURL}/api/v1/runway/extend`, {
+      method: "POST",
+      body: req,
+      ...requestOpts,
+    });
   }
 
-  async function recordDetail(
-    taskId: string
-  ): Promise<RunwayRecordDetail> {
+  async function recordDetail(taskId: string): Promise<RunwayRecordDetail> {
     return kieRequest<RunwayRecordDetail>(
       `${baseURL}/api/v1/runway/record-detail?taskId=${encodeURIComponent(taskId)}`,
       { method: "GET", ...requestOpts }

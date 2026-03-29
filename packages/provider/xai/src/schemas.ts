@@ -559,6 +559,25 @@ export const realtimeClientSecretsSchema: PayloadSchema = {
   },
 };
 
+export const tokenizeTextSchema: PayloadSchema = {
+  method: "POST",
+  path: "/tokenize-text",
+  contentType: "application/json",
+  fields: {
+    model: {
+      type: "string",
+      required: true,
+      description: "Model to use for tokenization (e.g. grok-4-0709)",
+    },
+    text: {
+      type: "string",
+      required: true,
+      description: "Text content to tokenize",
+    },
+    user: { type: "string", description: "End-user identifier" },
+  },
+};
+
 export const videoExtensionsSchema: PayloadSchema = {
   method: "POST",
   path: "/videos/extensions",

@@ -1335,6 +1335,83 @@ export interface XaiManagementKeyValidationResponse {
   } | null;
 }
 
+// TTS types
+
+// TTS output format configuration
+export interface XaiTtsOutputFormat {
+  codec: "mp3" | "wav" | "pcm" | "mulaw" | "alaw";
+  sample_rate?: 8000 | 16000 | 22050 | 24000 | 44100 | 48000;
+  bit_rate?: 32000 | 64000 | 96000 | 128000 | 192000;
+}
+
+// POST /v1/tts request
+export interface XaiTtsRequest {
+  text: string;
+  voice_id?: string;
+  language: string;
+  output_format: XaiTtsOutputFormat;
+}
+
+// Voice object (from GET /v1/tts/voices and /v1/tts/voices/{id})
+export interface XaiVoice {
+  voice_id: string;
+  name: string;
+  language: string | null;
+}
+
+// GET /v1/tts/voices response
+export interface XaiVoiceListResponse {
+  voices: XaiVoice[];
+}
+
+// TTS streaming WebSocket connection options
+export interface XaiTtsConnectOptions {
+  voice?: string;
+  language: string;
+  codec?: string;
+  sample_rate?: number;
+  bit_rate?: number;
+}
+
+// TTS client-to-server events
+export interface XaiTtsTextDelta {
+  type: "text.delta";
+  delta: string;
+}
+
+export interface XaiTtsTextDone {
+  type: "text.done";
+}
+
+export type XaiTtsClientEvent = XaiTtsTextDelta | XaiTtsTextDone;
+
+// TTS server-to-client events
+export interface XaiTtsAudioDelta {
+  type: "audio.delta";
+  delta: string;
+}
+
+export interface XaiTtsAudioDone {
+  type: "audio.done";
+}
+
+export interface XaiTtsError {
+  type: "error";
+  error?: { message?: string; code?: string };
+}
+
+export type XaiTtsServerEvent =
+  | XaiTtsAudioDelta
+  | XaiTtsAudioDone
+  | XaiTtsError;
+
+// TTS WebSocket connection wrapper
+export interface XaiTtsConnection {
+  send(event: XaiTtsClientEvent): void;
+  close(): void;
+  [Symbol.asyncIterator](): AsyncIterableIterator<XaiTtsServerEvent>;
+}
+
 // Payload schema types
 export interface PayloadFieldSchema {
   type: "string" | "number" | "boolean" | "array" | "object";
@@ -1622,6 +1699,19 @@ interface XaiRealtimeNamespace {
   connect(opts?: XaiRealtimeConnectOptions): XaiRealtimeConnection;
 }
 
+interface XaiTtsMethod {
+  (req: XaiTtsRequest, signal?: AbortSignal): Promise<ArrayBuffer>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  voices: XaiTtsVoicesNamespace;
+  connect(opts: XaiTtsConnectOptions): XaiTtsConnection;
+}
+
+interface XaiTtsVoicesNamespace {
+  (signal?: AbortSignal): Promise<XaiVoiceListResponse>;
+  (voiceId: string, signal?: AbortSignal): Promise<XaiVoice>;
+}
+
 interface XaiAuthApiKeysCreateMethod {
   (
     teamId: string,
@@ -1690,6 +1780,7 @@ interface XaiV1Namespace {
   "image-generation-models": XaiImageGenerationModelsNamespace;
   "video-generation-models": XaiVideoGenerationModelsNamespace;
   "tokenize-text": XaiTokenizeTextMethod;
+  tts: XaiTtsMethod;
   realtime: XaiRealtimeNamespace;
   auth: XaiAuthNamespace;
 }

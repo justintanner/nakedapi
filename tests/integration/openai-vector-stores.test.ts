@@ -458,8 +458,7 @@ describe("openai vector stores integration", () => {
 
     it("should validate files create payload - missing file_id", () => {
       const provider = openai({ apiKey: "sk-test" });
-      const result =
-        provider.v1.vector_stores.files.create.validatePayload({});
+      const result = provider.v1.vector_stores.files.create.validatePayload({});
 
       expect(result.valid).toBe(false);
       expect(result.errors).toContain("file_id is required");
@@ -471,9 +470,7 @@ describe("openai vector stores integration", () => {
         provider.v1.vector_stores.file_batches.create.payloadSchema;
 
       expect(schema.method).toBe("POST");
-      expect(schema.path).toBe(
-        "/vector_stores/{vector_store_id}/file_batches"
-      );
+      expect(schema.path).toBe("/vector_stores/{vector_store_id}/file_batches");
     });
 
     it("should expose payloadSchema on file_batches cancel", () => {

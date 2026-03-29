@@ -1475,10 +1475,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
                 `/conversations/${encodeURIComponent(conversationId)}/items`,
                 payloadSchema: vectorStoreFilesCreateSchema,
                 validatePayload(data: unknown): ValidationResult {
-                  return validatePayload(
-                    data,
-                    vectorStoreFilesCreateSchema
-                  );
+                  return validatePayload(data, vectorStoreFilesCreateSchema);
                 },
               }
             ),
@@ -1775,10 +1772,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
               {
                 payloadSchema: vectorStoreFilesUpdateSchema,
                 validatePayload(data: unknown): ValidationResult {
-                  return validatePayload(
-                    data,
-                    vectorStoreFilesUpdateSchema
-                  );
+                  return validatePayload(data, vectorStoreFilesUpdateSchema);
                 },
               }
             ),

@@ -946,3 +946,316 @@ export const audioTranslationsSchema: PayloadSchema = {
     temperature: { type: "number", description: "Sampling temperature 0-1" },
   },
 };
+
+export const imageVariationsSchema: PayloadSchema = {
+  method: "POST",
+  path: "/images/variations",
+  contentType: "multipart/form-data",
+  fields: {
+    image: {
+      type: "object",
+      required: true,
+      description: "Source image (PNG, <4MB, square)",
+    },
+    model: {
+      type: "string",
+      description: "Model ID (only dall-e-2 supported)",
+    },
+    n: { type: "number", description: "Number of variations (1-10)" },
+    response_format: {
+      type: "string",
+      description: "Response format",
+      enum: ["url", "b64_json"],
+    },
+    size: {
+      type: "string",
+      description: "Image dimensions",
+      enum: ["256x256", "512x512", "1024x1024"],
+    },
+    user: {
+      type: "string",
+      description: "End-user identifier for abuse monitoring",
+    },
+  },
+};
+
+export const completionsSchema: PayloadSchema = {
+  method: "POST",
+  path: "/completions",
+  contentType: "application/json",
+  fields: {
+    model: {
+      type: "string",
+      required: true,
+      description:
+        "Model ID (e.g. gpt-3.5-turbo-instruct, davinci-002, babbage-002)",
+    },
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Input text/tokens for completion",
+    },
+    best_of: {
+      type: "number",
+      description: "Generate best_of completions and return top n",
+    },
+    echo: {
+      type: "boolean",
+      description: "Include prompt in response",
+    },
+    frequency_penalty: {
+      type: "number",
+      description: "Frequency penalty (-2.0 to 2.0)",
+    },
+    logit_bias: {
+      type: "object",
+      description: "Token ID to bias value mapping (-100 to 100)",
+    },
+    logprobs: {
+      type: "number",
+      description: "Include log probabilities (0-5)",
+    },
+    max_tokens: {
+      type: "number",
+      description: "Max tokens to generate",
+    },
+    n: {
+      type: "number",
+      description: "Number of completions per prompt",
+    },
+    presence_penalty: {
+      type: "number",
+      description: "Presence penalty (-2.0 to 2.0)",
+    },
+    seed: {
+      type: "number",
+      description: "Seed for deterministic sampling",
+    },
+    stop: {
+      type: "string",
+      description: "Up to 4 stop sequences (string or string[])",
+    },
+    stream: {
+      type: "boolean",
+      description: "Enable SSE streaming",
+    },
+    suffix: {
+      type: "string",
+      description: "Text after completion (insertion mode)",
+    },
+    temperature: {
+      type: "number",
+      description: "Sampling temperature (0-2)",
+    },
+    top_p: {
+      type: "number",
+      description: "Nucleus sampling parameter (0-1)",
+    },
+    user: {
+      type: "string",
+      description: "End-user identifier",
+    },
+  },
+};
+
+export const voicesCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/audio/voices",
+  contentType: "multipart/form-data",
+  fields: {
+    name: {
+      type: "string",
+      required: true,
+      description: "Name of the new voice",
+    },
+    consent: {
+      type: "string",
+      required: true,
+      description: "Consent recording ID",
+    },
+    audio_sample: {
+      type: "object",
+      required: true,
+      description: "Sample audio recording (Blob, max 10 MiB, 30s or less)",
+    },
+  },
+};
+
+export const voiceConsentsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/audio/voice_consents",
+  contentType: "multipart/form-data",
+  fields: {
+    recording: {
+      type: "object",
+      required: true,
+      description: "Audio consent recording (Blob)",
+    },
+    name: {
+      type: "string",
+      required: true,
+      description: "Label for the consent recording",
+    },
+    language: {
+      type: "string",
+      required: true,
+      description: "BCP 47 language tag (e.g. en-US)",
+    },
+  },
+};
+
+export const voiceConsentsUpdateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/audio/voice_consents/{consent_id}",
+  contentType: "application/json",
+  fields: {
+    name: {
+      type: "string",
+      required: true,
+      description: "Updated label for the consent recording",
+    },
+  },
+};
+
+export const videosCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/videos",
+  contentType: "application/json",
+  fields: {
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Text description of desired video",
+    },
+    model: {
+      type: "string",
+      description: "Model ID",
+      enum: ["sora-2", "sora-2-pro"],
+    },
+    seconds: {
+      type: "number",
+      description: "Video duration in seconds",
+      enum: [4, 8, 12],
+    },
+    size: {
+      type: "string",
+      description: "Video resolution",
+      enum: ["720x1280", "1280x720", "1024x1792", "1792x1024"],
+    },
+  },
+};
+
+export const videoEditsSchema: PayloadSchema = {
+  method: "POST",
+  path: "/videos/edits",
+  contentType: "application/json",
+  fields: {
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Text description of desired edit",
+    },
+    video: {
+      type: "object",
+      required: true,
+      description: "Video reference object with id",
+      properties: {
+        id: { type: "string", required: true },
+      },
+    },
+  },
+};
+
+export const videoExtensionsSchema: PayloadSchema = {
+  method: "POST",
+  path: "/videos/extensions",
+  contentType: "application/json",
+  fields: {
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Text description for the extension",
+    },
+    seconds: {
+      type: "number",
+      required: true,
+      description: "Duration in seconds",
+      enum: [4, 8, 12],
+    },
+    video: {
+      type: "object",
+      required: true,
+      description: "Video reference object with id",
+      properties: {
+        id: { type: "string", required: true },
+      },
+    },
+  },
+};
+
+export const videoRemixSchema: PayloadSchema = {
+  method: "POST",
+  path: "/videos/{video_id}/remix",
+  contentType: "application/json",
+  fields: {
+    prompt: {
+      type: "string",
+      required: true,
+      description: "Text description for the remix",
+    },
+  },
+};
+
+export const videoCharactersCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/videos/characters",
+  contentType: "multipart/form-data",
+  fields: {
+    name: {
+      type: "string",
+      required: true,
+      description: "Character name",
+    },
+    video: {
+      type: "object",
+      required: true,
+      description: "Video file (Blob)",
+    },
+  },
+};
+
+export const graderValidateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/fine_tuning/alpha/graders/validate",
+  contentType: "application/json",
+  fields: {
+    grader: {
+      type: "object",
+      required: true,
+      description:
+        "Grader configuration (string_check, text_similarity, python, score_model, or multi)",
+    },
+  },
+};
+
+export const graderRunSchema: PayloadSchema = {
+  method: "POST",
+  path: "/fine_tuning/alpha/graders/run",
+  contentType: "application/json",
+  fields: {
+    grader: {
+      type: "object",
+      required: true,
+      description: "Grader configuration",
+    },
+    model_sample: {
+      type: "string",
+      required: true,
+      description: "Model output to evaluate",
+    },
+    item: {
+      type: "object",
+      description: "Dataset item (populates item namespace)",
+    },
+  },
+};

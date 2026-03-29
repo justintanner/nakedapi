@@ -647,6 +647,398 @@ export interface OpenAiResponseInputTokensResponse {
   input_tokens: number;
 }
 
+// --- Image Variations types ---
+
+// Image variation request (DALL-E 2 only, multipart/form-data)
+export interface OpenAiImageVariationRequest {
+  image: Blob;
+  model?: string | null;
+  n?: number | null;
+  response_format?: "url" | "b64_json" | null;
+  size?: "256x256" | "512x512" | "1024x1024" | null;
+  user?: string;
+}
+
+// Image variation response (reuses existing image response shape)
+export interface OpenAiImageVariationResponse {
+  created: number;
+  data: OpenAiImageData[] | null;
+}
+
+// --- Legacy Completions API types ---
+
+// Legacy completion request (POST /v1/completions)
+export interface OpenAiCompletionRequest {
+  model: string;
+  prompt: string | string[] | number[] | number[][] | null;
+  best_of?: number | null;
+  echo?: boolean | null;
+  frequency_penalty?: number | null;
+  logit_bias?: Record<string, number> | null;
+  logprobs?: number | null;
+  max_tokens?: number | null;
+  n?: number | null;
+  presence_penalty?: number | null;
+  seed?: number | null;
+  stop?: string | string[] | null;
+  stream?: boolean | null;
+  stream_options?: { include_usage?: boolean } | null;
+  suffix?: string | null;
+  temperature?: number | null;
+  top_p?: number | null;
+  user?: string;
+}
+
+// Legacy completion logprobs
+export interface OpenAiCompletionLogprobs {
+  text_offset?: number[] | null;
+  token_logprobs?: number[] | null;
+  tokens?: string[] | null;
+  top_logprobs?: Record<string, number>[] | null;
+}
+
+// Legacy completion choice
+export interface OpenAiCompletionChoice {
+  text: string;
+  index: number;
+  finish_reason: "stop" | "length" | "content_filter";
+  logprobs: OpenAiCompletionLogprobs | null;
+}
+
+// Legacy completion usage
+export interface OpenAiCompletionUsage {
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+  completion_tokens_details?: {
+    accepted_prediction_tokens?: number;
+    audio_tokens?: number;
+    reasoning_tokens?: number;
+    rejected_prediction_tokens?: number;
+  } | null;
+  prompt_tokens_details?: {
+    audio_tokens?: number;
+    cached_tokens?: number;
+  } | null;
+}
+
+// Legacy completion response
+export interface OpenAiCompletionResponse {
+  id: string;
+  object: "text_completion";
+  created: number;
+  model: string;
+  choices: OpenAiCompletionChoice[];
+  system_fingerprint?: string | null;
+  usage?: OpenAiCompletionUsage | null;
+}
+
+// --- Audio Voices API types ---
+
+// Voice object
+export interface OpenAiVoice {
+  id: string;
+  object: "audio.voice";
+  name: string;
+  created_at: number;
+}
+
+// Create voice request (multipart/form-data)
+export interface OpenAiVoiceCreateRequest {
+  name: string;
+  consent: string;
+  audio_sample: Blob;
+}
+
+// List voices query options
+export interface OpenAiVoiceListOptions {
+  limit?: number;
+}
+
+// List voices response
+export interface OpenAiVoiceListResponse {
+  object: "list";
+  data: OpenAiVoice[];
+}
+
+// --- Audio Voice Consents API types ---
+
+// Voice consent object
+export interface OpenAiVoiceConsent {
+  id: string;
+  object: "audio.voice_consent";
+  name: string;
+  language: string;
+  created_at: number;
+}
+
+// Create voice consent request (multipart/form-data)
+export interface OpenAiVoiceConsentCreateRequest {
+  recording: Blob;
+  name: string;
+  language: string;
+}
+
+// Update voice consent request
+export interface OpenAiVoiceConsentUpdateRequest {
+  name: string;
+}
+
+// List voice consents query options
+export interface OpenAiVoiceConsentListOptions {
+  limit?: number;
+}
+
+// List voice consents response
+export interface OpenAiVoiceConsentListResponse {
+  object: "list";
+  data: OpenAiVoiceConsent[];
+}
+
+// Delete voice consent response
+export interface OpenAiVoiceConsentDeleteResponse {
+  id: string;
+  object: "audio.voice_consent";
+  deleted: boolean;
+}
+
+// --- Videos/Sora API types (deprecated Sept 2026) ---
+
+// Video input reference
+export interface OpenAiVideoInputReference {
+  type: "image_url";
+  image_url: string;
+}
+
+// Video create request (POST /v1/videos)
+export interface OpenAiVideoCreateRequest {
+  prompt: string;
+  model?: string;
+  seconds?: 4 | 8 | 12;
+  size?: "720x1280" | "1280x720" | "1024x1792" | "1792x1024";
+  input_reference?: Blob | OpenAiVideoInputReference;
+}
+
+// Video error
+export interface OpenAiVideoError {
+  code: string;
+  message: string;
+}
+
+// Video object
+export interface OpenAiVideo {
+  id: string;
+  object: "video";
+  created_at: number;
+  completed_at?: number | null;
+  expires_at?: number | null;
+  model: string;
+  status: "queued" | "in_progress" | "completed" | "failed";
+  progress: number;
+  prompt?: string | null;
+  seconds: number;
+  size: string;
+  error?: OpenAiVideoError | null;
+  remixed_from_video_id?: string | null;
+}
+
+// Video list query options
+export interface OpenAiVideoListOptions {
+  after?: string;
+  limit?: number;
+  order?: "asc" | "desc";
+}
+
+// Video list response
+export interface OpenAiVideoListResponse {
+  object: "list";
+  data: OpenAiVideo[];
+  has_more: boolean;
+  first_id?: string;
+  last_id?: string;
+}
+
+// Video delete response
+export interface OpenAiVideoDeleteResponse {
+  id: string;
+  object: "video";
+  deleted: boolean;
+}
+
+// Video content download query options
+export interface OpenAiVideoContentOptions {
+  variant?: "video" | "thumbnail" | "spritesheet";
+}
+
+// Video edit request (POST /v1/videos/edits)
+export interface OpenAiVideoEditRequest {
+  prompt: string;
+  video: { id: string };
+}
+
+// Video extension request (POST /v1/videos/extensions)
+export interface OpenAiVideoExtensionRequest {
+  prompt: string;
+  seconds: 4 | 8 | 12;
+  video: { id: string };
+}
+
+// Video remix request (POST /v1/videos/{video_id}/remix)
+export interface OpenAiVideoRemixRequest {
+  prompt: string;
+}
+
+// Video character create request (POST /v1/videos/characters)
+export interface OpenAiVideoCharacterCreateRequest {
+  name: string;
+  video: Blob;
+}
+
+// Video character object
+export interface OpenAiVideoCharacter {
+  id: string;
+  object: "video.character";
+  name: string;
+  created_at: number;
+}
+
+// --- Fine-Tuning Graders API types (alpha) ---
+
+// Grader types (union)
+export interface OpenAiStringCheckGrader {
+  type: "string_check";
+  name: string;
+  input: string;
+  reference: string;
+  operation: "eq" | "ne" | "like" | "ilike";
+}
+
+export interface OpenAiTextSimilarityGrader {
+  type: "text_similarity";
+  name: string;
+  input: string;
+  reference: string;
+  evaluation_metric:
+    | "cosine"
+    | "fuzzy_match"
+    | "bleu"
+    | "gleu"
+    | "meteor"
+    | "rouge_1"
+    | "rouge_2"
+    | "rouge_3"
+    | "rouge_4"
+    | "rouge_5"
+    | "rouge_l";
+}
+
+export interface OpenAiPythonGrader {
+  type: "python";
+  name: string;
+  source: string;
+  image_tag?: string | null;
+}
+
+export interface OpenAiScoreModelGraderInput {
+  role: "user" | "assistant" | "system" | "developer";
+  content: string;
+  type?: "message";
+}
+
+export interface OpenAiScoreModelGraderSamplingParams {
+  max_completion_tokens?: number;
+  reasoning_effort?: string;
+  seed?: number;
+  temperature?: number;
+  top_p?: number;
+}
+
+export interface OpenAiScoreModelGrader {
+  type: "score_model";
+  name: string;
+  model: string;
+  input: OpenAiScoreModelGraderInput[];
+  range?: number[] | null;
+  sampling_params?: OpenAiScoreModelGraderSamplingParams | null;
+}
+
+export interface OpenAiLabelModelGrader {
+  type: "label_model";
+  name: string;
+  model: string;
+  input: OpenAiScoreModelGraderInput[];
+  labels: string[];
+  passing_labels: string[];
+}
+
+export interface OpenAiMultiGrader {
+  type: "multi";
+  name: string;
+  graders: Record<string, OpenAiGrader | OpenAiLabelModelGrader>;
+  calculate_output: string;
+}
+
+export type OpenAiGrader =
+  | OpenAiStringCheckGrader
+  | OpenAiTextSimilarityGrader
+  | OpenAiPythonGrader
+  | OpenAiScoreModelGrader
+  | OpenAiMultiGrader;
+
+// Grader validate request
+export interface OpenAiGraderValidateRequest {
+  grader: OpenAiGrader;
+}
+
+// Grader validate response
+export interface OpenAiGraderValidateResponse {
+  grader: OpenAiGrader | null;
+}
+
+// Grader run request
+export interface OpenAiGraderRunRequest {
+  grader: OpenAiGrader;
+  model_sample: string;
+  item?: Record<string, unknown>;
+}
+
+// Grader run metadata errors
+export interface OpenAiGraderMetadataErrors {
+  formula_parse_error: boolean;
+  invalid_variable_error: boolean;
+  api_model_grader_parse_error: boolean;
+  api_model_grader_refusal_error: boolean;
+  api_model_grader_server_error: boolean;
+  api_model_grader_server_error_details?: string | null;
+  other_error: boolean;
+  python_grader_runtime_error: boolean;
+  python_grader_runtime_error_details?: string | null;
+  python_grader_server_error: boolean;
+  python_grader_server_error_type?: string | null;
+  sample_parse_error: boolean;
+  truncated_observation_error: boolean;
+  unresponsive_reward_error: boolean;
+}
+
+// Grader run metadata
+export interface OpenAiGraderMetadata {
+  name: string;
+  type: string;
+  execution_time: number;
+  scores: Record<string, unknown>;
+  token_usage?: number | null;
+  sampled_model_name?: string | null;
+  errors: OpenAiGraderMetadataErrors;
+}
+
+// Grader run response
+export interface OpenAiGraderRunResponse {
+  reward: number;
+  sub_rewards: Record<string, unknown>;
+  metadata: OpenAiGraderMetadata;
+  api_model_grader_token_usage_per_model: Record<string, unknown>;
+}
+
 // --- Fine-Tuning API types ---
 
 // Fine-tuning job error
@@ -1227,10 +1619,77 @@ interface OpenAiAudioTranslationsMethod {
   validatePayload(data: unknown): ValidationResult;
 }
 
+// Audio voices namespace types
+interface OpenAiVoicesCreateMethod {
+  (
+    req: OpenAiVoiceCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiVoice>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  list: OpenAiVoicesListMethod;
+  retrieve: OpenAiVoicesRetrieveMethod;
+}
+
+interface OpenAiVoicesListMethod {
+  (
+    opts?: OpenAiVoiceListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiVoiceListResponse>;
+}
+
+interface OpenAiVoicesRetrieveMethod {
+  (voiceId: string, signal?: AbortSignal): Promise<OpenAiVoice>;
+}
+
+// Audio voice consents namespace types
+interface OpenAiVoiceConsentsCreateMethod {
+  (
+    req: OpenAiVoiceConsentCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiVoiceConsent>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  list: OpenAiVoiceConsentsListMethod;
+  retrieve: OpenAiVoiceConsentsRetrieveMethod;
+  update: OpenAiVoiceConsentsUpdateMethod;
+  del: OpenAiVoiceConsentsDeleteMethod;
+}
+
+interface OpenAiVoiceConsentsListMethod {
+  (
+    opts?: OpenAiVoiceConsentListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiVoiceConsentListResponse>;
+}
+
+interface OpenAiVoiceConsentsRetrieveMethod {
+  (consentId: string, signal?: AbortSignal): Promise<OpenAiVoiceConsent>;
+}
+
+interface OpenAiVoiceConsentsUpdateMethod {
+  (
+    consentId: string,
+    req: OpenAiVoiceConsentUpdateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiVoiceConsent>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiVoiceConsentsDeleteMethod {
+  (
+    consentId: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiVoiceConsentDeleteResponse>;
+}
+
 interface OpenAiAudioNamespace {
   speech: OpenAiAudioSpeechMethod;
   transcriptions: OpenAiAudioTranscriptionsMethod;
   translations: OpenAiAudioTranslationsMethod;
+  voices: OpenAiVoicesCreateMethod;
+  voice_consents: OpenAiVoiceConsentsCreateMethod;
 }
 
 interface OpenAiImagesEditsMethod {
@@ -1251,9 +1710,19 @@ interface OpenAiImageGenerationsMethod {
   validatePayload(data: unknown): ValidationResult;
 }
 
+interface OpenAiImageVariationsMethod {
+  (
+    req: OpenAiImageVariationRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiImageVariationResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
 interface OpenAiImagesNamespace {
   edits: OpenAiImagesEditsMethod;
   generations: OpenAiImageGenerationsMethod;
+  variations: OpenAiImageVariationsMethod;
 }
 
 interface OpenAiResponsesGetMethod {
@@ -1490,9 +1959,131 @@ interface OpenAiFineTuningCheckpointsNamespace {
   permissions: OpenAiCheckpointPermissionsCreateMethod;
 }
 
+// Fine-tuning graders namespace types (alpha)
+interface OpenAiGraderValidateMethod {
+  (
+    req: OpenAiGraderValidateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiGraderValidateResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiGraderRunMethod {
+  (
+    req: OpenAiGraderRunRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiGraderRunResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiGradersNamespace {
+  validate: OpenAiGraderValidateMethod;
+  run: OpenAiGraderRunMethod;
+}
+
+interface OpenAiFineTuningAlphaNamespace {
+  graders: OpenAiGradersNamespace;
+}
+
 interface OpenAiFineTuningNamespace {
   jobs: OpenAiFineTuningJobsCreateMethod;
   checkpoints: OpenAiFineTuningCheckpointsNamespace;
+  alpha: OpenAiFineTuningAlphaNamespace;
+}
+
+// Legacy completions namespace type
+interface OpenAiCompletionsMethod {
+  (
+    req: OpenAiCompletionRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiCompletionResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+// Videos/Sora namespace types (deprecated Sept 2026)
+interface OpenAiVideosCreateMethod {
+  (
+    req: OpenAiVideoCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiVideo>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  list: OpenAiVideosListMethod;
+  retrieve: OpenAiVideosRetrieveMethod;
+  del: OpenAiVideosDeleteMethod;
+  content: OpenAiVideosContentMethod;
+  edits: OpenAiVideoEditsMethod;
+  extensions: OpenAiVideoExtensionsMethod;
+  remix: OpenAiVideoRemixMethod;
+  characters: OpenAiVideoCharactersCreateMethod;
+}
+
+interface OpenAiVideosListMethod {
+  (
+    opts?: OpenAiVideoListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiVideoListResponse>;
+}
+
+interface OpenAiVideosRetrieveMethod {
+  (videoId: string, signal?: AbortSignal): Promise<OpenAiVideo>;
+}
+
+interface OpenAiVideosDeleteMethod {
+  (videoId: string, signal?: AbortSignal): Promise<OpenAiVideoDeleteResponse>;
+}
+
+interface OpenAiVideosContentMethod {
+  (
+    videoId: string,
+    opts?: OpenAiVideoContentOptions,
+    signal?: AbortSignal
+  ): Promise<ArrayBuffer>;
+}
+
+interface OpenAiVideoEditsMethod {
+  (
+    req: OpenAiVideoEditRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiVideo>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiVideoExtensionsMethod {
+  (
+    req: OpenAiVideoExtensionRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiVideo>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiVideoRemixMethod {
+  (
+    videoId: string,
+    req: OpenAiVideoRemixRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiVideo>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface OpenAiVideoCharactersCreateMethod {
+  (
+    req: OpenAiVideoCharacterCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiVideoCharacter>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  retrieve: OpenAiVideoCharactersRetrieveMethod;
+}
+
+interface OpenAiVideoCharactersRetrieveMethod {
+  (characterId: string, signal?: AbortSignal): Promise<OpenAiVideoCharacter>;
 }
 
 interface OpenAiV1Namespace {
@@ -1506,6 +2097,8 @@ interface OpenAiV1Namespace {
   responses: OpenAiResponsesMethod;
   fine_tuning: OpenAiFineTuningNamespace;
   batches: OpenAiBatchesCreateMethod;
+  completions: OpenAiCompletionsMethod;
+  videos: OpenAiVideosCreateMethod;
 }
 
 // Provider interface

@@ -28,6 +28,7 @@ Standalone-first TypeScript AI provider packages. Each is self-contained with ze
 | [@nakedapi/fal](packages/provider/fal)               | [![npm](https://img.shields.io/npm/v/@nakedapi/fal?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/fal)               | Model registry, pricing, usage, analytics                     | [README](packages/provider/fal/README.md#endpoints)        |
 | [@nakedapi/kimicoding](packages/provider/kimicoding) | [![npm](https://img.shields.io/npm/v/@nakedapi/kimicoding?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/kimicoding) | Anthropic Messages API format, streaming                      | [README](packages/provider/kimicoding/README.md#endpoints) |
 | [@nakedapi/kie](packages/provider/kie)               | [![npm](https://img.shields.io/npm/v/@nakedapi/kie?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/kie)               | Media generation (video/image/audio), sub-providers           | [README](packages/provider/kie/README.md#endpoints)        |
+| [@nakedapi/anthropic](packages/provider/anthropic)   | [![npm](https://img.shields.io/npm/v/@nakedapi/anthropic?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/anthropic)   | Messages, streaming, batches, files, models, admin APIs       | [README](packages/provider/anthropic/README.md#endpoints)  |
 
 ## Quick Start
 
@@ -52,7 +53,7 @@ console.log(image.data[0].url);
 
 Every provider works the same way: a factory function that takes `{ apiKey }` and returns an object whose method paths mirror the upstream API URL paths. See [Endpoint Naming](#endpoint-naming) below.
 
-> **More examples:** [OpenAI](packages/provider/openai/README.md#usage-examples) | [xAI](packages/provider/xai/README.md#usage-examples) | [Fal](packages/provider/fal/README.md#usage-examples) | [KimiCoding](packages/provider/kimicoding/README.md#quick-start) | [KIE](packages/provider/kie/README.md#usage)
+> **More examples:** [OpenAI](packages/provider/openai/README.md#usage-examples) | [xAI](packages/provider/xai/README.md#usage-examples) | [Fal](packages/provider/fal/README.md#usage-examples) | [KimiCoding](packages/provider/kimicoding/README.md#quick-start) | [KIE](packages/provider/kie/README.md#usage) | [Anthropic](packages/provider/anthropic/README.md#usage-examples)
 
 ## Endpoint Naming
 
@@ -64,7 +65,7 @@ URL path:     /v1/language-models        →  xai.v1.languageModels()
 URL path:     /api/v1/common/download-url →  kie.api.v1.common.downloadUrl()
 ```
 
-Full endpoint tables are in each provider's README: [OpenAI](packages/provider/openai/README.md#endpoints) | [xAI](packages/provider/xai/README.md#endpoints) | [Fal](packages/provider/fal/README.md#endpoints) | [KimiCoding](packages/provider/kimicoding/README.md#endpoints) | [KIE](packages/provider/kie/README.md#endpoints)
+Full endpoint tables are in each provider's README: [OpenAI](packages/provider/openai/README.md#endpoints) | [xAI](packages/provider/xai/README.md#endpoints) | [Fal](packages/provider/fal/README.md#endpoints) | [KimiCoding](packages/provider/kimicoding/README.md#endpoints) | [KIE](packages/provider/kie/README.md#endpoints) | [Anthropic](packages/provider/anthropic/README.md#endpoints)
 
 ## Middleware
 

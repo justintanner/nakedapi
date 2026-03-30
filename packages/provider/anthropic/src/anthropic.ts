@@ -13,6 +13,15 @@ import {
   AnthropicFile,
   AnthropicFileListResponse,
   AnthropicFileDeleteResponse,
+  AnthropicSkillFile,
+  AnthropicSkill,
+  AnthropicSkillsListParams,
+  AnthropicSkillsListResponse,
+  AnthropicSkillDeleteResponse,
+  AnthropicSkillVersion,
+  AnthropicSkillVersionsListParams,
+  AnthropicSkillVersionsListResponse,
+  AnthropicSkillVersionDeleteResponse,
   AnthropicOrganization,
   AnthropicUser,
   AnthropicUserListResponse,
@@ -47,6 +56,8 @@ import {
   countTokensSchema,
   batchesCreateSchema,
   filesUploadSchema,
+  skillsCreateSchema,
+  skillVersionsCreateSchema,
   inviteCreateSchema,
   workspaceCreateSchema,
   workspaceMemberAddSchema,
@@ -63,15 +74,20 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
 
   function commonHeaders(
     apiKey: string,
-    extra?: Record<string, string>
+    extra?: Record<string, string>,
+    additionalBeta?: string[]
   ): Record<string, string> {
     const headers: Record<string, string> = {
       "x-api-key": apiKey,
       "anthropic-version": version,
       ...extra,
     };
-    if (defaultBeta && defaultBeta.length > 0) {
-      headers["anthropic-beta"] = defaultBeta.join(",");
+    const allBeta = [
+      ...(defaultBeta ?? []),
+      ...(additionalBeta ?? []),
+    ];
+    if (allBeta.length > 0) {
+      headers["anthropic-beta"] = allBeta.join(",");
     }
     return headers;
   }
@@ -168,7 +184,8 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
     path: string,
     query?: Record<string, string | string[] | boolean | undefined>,
     signal?: AbortSignal,
-    apiKey?: string
+    apiKey?: string,
+    beta?: string[]
   ): Promise<T> {
     const { controller, timeoutId } = makeController(signal);
 
@@ -191,7 +208,7 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
     try {
       const res = await doFetch(url, {
         method: "GET",
-        headers: commonHeaders(apiKey ?? opts.apiKey),
+        headers: commonHeaders(apiKey ?? opts.apiKey, undefined, beta),
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
@@ -251,13 +268,14 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
   async function makeDeleteRequest<T>(
     path: string,
     signal?: AbortSignal,
-    apiKey?: string
+    apiKey?: string,
+    beta?: string[]
   ): Promise<T> {
     const { controller, timeoutId } = makeController(signal);
     try {
       const res = await doFetch(`${baseURL}${path}`, {
         method: "DELETE",
-        headers: commonHeaders(apiKey ?? opts.apiKey),
+        headers: commonHeaders(apiKey ?? opts.apiKey, undefined, beta),
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
@@ -296,13 +314,14 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
     path: string,
     form: FormData,
     signal?: AbortSignal,
-    apiKey?: string
+    apiKey?: string,
+    beta?: string[]
   ): Promise<T> {
     const { controller, timeoutId } = makeController(signal);
     try {
       const res = await doFetch(`${baseURL}${path}`, {
         method: "POST",
-        headers: commonHeaders(apiKey ?? opts.apiKey),
+        headers: commonHeaders(apiKey ?? opts.apiKey, undefined, beta),
         body: form,
         signal: controller.signal,
       });
@@ -520,6 +539,129 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
           );
         },
       },
+
+      skills: (() => {
+        const SKILLS_BETA = ["skills-2025-10-02"];
+
+        return {
+          create: Object.assign(
+            async function create(
+              displayTitle: string,
+              files: AnthropicSkillFile[],
+              signal?: AbortSignal
+            ): Promise<AnthropicSkill> {
+              const form = new FormData();
+              form.append("display_title", displayTitle);
+              for (const f of files) {
+                form.append("files[]", f.data, f.path);
+              }
+              return await makeFormRequest<AnthropicSkill>(
+                "/skills",
+                form,
+                signal,
+                undefined,
+                SKILLS_BETA
+              );
+            },
+            {
+              payloadSchema: skillsCreateSchema,
+            }
+          ),
+          list: async function list(
+            params?: AnthropicSkillsListParams,
+            signal?: AbortSignal
+          ): Promise<AnthropicSkillsListResponse> {
+            const query: Record<string, string | undefined> = {};
+            if (params?.limit !== undefined)
+              query.limit = String(params.limit);
+            if (params?.page) query.page = params.page;
+            if (params?.source) query.source = params.source;
+            return await makeGetRequest<AnthropicSkillsListResponse>(
+              "/skills",
+              query,
+              signal,
+              undefined,
+              SKILLS_BETA
+            );
+          },
+          retrieve: async function retrieve(
+            skillId: string,
+            signal?: AbortSignal
+          ): Promise<AnthropicSkill> {
+            return await makeGetRequest<AnthropicSkill>(
+              `/skills/${encodeURIComponent(skillId)}`,
+              undefined,
+              signal,
+              undefined,
+              SKILLS_BETA
+            );
+          },
+          del: async function del(
+            skillId: string,
+            signal?: AbortSignal
+          ): Promise<AnthropicSkillDeleteResponse> {
+            return await makeDeleteRequest<AnthropicSkillDeleteResponse>(
+              `/skills/${encodeURIComponent(skillId)}`,
+              signal,
+              undefined,
+              SKILLS_BETA
+            );
+          },
+          versions: {
+            create: Object.assign(
+              async function create(
+                skillId: string,
+                files: AnthropicSkillFile[],
+                signal?: AbortSignal
+              ): Promise<AnthropicSkillVersion> {
+                const form = new FormData();
+                for (const f of files) {
+                  form.append("files[]", f.data, f.path);
+                }
+                return await makeFormRequest<AnthropicSkillVersion>(
+                  `/skills/${encodeURIComponent(skillId)}/versions`,
+                  form,
+                  signal,
+                  undefined,
+                  SKILLS_BETA
+                );
+              },
+              {
+                payloadSchema: skillVersionsCreateSchema,
+              }
+            ),
+            list: async function list(
+              skillId: string,
+              params?: AnthropicSkillVersionsListParams,
+              signal?: AbortSignal
+            ): Promise<AnthropicSkillVersionsListResponse> {
+              const query: Record<string, string | undefined> = {};
+              if (params?.limit !== undefined)
+                query.limit = String(params.limit);
+              if (params?.page) query.page = params.page;
+              return await makeGetRequest<AnthropicSkillVersionsListResponse>(
+                `/skills/${encodeURIComponent(skillId)}/versions`,
+                query,
+                signal,
+                undefined,
+                SKILLS_BETA
+              );
+            },
+            del: async function del(
+              skillId: string,
+              version: string,
+              signal?: AbortSignal
+            ): Promise<AnthropicSkillVersionDeleteResponse> {
+              return await makeDeleteRequest<AnthropicSkillVersionDeleteResponse>(
+                `/skills/${encodeURIComponent(skillId)}/versions/${encodeURIComponent(version)}`,
+                signal,
+                undefined,
+                SKILLS_BETA
+              );
+            },
+          },
+        };
+      })(),
 
       organizations: {
         me: async function me(

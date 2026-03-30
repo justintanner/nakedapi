@@ -938,10 +938,7 @@ export interface AnthropicSkillsNamespace {
     params?: AnthropicSkillsListParams,
     signal?: AbortSignal
   ) => Promise<AnthropicSkillsListResponse>;
-  retrieve: (
-    skillId: string,
-    signal?: AbortSignal
-  ) => Promise<AnthropicSkill>;
+  retrieve: (skillId: string, signal?: AbortSignal) => Promise<AnthropicSkill>;
   del: (
     skillId: string,
     signal?: AbortSignal

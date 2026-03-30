@@ -588,6 +588,67 @@ export interface AnthropicWorkspaceMemberDeleteResponse {
   workspace_id: string;
 }
 
+// ---------- Skills API (Beta) ----------
+
+export interface AnthropicSkillFile {
+  data: Blob;
+  path: string;
+}
+
+export interface AnthropicSkill {
+  id: string;
+  type: "skill";
+  display_title: string;
+  source: "custom" | "anthropic";
+  latest_version: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AnthropicSkillsListParams {
+  limit?: number;
+  page?: string;
+  source?: "custom" | "anthropic";
+}
+
+export interface AnthropicSkillsListResponse {
+  data: AnthropicSkill[];
+  has_more: boolean;
+  next_page: string | null;
+}
+
+export interface AnthropicSkillDeleteResponse {
+  id: string;
+  type: "skill_deleted";
+}
+
+export interface AnthropicSkillVersion {
+  id: string;
+  type: "skill_version";
+  skill_id: string;
+  version: string;
+  name: string;
+  description: string;
+  directory: string;
+  created_at: string;
+}
+
+export interface AnthropicSkillVersionsListParams {
+  limit?: number;
+  page?: string;
+}
+
+export interface AnthropicSkillVersionsListResponse {
+  data: AnthropicSkillVersion[];
+  has_more: boolean;
+  next_page: string | null;
+}
+
+export interface AnthropicSkillVersionDeleteResponse {
+  id: string;
+  type: "skill_version_deleted";
+}
+
 // API Keys
 
 export interface AnthropicApiKey {
@@ -837,6 +898,57 @@ export interface AnthropicApiKeysNamespace {
   ) => Promise<AnthropicApiKey>;
 }
 
+// Skills namespaces
+
+export interface AnthropicSkillsCreateMethod {
+  (
+    displayTitle: string,
+    files: AnthropicSkillFile[],
+    signal?: AbortSignal
+  ): Promise<AnthropicSkill>;
+  payloadSchema: PayloadSchema;
+}
+
+export interface AnthropicSkillVersionsCreateMethod {
+  (
+    skillId: string,
+    files: AnthropicSkillFile[],
+    signal?: AbortSignal
+  ): Promise<AnthropicSkillVersion>;
+  payloadSchema: PayloadSchema;
+}
+
+export interface AnthropicSkillVersionsNamespace {
+  create: AnthropicSkillVersionsCreateMethod;
+  list: (
+    skillId: string,
+    params?: AnthropicSkillVersionsListParams,
+    signal?: AbortSignal
+  ) => Promise<AnthropicSkillVersionsListResponse>;
+  del: (
+    skillId: string,
+    version: string,
+    signal?: AbortSignal
+  ) => Promise<AnthropicSkillVersionDeleteResponse>;
+}
+
+export interface AnthropicSkillsNamespace {
+  create: AnthropicSkillsCreateMethod;
+  list: (
+    params?: AnthropicSkillsListParams,
+    signal?: AbortSignal
+  ) => Promise<AnthropicSkillsListResponse>;
+  retrieve: (
+    skillId: string,
+    signal?: AbortSignal
+  ) => Promise<AnthropicSkill>;
+  del: (
+    skillId: string,
+    signal?: AbortSignal
+  ) => Promise<AnthropicSkillDeleteResponse>;
+  versions: AnthropicSkillVersionsNamespace;
+}
+
 export interface AnthropicOrganizationsNamespace {
   me: (signal?: AbortSignal) => Promise<AnthropicOrganization>;
   users: AnthropicUsersNamespace;
@@ -849,6 +961,7 @@ export interface AnthropicV1Namespace {
   messages: AnthropicMessagesMethod;
   models: AnthropicModelsNamespace;
   files: AnthropicFilesNamespace;
+  skills: AnthropicSkillsNamespace;
   organizations: AnthropicOrganizationsNamespace;
 }
 

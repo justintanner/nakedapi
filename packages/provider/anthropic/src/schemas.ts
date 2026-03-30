@@ -186,6 +186,39 @@ export const workspaceCreateSchema: PayloadSchema = {
   },
 };
 
+export const skillsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/skills",
+  contentType: "multipart/form-data",
+  fields: {
+    display_title: {
+      type: "string",
+      required: true,
+      description: "Human-readable skill title",
+    },
+    files: {
+      type: "array",
+      required: true,
+      description: "Skill files (must include SKILL.md)",
+      items: { type: "object" },
+    },
+  },
+};
+
+export const skillVersionsCreateSchema: PayloadSchema = {
+  method: "POST",
+  path: "/skills/{skill_id}/versions",
+  contentType: "multipart/form-data",
+  fields: {
+    files: {
+      type: "array",
+      required: true,
+      description: "Updated skill files (must include SKILL.md)",
+      items: { type: "object" },
+    },
+  },
+};
+
 export const workspaceMemberAddSchema: PayloadSchema = {
   method: "POST",
   path: "/organizations/workspaces/{workspace_id}/members",

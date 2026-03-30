@@ -82,10 +82,7 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
       "anthropic-version": version,
       ...extra,
     };
-    const allBeta = [
-      ...(defaultBeta ?? []),
-      ...(additionalBeta ?? []),
-    ];
+    const allBeta = [...(defaultBeta ?? []), ...(additionalBeta ?? [])];
     if (allBeta.length > 0) {
       headers["anthropic-beta"] = allBeta.join(",");
     }
@@ -572,8 +569,7 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
             signal?: AbortSignal
           ): Promise<AnthropicSkillsListResponse> {
             const query: Record<string, string | undefined> = {};
-            if (params?.limit !== undefined)
-              query.limit = String(params.limit);
+            if (params?.limit !== undefined) query.limit = String(params.limit);
             if (params?.page) query.page = params.page;
             if (params?.source) query.source = params.source;
             return await makeGetRequest<AnthropicSkillsListResponse>(

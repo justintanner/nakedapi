@@ -103,6 +103,7 @@ Verdict: <PASS|FAIL|SKIP>
 Omit empty severity sections (e.g., if no CRITICAL issues, don't print the CRITICAL section).
 
 If Grade is A, output:
+
 ```
 Grade: A
 

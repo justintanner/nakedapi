@@ -283,13 +283,13 @@ describe("fireworks audio streaming transcriptions", () => {
 
     // Simulate server messages
     setTimeout(() => {
-      for (const fn of listeners["message"] ?? []) {
+      for (const fn of listeners.message ?? []) {
         fn({ data: JSON.stringify(transcriptionResult) });
       }
-      for (const fn of listeners["message"] ?? []) {
+      for (const fn of listeners.message ?? []) {
         fn({ data: JSON.stringify(checkpoint) });
       }
-      for (const fn of listeners["close"] ?? []) {
+      for (const fn of listeners.close ?? []) {
         (fn as () => void)();
       }
     }, 10);

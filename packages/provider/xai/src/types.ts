@@ -1686,10 +1686,10 @@ interface XaiV1Namespace {
   collections: XaiCollectionsNamespace;
   documents: XaiDocumentsNamespace;
   models: XaiModelsNamespace;
-  "language-models": XaiLanguageModelsNamespace;
-  "image-generation-models": XaiImageGenerationModelsNamespace;
-  "video-generation-models": XaiVideoGenerationModelsNamespace;
-  "tokenize-text": XaiTokenizeTextMethod;
+  languageModels: XaiLanguageModelsNamespace;
+  imageGenerationModels: XaiImageGenerationModelsNamespace;
+  videoGenerationModels: XaiVideoGenerationModelsNamespace;
+  tokenizeText: XaiTokenizeTextMethod;
   realtime: XaiRealtimeNamespace;
   auth: XaiAuthNamespace;
 }

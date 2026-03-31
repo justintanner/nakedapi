@@ -103,7 +103,7 @@ describe("xai deferred chat completion", () => {
     });
 
     await provider.v1.chat.deferredCompletion("some-id");
-    expect(capturedHeaders.Authorization).toBe("Bearer sk-my-api-key");
+    expect(capturedHeaders["Authorization"]).toBe("Bearer sk-my-api-key");
   });
 
   it("should use GET method", async () => {

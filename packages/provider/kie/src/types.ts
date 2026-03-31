@@ -110,6 +110,7 @@ export interface GrokImageToImageRequest extends MediaRequest {
   input: {
     prompt?: string;
     image_urls: [string];
+    aspect_ratio?: "2:3" | "3:2" | "1:1" | "16:9" | "9:16";
   };
 }
 

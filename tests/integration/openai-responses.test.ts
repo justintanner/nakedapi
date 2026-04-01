@@ -21,7 +21,7 @@ describe("openai responses integration", () => {
     const provider = openai({
       apiKey: process.env.OPENAI_API_KEY ?? "sk-test-key",
     });
-    const result = await provider.v1.responses({
+    const result = await provider.post.v1.responses({
       model: "gpt-4o-mini",
       input: "Say hello in one sentence.",
       temperature: 0,
@@ -40,7 +40,7 @@ describe("openai responses integration", () => {
     const provider = openai({
       apiKey: process.env.OPENAI_API_KEY ?? "sk-test-key",
     });
-    const result = await provider.v1.responses({
+    const result = await provider.post.v1.responses({
       model: "gpt-4o-mini",
       input: "What is 2 + 2?",
       instructions: "You are a math tutor. Always show your work step by step.",
@@ -65,7 +65,7 @@ describe("openai responses integration", () => {
     const provider = openai({
       apiKey: process.env.OPENAI_API_KEY ?? "sk-test-key",
     });
-    const result = await provider.v1.responses({
+    const result = await provider.post.v1.responses({
       model: "gpt-4o-mini",
       input: "Extract: The capital of France is Paris.",
       temperature: 0,
@@ -106,7 +106,7 @@ describe("openai responses integration", () => {
     });
 
     // Step 1: Send a request that triggers a function call
-    const step1 = await provider.v1.responses({
+    const step1 = await provider.post.v1.responses({
       model: "gpt-4o-mini",
       input: "What is the weather in San Francisco?",
       temperature: 0,
@@ -138,7 +138,7 @@ describe("openai responses integration", () => {
     expect(args.location).toBeTruthy();
 
     // Step 2: Send the function output back
-    const step2 = await provider.v1.responses({
+    const step2 = await provider.post.v1.responses({
       model: "gpt-4o-mini",
       input: [
         { role: "user", content: "What is the weather in San Francisco?" },
@@ -180,7 +180,7 @@ describe("openai responses integration", () => {
     const provider = openai({
       apiKey: process.env.OPENAI_API_KEY ?? "sk-test-key",
     });
-    const result = await provider.v1.responses({
+    const result = await provider.post.v1.responses({
       model: "gpt-4o-mini",
       input: "What is the current population of Tokyo?",
       temperature: 0,
@@ -216,7 +216,7 @@ describe("openai responses integration", () => {
       apiKey: process.env.OPENAI_API_KEY ?? "sk-test-key",
       timeout: 60000,
     });
-    const result = await provider.v1.responses({
+    const result = await provider.post.v1.responses({
       model: "o4-mini",
       input: "How many r's are in the word strawberry?",
       reasoning: {
@@ -243,7 +243,7 @@ describe("openai responses integration", () => {
     const provider = openai({
       apiKey: process.env.OPENAI_API_KEY ?? "sk-test-key",
     });
-    const result = await provider.v1.responses({
+    const result = await provider.post.v1.responses({
       model: "gpt-4o-mini",
       input: [
         {
@@ -278,7 +278,7 @@ describe("openai responses integration", () => {
     });
 
     // Turn 1: introduce a fact
-    const turn1 = await provider.v1.responses({
+    const turn1 = await provider.post.v1.responses({
       model: "gpt-4o-mini",
       input: "My name is Alice and I live in Wonderland.",
       temperature: 0,
@@ -289,7 +289,7 @@ describe("openai responses integration", () => {
     expect(turn1.status).toBe("completed");
 
     // Turn 2: reference previous context
-    const turn2 = await provider.v1.responses({
+    const turn2 = await provider.post.v1.responses({
       model: "gpt-4o-mini",
       input: "What is my name and where do I live?",
       previous_response_id: turn1.id,
@@ -312,7 +312,7 @@ describe("openai responses integration", () => {
     });
 
     // Create a stored response
-    const created = await provider.v1.responses({
+    const created = await provider.post.v1.responses({
       model: "gpt-4o-mini",
       input: "Say the word 'pineapple' and nothing else.",
       temperature: 0,
@@ -323,7 +323,7 @@ describe("openai responses integration", () => {
     expect(created.status).toBe("completed");
 
     // Retrieve it by ID
-    const fetched = await provider.v1.responses.get(created.id);
+    const fetched = await provider.get.v1.responses(created.id);
     expect(fetched.id).toBe(created.id);
     expect(fetched.object).toBe("response");
     expect(fetched.status).toBe("completed");

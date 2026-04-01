@@ -19,7 +19,7 @@ describe("openai models integration", () => {
         apiKey: process.env.OPENAI_API_KEY ?? "sk-test-key",
       });
 
-      const result = await provider.v1.models.list();
+      const result = await provider.get.v1.models();
 
       expect(result.object).toBe("list");
       expect(Array.isArray(result.data)).toBe(true);
@@ -45,7 +45,7 @@ describe("openai models integration", () => {
         apiKey: process.env.OPENAI_API_KEY ?? "sk-test-key",
       });
 
-      const result = await provider.v1.models.retrieve("gpt-4o-mini");
+      const result = await provider.get.v1.models("gpt-4o-mini");
 
       expect(result.id).toBe("gpt-4o-mini");
       expect(result.object).toBe("model");

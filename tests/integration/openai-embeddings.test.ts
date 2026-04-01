@@ -18,7 +18,7 @@ describe("openai embeddings integration", () => {
       apiKey: process.env.OPENAI_API_KEY ?? "sk-test-key",
     });
 
-    const result = await provider.v1.embeddings({
+    const result = await provider.post.v1.embeddings({
       model: "text-embedding-3-small",
       input: "Hello world",
     });

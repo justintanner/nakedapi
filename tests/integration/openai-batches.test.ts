@@ -16,7 +16,7 @@ describe("openai batches integration", () => {
         apiKey: process.env.OPENAI_API_KEY ?? "sk-test-key",
       });
 
-      const result = await provider.v1.batches.list();
+      const result = await provider.get.v1.batches();
 
       expect(result.object).toBe("list");
       expect(Array.isArray(result.data)).toBe(true);
@@ -29,7 +29,7 @@ describe("openai batches integration", () => {
         apiKey: process.env.OPENAI_API_KEY ?? "sk-test-key",
       });
 
-      const result = await provider.v1.batches.list({ limit: 2 });
+      const result = await provider.get.v1.batches({ limit: 2 });
 
       expect(result.object).toBe("list");
       expect(Array.isArray(result.data)).toBe(true);
@@ -40,7 +40,7 @@ describe("openai batches integration", () => {
   describe("payload validation", () => {
     it("should expose payloadSchema on create method", () => {
       const provider = openai({ apiKey: "sk-test-key" });
-      const schema = provider.v1.batches.payloadSchema;
+      const schema = provider.post.v1.batches.payloadSchema;
       expect(schema.method).toBe("POST");
       expect(schema.path).toBe("/batches");
       expect(schema.contentType).toBe("application/json");
@@ -51,7 +51,7 @@ describe("openai batches integration", () => {
 
     it("should validate a valid create payload", () => {
       const provider = openai({ apiKey: "sk-test-key" });
-      const result = provider.v1.batches.validatePayload({
+      const result = provider.post.v1.batches.validatePayload({
         input_file_id: "file-abc123",
         endpoint: "/v1/chat/completions",
         completion_window: "24h",
@@ -62,14 +62,14 @@ describe("openai batches integration", () => {
 
     it("should reject payload missing required fields", () => {
       const provider = openai({ apiKey: "sk-test-key" });
-      const result = provider.v1.batches.validatePayload({});
+      const result = provider.post.v1.batches.validatePayload({});
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
     });
 
     it("should expose payloadSchema on cancel method", () => {
       const provider = openai({ apiKey: "sk-test-key" });
-      const schema = provider.v1.batches.cancel.payloadSchema;
+      const schema = provider.post.v1.batches.cancel.payloadSchema;
       expect(schema.method).toBe("POST");
       expect(schema.path).toBe("/batches/{batch_id}/cancel");
     });

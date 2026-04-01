@@ -18,7 +18,7 @@ describe("openai moderations integration", () => {
       apiKey: process.env.OPENAI_API_KEY ?? "sk-test-key",
     });
 
-    const result = await provider.v1.moderations({
+    const result = await provider.post.v1.moderations({
       input: "The weather is nice today.",
       model: "omni-moderation-latest",
     });

@@ -81,7 +81,6 @@ import {
   responsesInputTokensSchema,
   fineTuningJobsCreateSchema,
   checkpointPermissionsCreateSchema,
-  storedCompletionsUpdateSchema,
   storedCompletionsDeleteSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
@@ -408,986 +407,762 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
     }
   }
 
-  return {
-    v1: {
-      chat: {
-        completions: Object.assign(
-          async function completions(
-            req: OpenAiChatRequest,
-            signal?: AbortSignal
-          ): Promise<OpenAiChatResponse> {
-            return await makeRequest<OpenAiChatResponse>(
-              "/chat/completions",
-              jsonRequest(req),
-              signal
-            );
-          },
-          {
-            payloadSchema: chatCompletionsSchema,
-            validatePayload(data: unknown): ValidationResult {
-              return validatePayload(data, chatCompletionsSchema);
-            },
-            list: async function list(
-              listOpts?: OpenAiStoredCompletionListOptions,
-              signal?: AbortSignal
-            ): Promise<OpenAiStoredCompletionListResponse> {
-              const query: Record<string, string | undefined> = {};
-              if (listOpts?.after) query.after = listOpts.after;
-              if (listOpts?.limit !== undefined)
-                query.limit = String(listOpts.limit);
-              if (listOpts?.order) query.order = listOpts.order;
-              if (listOpts?.metadata) {
-                for (const [k, v] of Object.entries(listOpts.metadata)) {
-                  query[`metadata[${k}]`] = v;
-                }
-              }
-              return await makeGetRequest<OpenAiStoredCompletionListResponse>(
-                "/chat/completions",
-                query,
-                signal
-              );
-            },
-            retrieve: async function retrieve(
-              id: string,
-              signal?: AbortSignal
-            ): Promise<OpenAiChatResponse> {
-              return await makeGetRequest<OpenAiChatResponse>(
-                `/chat/completions/${encodeURIComponent(id)}`,
-                undefined,
-                signal
-              );
-            },
-            del: Object.assign(
-              async function del(
-                id: string,
-                signal?: AbortSignal
-              ): Promise<OpenAiStoredCompletionDeleteResponse> {
-                return await makeDeleteRequest<OpenAiStoredCompletionDeleteResponse>(
-                  `/chat/completions/${encodeURIComponent(id)}`,
-                  signal
-                );
-              },
-              {
-                payloadSchema: storedCompletionsDeleteSchema,
-                // Verb accessors for GET + DELETE on /chat/completions/:id
-                get: async function retrieve(
-                  id: string,
-                  signal?: AbortSignal
-                ): Promise<OpenAiChatResponse> {
-                  return await makeGetRequest<OpenAiChatResponse>(
-                    `/chat/completions/${encodeURIComponent(id)}`,
-                    undefined,
-                    signal
-                  );
-                },
-                delete: async function del(
-                  id: string,
-                  signal?: AbortSignal
-                ): Promise<OpenAiStoredCompletionDeleteResponse> {
-                  return await makeDeleteRequest<OpenAiStoredCompletionDeleteResponse>(
-                    `/chat/completions/${encodeURIComponent(id)}`,
-                    signal
-                  );
-                },
-              }
-            ),
-            update: Object.assign(
-              async function update(
-                id: string,
-                req: OpenAiStoredCompletionUpdateRequest,
-                signal?: AbortSignal
-              ): Promise<OpenAiChatResponse> {
-                return await makeRequest<OpenAiChatResponse>(
-                  `/chat/completions/${encodeURIComponent(id)}`,
-                  jsonRequest(req),
-                  signal
-                );
-              },
-              {
-                payloadSchema: storedCompletionsUpdateSchema,
-                validatePayload(data: unknown): ValidationResult {
-                  return validatePayload(data, storedCompletionsUpdateSchema);
-                },
-                // Verb accessors for GET + POST on /chat/completions/:id
-                get: async function retrieve(
-                  id: string,
-                  signal?: AbortSignal
-                ): Promise<OpenAiChatResponse> {
-                  return await makeGetRequest<OpenAiChatResponse>(
-                    `/chat/completions/${encodeURIComponent(id)}`,
-                    undefined,
-                    signal
-                  );
-                },
-                post: async function update(
-                  id: string,
-                  req: OpenAiStoredCompletionUpdateRequest,
-                  signal?: AbortSignal
-                ): Promise<OpenAiChatResponse> {
-                  return await makeRequest<OpenAiChatResponse>(
-                    `/chat/completions/${encodeURIComponent(id)}`,
-                    jsonRequest(req),
-                    signal
-                  );
-                },
-              }
-            ),
-            messages: {
-              list: async function list(
-                id: string,
-                msgOpts?: OpenAiStoredCompletionMessageListOptions,
-                signal?: AbortSignal
-              ): Promise<OpenAiStoredCompletionMessageListResponse> {
-                const query: Record<string, string | undefined> = {};
-                if (msgOpts?.after) query.after = msgOpts.after;
-                if (msgOpts?.limit !== undefined)
-                  query.limit = String(msgOpts.limit);
-                if (msgOpts?.order) query.order = msgOpts.order;
-                return await makeGetRequest<OpenAiStoredCompletionMessageListResponse>(
-                  `/chat/completions/${encodeURIComponent(id)}/messages`,
-                  query,
-                  signal
-                );
-              },
-            },
-            // Verb accessors for POST + GET on /chat/completions
-            post: async function completions(
-              req: OpenAiChatRequest,
-              signal?: AbortSignal
-            ): Promise<OpenAiChatResponse> {
-              return await makeRequest<OpenAiChatResponse>(
-                "/chat/completions",
-                jsonRequest(req),
-                signal
-              );
-            },
-            get: async function get(
-              idOrOpts?: string | OpenAiStoredCompletionListOptions,
-              signal?: AbortSignal
-            ): Promise<
-              OpenAiChatResponse | OpenAiStoredCompletionListResponse
-            > {
-              if (typeof idOrOpts === "string") {
-                return await makeGetRequest<OpenAiChatResponse>(
-                  `/chat/completions/${encodeURIComponent(idOrOpts)}`,
-                  undefined,
-                  signal
-                );
-              }
-              const query: Record<string, string | undefined> = {};
-              if (idOrOpts?.after) query.after = idOrOpts.after;
-              if (idOrOpts?.limit !== undefined)
-                query.limit = String(idOrOpts.limit);
-              if (idOrOpts?.order) query.order = idOrOpts.order;
-              if (idOrOpts?.metadata) {
-                for (const [k, v] of Object.entries(idOrOpts.metadata)) {
-                  query[`metadata[${k}]`] = v;
-                }
-              }
-              return await makeGetRequest<OpenAiStoredCompletionListResponse>(
-                "/chat/completions",
-                query,
-                signal
-              );
-            },
-          }
-        ),
-      },
-      embeddings: Object.assign(
-        async function embeddings(
-          req: OpenAiEmbeddingRequest,
+  // POST v1 namespace
+  const postV1 = {
+    chat: {
+      completions: Object.assign(
+        async (
+          reqOrId: OpenAiChatRequest | string,
+          reqOrSignal?: OpenAiStoredCompletionUpdateRequest | AbortSignal,
           signal?: AbortSignal
-        ): Promise<OpenAiEmbeddingResponse> {
-          return await makeRequest<OpenAiEmbeddingResponse>(
-            "/embeddings",
-            jsonRequest(req),
-            signal
+        ): Promise<OpenAiChatResponse> => {
+          // Overload: update stored completion (POST /chat/completions/{id})
+          if (typeof reqOrId === "string") {
+            const id = reqOrId;
+            const req = reqOrSignal as OpenAiStoredCompletionUpdateRequest;
+            const actualSignal = signal;
+            return makeRequest<OpenAiChatResponse>(
+              `/chat/completions/${encodeURIComponent(id)}`,
+              jsonRequest(req),
+              actualSignal
+            );
+          }
+          // Default: create chat completion (POST /chat/completions)
+          return makeRequest<OpenAiChatResponse>(
+            "/chat/completions",
+            jsonRequest(reqOrId),
+            reqOrSignal as AbortSignal
           );
         },
         {
-          payloadSchema: embeddingsSchema,
+          payloadSchema: chatCompletionsSchema,
           validatePayload(data: unknown): ValidationResult {
             return validatePayload(data, chatCompletionsSchema);
           },
         }
       ),
-      files: {
-        list: async function list(
-          listOpts?: OpenAiFileListRequest,
+    },
+    audio: {
+      speech: Object.assign(
+        async (
+          req: OpenAiSpeechRequest,
           signal?: AbortSignal
-        ): Promise<OpenAiFileListResponse> {
-          const query: Record<string, string | undefined> = {};
-          if (listOpts?.purpose !== undefined) query.purpose = listOpts.purpose;
-          if (listOpts?.limit !== undefined)
-            query.limit = String(listOpts.limit);
-          if (listOpts?.order !== undefined) query.order = listOpts.order;
-          if (listOpts?.after !== undefined) query.after = listOpts.after;
-          return await makeGetRequest<OpenAiFileListResponse>(
-            "/files",
-            query,
-            signal
-          );
+        ): Promise<ArrayBuffer> => {
+          return makeBinaryRequest("/audio/speech", jsonRequest(req), signal);
         },
-        upload: Object.assign(
-          async function upload(
-            req: OpenAiFileUploadRequest,
-            signal?: AbortSignal
-          ): Promise<OpenAiFile> {
-            const form = new FormData();
-            form.append("file", req.file);
-            form.append("purpose", req.purpose);
-            if (req.expires_after !== undefined) {
-              form.append("expires_after", JSON.stringify(req.expires_after));
-            }
+        {
+          payloadSchema: audioSpeechSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, audioSpeechSchema);
+          },
+        }
+      ),
+      transcriptions: Object.assign(
+        async (
+          req: OpenAiTranscribeRequest,
+          signal?: AbortSignal
+        ): Promise<OpenAiTranscribeResponse> => {
+          const form = new FormData();
+          form.append("file", req.file);
+          form.append("model", req.model);
+          if (req.response_format !== undefined)
+            form.append("response_format", req.response_format);
+          if (req.language !== undefined) form.append("language", req.language);
+          if (req.prompt !== undefined) form.append("prompt", req.prompt);
+          if (req.temperature !== undefined)
+            form.append("temperature", String(req.temperature));
 
-            return await makeRequest<OpenAiFile>(
-              "/files",
-              { headers: {}, body: form },
-              signal
-            );
+          return makeRequest<OpenAiTranscribeResponse>(
+            "/audio/transcriptions",
+            { headers: {}, body: form },
+            signal
+          );
+        },
+        {
+          payloadSchema: audioTranscriptionsSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, audioTranscriptionsSchema);
           },
-          {
-            payloadSchema: filesUploadSchema,
-            validatePayload(data: unknown): ValidationResult {
-              return validatePayload(data, filesUploadSchema);
-            },
-          }
-        ),
-        retrieve: async function retrieve(
-          fileId: string,
+        }
+      ),
+      translations: Object.assign(
+        async (
+          req: OpenAiTranslateRequest,
           signal?: AbortSignal
-        ): Promise<OpenAiFile> {
-          return await makeGetRequest<OpenAiFile>(
-            `/files/${encodeURIComponent(fileId)}`,
-            undefined,
-            signal
-          );
-        },
-        del: Object.assign(
-          async function del(
-            fileId: string,
-            signal?: AbortSignal
-          ): Promise<OpenAiFileDeleteResponse> {
-            return await makeDeleteRequest<OpenAiFileDeleteResponse>(
-              `/files/${encodeURIComponent(fileId)}`,
-              signal
-            );
-          },
-          {
-            payloadSchema: filesDeleteSchema,
-            // Verb accessors for GET + DELETE on /files/:id
-            get: async function retrieve(
-              fileId: string,
-              signal?: AbortSignal
-            ): Promise<OpenAiFile> {
-              return await makeGetRequest<OpenAiFile>(
-                `/files/${encodeURIComponent(fileId)}`,
-                undefined,
-                signal
-              );
-            },
-            delete: async function del(
-              fileId: string,
-              signal?: AbortSignal
-            ): Promise<OpenAiFileDeleteResponse> {
-              return await makeDeleteRequest<OpenAiFileDeleteResponse>(
-                `/files/${encodeURIComponent(fileId)}`,
-                signal
-              );
-            },
-          }
-        ),
-        content: async function content(
-          fileId: string,
-          signal?: AbortSignal
-        ): Promise<string> {
-          return await makeGetTextRequest(
-            `/files/${encodeURIComponent(fileId)}/content`,
-            signal
-          );
-        },
-        // Verb accessors for POST + GET on /files
-        get: async function list(
-          listOpts?: OpenAiFileListRequest,
-          signal?: AbortSignal
-        ): Promise<OpenAiFileListResponse> {
-          const query: Record<string, string | undefined> = {};
-          if (listOpts?.purpose !== undefined) query.purpose = listOpts.purpose;
-          if (listOpts?.limit !== undefined)
-            query.limit = String(listOpts.limit);
-          if (listOpts?.order !== undefined) query.order = listOpts.order;
-          if (listOpts?.after !== undefined) query.after = listOpts.after;
-          return await makeGetRequest<OpenAiFileListResponse>(
-            "/files",
-            query,
-            signal
-          );
-        },
-        post: Object.assign(
-          async function upload(
-            req: OpenAiFileUploadRequest,
-            signal?: AbortSignal
-          ): Promise<OpenAiFile> {
-            const form = new FormData();
-            form.append("file", req.file);
-            form.append("purpose", req.purpose);
-            if (req.expires_after !== undefined) {
-              form.append("expires_after", JSON.stringify(req.expires_after));
-            }
+        ): Promise<OpenAiTranslateResponse> => {
+          const form = new FormData();
+          form.append("file", req.file);
+          form.append("model", req.model);
+          if (req.response_format !== undefined)
+            form.append("response_format", req.response_format);
+          if (req.prompt !== undefined) form.append("prompt", req.prompt);
+          if (req.temperature !== undefined)
+            form.append("temperature", String(req.temperature));
 
-            return await makeRequest<OpenAiFile>(
-              "/files",
-              { headers: {}, body: form },
-              signal
-            );
+          return makeRequest<OpenAiTranslateResponse>(
+            "/audio/translations",
+            { headers: {}, body: form },
+            signal
+          );
+        },
+        {
+          payloadSchema: audioTranslationsSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, audioTranslationsSchema);
           },
-          {
-            payloadSchema: filesUploadSchema,
-            validatePayload(data: unknown): ValidationResult {
-              return validatePayload(data, filesUploadSchema);
-            },
-          }
-        ),
+        }
+      ),
+    },
+    embeddings: Object.assign(
+      async (
+        req: OpenAiEmbeddingRequest,
+        signal?: AbortSignal
+      ): Promise<OpenAiEmbeddingResponse> => {
+        return makeRequest<OpenAiEmbeddingResponse>(
+          "/embeddings",
+          jsonRequest(req),
+          signal
+        );
       },
-      images: {
-        edits: Object.assign(
-          async function edits(
-            req: OpenAiImageEditRequest,
-            signal?: AbortSignal
-          ): Promise<OpenAiImageEditResponse> {
-            const form = new FormData();
-            if (Array.isArray(req.image)) {
-              for (const img of req.image) {
-                form.append("image", img);
-              }
-            } else {
-              form.append("image", req.image);
-            }
-            form.append("prompt", req.prompt);
-            if (req.mask !== undefined) form.append("mask", req.mask);
-            if (req.model !== undefined) form.append("model", req.model);
-            if (req.n !== undefined) form.append("n", String(req.n));
-            if (req.size !== undefined) form.append("size", req.size);
-            if (req.quality !== undefined) form.append("quality", req.quality);
-            if (req.output_format !== undefined)
-              form.append("output_format", req.output_format);
-            if (req.response_format !== undefined)
-              form.append("response_format", req.response_format);
-            if (req.background !== undefined)
-              form.append("background", req.background);
-            if (req.input_fidelity !== undefined)
-              form.append("input_fidelity", req.input_fidelity);
-            if (req.output_compression !== undefined)
-              form.append("output_compression", String(req.output_compression));
-            if (req.user !== undefined) form.append("user", req.user);
-
-            return await makeRequest<OpenAiImageEditResponse>(
-              "/images/edits",
-              { headers: {}, body: form },
-              signal
-            );
+      {
+        payloadSchema: embeddingsSchema,
+        validatePayload(data: unknown): ValidationResult {
+          return validatePayload(data, embeddingsSchema);
+        },
+      }
+    ),
+    images: {
+      generations: Object.assign(
+        async (
+          req: OpenAiImageGenerationRequest,
+          signal?: AbortSignal
+        ): Promise<OpenAiImageGenerationResponse> => {
+          return makeRequest<OpenAiImageGenerationResponse>(
+            "/images/generations",
+            jsonRequest(req),
+            signal
+          );
+        },
+        {
+          payloadSchema: imageGenerationsSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, imageGenerationsSchema);
           },
-          {
-            payloadSchema: imageEditsSchema,
-            validatePayload(data: unknown): ValidationResult {
-              return validatePayload(data, imageEditsSchema);
-            },
+        }
+      ),
+      edits: Object.assign(
+        async (
+          req: OpenAiImageEditRequest,
+          signal?: AbortSignal
+        ): Promise<OpenAiImageEditResponse> => {
+          const form = new FormData();
+          if (Array.isArray(req.image)) {
+            for (const img of req.image) {
+              form.append("image", img);
+            }
+          } else {
+            form.append("image", req.image);
           }
-        ),
-        generations: Object.assign(
-          async function generations(
-            req: OpenAiImageGenerationRequest,
+          form.append("prompt", req.prompt);
+          if (req.mask !== undefined) form.append("mask", req.mask);
+          if (req.model !== undefined) form.append("model", req.model);
+          if (req.n !== undefined) form.append("n", String(req.n));
+          if (req.size !== undefined) form.append("size", req.size);
+          if (req.quality !== undefined) form.append("quality", req.quality);
+          if (req.output_format !== undefined)
+            form.append("output_format", req.output_format);
+          if (req.response_format !== undefined)
+            form.append("response_format", req.response_format);
+          if (req.background !== undefined)
+            form.append("background", req.background);
+          if (req.input_fidelity !== undefined)
+            form.append("input_fidelity", req.input_fidelity);
+          if (req.output_compression !== undefined)
+            form.append("output_compression", String(req.output_compression));
+          if (req.user !== undefined) form.append("user", req.user);
+
+          return makeRequest<OpenAiImageEditResponse>(
+            "/images/edits",
+            { headers: {}, body: form },
+            signal
+          );
+        },
+        {
+          payloadSchema: imageEditsSchema,
+          validatePayload(data: unknown): ValidationResult {
+            return validatePayload(data, imageEditsSchema);
+          },
+        }
+      ),
+    },
+    files: Object.assign(
+      async (
+        req: OpenAiFileUploadRequest,
+        signal?: AbortSignal
+      ): Promise<OpenAiFile> => {
+        const form = new FormData();
+        form.append("file", req.file);
+        form.append("purpose", req.purpose);
+        if (req.expires_after !== undefined) {
+          form.append("expires_after", JSON.stringify(req.expires_after));
+        }
+
+        return makeRequest<OpenAiFile>(
+          "/files",
+          { headers: {}, body: form },
+          signal
+        );
+      },
+      {
+        payloadSchema: filesUploadSchema,
+        validatePayload(data: unknown): ValidationResult {
+          return validatePayload(data, filesUploadSchema);
+        },
+      }
+    ),
+    moderations: Object.assign(
+      async (
+        req: OpenAiModerationRequest,
+        signal?: AbortSignal
+      ): Promise<OpenAiModerationResponse> => {
+        return makeRequest<OpenAiModerationResponse>(
+          "/moderations",
+          jsonRequest(req),
+          signal
+        );
+      },
+      {
+        payloadSchema: moderationsSchema,
+        validatePayload(data: unknown): ValidationResult {
+          return validatePayload(data, moderationsSchema);
+        },
+      }
+    ),
+    responses: Object.assign(
+      async (
+        req: OpenAiResponseRequest,
+        signal?: AbortSignal
+      ): Promise<OpenAiResponseResponse> => {
+        return makeRequest<OpenAiResponseResponse>(
+          "/responses",
+          jsonRequest(req),
+          signal
+        );
+      },
+      {
+        payloadSchema: responsesSchema,
+        validatePayload(data: unknown): ValidationResult {
+          return validatePayload(data, responsesSchema);
+        },
+        compact: Object.assign(
+          async (
+            req: OpenAiResponseCompactRequest,
             signal?: AbortSignal
-          ): Promise<OpenAiImageGenerationResponse> {
-            return await makeRequest<OpenAiImageGenerationResponse>(
-              "/images/generations",
+          ): Promise<OpenAiResponseCompactResponse> => {
+            return makeRequest<OpenAiResponseCompactResponse>(
+              "/responses/compact",
               jsonRequest(req),
               signal
             );
           },
           {
-            payloadSchema: imageGenerationsSchema,
+            payloadSchema: responsesCompactSchema,
             validatePayload(data: unknown): ValidationResult {
-              return validatePayload(data, imageGenerationsSchema);
+              return validatePayload(data, responsesCompactSchema);
             },
           }
         ),
-      },
-      models: {
-        list: async function list(
-          signal?: AbortSignal
-        ): Promise<OpenAiModelListResponse> {
-          return await makeGetRequest<OpenAiModelListResponse>(
-            "/models",
-            undefined,
-            signal
-          );
-        },
-        retrieve: async function retrieve(
-          model: string,
-          signal?: AbortSignal
-        ): Promise<OpenAiModel> {
-          return await makeGetRequest<OpenAiModel>(
-            `/models/${encodeURIComponent(model)}`,
-            undefined,
-            signal
-          );
-        },
-        del: Object.assign(
-          async function del(
-            model: string,
+        inputTokens: Object.assign(
+          async (
+            req: OpenAiResponseInputTokensRequest,
             signal?: AbortSignal
-          ): Promise<OpenAiModelDeleteResponse> {
-            return await makeDeleteRequest<OpenAiModelDeleteResponse>(
-              `/models/${encodeURIComponent(model)}`,
+          ): Promise<OpenAiResponseInputTokensResponse> => {
+            return makeRequest<OpenAiResponseInputTokensResponse>(
+              "/responses/input_tokens",
+              jsonRequest(req),
               signal
             );
           },
           {
-            payloadSchema: modelsDeleteSchema,
-            // Verb accessors for GET + DELETE on /models/:id
-            get: async function retrieve(
-              model: string,
-              signal?: AbortSignal
-            ): Promise<OpenAiModel> {
-              return await makeGetRequest<OpenAiModel>(
-                `/models/${encodeURIComponent(model)}`,
-                undefined,
-                signal
-              );
-            },
-            delete: async function del(
-              model: string,
-              signal?: AbortSignal
-            ): Promise<OpenAiModelDeleteResponse> {
-              return await makeDeleteRequest<OpenAiModelDeleteResponse>(
-                `/models/${encodeURIComponent(model)}`,
-                signal
-              );
+            payloadSchema: responsesInputTokensSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, responsesInputTokensSchema);
             },
           }
         ),
+        cancel: Object.assign(
+          async (
+            id: string,
+            signal?: AbortSignal
+          ): Promise<OpenAiResponseResponse> => {
+            return makeEmptyPostRequest<OpenAiResponseResponse>(
+              `/responses/${encodeURIComponent(id)}/cancel`,
+              signal
+            );
+          },
+          {
+            payloadSchema: responsesCancelSchema,
+          }
+        ),
+      }
+    ),
+    batches: Object.assign(
+      async (
+        req: OpenAiBatchCreateRequest,
+        signal?: AbortSignal
+      ): Promise<OpenAiBatch> => {
+        return makeRequest<OpenAiBatch>("/batches", jsonRequest(req), signal);
       },
-      moderations: Object.assign(
-        async function moderations(
-          req: OpenAiModerationRequest,
+      {
+        payloadSchema: batchesCreateSchema,
+        validatePayload(data: unknown): ValidationResult {
+          return validatePayload(data, batchesCreateSchema);
+        },
+        cancel: Object.assign(
+          async (id: string, signal?: AbortSignal): Promise<OpenAiBatch> => {
+            return makeEmptyPostRequest<OpenAiBatch>(
+              `/batches/${encodeURIComponent(id)}/cancel`,
+              signal
+            );
+          },
+          {
+            payloadSchema: batchesCancelSchema,
+          }
+        ),
+      }
+    ),
+    fine_tuning: {
+      jobs: Object.assign(
+        async (
+          req: OpenAiFineTuningJobCreateRequest,
           signal?: AbortSignal
-        ): Promise<OpenAiModerationResponse> {
-          return await makeRequest<OpenAiModerationResponse>(
-            "/moderations",
+        ): Promise<OpenAiFineTuningJob> => {
+          return makeRequest<OpenAiFineTuningJob>(
+            "/fine_tuning/jobs",
             jsonRequest(req),
             signal
           );
         },
         {
-          payloadSchema: moderationsSchema,
+          payloadSchema: fineTuningJobsCreateSchema,
           validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, moderationsSchema);
-          },
-        }
-      ),
-      batches: Object.assign(
-        async function batches(
-          req: OpenAiBatchCreateRequest,
-          signal?: AbortSignal
-        ): Promise<OpenAiBatch> {
-          return await makeRequest<OpenAiBatch>(
-            "/batches",
-            jsonRequest(req),
-            signal
-          );
-        },
-        {
-          payloadSchema: batchesCreateSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, batchesCreateSchema);
-          },
-          list: async function list(
-            params?: OpenAiBatchListParams,
-            signal?: AbortSignal
-          ): Promise<OpenAiBatchListResponse> {
-            return await makeGetRequest<OpenAiBatchListResponse>(
-              "/batches",
-              {
-                after: params?.after,
-                limit:
-                  params?.limit !== undefined
-                    ? String(params.limit)
-                    : undefined,
-              },
-              signal
-            );
-          },
-          retrieve: async function retrieve(
-            batchId: string,
-            signal?: AbortSignal
-          ): Promise<OpenAiBatch> {
-            return await makeGetRequest<OpenAiBatch>(
-              `/batches/${encodeURIComponent(batchId)}`,
-              undefined,
-              signal
-            );
+            return validatePayload(data, fineTuningJobsCreateSchema);
           },
           cancel: Object.assign(
-            async function cancel(
-              batchId: string,
-              signal?: AbortSignal
-            ): Promise<OpenAiBatch> {
-              return await makeRequest<OpenAiBatch>(
-                `/batches/${encodeURIComponent(batchId)}/cancel`,
-                jsonRequest({}),
-                signal
-              );
-            },
-            {
-              payloadSchema: batchesCancelSchema,
-            }
-          ),
-          // Verb accessors for POST + GET on /batches
-          post: async function batches(
-            req: OpenAiBatchCreateRequest,
-            signal?: AbortSignal
-          ): Promise<OpenAiBatch> {
-            return await makeRequest<OpenAiBatch>(
-              "/batches",
-              jsonRequest(req),
-              signal
-            );
-          },
-          get: async function list(
-            params?: OpenAiBatchListParams,
-            signal?: AbortSignal
-          ): Promise<OpenAiBatchListResponse> {
-            return await makeGetRequest<OpenAiBatchListResponse>(
-              "/batches",
-              {
-                after: params?.after,
-                limit:
-                  params?.limit !== undefined
-                    ? String(params.limit)
-                    : undefined,
-              },
-              signal
-            );
-          },
-        }
-      ),
-      responses: Object.assign(
-        async function responses(
-          req: OpenAiResponseRequest,
-          signal?: AbortSignal
-        ): Promise<OpenAiResponseResponse> {
-          return await makeRequest<OpenAiResponseResponse>(
-            "/responses",
-            jsonRequest(req),
-            signal
-          );
-        },
-        {
-          payloadSchema: responsesSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, responsesSchema);
-          },
-          get: async function get(
-            id: string,
-            getOpts?: OpenAiResponseGetOptions,
-            signal?: AbortSignal
-          ): Promise<OpenAiResponseResponse> {
-            return await makeGetRequest<OpenAiResponseResponse>(
-              `/responses/${encodeURIComponent(id)}`,
-              {
-                include: getOpts?.include,
-                stream: getOpts?.stream,
-              },
-              signal
-            );
-          },
-          del: Object.assign(
-            async function del(
+            async (
               id: string,
               signal?: AbortSignal
-            ): Promise<OpenAiResponseDeleteResponse> {
-              return await makeDeleteRequest<OpenAiResponseDeleteResponse>(
-                `/responses/${encodeURIComponent(id)}`,
-                signal
-              );
-            },
-            {
-              payloadSchema: responsesDeleteSchema,
-              // Verb accessor for DELETE on /responses/:id
-              delete: async function del(
-                id: string,
-                signal?: AbortSignal
-              ): Promise<OpenAiResponseDeleteResponse> {
-                return await makeDeleteRequest<OpenAiResponseDeleteResponse>(
-                  `/responses/${encodeURIComponent(id)}`,
-                  signal
-                );
-              },
-            }
-          ),
-          cancel: Object.assign(
-            async function cancel(
-              id: string,
-              signal?: AbortSignal
-            ): Promise<OpenAiResponseResponse> {
-              return await makeEmptyPostRequest<OpenAiResponseResponse>(
-                `/responses/${encodeURIComponent(id)}/cancel`,
-                signal
-              );
-            },
-            {
-              payloadSchema: responsesCancelSchema,
-            }
-          ),
-          input_items: async function input_items(
-            id: string,
-            opts?: OpenAiResponseInputItemsOptions,
-            signal?: AbortSignal
-          ): Promise<OpenAiResponseInputItemsResponse> {
-            return await makeGetRequest<OpenAiResponseInputItemsResponse>(
-              `/responses/${encodeURIComponent(id)}/input_items`,
-              {
-                after: opts?.after,
-                limit:
-                  opts?.limit !== undefined ? String(opts.limit) : undefined,
-                order: opts?.order,
-                include: opts?.include,
-              },
-              signal
-            );
-          },
-          compact: Object.assign(
-            async function compact(
-              req: OpenAiResponseCompactRequest,
-              signal?: AbortSignal
-            ): Promise<OpenAiResponseCompactResponse> {
-              return await makeRequest<OpenAiResponseCompactResponse>(
-                "/responses/compact",
-                jsonRequest(req),
-                signal
-              );
-            },
-            {
-              payloadSchema: responsesCompactSchema,
-              validatePayload(data: unknown): ValidationResult {
-                return validatePayload(data, responsesCompactSchema);
-              },
-            }
-          ),
-          input_tokens: Object.assign(
-            async function input_tokens(
-              req: OpenAiResponseInputTokensRequest,
-              signal?: AbortSignal
-            ): Promise<OpenAiResponseInputTokensResponse> {
-              return await makeRequest<OpenAiResponseInputTokensResponse>(
-                "/responses/input_tokens",
-                jsonRequest(req),
-                signal
-              );
-            },
-            {
-              payloadSchema: responsesInputTokensSchema,
-              validatePayload(data: unknown): ValidationResult {
-                return validatePayload(data, responsesInputTokensSchema);
-              },
-            }
-          ),
-        }
-      ),
-      audio: {
-        speech: Object.assign(
-          async function speech(
-            req: OpenAiSpeechRequest,
-            signal?: AbortSignal
-          ): Promise<ArrayBuffer> {
-            return await makeBinaryRequest(
-              "/audio/speech",
-              jsonRequest(req),
-              signal
-            );
-          },
-          {
-            payloadSchema: audioSpeechSchema,
-            validatePayload(data: unknown): ValidationResult {
-              return validatePayload(data, audioSpeechSchema);
-            },
-          }
-        ),
-        transcriptions: Object.assign(
-          async function transcriptions(
-            req: OpenAiTranscribeRequest,
-            signal?: AbortSignal
-          ): Promise<OpenAiTranscribeResponse> {
-            const form = new FormData();
-            form.append("file", req.file);
-            form.append("model", req.model);
-            if (req.response_format !== undefined)
-              form.append("response_format", req.response_format);
-            if (req.language !== undefined)
-              form.append("language", req.language);
-            if (req.prompt !== undefined) form.append("prompt", req.prompt);
-            if (req.temperature !== undefined)
-              form.append("temperature", String(req.temperature));
-
-            const data = await makeRequest<OpenAiTranscribeResponse>(
-              "/audio/transcriptions",
-              { headers: {}, body: form },
-              signal
-            );
-            return data;
-          },
-          {
-            payloadSchema: audioTranscriptionsSchema,
-            validatePayload(data: unknown): ValidationResult {
-              return validatePayload(data, audioTranscriptionsSchema);
-            },
-          }
-        ),
-        translations: Object.assign(
-          async function translations(
-            req: OpenAiTranslateRequest,
-            signal?: AbortSignal
-          ): Promise<OpenAiTranslateResponse> {
-            const form = new FormData();
-            form.append("file", req.file);
-            form.append("model", req.model);
-            if (req.response_format !== undefined)
-              form.append("response_format", req.response_format);
-            if (req.prompt !== undefined) form.append("prompt", req.prompt);
-            if (req.temperature !== undefined)
-              form.append("temperature", String(req.temperature));
-
-            const data = await makeRequest<OpenAiTranslateResponse>(
-              "/audio/translations",
-              { headers: {}, body: form },
-              signal
-            );
-            return data;
-          },
-          {
-            payloadSchema: audioTranslationsSchema,
-            validatePayload(data: unknown): ValidationResult {
-              return validatePayload(data, audioTranslationsSchema);
-            },
-          }
-        ),
-      },
-      fine_tuning: {
-        jobs: Object.assign(
-          async function jobs(
-            req: OpenAiFineTuningJobCreateRequest,
-            signal?: AbortSignal
-          ): Promise<OpenAiFineTuningJob> {
-            return await makeRequest<OpenAiFineTuningJob>(
-              "/fine_tuning/jobs",
-              jsonRequest(req),
-              signal
-            );
-          },
-          {
-            payloadSchema: fineTuningJobsCreateSchema,
-            validatePayload(data: unknown): ValidationResult {
-              return validatePayload(data, fineTuningJobsCreateSchema);
-            },
-            list: async function list(
-              listOpts?: OpenAiFineTuningJobListOptions,
-              signal?: AbortSignal
-            ): Promise<OpenAiFineTuningJobListResponse> {
-              const query: Record<string, string | undefined> = {};
-              if (listOpts?.after) query.after = listOpts.after;
-              if (listOpts?.limit !== undefined)
-                query.limit = String(listOpts.limit);
-              if (listOpts?.metadata) {
-                for (const [k, v] of Object.entries(listOpts.metadata)) {
-                  query[`metadata[${k}]`] = v;
-                }
-              }
-              return await makeGetRequest<OpenAiFineTuningJobListResponse>(
-                "/fine_tuning/jobs",
-                query,
-                signal
-              );
-            },
-            retrieve: async function retrieve(
-              id: string,
-              signal?: AbortSignal
-            ): Promise<OpenAiFineTuningJob> {
-              return await makeGetRequest<OpenAiFineTuningJob>(
-                `/fine_tuning/jobs/${encodeURIComponent(id)}`,
-                undefined,
-                signal
-              );
-            },
-            cancel: async function cancel(
-              id: string,
-              signal?: AbortSignal
-            ): Promise<OpenAiFineTuningJob> {
-              return await makeEmptyPostRequest<OpenAiFineTuningJob>(
+            ): Promise<OpenAiFineTuningJob> => {
+              return makeEmptyPostRequest<OpenAiFineTuningJob>(
                 `/fine_tuning/jobs/${encodeURIComponent(id)}/cancel`,
                 signal
               );
             },
-            pause: async function pause(
+            {
+              payloadSchema: {
+                method: "POST",
+                path: "/fine_tuning/jobs/{id}/cancel",
+                contentType: "application/json",
+                fields: {},
+              } as import("./types").PayloadSchema,
+            }
+          ),
+          pause: Object.assign(
+            async (
               id: string,
               signal?: AbortSignal
-            ): Promise<OpenAiFineTuningJob> {
-              return await makeEmptyPostRequest<OpenAiFineTuningJob>(
+            ): Promise<OpenAiFineTuningJob> => {
+              return makeEmptyPostRequest<OpenAiFineTuningJob>(
                 `/fine_tuning/jobs/${encodeURIComponent(id)}/pause`,
                 signal
               );
             },
-            resume: async function resume(
+            {
+              payloadSchema: {
+                method: "POST",
+                path: "/fine_tuning/jobs/{id}/pause",
+                contentType: "application/json",
+                fields: {},
+              } as import("./types").PayloadSchema,
+            }
+          ),
+          resume: Object.assign(
+            async (
               id: string,
               signal?: AbortSignal
-            ): Promise<OpenAiFineTuningJob> {
-              return await makeEmptyPostRequest<OpenAiFineTuningJob>(
+            ): Promise<OpenAiFineTuningJob> => {
+              return makeEmptyPostRequest<OpenAiFineTuningJob>(
                 `/fine_tuning/jobs/${encodeURIComponent(id)}/resume`,
                 signal
               );
             },
-            events: async function events(
-              id: string,
-              evtOpts?: OpenAiFineTuningJobEventListOptions,
-              signal?: AbortSignal
-            ): Promise<OpenAiFineTuningJobEventListResponse> {
-              const query: Record<string, string | undefined> = {};
-              if (evtOpts?.after) query.after = evtOpts.after;
-              if (evtOpts?.limit !== undefined)
-                query.limit = String(evtOpts.limit);
-              return await makeGetRequest<OpenAiFineTuningJobEventListResponse>(
-                `/fine_tuning/jobs/${encodeURIComponent(id)}/events`,
-                query,
-                signal
-              );
-            },
-            checkpoints: async function checkpoints(
-              id: string,
-              cpOpts?: OpenAiFineTuningJobCheckpointListOptions,
-              signal?: AbortSignal
-            ): Promise<OpenAiFineTuningJobCheckpointListResponse> {
-              const query: Record<string, string | undefined> = {};
-              if (cpOpts?.after) query.after = cpOpts.after;
-              if (cpOpts?.limit !== undefined)
-                query.limit = String(cpOpts.limit);
-              return await makeGetRequest<OpenAiFineTuningJobCheckpointListResponse>(
-                `/fine_tuning/jobs/${encodeURIComponent(id)}/checkpoints`,
-                query,
-                signal
-              );
-            },
-            // Verb accessors for POST + GET on /fine_tuning/jobs
-            post: async function jobs(
-              req: OpenAiFineTuningJobCreateRequest,
-              signal?: AbortSignal
-            ): Promise<OpenAiFineTuningJob> {
-              return await makeRequest<OpenAiFineTuningJob>(
-                "/fine_tuning/jobs",
-                jsonRequest(req),
-                signal
-              );
-            },
-            get: async function list(
-              listOpts?: OpenAiFineTuningJobListOptions,
-              signal?: AbortSignal
-            ): Promise<OpenAiFineTuningJobListResponse> {
-              const query: Record<string, string | undefined> = {};
-              if (listOpts?.after) query.after = listOpts.after;
-              if (listOpts?.limit !== undefined)
-                query.limit = String(listOpts.limit);
-              if (listOpts?.metadata) {
-                for (const [k, v] of Object.entries(listOpts.metadata)) {
-                  query[`metadata[${k}]`] = v;
-                }
-              }
-              return await makeGetRequest<OpenAiFineTuningJobListResponse>(
-                "/fine_tuning/jobs",
-                query,
-                signal
-              );
+            {
+              payloadSchema: {
+                method: "POST",
+                path: "/fine_tuning/jobs/{id}/resume",
+                contentType: "application/json",
+                fields: {},
+              } as import("./types").PayloadSchema,
+            }
+          ),
+        }
+      ),
+      checkpoints: {
+        permissions: Object.assign(
+          async (
+            checkpoint: string,
+            req: OpenAiCheckpointPermissionCreateRequest,
+            signal?: AbortSignal
+          ): Promise<OpenAiCheckpointPermissionCreateResponse> => {
+            return makeRequest<OpenAiCheckpointPermissionCreateResponse>(
+              `/fine_tuning/checkpoints/${encodeURIComponent(checkpoint)}/permissions`,
+              jsonRequest(req),
+              signal
+            );
+          },
+          {
+            payloadSchema: checkpointPermissionsCreateSchema,
+            validatePayload(data: unknown): ValidationResult {
+              return validatePayload(data, checkpointPermissionsCreateSchema);
             },
           }
         ),
-        checkpoints: {
-          permissions: Object.assign(
-            async function permissions(
-              checkpoint: string,
-              req: OpenAiCheckpointPermissionCreateRequest,
-              signal?: AbortSignal
-            ): Promise<OpenAiCheckpointPermissionCreateResponse> {
-              return await makeRequest<OpenAiCheckpointPermissionCreateResponse>(
-                `/fine_tuning/checkpoints/${encodeURIComponent(checkpoint)}/permissions`,
-                jsonRequest(req),
-                signal
-              );
-            },
-            {
-              payloadSchema: checkpointPermissionsCreateSchema,
-              validatePayload(data: unknown): ValidationResult {
-                return validatePayload(data, checkpointPermissionsCreateSchema);
-              },
-              list: async function list(
-                checkpoint: string,
-                permOpts?: OpenAiCheckpointPermissionListOptions,
-                signal?: AbortSignal
-              ): Promise<OpenAiCheckpointPermissionListResponse> {
-                const query: Record<string, string | undefined> = {};
-                if (permOpts?.after) query.after = permOpts.after;
-                if (permOpts?.limit !== undefined)
-                  query.limit = String(permOpts.limit);
-                if (permOpts?.order) query.order = permOpts.order;
-                if (permOpts?.project_id)
-                  query.project_id = permOpts.project_id;
-                return await makeGetRequest<OpenAiCheckpointPermissionListResponse>(
-                  `/fine_tuning/checkpoints/${encodeURIComponent(checkpoint)}/permissions`,
-                  query,
-                  signal
-                );
-              },
-              del: async function del(
-                checkpoint: string,
-                permissionId: string,
-                signal?: AbortSignal
-              ): Promise<OpenAiCheckpointPermissionDeleteResponse> {
-                return await makeDeleteRequest<OpenAiCheckpointPermissionDeleteResponse>(
-                  `/fine_tuning/checkpoints/${encodeURIComponent(checkpoint)}/permissions/${encodeURIComponent(permissionId)}`,
-                  signal
-                );
-              },
-              // Verb accessors for POST + GET on /fine_tuning/checkpoints/:id/permissions
-              post: async function permissions(
-                checkpoint: string,
-                req: OpenAiCheckpointPermissionCreateRequest,
-                signal?: AbortSignal
-              ): Promise<OpenAiCheckpointPermissionCreateResponse> {
-                return await makeRequest<OpenAiCheckpointPermissionCreateResponse>(
-                  `/fine_tuning/checkpoints/${encodeURIComponent(checkpoint)}/permissions`,
-                  jsonRequest(req),
-                  signal
-                );
-              },
-              get: async function list(
-                checkpoint: string,
-                permOpts?: OpenAiCheckpointPermissionListOptions,
-                signal?: AbortSignal
-              ): Promise<OpenAiCheckpointPermissionListResponse> {
-                const query: Record<string, string | undefined> = {};
-                if (permOpts?.after) query.after = permOpts.after;
-                if (permOpts?.limit !== undefined)
-                  query.limit = String(permOpts.limit);
-                if (permOpts?.order) query.order = permOpts.order;
-                if (permOpts?.project_id)
-                  query.project_id = permOpts.project_id;
-                return await makeGetRequest<OpenAiCheckpointPermissionListResponse>(
-                  `/fine_tuning/checkpoints/${encodeURIComponent(checkpoint)}/permissions`,
-                  query,
-                  signal
-                );
-              },
+      },
+    },
+  };
+
+  // GET v1 namespace
+  const getV1 = {
+    chat: {
+      completions: Object.assign(
+        async (
+          idOrOpts?: string | OpenAiStoredCompletionListOptions,
+          signal?: AbortSignal
+        ): Promise<OpenAiChatResponse | OpenAiStoredCompletionListResponse> => {
+          if (typeof idOrOpts === "string") {
+            // GET /chat/completions/{id}
+            return makeGetRequest<OpenAiChatResponse>(
+              `/chat/completions/${encodeURIComponent(idOrOpts)}`,
+              undefined,
+              signal
+            );
+          }
+          // GET /chat/completions (list)
+          const query: Record<string, string | undefined> = {};
+          if (idOrOpts?.after) query.after = idOrOpts.after;
+          if (idOrOpts?.limit !== undefined)
+            query.limit = String(idOrOpts.limit);
+          if (idOrOpts?.order) query.order = idOrOpts.order;
+          if (idOrOpts?.metadata) {
+            for (const [k, v] of Object.entries(idOrOpts.metadata)) {
+              query[`metadata[${k}]`] = v;
             }
-          ),
+          }
+          return makeGetRequest<OpenAiStoredCompletionListResponse>(
+            "/chat/completions",
+            query,
+            signal
+          );
+        },
+        {
+          // For accessing completions.messages as a property
+          messages: undefined as unknown,
+        }
+      ) as import("./types").OpenAiGetV1ChatCompletions,
+      completionsMessages: async (
+        id: string,
+        opts?: OpenAiStoredCompletionMessageListOptions,
+        signal?: AbortSignal
+      ): Promise<OpenAiStoredCompletionMessageListResponse> => {
+        const query: Record<string, string | undefined> = {};
+        if (opts?.after) query.after = opts.after;
+        if (opts?.limit !== undefined) query.limit = String(opts.limit);
+        if (opts?.order) query.order = opts.order;
+        return makeGetRequest<OpenAiStoredCompletionMessageListResponse>(
+          `/chat/completions/${encodeURIComponent(id)}/messages`,
+          query,
+          signal
+        );
+      },
+    },
+    files: Object.assign(
+      async (
+        idOrOpts?: string | OpenAiFileListRequest,
+        signal?: AbortSignal
+      ): Promise<OpenAiFile | OpenAiFileListResponse> => {
+        if (typeof idOrOpts === "string") {
+          // GET /files/{id}
+          return makeGetRequest<OpenAiFile>(
+            `/files/${encodeURIComponent(idOrOpts)}`,
+            undefined,
+            signal
+          );
+        }
+        // GET /files (list)
+        const query: Record<string, string | undefined> = {};
+        if (idOrOpts?.purpose !== undefined) query.purpose = idOrOpts.purpose;
+        if (idOrOpts?.limit !== undefined) query.limit = String(idOrOpts.limit);
+        if (idOrOpts?.order !== undefined) query.order = idOrOpts.order;
+        if (idOrOpts?.after !== undefined) query.after = idOrOpts.after;
+        return makeGetRequest<OpenAiFileListResponse>("/files", query, signal);
+      },
+      {
+        content: async (id: string, signal?: AbortSignal): Promise<string> => {
+          return makeGetTextRequest(
+            `/files/${encodeURIComponent(id)}/content`,
+            signal
+          );
+        },
+      }
+    ) as import("./types").OpenAiGetV1FilesNamespace,
+    models: Object.assign(
+      async (
+        id?: string | AbortSignal,
+        signal?: AbortSignal
+      ): Promise<OpenAiModelListResponse | OpenAiModel> => {
+        if (typeof id === "string") {
+          // GET /models/{id}
+          return makeGetRequest<OpenAiModel>(
+            `/models/${encodeURIComponent(id)}`,
+            undefined,
+            signal
+          );
+        }
+        // GET /models (list)
+        return makeGetRequest<OpenAiModelListResponse>(
+          "/models",
+          undefined,
+          typeof id === "object" ? id : signal // Handle signal as first param
+        );
+      },
+      {}
+    ) as import("./types").OpenAiGetV1ModelsNamespace,
+    responses: Object.assign(
+      async (
+        id: string,
+        opts?: OpenAiResponseGetOptions,
+        signal?: AbortSignal
+      ): Promise<OpenAiResponseResponse> => {
+        return makeGetRequest<OpenAiResponseResponse>(
+          `/responses/${encodeURIComponent(id)}`,
+          {
+            include: opts?.include,
+            stream: opts?.stream,
+          },
+          signal
+        );
+      },
+      {
+        inputItems: async (
+          id: string,
+          opts?: OpenAiResponseInputItemsOptions,
+          signal?: AbortSignal
+        ): Promise<OpenAiResponseInputItemsResponse> => {
+          return makeGetRequest<OpenAiResponseInputItemsResponse>(
+            `/responses/${encodeURIComponent(id)}/input_items`,
+            {
+              after: opts?.after,
+              limit: opts?.limit !== undefined ? String(opts.limit) : undefined,
+              order: opts?.order,
+              include: opts?.include,
+            },
+            signal
+          );
+        },
+      }
+    ),
+    batches: Object.assign(
+      async (
+        idOrOpts?: string | OpenAiBatchListParams,
+        signal?: AbortSignal
+      ): Promise<OpenAiBatch | OpenAiBatchListResponse> => {
+        if (typeof idOrOpts === "string") {
+          // GET /batches/{id}
+          return makeGetRequest<OpenAiBatch>(
+            `/batches/${encodeURIComponent(idOrOpts)}`,
+            undefined,
+            signal
+          );
+        }
+        // GET /batches (list)
+        return makeGetRequest<OpenAiBatchListResponse>(
+          "/batches",
+          {
+            after: (idOrOpts as OpenAiBatchListParams)?.after,
+            limit:
+              (idOrOpts as OpenAiBatchListParams)?.limit !== undefined
+                ? String((idOrOpts as OpenAiBatchListParams).limit)
+                : undefined,
+          },
+          signal
+        );
+      },
+      {}
+    ) as import("./types").OpenAiGetV1BatchesNamespace,
+    fine_tuning: {
+      jobs: Object.assign(
+        async (
+          idOrOpts?: string | OpenAiFineTuningJobListOptions,
+          signal?: AbortSignal
+        ): Promise<OpenAiFineTuningJob | OpenAiFineTuningJobListResponse> => {
+          if (typeof idOrOpts === "string") {
+            // GET /fine_tuning/jobs/{id}
+            return makeGetRequest<OpenAiFineTuningJob>(
+              `/fine_tuning/jobs/${encodeURIComponent(idOrOpts)}`,
+              undefined,
+              signal
+            );
+          }
+          // GET /fine_tuning/jobs (list)
+          const query: Record<string, string | undefined> = {};
+          const opts = idOrOpts as OpenAiFineTuningJobListOptions;
+          if (opts?.after) query.after = opts.after;
+          if (opts?.limit !== undefined) query.limit = String(opts.limit);
+          if (opts?.metadata) {
+            for (const [k, v] of Object.entries(opts.metadata)) {
+              query[`metadata[${k}]`] = v;
+            }
+          }
+          return makeGetRequest<OpenAiFineTuningJobListResponse>(
+            "/fine_tuning/jobs",
+            query,
+            signal
+          );
+        },
+        {
+          events: async (
+            id: string,
+            opts?: OpenAiFineTuningJobEventListOptions,
+            signal?: AbortSignal
+          ): Promise<OpenAiFineTuningJobEventListResponse> => {
+            const query: Record<string, string | undefined> = {};
+            if (opts?.after) query.after = opts.after;
+            if (opts?.limit !== undefined) query.limit = String(opts.limit);
+            return makeGetRequest<OpenAiFineTuningJobEventListResponse>(
+              `/fine_tuning/jobs/${encodeURIComponent(id)}/events`,
+              query,
+              signal
+            );
+          },
+          checkpoints: async (
+            id: string,
+            opts?: OpenAiFineTuningJobCheckpointListOptions,
+            signal?: AbortSignal
+          ): Promise<OpenAiFineTuningJobCheckpointListResponse> => {
+            const query: Record<string, string | undefined> = {};
+            if (opts?.after) query.after = opts.after;
+            if (opts?.limit !== undefined) query.limit = String(opts.limit);
+            return makeGetRequest<OpenAiFineTuningJobCheckpointListResponse>(
+              `/fine_tuning/jobs/${encodeURIComponent(id)}/checkpoints`,
+              query,
+              signal
+            );
+          },
+        }
+      ) as import("./types").OpenAiGetV1FineTuningJobs & {
+        events: import("./types").OpenAiGetV1FineTuningJobsEvents;
+        checkpoints: import("./types").OpenAiGetV1FineTuningJobsCheckpoints;
+      },
+      checkpoints: {
+        permissions: async (
+          checkpoint: string,
+          opts?: OpenAiCheckpointPermissionListOptions,
+          signal?: AbortSignal
+        ): Promise<OpenAiCheckpointPermissionListResponse> => {
+          const query: Record<string, string | undefined> = {};
+          if (opts?.after) query.after = opts.after;
+          if (opts?.limit !== undefined) query.limit = String(opts.limit);
+          if (opts?.order) query.order = opts.order;
+          if (opts?.project_id) query.project_id = opts.project_id;
+          return makeGetRequest<OpenAiCheckpointPermissionListResponse>(
+            `/fine_tuning/checkpoints/${encodeURIComponent(checkpoint)}/permissions`,
+            query,
+            signal
+          );
         },
       },
     },
+  };
+
+  // DELETE v1 namespace
+  const deleteV1 = {
+    chat: {
+      completions: Object.assign(
+        async (
+          id: string,
+          signal?: AbortSignal
+        ): Promise<OpenAiStoredCompletionDeleteResponse> => {
+          return makeDeleteRequest<OpenAiStoredCompletionDeleteResponse>(
+            `/chat/completions/${encodeURIComponent(id)}`,
+            signal
+          );
+        },
+        {
+          payloadSchema: storedCompletionsDeleteSchema,
+        }
+      ),
+    },
+    files: Object.assign(
+      async (
+        id: string,
+        signal?: AbortSignal
+      ): Promise<OpenAiFileDeleteResponse> => {
+        return makeDeleteRequest<OpenAiFileDeleteResponse>(
+          `/files/${encodeURIComponent(id)}`,
+          signal
+        );
+      },
+      {
+        payloadSchema: filesDeleteSchema,
+      }
+    ),
+    models: Object.assign(
+      async (
+        id: string,
+        signal?: AbortSignal
+      ): Promise<OpenAiModelDeleteResponse> => {
+        return makeDeleteRequest<OpenAiModelDeleteResponse>(
+          `/models/${encodeURIComponent(id)}`,
+          signal
+        );
+      },
+      {
+        payloadSchema: modelsDeleteSchema,
+      }
+    ),
+    responses: Object.assign(
+      async (
+        id: string,
+        signal?: AbortSignal
+      ): Promise<OpenAiResponseDeleteResponse> => {
+        return makeDeleteRequest<OpenAiResponseDeleteResponse>(
+          `/responses/${encodeURIComponent(id)}`,
+          signal
+        );
+      },
+      {
+        payloadSchema: responsesDeleteSchema,
+      }
+    ),
+    fine_tuning: {
+      checkpoints: {
+        permissions: async (
+          checkpoint: string,
+          permissionId: string,
+          signal?: AbortSignal
+        ): Promise<OpenAiCheckpointPermissionDeleteResponse> => {
+          return makeDeleteRequest<OpenAiCheckpointPermissionDeleteResponse>(
+            `/fine_tuning/checkpoints/${encodeURIComponent(checkpoint)}/permissions/${encodeURIComponent(permissionId)}`,
+            signal
+          );
+        },
+      },
+    },
+  };
+
+  return {
+    post: { v1: postV1 },
+    get: { v1: getV1 },
+    delete: { v1: deleteV1 },
   };
 }

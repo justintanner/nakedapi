@@ -16,7 +16,7 @@ describe("openai speech", () => {
       apiKey: process.env.OPENAI_API_KEY ?? "sk-test-key",
     });
 
-    const result = await provider.v1.audio.speech({
+    const result = await provider.post.v1.audio.speech({
       model: "tts-1",
       input: "Hello, world!",
       voice: "alloy",
@@ -30,7 +30,7 @@ describe("openai speech", () => {
   it("should validate speech payload", () => {
     const provider = openai({ apiKey: "sk-test-key" });
 
-    const valid = provider.v1.audio.speech.validatePayload({
+    const valid = provider.post.v1.audio.speech.validatePayload({
       model: "tts-1",
       input: "Hello",
       voice: "alloy",
@@ -38,7 +38,7 @@ describe("openai speech", () => {
     expect(valid.valid).toBe(true);
     expect(valid.errors).toHaveLength(0);
 
-    const missing = provider.v1.audio.speech.validatePayload({
+    const missing = provider.post.v1.audio.speech.validatePayload({
       model: "tts-1",
     });
     expect(missing.valid).toBe(false);
@@ -48,7 +48,7 @@ describe("openai speech", () => {
 
   it("should expose speech payload schema", () => {
     const provider = openai({ apiKey: "sk-test-key" });
-    const schema = provider.v1.audio.speech.payloadSchema;
+    const schema = provider.post.v1.audio.speech.payloadSchema;
 
     expect(schema.method).toBe("POST");
     expect(schema.path).toBe("/audio/speech");

@@ -17,7 +17,7 @@ describe("openai responses delete integration", () => {
     });
 
     // Create a stored response first
-    const created = await provider.v1.responses({
+    const created = await provider.post.v1.responses({
       model: "gpt-4o-mini",
       input: "Say the word 'ephemeral' and nothing else.",
       temperature: 0,
@@ -29,7 +29,7 @@ describe("openai responses delete integration", () => {
 
     // Delete it
     const deleted: OpenAiResponseDeleteResponse =
-      await provider.v1.responses.del(created.id);
+      await provider.delete.v1.responses(created.id);
     expect(deleted.id).toBe(created.id);
     expect(deleted.object).toBe("response.deleted");
     expect(deleted.deleted).toBe(true);
@@ -37,7 +37,7 @@ describe("openai responses delete integration", () => {
 
   it("should expose payloadSchema on del method", () => {
     const provider = openai({ apiKey: "sk-test-key" });
-    const schema = provider.v1.responses.del.payloadSchema;
+    const schema = provider.delete.v1.responses.payloadSchema;
     expect(schema.method).toBe("DELETE");
     expect(schema.path).toBe("/responses/{id}");
   });

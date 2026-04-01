@@ -1136,87 +1136,26 @@ export interface ValidationResult {
   errors: string[];
 }
 
-// Stored completions namespace types
-interface OpenAiStoredCompletionsListMethod {
-  (
-    opts?: OpenAiStoredCompletionListOptions,
-    signal?: AbortSignal
-  ): Promise<OpenAiStoredCompletionListResponse>;
-}
+// --- POST v1 namespace types ---
 
-interface OpenAiStoredCompletionsRetrieveMethod {
-  (id: string, signal?: AbortSignal): Promise<OpenAiChatResponse>;
-}
-
-interface OpenAiStoredCompletionsDeleteMethod {
-  (
-    id: string,
-    signal?: AbortSignal
-  ): Promise<OpenAiStoredCompletionDeleteResponse>;
-  payloadSchema: PayloadSchema;
-  // Verb accessors for GET + DELETE on /chat/completions/:id
-  get(id: string, signal?: AbortSignal): Promise<OpenAiChatResponse>;
-  delete(
-    id: string,
-    signal?: AbortSignal
-  ): Promise<OpenAiStoredCompletionDeleteResponse>;
-}
-
-interface OpenAiStoredCompletionsUpdateMethod {
-  (
-    id: string,
-    req: OpenAiStoredCompletionUpdateRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiChatResponse>;
+// POST /v1/chat/completions (create)
+// POST /v1/chat/completions/{id} (update) - overload by arity
+interface OpenAiPostV1ChatCompletionsBase {
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
-  // Verb accessors for GET + POST on /chat/completions/:id
-  get(id: string, signal?: AbortSignal): Promise<OpenAiChatResponse>;
-  post(
-    id: string,
-    req: OpenAiStoredCompletionUpdateRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiChatResponse>;
 }
 
-interface OpenAiStoredCompletionMessagesListMethod {
-  (
-    id: string,
-    opts?: OpenAiStoredCompletionMessageListOptions,
-    signal?: AbortSignal
-  ): Promise<OpenAiStoredCompletionMessageListResponse>;
-}
-
-interface OpenAiStoredCompletionMessagesNamespace {
-  list: OpenAiStoredCompletionMessagesListMethod;
-}
-
-// Namespace types
-interface OpenAiChatCompletionsMethod {
+export interface OpenAiPostV1ChatCompletions extends OpenAiPostV1ChatCompletionsBase {
   (req: OpenAiChatRequest, signal?: AbortSignal): Promise<OpenAiChatResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
-  list: OpenAiStoredCompletionsListMethod;
-  retrieve: OpenAiStoredCompletionsRetrieveMethod;
-  del: OpenAiStoredCompletionsDeleteMethod;
-  update: OpenAiStoredCompletionsUpdateMethod;
-  messages: OpenAiStoredCompletionMessagesNamespace;
-  // Verb accessors for POST + GET on /chat/completions
-  post(
-    req: OpenAiChatRequest,
+  (
+    id: string,
+    req: OpenAiStoredCompletionUpdateRequest,
     signal?: AbortSignal
   ): Promise<OpenAiChatResponse>;
-  get(
-    idOrOpts?: string | OpenAiStoredCompletionListOptions,
-    signal?: AbortSignal
-  ): Promise<OpenAiChatResponse | OpenAiStoredCompletionListResponse>;
 }
 
-interface OpenAiChatNamespace {
-  completions: OpenAiChatCompletionsMethod;
-}
-
-interface OpenAiEmbeddingsMethod {
+// POST /v1/embeddings
+export interface OpenAiPostV1Embeddings {
   (
     req: OpenAiEmbeddingRequest,
     signal?: AbortSignal
@@ -1225,13 +1164,15 @@ interface OpenAiEmbeddingsMethod {
   validatePayload(data: unknown): ValidationResult;
 }
 
-interface OpenAiAudioSpeechMethod {
+// POST /v1/audio/speech
+export interface OpenAiPostV1AudioSpeech {
   (req: OpenAiSpeechRequest, signal?: AbortSignal): Promise<ArrayBuffer>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
 }
 
-interface OpenAiAudioTranscriptionsMethod {
+// POST /v1/audio/transcriptions
+export interface OpenAiPostV1AudioTranscriptions {
   (
     req: OpenAiTranscribeRequest,
     signal?: AbortSignal
@@ -1240,7 +1181,8 @@ interface OpenAiAudioTranscriptionsMethod {
   validatePayload(data: unknown): ValidationResult;
 }
 
-interface OpenAiAudioTranslationsMethod {
+// POST /v1/audio/translations
+export interface OpenAiPostV1AudioTranslations {
   (
     req: OpenAiTranslateRequest,
     signal?: AbortSignal
@@ -1249,22 +1191,8 @@ interface OpenAiAudioTranslationsMethod {
   validatePayload(data: unknown): ValidationResult;
 }
 
-interface OpenAiAudioNamespace {
-  speech: OpenAiAudioSpeechMethod;
-  transcriptions: OpenAiAudioTranscriptionsMethod;
-  translations: OpenAiAudioTranslationsMethod;
-}
-
-interface OpenAiImagesEditsMethod {
-  (
-    req: OpenAiImageEditRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiImageEditResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
-}
-
-interface OpenAiImageGenerationsMethod {
+// POST /v1/images/generations
+export interface OpenAiPostV1ImagesGenerations {
   (
     req: OpenAiImageGenerationRequest,
     signal?: AbortSignal
@@ -1273,185 +1201,25 @@ interface OpenAiImageGenerationsMethod {
   validatePayload(data: unknown): ValidationResult;
 }
 
-interface OpenAiImagesNamespace {
-  edits: OpenAiImagesEditsMethod;
-  generations: OpenAiImageGenerationsMethod;
-}
-
-interface OpenAiResponsesGetMethod {
+// POST /v1/images/edits
+export interface OpenAiPostV1ImagesEdits {
   (
-    id: string,
-    opts?: OpenAiResponseGetOptions,
+    req: OpenAiImageEditRequest,
     signal?: AbortSignal
-  ): Promise<OpenAiResponseResponse>;
-}
-
-interface OpenAiResponsesDeleteMethod {
-  (id: string, signal?: AbortSignal): Promise<OpenAiResponseDeleteResponse>;
-  payloadSchema: PayloadSchema;
-  // Verb accessor for DELETE on /responses/:id
-  delete(
-    id: string,
-    signal?: AbortSignal
-  ): Promise<OpenAiResponseDeleteResponse>;
-}
-
-interface OpenAiResponsesCancelMethod {
-  (id: string, signal?: AbortSignal): Promise<OpenAiResponseResponse>;
-  payloadSchema: PayloadSchema;
-}
-
-interface OpenAiResponsesInputItemsMethod {
-  (
-    id: string,
-    opts?: OpenAiResponseInputItemsOptions,
-    signal?: AbortSignal
-  ): Promise<OpenAiResponseInputItemsResponse>;
-}
-
-interface OpenAiResponsesCompactMethod {
-  (
-    req: OpenAiResponseCompactRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiResponseCompactResponse>;
+  ): Promise<OpenAiImageEditResponse>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
 }
 
-interface OpenAiResponsesInputTokensMethod {
-  (
-    req: OpenAiResponseInputTokensRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiResponseInputTokensResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
-}
-
-interface OpenAiResponsesMethod {
-  (
-    req: OpenAiResponseRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiResponseResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
-  get: OpenAiResponsesGetMethod;
-  del: OpenAiResponsesDeleteMethod;
-  cancel: OpenAiResponsesCancelMethod;
-  input_items: OpenAiResponsesInputItemsMethod;
-  compact: OpenAiResponsesCompactMethod;
-  input_tokens: OpenAiResponsesInputTokensMethod;
-}
-
-interface OpenAiFilesListMethod {
-  (
-    opts?: OpenAiFileListRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiFileListResponse>;
-}
-
-interface OpenAiFilesUploadMethod {
+// POST /v1/files (upload)
+export interface OpenAiPostV1Files {
   (req: OpenAiFileUploadRequest, signal?: AbortSignal): Promise<OpenAiFile>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
 }
 
-interface OpenAiFilesRetrieveMethod {
-  (fileId: string, signal?: AbortSignal): Promise<OpenAiFile>;
-}
-
-interface OpenAiFilesDeleteMethod {
-  (fileId: string, signal?: AbortSignal): Promise<OpenAiFileDeleteResponse>;
-  payloadSchema: PayloadSchema;
-  // Verb accessors for GET + DELETE on /files/:id
-  get(fileId: string, signal?: AbortSignal): Promise<OpenAiFile>;
-  delete(
-    fileId: string,
-    signal?: AbortSignal
-  ): Promise<OpenAiFileDeleteResponse>;
-}
-
-interface OpenAiFilesContentMethod {
-  (fileId: string, signal?: AbortSignal): Promise<string>;
-}
-
-interface OpenAiFilesListMethod {
-  (
-    opts?: OpenAiFileListRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiFileListResponse>;
-}
-
-interface OpenAiFilesNamespace {
-  list: OpenAiFilesListMethod;
-  upload: OpenAiFilesUploadMethod;
-  retrieve: OpenAiFilesRetrieveMethod;
-  del: OpenAiFilesDeleteMethod;
-  content: OpenAiFilesContentMethod;
-  // Verb accessors for POST + GET on /files
-  get: OpenAiFilesListMethod;
-  post: OpenAiFilesUploadMethod;
-}
-
-interface OpenAiBatchesCreateMethod {
-  (req: OpenAiBatchCreateRequest, signal?: AbortSignal): Promise<OpenAiBatch>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
-  list: OpenAiBatchesListMethod;
-  retrieve: OpenAiBatchesRetrieveMethod;
-  cancel: OpenAiBatchesCancelMethod;
-  // Verb accessors for POST + GET on /batches
-  post(
-    req: OpenAiBatchCreateRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiBatch>;
-  get(
-    params?: OpenAiBatchListParams,
-    signal?: AbortSignal
-  ): Promise<OpenAiBatchListResponse>;
-}
-
-interface OpenAiBatchesListMethod {
-  (
-    params?: OpenAiBatchListParams,
-    signal?: AbortSignal
-  ): Promise<OpenAiBatchListResponse>;
-}
-
-interface OpenAiBatchesRetrieveMethod {
-  (batchId: string, signal?: AbortSignal): Promise<OpenAiBatch>;
-}
-
-interface OpenAiBatchesCancelMethod {
-  (batchId: string, signal?: AbortSignal): Promise<OpenAiBatch>;
-  payloadSchema: PayloadSchema;
-}
-
-interface OpenAiModelsListMethod {
-  (signal?: AbortSignal): Promise<OpenAiModelListResponse>;
-}
-
-interface OpenAiModelsRetrieveMethod {
-  (model: string, signal?: AbortSignal): Promise<OpenAiModel>;
-}
-
-interface OpenAiModelsDeleteMethod {
-  (model: string, signal?: AbortSignal): Promise<OpenAiModelDeleteResponse>;
-  payloadSchema: PayloadSchema;
-  // Verb accessors for GET + DELETE on /models/:id
-  get(model: string, signal?: AbortSignal): Promise<OpenAiModel>;
-  delete(
-    model: string,
-    signal?: AbortSignal
-  ): Promise<OpenAiModelDeleteResponse>;
-}
-
-interface OpenAiModelsNamespace {
-  list: OpenAiModelsListMethod;
-  retrieve: OpenAiModelsRetrieveMethod;
-  del: OpenAiModelsDeleteMethod;
-}
-
-interface OpenAiModerationsMethod {
+// POST /v1/moderations
+export interface OpenAiPostV1Moderations {
   (
     req: OpenAiModerationRequest,
     signal?: AbortSignal
@@ -1460,56 +1228,235 @@ interface OpenAiModerationsMethod {
   validatePayload(data: unknown): ValidationResult;
 }
 
-// Fine-tuning namespace types
-interface OpenAiFineTuningJobsCreateMethod {
+// POST /v1/responses
+export interface OpenAiPostV1Responses {
+  (
+    req: OpenAiResponseRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiResponseResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+// POST /v1/responses/compact
+export interface OpenAiPostV1ResponsesCompact {
+  (
+    req: OpenAiResponseCompactRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiResponseCompactResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+// POST /v1/responses/input_tokens
+export interface OpenAiPostV1ResponsesInputTokens {
+  (
+    req: OpenAiResponseInputTokensRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiResponseInputTokensResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+// POST /v1/responses/{id}/cancel
+export interface OpenAiPostV1ResponsesCancel {
+  (id: string, signal?: AbortSignal): Promise<OpenAiResponseResponse>;
+  payloadSchema: PayloadSchema;
+}
+
+// POST /v1/batches
+export interface OpenAiPostV1Batches {
+  (req: OpenAiBatchCreateRequest, signal?: AbortSignal): Promise<OpenAiBatch>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+// POST /v1/batches/{id}/cancel
+export interface OpenAiPostV1BatchesCancel {
+  (id: string, signal?: AbortSignal): Promise<OpenAiBatch>;
+  payloadSchema: PayloadSchema;
+}
+
+// POST /v1/fine_tuning/jobs
+export interface OpenAiPostV1FineTuningJobs {
   (
     req: OpenAiFineTuningJobCreateRequest,
     signal?: AbortSignal
   ): Promise<OpenAiFineTuningJob>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
-  list: OpenAiFineTuningJobsListMethod;
-  retrieve: OpenAiFineTuningJobsRetrieveMethod;
-  cancel: OpenAiFineTuningJobsCancelMethod;
-  pause: OpenAiFineTuningJobsPauseMethod;
-  resume: OpenAiFineTuningJobsResumeMethod;
-  events: OpenAiFineTuningJobsEventsMethod;
-  checkpoints: OpenAiFineTuningJobsCheckpointsMethod;
-  // Verb accessors for POST + GET on /fine_tuning/jobs
-  post(
-    req: OpenAiFineTuningJobCreateRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiFineTuningJob>;
-  get(
-    opts?: OpenAiFineTuningJobListOptions,
-    signal?: AbortSignal
-  ): Promise<OpenAiFineTuningJobListResponse>;
 }
 
-interface OpenAiFineTuningJobsListMethod {
+// POST /v1/fine_tuning/jobs/{id}/cancel
+export interface OpenAiPostV1FineTuningJobsCancel {
+  (id: string, signal?: AbortSignal): Promise<OpenAiFineTuningJob>;
+  payloadSchema: PayloadSchema;
+}
+
+// POST /v1/fine_tuning/jobs/{id}/pause
+export interface OpenAiPostV1FineTuningJobsPause {
+  (id: string, signal?: AbortSignal): Promise<OpenAiFineTuningJob>;
+  payloadSchema: PayloadSchema;
+}
+
+// POST /v1/fine_tuning/jobs/{id}/resume
+export interface OpenAiPostV1FineTuningJobsResume {
+  (id: string, signal?: AbortSignal): Promise<OpenAiFineTuningJob>;
+  payloadSchema: PayloadSchema;
+}
+
+// POST /v1/fine_tuning/checkpoints/{id}/permissions
+export interface OpenAiPostV1FineTuningCheckpointsPermissions {
+  (
+    checkpoint: string,
+    req: OpenAiCheckpointPermissionCreateRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiCheckpointPermissionCreateResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+// Audio namespace for POST v1
+export interface OpenAiPostV1AudioNamespace {
+  speech: OpenAiPostV1AudioSpeech;
+  transcriptions: OpenAiPostV1AudioTranscriptions;
+  translations: OpenAiPostV1AudioTranslations;
+}
+
+// Chat namespace for POST v1
+export interface OpenAiPostV1ChatNamespace {
+  completions: OpenAiPostV1ChatCompletions;
+}
+
+// Images namespace for POST v1
+export interface OpenAiPostV1ImagesNamespace {
+  generations: OpenAiPostV1ImagesGenerations;
+  edits: OpenAiPostV1ImagesEdits;
+}
+
+// Responses namespace for POST v1
+export interface OpenAiPostV1ResponsesNamespace {
+  (
+    req: OpenAiResponseRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiResponseResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+  compact: OpenAiPostV1ResponsesCompact;
+  inputTokens: OpenAiPostV1ResponsesInputTokens;
+  cancel: OpenAiPostV1ResponsesCancel;
+}
+
+// Fine-tuning namespace for POST v1
+export interface OpenAiPostV1FineTuningNamespace {
+  jobs: OpenAiPostV1FineTuningJobs & {
+    cancel: OpenAiPostV1FineTuningJobsCancel;
+    pause: OpenAiPostV1FineTuningJobsPause;
+    resume: OpenAiPostV1FineTuningJobsResume;
+  };
+  checkpoints: {
+    permissions: OpenAiPostV1FineTuningCheckpointsPermissions;
+  };
+}
+
+// POST v1 namespace
+export interface OpenAiPostV1Namespace {
+  chat: OpenAiPostV1ChatNamespace;
+  audio: OpenAiPostV1AudioNamespace;
+  embeddings: OpenAiPostV1Embeddings;
+  files: OpenAiPostV1Files;
+  images: OpenAiPostV1ImagesNamespace;
+  moderations: OpenAiPostV1Moderations;
+  responses: OpenAiPostV1ResponsesNamespace;
+  batches: OpenAiPostV1Batches & {
+    cancel: OpenAiPostV1BatchesCancel;
+  };
+  fine_tuning: OpenAiPostV1FineTuningNamespace;
+}
+
+// --- GET v1 namespace types ---
+
+// GET /v1/chat/completions (list stored)
+// GET /v1/chat/completions/{id} (retrieve) - overload by arity
+export interface OpenAiGetV1ChatCompletions {
+  (
+    opts?: OpenAiStoredCompletionListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiStoredCompletionListResponse>;
+  (id: string, signal?: AbortSignal): Promise<OpenAiChatResponse>;
+}
+
+// GET /v1/chat/completions/{id}/messages
+export interface OpenAiGetV1ChatCompletionsMessages {
+  (
+    id: string,
+    opts?: OpenAiStoredCompletionMessageListOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiStoredCompletionMessageListResponse>;
+}
+
+// GET /v1/files (list)
+// GET /v1/files/{id} (retrieve) - overload by arity
+export interface OpenAiGetV1Files {
+  (
+    opts?: OpenAiFileListRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiFileListResponse>;
+  (id: string, signal?: AbortSignal): Promise<OpenAiFile>;
+}
+
+// GET /v1/files/{id}/content
+export interface OpenAiGetV1FilesContent {
+  (id: string, signal?: AbortSignal): Promise<string>;
+}
+
+// GET /v1/models (list)
+// GET /v1/models/{id} (retrieve) - overload by arity
+export interface OpenAiGetV1Models {
+  (signal?: AbortSignal): Promise<OpenAiModelListResponse>;
+  (id: string, signal?: AbortSignal): Promise<OpenAiModel>;
+}
+
+// GET /v1/responses/{id}
+export interface OpenAiGetV1Responses {
+  (
+    id: string,
+    opts?: OpenAiResponseGetOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiResponseResponse>;
+}
+
+// GET /v1/responses/{id}/input_items
+export interface OpenAiGetV1ResponsesInputItems {
+  (
+    id: string,
+    opts?: OpenAiResponseInputItemsOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiResponseInputItemsResponse>;
+}
+
+// GET /v1/batches (list)
+// GET /v1/batches/{id} (retrieve) - overload by arity
+export interface OpenAiGetV1Batches {
+  (
+    opts?: OpenAiBatchListParams,
+    signal?: AbortSignal
+  ): Promise<OpenAiBatchListResponse>;
+  (id: string, signal?: AbortSignal): Promise<OpenAiBatch>;
+}
+
+// GET /v1/fine_tuning/jobs (list)
+// GET /v1/fine_tuning/jobs/{id} (retrieve) - overload by arity
+export interface OpenAiGetV1FineTuningJobs {
   (
     opts?: OpenAiFineTuningJobListOptions,
     signal?: AbortSignal
   ): Promise<OpenAiFineTuningJobListResponse>;
-}
-
-interface OpenAiFineTuningJobsRetrieveMethod {
   (id: string, signal?: AbortSignal): Promise<OpenAiFineTuningJob>;
 }
 
-interface OpenAiFineTuningJobsCancelMethod {
-  (id: string, signal?: AbortSignal): Promise<OpenAiFineTuningJob>;
-}
-
-interface OpenAiFineTuningJobsPauseMethod {
-  (id: string, signal?: AbortSignal): Promise<OpenAiFineTuningJob>;
-}
-
-interface OpenAiFineTuningJobsResumeMethod {
-  (id: string, signal?: AbortSignal): Promise<OpenAiFineTuningJob>;
-}
-
-interface OpenAiFineTuningJobsEventsMethod {
+// GET /v1/fine_tuning/jobs/{id}/events
+export interface OpenAiGetV1FineTuningJobsEvents {
   (
     id: string,
     opts?: OpenAiFineTuningJobEventListOptions,
@@ -1517,7 +1464,8 @@ interface OpenAiFineTuningJobsEventsMethod {
   ): Promise<OpenAiFineTuningJobEventListResponse>;
 }
 
-interface OpenAiFineTuningJobsCheckpointsMethod {
+// GET /v1/fine_tuning/jobs/{id}/checkpoints
+export interface OpenAiGetV1FineTuningJobsCheckpoints {
   (
     id: string,
     opts?: OpenAiFineTuningJobCheckpointListOptions,
@@ -1525,38 +1473,108 @@ interface OpenAiFineTuningJobsCheckpointsMethod {
   ): Promise<OpenAiFineTuningJobCheckpointListResponse>;
 }
 
-interface OpenAiCheckpointPermissionsCreateMethod {
+// GET /v1/fine_tuning/checkpoints/{id}/permissions
+export interface OpenAiGetV1FineTuningCheckpointsPermissions {
   (
     checkpoint: string,
-    req: OpenAiCheckpointPermissionCreateRequest,
+    opts?: OpenAiCheckpointPermissionListOptions,
     signal?: AbortSignal
-  ): Promise<OpenAiCheckpointPermissionCreateResponse>;
+  ): Promise<OpenAiCheckpointPermissionListResponse>;
+}
+
+// Chat namespace for GET v1
+export interface OpenAiGetV1ChatNamespace {
+  completions: OpenAiGetV1ChatCompletions;
+  completionsMessages: OpenAiGetV1ChatCompletionsMessages;
+}
+
+// Files namespace for GET v1
+export interface OpenAiGetV1FilesNamespace {
+  (
+    opts?: OpenAiFileListRequest,
+    signal?: AbortSignal
+  ): Promise<OpenAiFileListResponse>;
+  (id: string, signal?: AbortSignal): Promise<OpenAiFile>;
+  content: OpenAiGetV1FilesContent;
+}
+
+// Models namespace for GET v1
+export interface OpenAiGetV1ModelsNamespace {
+  (signal?: AbortSignal): Promise<OpenAiModelListResponse>;
+  (id: string, signal?: AbortSignal): Promise<OpenAiModel>;
+}
+
+// Responses namespace for GET v1
+export interface OpenAiGetV1ResponsesNamespace {
+  (
+    id: string,
+    opts?: OpenAiResponseGetOptions,
+    signal?: AbortSignal
+  ): Promise<OpenAiResponseResponse>;
+  inputItems: OpenAiGetV1ResponsesInputItems;
+}
+
+// Batches namespace for GET v1
+export interface OpenAiGetV1BatchesNamespace {
+  (
+    opts?: OpenAiBatchListParams,
+    signal?: AbortSignal
+  ): Promise<OpenAiBatchListResponse>;
+  (id: string, signal?: AbortSignal): Promise<OpenAiBatch>;
+}
+
+// Fine-tuning namespace for GET v1
+export interface OpenAiGetV1FineTuningNamespace {
+  jobs: OpenAiGetV1FineTuningJobs & {
+    events: OpenAiGetV1FineTuningJobsEvents;
+    checkpoints: OpenAiGetV1FineTuningJobsCheckpoints;
+  };
+  checkpoints: {
+    permissions: OpenAiGetV1FineTuningCheckpointsPermissions;
+  };
+}
+
+// GET v1 namespace
+export interface OpenAiGetV1Namespace {
+  chat: OpenAiGetV1ChatNamespace;
+  files: OpenAiGetV1FilesNamespace;
+  models: OpenAiGetV1ModelsNamespace;
+  responses: OpenAiGetV1ResponsesNamespace;
+  batches: OpenAiGetV1BatchesNamespace;
+  fine_tuning: OpenAiGetV1FineTuningNamespace;
+}
+
+// --- DELETE v1 namespace types ---
+
+// DELETE /v1/chat/completions/{id}
+export interface OpenAiDeleteV1ChatCompletions {
+  (
+    id: string,
+    signal?: AbortSignal
+  ): Promise<OpenAiStoredCompletionDeleteResponse>;
   payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
-  list: OpenAiCheckpointPermissionsListMethod;
-  del: OpenAiCheckpointPermissionsDeleteMethod;
-  // Verb accessors for POST + GET on /fine_tuning/checkpoints/:id/permissions
-  post(
-    checkpoint: string,
-    req: OpenAiCheckpointPermissionCreateRequest,
-    signal?: AbortSignal
-  ): Promise<OpenAiCheckpointPermissionCreateResponse>;
-  get(
-    checkpoint: string,
-    opts?: OpenAiCheckpointPermissionListOptions,
-    signal?: AbortSignal
-  ): Promise<OpenAiCheckpointPermissionListResponse>;
 }
 
-interface OpenAiCheckpointPermissionsListMethod {
-  (
-    checkpoint: string,
-    opts?: OpenAiCheckpointPermissionListOptions,
-    signal?: AbortSignal
-  ): Promise<OpenAiCheckpointPermissionListResponse>;
+// DELETE /v1/files/{id}
+export interface OpenAiDeleteV1Files {
+  (id: string, signal?: AbortSignal): Promise<OpenAiFileDeleteResponse>;
+  payloadSchema: PayloadSchema;
 }
 
-interface OpenAiCheckpointPermissionsDeleteMethod {
+// DELETE /v1/models/{id}
+export interface OpenAiDeleteV1Models {
+  (id: string, signal?: AbortSignal): Promise<OpenAiModelDeleteResponse>;
+  payloadSchema: PayloadSchema;
+}
+
+// DELETE /v1/responses/{id}
+export interface OpenAiDeleteV1Responses {
+  (id: string, signal?: AbortSignal): Promise<OpenAiResponseDeleteResponse>;
+  payloadSchema: PayloadSchema;
+}
+
+// DELETE /v1/fine_tuning/checkpoints/{id}/permissions/{permId}
+export interface OpenAiDeleteV1FineTuningCheckpointsPermissions {
   (
     checkpoint: string,
     permissionId: string,
@@ -1564,31 +1582,51 @@ interface OpenAiCheckpointPermissionsDeleteMethod {
   ): Promise<OpenAiCheckpointPermissionDeleteResponse>;
 }
 
-interface OpenAiFineTuningCheckpointsNamespace {
-  permissions: OpenAiCheckpointPermissionsCreateMethod;
+// Chat namespace for DELETE v1
+export interface OpenAiDeleteV1ChatNamespace {
+  completions: OpenAiDeleteV1ChatCompletions;
 }
 
-interface OpenAiFineTuningNamespace {
-  jobs: OpenAiFineTuningJobsCreateMethod;
-  checkpoints: OpenAiFineTuningCheckpointsNamespace;
+// Files namespace for DELETE v1
+export interface OpenAiDeleteV1FilesNamespace {
+  (id: string, signal?: AbortSignal): Promise<OpenAiFileDeleteResponse>;
+  payloadSchema: PayloadSchema;
 }
 
-interface OpenAiV1Namespace {
-  chat: OpenAiChatNamespace;
-  audio: OpenAiAudioNamespace;
-  embeddings: OpenAiEmbeddingsMethod;
-  files: OpenAiFilesNamespace;
-  images: OpenAiImagesNamespace;
-  models: OpenAiModelsNamespace;
-  moderations: OpenAiModerationsMethod;
-  responses: OpenAiResponsesMethod;
-  fine_tuning: OpenAiFineTuningNamespace;
-  batches: OpenAiBatchesCreateMethod;
+// Models namespace for DELETE v1
+export interface OpenAiDeleteV1ModelsNamespace {
+  (id: string, signal?: AbortSignal): Promise<OpenAiModelDeleteResponse>;
+  payloadSchema: PayloadSchema;
 }
 
-// Provider interface
+// Responses namespace for DELETE v1
+export interface OpenAiDeleteV1ResponsesNamespace {
+  (id: string, signal?: AbortSignal): Promise<OpenAiResponseDeleteResponse>;
+  payloadSchema: PayloadSchema;
+}
+
+// Fine-tuning namespace for DELETE v1
+export interface OpenAiDeleteV1FineTuningNamespace {
+  checkpoints: {
+    permissions: OpenAiDeleteV1FineTuningCheckpointsPermissions;
+  };
+}
+
+// DELETE v1 namespace
+export interface OpenAiDeleteV1Namespace {
+  chat: OpenAiDeleteV1ChatNamespace;
+  files: OpenAiDeleteV1FilesNamespace;
+  models: OpenAiDeleteV1ModelsNamespace;
+  responses: OpenAiDeleteV1ResponsesNamespace;
+  fine_tuning: OpenAiDeleteV1FineTuningNamespace;
+}
+
+// --- Provider interface ---
+
 export interface OpenAiProvider {
-  v1: OpenAiV1Namespace;
+  post: { v1: OpenAiPostV1Namespace };
+  get: { v1: OpenAiGetV1Namespace };
+  delete: { v1: OpenAiDeleteV1Namespace };
 }
 
 // Error class

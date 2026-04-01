@@ -22,7 +22,7 @@ describe("openai transcribe", () => {
       apiKey: process.env.OPENAI_API_KEY ?? "sk-test-key",
     });
 
-    const result = await provider.v1.audio.transcriptions({
+    const result = await provider.post.v1.audio.transcriptions({
       file,
       model: "gpt-4o-mini-transcribe",
       response_format: "json",

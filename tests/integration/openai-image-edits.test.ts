@@ -25,7 +25,7 @@ describe("openai image edits integration", () => {
     );
     const image = new Blob([imageBuffer], { type: "image/jpeg" });
 
-    const result = await provider.v1.images.edits({
+    const result = await provider.post.v1.images.edits({
       image,
       prompt: "Add a small red dot in the center",
       model: "gpt-image-1",

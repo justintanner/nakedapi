@@ -22,7 +22,7 @@ describe("openai translate", () => {
       apiKey: process.env.OPENAI_API_KEY ?? "sk-test-key",
     });
 
-    const result = await provider.v1.audio.translations({
+    const result = await provider.post.v1.audio.translations({
       file,
       model: "whisper-1",
       response_format: "json",

@@ -19,7 +19,7 @@ describe("openai files integration", () => {
         apiKey: process.env.OPENAI_API_KEY ?? "sk-test-key",
       });
 
-      const result = await provider.v1.files.list();
+      const result = await provider.get.v1.files();
 
       expect(result.object).toBe("list");
       expect(Array.isArray(result.data)).toBe(true);
@@ -44,7 +44,7 @@ describe("openai files integration", () => {
       const content = '{"prompt": "test", "completion": "hello"}\n';
       const file = new Blob([content], { type: "application/jsonl" });
 
-      const result = await provider.v1.files.upload({
+      const result = await provider.post.v1.files({
         file,
         purpose: "fine-tune",
       });
@@ -71,10 +71,10 @@ describe("openai files integration", () => {
       });
 
       // Use a file ID from a previously uploaded file
-      const files = await provider.v1.files.list();
+      const files = await provider.get.v1.files();
       if (files.data.length === 0) return; // skip if no files
 
-      const result = await provider.v1.files.retrieve(files.data[0].id);
+      const result = await provider.get.v1.files(files.data[0].id);
 
       expect(result.id).toBe(files.data[0].id);
       expect(result.object).toBe("file");
@@ -86,7 +86,7 @@ describe("openai files integration", () => {
   describe("validation", () => {
     it("should expose payloadSchema on upload", () => {
       const provider = openai({ apiKey: "sk-test" });
-      const schema = provider.v1.files.upload.payloadSchema;
+      const schema = provider.post.v1.files.payloadSchema;
 
       expect(schema.method).toBe("POST");
       expect(schema.path).toBe("/files");
@@ -97,7 +97,7 @@ describe("openai files integration", () => {
 
     it("should validate upload payload - valid", () => {
       const provider = openai({ apiKey: "sk-test" });
-      const result = provider.v1.files.upload.validatePayload({
+      const result = provider.post.v1.files.validatePayload({
         file: {},
         purpose: "fine-tune",
       });
@@ -108,7 +108,7 @@ describe("openai files integration", () => {
 
     it("should validate upload payload - missing required fields", () => {
       const provider = openai({ apiKey: "sk-test" });
-      const result = provider.v1.files.upload.validatePayload({});
+      const result = provider.post.v1.files.validatePayload({});
 
       expect(result.valid).toBe(false);
       expect(result.errors).toContain("file is required");
@@ -117,7 +117,7 @@ describe("openai files integration", () => {
 
     it("should validate upload payload - invalid purpose", () => {
       const provider = openai({ apiKey: "sk-test" });
-      const result = provider.v1.files.upload.validatePayload({
+      const result = provider.post.v1.files.validatePayload({
         file: {},
         purpose: "invalid",
       });
@@ -128,7 +128,7 @@ describe("openai files integration", () => {
 
     it("should expose payloadSchema on del", () => {
       const provider = openai({ apiKey: "sk-test" });
-      const schema = provider.v1.files.del.payloadSchema;
+      const schema = provider.delete.v1.files.payloadSchema;
 
       expect(schema.method).toBe("DELETE");
       expect(schema.path).toBe("/files/{file_id}");

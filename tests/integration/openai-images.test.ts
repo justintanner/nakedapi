@@ -17,7 +17,7 @@ describe("openai images integration", () => {
     const provider = openai({
       apiKey: process.env.OPENAI_API_KEY ?? "sk-test-key",
     });
-    const result = await provider.v1.images.generations({
+    const result = await provider.post.v1.images.generations({
       prompt: "A white siamese cat",
       model: "dall-e-2",
       n: 1,

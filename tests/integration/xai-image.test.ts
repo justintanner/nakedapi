@@ -23,7 +23,7 @@ describe("xai image generation integration", () => {
   it("should generate an image from a prompt", async () => {
     ctx = setupPolly("xai/image-generate-basic");
     const provider = createProvider();
-    const result = await provider.v1.images.generations({
+    const result = await provider.post.v1.images.generations({
       prompt: "A simple red apple on a white background",
       model: "grok-imagine-image",
       n: 1,
@@ -37,7 +37,7 @@ describe("xai image generation integration", () => {
   it("should generate multiple images", async () => {
     ctx = setupPolly("xai/image-generate-multiple");
     const provider = createProvider();
-    const result = await provider.v1.images.generations({
+    const result = await provider.post.v1.images.generations({
       prompt: "A simple blue circle",
       model: "grok-imagine-image",
       n: 2,
@@ -52,7 +52,7 @@ describe("xai image generation integration", () => {
   it("should support aspect_ratio parameter", async () => {
     ctx = setupPolly("xai/image-generate-aspect-ratio");
     const provider = createProvider();
-    const result = await provider.v1.images.generations({
+    const result = await provider.post.v1.images.generations({
       prompt: "A mountain landscape",
       model: "grok-imagine-image",
       aspect_ratio: "16:9",
@@ -65,7 +65,7 @@ describe("xai image generation integration", () => {
   it("should support resolution parameter", async () => {
     ctx = setupPolly("xai/image-generate-resolution");
     const provider = createProvider();
-    const result = await provider.v1.images.generations({
+    const result = await provider.post.v1.images.generations({
       prompt: "A simple geometric pattern",
       model: "grok-imagine-image",
       resolution: "1k",
@@ -78,7 +78,7 @@ describe("xai image generation integration", () => {
   it("should support b64_json response format", async () => {
     ctx = setupPolly("xai/image-generate-b64");
     const provider = createProvider();
-    const result = await provider.v1.images.generations({
+    const result = await provider.post.v1.images.generations({
       prompt: "A green leaf",
       model: "grok-imagine-image",
       response_format: "b64_json",
@@ -92,7 +92,7 @@ describe("xai image generation integration", () => {
   it("should edit an image with a single image reference", async () => {
     ctx = setupPolly("xai/image-edit-single");
     const provider = createProvider();
-    const result = await provider.v1.images.edits({
+    const result = await provider.post.v1.images.edits({
       prompt: "Render this as a pencil sketch with detailed shading",
       model: "grok-imagine-image",
       image: {
@@ -109,7 +109,7 @@ describe("xai image generation integration", () => {
   it("should support aspect_ratio for image editing", async () => {
     ctx = setupPolly("xai/image-edit-aspect-ratio");
     const provider = createProvider();
-    const result = await provider.v1.images.edits({
+    const result = await provider.post.v1.images.edits({
       prompt: "Transform the cat into a watercolor painting with soft edges",
       model: "grok-imagine-image",
       image: {

@@ -1357,19 +1357,11 @@ export interface ValidationResult {
   errors: string[];
 }
 
-// Namespace types
+// Method types with payload validation
 interface XaiChatCompletionsMethod {
   (req: XaiChatRequest, signal?: AbortSignal): Promise<XaiChatResponse>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
-}
-
-interface XaiChatNamespace {
-  completions: XaiChatCompletionsMethod;
-  deferredCompletion(
-    requestId: string,
-    signal?: AbortSignal
-  ): Promise<XaiDeferredChatCompletionResult>;
 }
 
 interface XaiImageGenerationsMethod {
@@ -1385,11 +1377,6 @@ interface XaiImageEditsMethod {
   (req: XaiImageEditRequest, signal?: AbortSignal): Promise<XaiImageResponse>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
-}
-
-interface XaiImagesNamespace {
-  generations: XaiImageGenerationsMethod;
-  edits: XaiImageEditsMethod;
 }
 
 interface XaiVideoGenerationsMethod {
@@ -1419,200 +1406,47 @@ interface XaiVideoExtensionsMethod {
   validatePayload(data: unknown): ValidationResult;
 }
 
-interface XaiVideosNamespace {
-  (requestId: string, signal?: AbortSignal): Promise<XaiVideoResult>;
-  generations: XaiVideoGenerationsMethod;
-  edits: XaiVideoEditsMethod;
-  extensions: XaiVideoExtensionsMethod;
+interface XaiPostResponsesMethod {
+  (req: XaiResponseRequest, signal?: AbortSignal): Promise<XaiResponseResponse>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
 }
 
-interface XaiFilesNamespace {
-  upload(
+interface XaiPostFilesMethod {
+  (
     file: Blob,
     filename: string,
     purpose?: string,
     signal?: AbortSignal
   ): Promise<XaiFileObject>;
-  list(signal?: AbortSignal): Promise<XaiFileListResponse>;
-  get(fileId: string, signal?: AbortSignal): Promise<XaiFileObject>;
-  delete(
-    fileId: string,
-    signal?: AbortSignal
-  ): Promise<{ id: string; deleted: boolean }>;
+  payloadSchema: PayloadSchema;
 }
 
-interface XaiModelsNamespace {
-  (signal?: AbortSignal): Promise<XaiModelListResponse>;
-  (modelId: string, signal?: AbortSignal): Promise<XaiModel>;
-  // Verb accessor for GET list + GET by ID on /models
-  get(
-    modelIdOrSignal?: string | AbortSignal,
-    signal?: AbortSignal
-  ): Promise<XaiModelListResponse | XaiModel>;
-}
-
-interface XaiLanguageModelsNamespace {
-  (signal?: AbortSignal): Promise<XaiLanguageModelListResponse>;
-  (modelId: string, signal?: AbortSignal): Promise<XaiLanguageModel>;
-  // Verb accessor for GET list + GET by ID on /language-models
-  get(
-    modelIdOrSignal?: string | AbortSignal,
-    signal?: AbortSignal
-  ): Promise<XaiLanguageModelListResponse | XaiLanguageModel>;
-}
-
-interface XaiImageGenerationModelsNamespace {
-  (signal?: AbortSignal): Promise<XaiImageGenerationModelListResponse>;
-  (modelId: string, signal?: AbortSignal): Promise<XaiImageGenerationModel>;
-  // Verb accessor for GET list + GET by ID on /image-generation-models
-  get(
-    modelIdOrSignal?: string | AbortSignal,
-    signal?: AbortSignal
-  ): Promise<XaiImageGenerationModelListResponse | XaiImageGenerationModel>;
-}
-
-interface XaiVideoGenerationModelsNamespace {
-  (signal?: AbortSignal): Promise<XaiVideoGenerationModelListResponse>;
-  (modelId: string, signal?: AbortSignal): Promise<XaiVideoGenerationModel>;
-  // Verb accessor for GET list + GET by ID on /video-generation-models
-  get(
-    modelIdOrSignal?: string | AbortSignal,
-    signal?: AbortSignal
-  ): Promise<XaiVideoGenerationModelListResponse | XaiVideoGenerationModel>;
-}
-
-interface XaiBatchCreateMethod {
+interface XaiPostBatchesMethod {
   (req: XaiBatchCreateRequest, signal?: AbortSignal): Promise<XaiBatch>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
-}
-
-interface XaiBatchAddRequestsMethod {
-  (
-    batchId: string,
-    req: XaiBatchAddRequestsBody,
-    signal?: AbortSignal
-  ): Promise<void>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
-  // Verb accessors for GET + POST on /batches/:id/requests
-  get(
-    batchId: string,
-    params?: XaiBatchRequestListParams,
-    signal?: AbortSignal
-  ): Promise<XaiBatchRequestListResponse>;
-  post(
-    batchId: string,
-    req: XaiBatchAddRequestsBody,
-    signal?: AbortSignal
-  ): Promise<void>;
-}
-
-interface XaiBatchesNamespace {
-  (
-    params?: XaiBatchListParams,
-    signal?: AbortSignal
-  ): Promise<XaiBatchListResponse>;
-  create: XaiBatchCreateMethod;
-  get(batchId: string, signal?: AbortSignal): Promise<XaiBatch>;
   cancel(batchId: string, signal?: AbortSignal): Promise<XaiBatch>;
-  requests: {
-    (
-      batchId: string,
-      params?: XaiBatchRequestListParams,
-      signal?: AbortSignal
-    ): Promise<XaiBatchRequestListResponse>;
-    add: XaiBatchAddRequestsMethod;
-    // Verb accessors for GET + POST on /batches/:id/requests
-    get(
-      batchId: string,
-      params?: XaiBatchRequestListParams,
-      signal?: AbortSignal
-    ): Promise<XaiBatchRequestListResponse>;
-    post(
-      batchId: string,
-      req: XaiBatchAddRequestsBody,
-      signal?: AbortSignal
-    ): Promise<void>;
-  };
-  results(
+  requests(
     batchId: string,
-    params?: XaiBatchResultListParams,
+    req: XaiBatchAddRequestsBody,
     signal?: AbortSignal
-  ): Promise<XaiBatchResultListResponse>;
-  // Verb accessor for POST on /batches
-  post(req: XaiBatchCreateRequest, signal?: AbortSignal): Promise<XaiBatch>;
+  ): Promise<void>;
 }
 
-interface XaiCollectionCreateMethod {
+interface XaiPostCollectionsMethod {
   (
     req: XaiCollectionCreateRequest,
     signal?: AbortSignal
   ): Promise<XaiCollection>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
-}
-
-interface XaiCollectionUpdateMethod {
-  (
-    collectionId: string,
-    req: XaiCollectionUpdateRequest,
-    signal?: AbortSignal
-  ): Promise<XaiCollection>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
-}
-
-interface XaiDocumentAddMethod {
-  (
+  documents(
     collectionId: string,
     fileId: string,
     req?: XaiDocumentAddRequest,
     signal?: AbortSignal
   ): Promise<void>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
-}
-
-interface XaiCollectionDocumentsNamespace {
-  (
-    collectionId: string,
-    params?: XaiDocumentListParams,
-    signal?: AbortSignal
-  ): Promise<XaiDocumentListResponse>;
-  add: XaiDocumentAddMethod;
-  get(
-    collectionId: string,
-    fileId: string,
-    signal?: AbortSignal
-  ): Promise<XaiDocument>;
-  delete(
-    collectionId: string,
-    fileId: string,
-    signal?: AbortSignal
-  ): Promise<void>;
-  regenerate(
-    collectionId: string,
-    fileId: string,
-    signal?: AbortSignal
-  ): Promise<void>;
-  batchGet(
-    collectionId: string,
-    fileIds: string[],
-    signal?: AbortSignal
-  ): Promise<{ documents: XaiDocument[] }>;
-}
-
-interface XaiCollectionsNamespace {
-  (
-    params?: XaiCollectionListParams,
-    signal?: AbortSignal
-  ): Promise<XaiCollectionListResponse>;
-  create: XaiCollectionCreateMethod;
-  get(collectionId: string, signal?: AbortSignal): Promise<XaiCollection>;
-  update: XaiCollectionUpdateMethod;
-  delete(collectionId: string, signal?: AbortSignal): Promise<void>;
-  documents: XaiCollectionDocumentsNamespace;
 }
 
 interface XaiDocumentSearchMethod {
@@ -1622,31 +1456,6 @@ interface XaiDocumentSearchMethod {
   ): Promise<XaiDocumentSearchResponse>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
-}
-
-interface XaiDocumentsNamespace {
-  search: XaiDocumentSearchMethod;
-}
-
-interface XaiResponsesDeleteMethod {
-  (id: string, signal?: AbortSignal): Promise<XaiResponseDeleteResponse>;
-  payloadSchema: PayloadSchema;
-}
-
-interface XaiResponsesMethod {
-  (
-    reqOrId: XaiResponseRequest | string,
-    signal?: AbortSignal
-  ): Promise<XaiResponseResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
-  del: XaiResponsesDeleteMethod;
-  // Verb accessors for POST + GET on /responses
-  post(
-    req: XaiResponseRequest,
-    signal?: AbortSignal
-  ): Promise<XaiResponseResponse>;
-  get(id: string, signal?: AbortSignal): Promise<XaiResponseResponse>;
 }
 
 interface XaiTokenizeTextMethod {
@@ -1667,12 +1476,7 @@ interface XaiRealtimeClientSecretsMethod {
   validatePayload(data: unknown): ValidationResult;
 }
 
-interface XaiRealtimeNamespace {
-  clientSecrets: XaiRealtimeClientSecretsMethod;
-  connect(opts?: XaiRealtimeConnectOptions): XaiRealtimeConnection;
-}
-
-interface XaiAuthApiKeysCreateMethod {
+interface XaiPostAuthApiKeysMethod {
   (
     teamId: string,
     req: XaiApiKeyCreateRequest,
@@ -1680,9 +1484,178 @@ interface XaiAuthApiKeysCreateMethod {
   ): Promise<XaiApiKey>;
   payloadSchema: PayloadSchema;
   validatePayload(data: unknown): ValidationResult;
+  rotate(apiKeyId: string, signal?: AbortSignal): Promise<XaiApiKey>;
 }
 
-interface XaiAuthApiKeysUpdateMethod {
+// Generic list/get method type for models
+interface XaiGetModelsLikeMethod<ListResponse, Item> {
+  (
+    modelIdOrSignal?: string | AbortSignal,
+    signal?: AbortSignal
+  ): Promise<ListResponse | Item>;
+}
+
+// POST v1 namespace
+interface XaiPostV1 {
+  responses: XaiPostResponsesMethod;
+  chat: { completions: XaiChatCompletionsMethod };
+  images: {
+    generations: XaiImageGenerationsMethod;
+    edits: XaiImageEditsMethod;
+  };
+  videos: {
+    generations: XaiVideoGenerationsMethod;
+    edits: XaiVideoEditsMethod;
+    extensions: XaiVideoExtensionsMethod;
+  };
+  files: XaiPostFilesMethod;
+  batches: XaiPostBatchesMethod;
+  collections: XaiPostCollectionsMethod;
+  documents: { search: XaiDocumentSearchMethod };
+  tokenizeText: XaiTokenizeTextMethod;
+  realtime: { clientSecrets: XaiRealtimeClientSecretsMethod };
+  auth: { apiKeys: XaiPostAuthApiKeysMethod };
+}
+
+// GET v1 namespace
+interface XaiGetFilesMethod {
+  (
+    fileIdOrSignal?: string | AbortSignal,
+    signal?: AbortSignal
+  ): Promise<XaiFileListResponse | XaiFileObject>;
+}
+
+interface XaiGetBatchesMethod {
+  (
+    paramsOrIdOrSignal?: XaiBatchListParams | string | AbortSignal,
+    signal?: AbortSignal
+  ): Promise<XaiBatchListResponse | XaiBatch>;
+  requests(
+    batchId: string,
+    params?: XaiBatchRequestListParams,
+    signal?: AbortSignal
+  ): Promise<XaiBatchRequestListResponse>;
+  results(
+    batchId: string,
+    params?: XaiBatchResultListParams,
+    signal?: AbortSignal
+  ): Promise<XaiBatchResultListResponse>;
+}
+
+interface XaiGetCollectionsDocumentsMethod {
+  (
+    collectionId: string,
+    paramsOrFileId?: XaiDocumentListParams | string | AbortSignal,
+    signal?: AbortSignal
+  ): Promise<XaiDocumentListResponse | XaiDocument>;
+  batchGet(
+    collectionId: string,
+    fileIds: string[],
+    signal?: AbortSignal
+  ): Promise<{ documents: XaiDocument[] }>;
+}
+
+interface XaiGetCollectionsMethod {
+  (
+    paramsOrIdOrSignal?: XaiCollectionListParams | string | AbortSignal,
+    signal?: AbortSignal
+  ): Promise<XaiCollectionListResponse | XaiCollection>;
+  documents: XaiGetCollectionsDocumentsMethod;
+}
+
+interface XaiGetAuthApiKeysMethod {
+  (
+    teamId: string,
+    params?: XaiApiKeyListParams,
+    signal?: AbortSignal
+  ): Promise<XaiApiKeyListResponse>;
+  propagation(
+    apiKeyId: string,
+    signal?: AbortSignal
+  ): Promise<XaiApiKeyPropagationResponse>;
+}
+
+interface XaiGetAuthTeamsMethod {
+  models(teamId: string, signal?: AbortSignal): Promise<XaiTeamModelsResponse>;
+  endpoints(
+    teamId: string,
+    signal?: AbortSignal
+  ): Promise<XaiTeamEndpointsResponse>;
+}
+
+interface XaiGetAuthManagementKeysMethod {
+  validation(signal?: AbortSignal): Promise<XaiManagementKeyValidationResponse>;
+}
+
+interface XaiGetAuthNamespace {
+  apiKeys: XaiGetAuthApiKeysMethod;
+  teams: XaiGetAuthTeamsMethod;
+  managementKeys: XaiGetAuthManagementKeysMethod;
+}
+
+interface XaiGetV1 {
+  responses(id: string, signal?: AbortSignal): Promise<XaiResponseResponse>;
+  chat: {
+    deferredCompletion(
+      requestId: string,
+      signal?: AbortSignal
+    ): Promise<XaiDeferredChatCompletionResult>;
+  };
+  videos(requestId: string, signal?: AbortSignal): Promise<XaiVideoResult>;
+  files: XaiGetFilesMethod;
+  models: XaiGetModelsLikeMethod<XaiModelListResponse, XaiModel>;
+  languageModels: XaiGetModelsLikeMethod<
+    XaiLanguageModelListResponse,
+    XaiLanguageModel
+  >;
+  imageGenerationModels: XaiGetModelsLikeMethod<
+    XaiImageGenerationModelListResponse,
+    XaiImageGenerationModel
+  >;
+  videoGenerationModels: XaiGetModelsLikeMethod<
+    XaiVideoGenerationModelListResponse,
+    XaiVideoGenerationModel
+  >;
+  batches: XaiGetBatchesMethod;
+  collections: XaiGetCollectionsMethod;
+  auth: XaiGetAuthNamespace;
+}
+
+// DELETE v1 namespace
+interface XaiDeleteV1 {
+  responses(
+    id: string,
+    signal?: AbortSignal
+  ): Promise<XaiResponseDeleteResponse>;
+  files(
+    fileId: string,
+    signal?: AbortSignal
+  ): Promise<{ id: string; deleted: boolean }>;
+  collections: {
+    (collectionId: string, signal?: AbortSignal): Promise<void>;
+    documents(
+      collectionId: string,
+      fileId: string,
+      signal?: AbortSignal
+    ): Promise<void>;
+  };
+  auth: {
+    apiKeys(apiKeyId: string, signal?: AbortSignal): Promise<void>;
+  };
+}
+
+// PUT v1 namespace
+interface XaiPutCollectionsMethod {
+  (
+    collectionId: string,
+    req: XaiCollectionUpdateRequest,
+    signal?: AbortSignal
+  ): Promise<XaiCollection>;
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+}
+
+interface XaiPutAuthApiKeysMethod {
   (
     apiKeyId: string,
     req: XaiApiKeyUpdateRequest,
@@ -1692,61 +1665,37 @@ interface XaiAuthApiKeysUpdateMethod {
   validatePayload(data: unknown): ValidationResult;
 }
 
-interface XaiAuthApiKeysNamespace {
-  (
-    teamId: string,
-    params?: XaiApiKeyListParams,
-    signal?: AbortSignal
-  ): Promise<XaiApiKeyListResponse>;
-  create: XaiAuthApiKeysCreateMethod;
-  update: XaiAuthApiKeysUpdateMethod;
-  rotate(apiKeyId: string, signal?: AbortSignal): Promise<XaiApiKey>;
-  delete(apiKeyId: string, signal?: AbortSignal): Promise<void>;
-  propagation(
-    apiKeyId: string,
-    signal?: AbortSignal
-  ): Promise<XaiApiKeyPropagationResponse>;
+interface XaiPutV1 {
+  collections: XaiPutCollectionsMethod;
+  auth: {
+    apiKeys: XaiPutAuthApiKeysMethod;
+  };
 }
 
-interface XaiAuthTeamsNamespace {
-  models(teamId: string, signal?: AbortSignal): Promise<XaiTeamModelsResponse>;
-  endpoints(
-    teamId: string,
-    signal?: AbortSignal
-  ): Promise<XaiTeamEndpointsResponse>;
+// PATCH v1 namespace
+interface XaiPatchV1 {
+  collections: {
+    documents(
+      collectionId: string,
+      fileId: string,
+      signal?: AbortSignal
+    ): Promise<void>;
+  };
 }
 
-interface XaiAuthManagementKeysNamespace {
-  validation(signal?: AbortSignal): Promise<XaiManagementKeyValidationResponse>;
-}
-
-interface XaiAuthNamespace {
-  apiKeys: XaiAuthApiKeysNamespace;
-  teams: XaiAuthTeamsNamespace;
-  managementKeys: XaiAuthManagementKeysNamespace;
-}
-
-interface XaiV1Namespace {
-  chat: XaiChatNamespace;
-  images: XaiImagesNamespace;
-  videos: XaiVideosNamespace;
-  files: XaiFilesNamespace;
-  responses: XaiResponsesMethod;
-  batches: XaiBatchesNamespace;
-  collections: XaiCollectionsNamespace;
-  documents: XaiDocumentsNamespace;
-  models: XaiModelsNamespace;
-  languageModels: XaiLanguageModelsNamespace;
-  imageGenerationModels: XaiImageGenerationModelsNamespace;
-  videoGenerationModels: XaiVideoGenerationModelsNamespace;
-  tokenizeText: XaiTokenizeTextMethod;
-  realtime: XaiRealtimeNamespace;
-  auth: XaiAuthNamespace;
+// WebSocket v1 namespace
+interface XaiWsV1 {
+  realtime(opts?: XaiRealtimeConnectOptions): XaiRealtimeConnection;
 }
 
 // Provider interface
 export interface XaiProvider {
-  v1: XaiV1Namespace;
+  post: { v1: XaiPostV1 };
+  get: { v1: XaiGetV1 };
+  delete: { v1: XaiDeleteV1 };
+  put: { v1: XaiPutV1 };
+  patch: { v1: XaiPatchV1 };
+  ws: { v1: XaiWsV1 };
 }
 
 // Error class

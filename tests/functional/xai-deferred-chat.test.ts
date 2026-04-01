@@ -34,7 +34,7 @@ describe("xai deferred chat completion", () => {
     });
 
     const result =
-      await provider.v1.chat.deferredCompletion("pending-request-id");
+      await provider.get.v1.chat.deferredCompletion("pending-request-id");
     expect(result.ready).toBe(false);
     expect(result.data).toBeNull();
   });
@@ -49,7 +49,7 @@ describe("xai deferred chat completion", () => {
         }),
     });
 
-    const result = await provider.v1.chat.deferredCompletion(
+    const result = await provider.get.v1.chat.deferredCompletion(
       "completed-request-id"
     );
     expect(result.ready).toBe(true);
@@ -72,7 +72,7 @@ describe("xai deferred chat completion", () => {
     });
 
     await expect(
-      provider.v1.chat.deferredCompletion("nonexistent-id")
+      provider.get.v1.chat.deferredCompletion("nonexistent-id")
     ).rejects.toThrow(XaiError);
   });
 
@@ -86,7 +86,7 @@ describe("xai deferred chat completion", () => {
       },
     });
 
-    await provider.v1.chat.deferredCompletion("req-123/abc");
+    await provider.get.v1.chat.deferredCompletion("req-123/abc");
     expect(capturedUrl).toContain("/chat/deferred-completion/req-123%2Fabc");
   });
 
@@ -102,7 +102,7 @@ describe("xai deferred chat completion", () => {
       },
     });
 
-    await provider.v1.chat.deferredCompletion("some-id");
+    await provider.get.v1.chat.deferredCompletion("some-id");
     expect(capturedHeaders["Authorization"]).toBe("Bearer sk-my-api-key");
   });
 
@@ -116,7 +116,7 @@ describe("xai deferred chat completion", () => {
       },
     });
 
-    await provider.v1.chat.deferredCompletion("some-id");
+    await provider.get.v1.chat.deferredCompletion("some-id");
     expect(capturedMethod).toBe("GET");
   });
 
@@ -133,7 +133,7 @@ describe("xai deferred chat completion", () => {
       },
     });
 
-    await provider.v1.chat.completions({
+    await provider.post.v1.chat.completions({
       model: "grok-3-fast",
       messages: [{ role: "user", content: "Hello" }],
       deferred: true,

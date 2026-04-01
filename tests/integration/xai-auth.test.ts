@@ -25,7 +25,7 @@ describe("xai auth integration", () => {
 
     it("should create an api key and list it", async () => {
       const provider = createProvider();
-      const created = await provider.v1.auth.apiKeys.create(teamId, {
+      const created = await provider.post.v1.auth.apiKeys(teamId, {
         name: "Integration Test Key",
         acls: ["api-key:endpoint:*", "api-key:model:*"],
       });
@@ -34,7 +34,7 @@ describe("xai auth integration", () => {
       expect(created.apiKey).toBeTruthy();
       expect(created.aclStrings).toContain("api-key:endpoint:*");
 
-      const list = await provider.v1.auth.apiKeys(teamId);
+      const list = await provider.get.v1.auth.apiKeys(teamId);
       expect(list.apiKeys.length).toBeGreaterThan(0);
       const found = list.apiKeys.find((k) => k.apiKeyId === created.apiKeyId);
       expect(found).toBeTruthy();
@@ -54,10 +54,10 @@ describe("xai auth integration", () => {
 
     it("should update an api key", async () => {
       const provider = createProvider();
-      const created = await provider.v1.auth.apiKeys.create(teamId, {
+      const created = await provider.post.v1.auth.apiKeys(teamId, {
         name: "Update Test Key",
       });
-      const updated = await provider.v1.auth.apiKeys.update(created.apiKeyId, {
+      const updated = await provider.put.v1.auth.apiKeys(created.apiKeyId, {
         apiKey: { name: "Updated Key Name", qpm: 200 },
         fieldMask: "name,qpm",
       });
@@ -80,11 +80,13 @@ describe("xai auth integration", () => {
 
     it("should rotate an api key and return new secret", async () => {
       const provider = createProvider();
-      const created = await provider.v1.auth.apiKeys.create(teamId, {
+      const created = await provider.post.v1.auth.apiKeys(teamId, {
         name: "Rotate Test Key",
       });
       const originalKey = created.apiKey;
-      const rotated = await provider.v1.auth.apiKeys.rotate(created.apiKeyId);
+      const rotated = await provider.post.v1.auth.apiKeys.rotate(
+        created.apiKeyId
+      );
       expect(rotated.apiKeyId).toBe(created.apiKeyId);
       expect(rotated.apiKey).toBeTruthy();
       expect(rotated.apiKey).not.toBe(originalKey);
@@ -104,10 +106,10 @@ describe("xai auth integration", () => {
 
     it("should delete an api key", async () => {
       const provider = createProvider();
-      const created = await provider.v1.auth.apiKeys.create(teamId, {
+      const created = await provider.post.v1.auth.apiKeys(teamId, {
         name: "Delete Test Key",
       });
-      await provider.v1.auth.apiKeys.delete(created.apiKeyId);
+      await provider.delete.v1.auth.apiKeys(created.apiKeyId);
       // Successful deletion returns without error
     });
   });
@@ -125,10 +127,10 @@ describe("xai auth integration", () => {
 
     it("should check api key propagation status", async () => {
       const provider = createProvider();
-      const created = await provider.v1.auth.apiKeys.create(teamId, {
+      const created = await provider.post.v1.auth.apiKeys(teamId, {
         name: "Propagation Test Key",
       });
-      const status = await provider.v1.auth.apiKeys.propagation(
+      const status = await provider.get.v1.auth.apiKeys.propagation(
         created.apiKeyId
       );
       expect(status.icPropagation).toBeDefined();
@@ -149,7 +151,7 @@ describe("xai auth integration", () => {
 
     it("should list team models", async () => {
       const provider = createProvider();
-      const models = await provider.v1.auth.teams.models(teamId);
+      const models = await provider.get.v1.auth.teams.models(teamId);
       expect(models.clusterConfigs).toBeDefined();
       expect(Array.isArray(models.clusterConfigs)).toBe(true);
     });
@@ -168,7 +170,7 @@ describe("xai auth integration", () => {
 
     it("should list team endpoints", async () => {
       const provider = createProvider();
-      const endpoints = await provider.v1.auth.teams.endpoints(teamId);
+      const endpoints = await provider.get.v1.auth.teams.endpoints(teamId);
       expect(endpoints.acls).toBeDefined();
       expect(Array.isArray(endpoints.acls)).toBe(true);
       if (endpoints.acls.length > 0) {
@@ -191,7 +193,7 @@ describe("xai auth integration", () => {
 
     it("should validate the management key", async () => {
       const provider = createProvider();
-      const validation = await provider.v1.auth.managementKeys.validation();
+      const validation = await provider.get.v1.auth.managementKeys.validation();
       expect(validation.apiKeyId).toBeTruthy();
       expect(validation.scope).toBeTruthy();
       expect(validation.name).toBeTruthy();
@@ -203,33 +205,33 @@ describe("xai auth integration", () => {
   describe("payload schemas", () => {
     it("should expose create schema and validate", () => {
       const provider = createProvider();
-      const schema = provider.v1.auth.apiKeys.create.payloadSchema;
+      const schema = provider.post.v1.auth.apiKeys.payloadSchema;
       expect(schema.method).toBe("POST");
       expect(schema.path).toContain("/auth/teams/");
 
-      const valid = provider.v1.auth.apiKeys.create.validatePayload({
+      const valid = provider.post.v1.auth.apiKeys.validatePayload({
         name: "test",
       });
       expect(valid.valid).toBe(true);
 
-      const invalid = provider.v1.auth.apiKeys.create.validatePayload({});
+      const invalid = provider.post.v1.auth.apiKeys.validatePayload({});
       expect(invalid.valid).toBe(false);
       expect(invalid.errors.length).toBeGreaterThan(0);
     });
 
     it("should expose update schema and validate", () => {
       const provider = createProvider();
-      const schema = provider.v1.auth.apiKeys.update.payloadSchema;
+      const schema = provider.put.v1.auth.apiKeys.payloadSchema;
       expect(schema.method).toBe("PUT");
       expect(schema.path).toContain("/auth/api-keys/");
 
-      const valid = provider.v1.auth.apiKeys.update.validatePayload({
+      const valid = provider.put.v1.auth.apiKeys.validatePayload({
         apiKey: { name: "new" },
         fieldMask: "name",
       });
       expect(valid.valid).toBe(true);
 
-      const invalid = provider.v1.auth.apiKeys.update.validatePayload({});
+      const invalid = provider.put.v1.auth.apiKeys.validatePayload({});
       expect(invalid.valid).toBe(false);
     });
   });

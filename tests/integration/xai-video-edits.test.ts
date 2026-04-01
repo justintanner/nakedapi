@@ -16,7 +16,7 @@ describe("xai video edits integration", () => {
   it("should submit a video edit and poll for status", async () => {
     const provider = xai({ apiKey: process.env.XAI_API_KEY ?? "sk-test-key" });
 
-    const result = await provider.v1.videos.edits({
+    const result = await provider.post.v1.videos.edits({
       model: "grok-imagine-video",
       prompt: "Give the woman a silver necklace",
       video: {
@@ -26,7 +26,7 @@ describe("xai video edits integration", () => {
     expect(result.request_id).toBeTruthy();
     expect(typeof result.request_id).toBe("string");
 
-    const status = await provider.v1.videos(result.request_id);
+    const status = await provider.get.v1.videos(result.request_id);
     expect(["pending", "done", "expired", "failed"]).toContain(status.status);
     expect(typeof status.progress).toBe("number");
   });

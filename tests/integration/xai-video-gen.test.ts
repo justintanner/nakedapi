@@ -18,7 +18,7 @@ describe("xai video generation integration", () => {
       apiKey: process.env.XAI_API_KEY ?? "sk-test-key",
     });
 
-    const result = await provider.v1.videos.generations({
+    const result = await provider.post.v1.videos.generations({
       prompt:
         "A white cat with heterochromia eyes walking across a rooftop at golden hour, cinematic drone shot",
       model: "grok-imagine-video",

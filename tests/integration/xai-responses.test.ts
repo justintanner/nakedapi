@@ -14,7 +14,7 @@ describe("xai responses API", () => {
     const provider = xai({
       apiKey: process.env.XAI_API_KEY ?? "sk-test-key",
     });
-    const result = await provider.v1.responses({
+    const result = await provider.post.v1.responses({
       model: "grok-4-fast",
       input: "What is 2 + 2? Reply with just the number.",
       temperature: 0,
@@ -41,7 +41,7 @@ describe("xai responses API", () => {
     const provider = xai({
       apiKey: process.env.XAI_API_KEY ?? "sk-test-key",
     });
-    const result = await provider.v1.responses("resp_stored_001");
+    const result = await provider.get.v1.responses("resp_stored_001");
     expect(result.id).toBe("resp_stored_001");
     expect(result.object).toBe("response");
     expect(result.status).toBe("completed");

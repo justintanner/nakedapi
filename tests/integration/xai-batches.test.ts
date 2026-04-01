@@ -20,14 +20,14 @@ describe("xai batches integration", () => {
 
     it("should create a batch and list it", async () => {
       const provider = createProvider();
-      const created = await provider.v1.batches.create({
+      const created = await provider.post.v1.batches({
         name: "Integration Test Batch",
       });
       expect(created.batch_id).toBeTruthy();
       expect(created.name).toBe("Integration Test Batch");
       expect(created.state.num_requests).toBe(0);
 
-      const list = await provider.v1.batches();
+      const list = await provider.get.v1.batches();
       expect(list.batches.length).toBeGreaterThan(0);
       const found = list.batches.find((b) => b.batch_id === created.batch_id);
       expect(found).toBeTruthy();
@@ -47,10 +47,10 @@ describe("xai batches integration", () => {
 
     it("should get a specific batch by id", async () => {
       const provider = createProvider();
-      const created = await provider.v1.batches.create({
+      const created = await provider.post.v1.batches({
         name: "Get Test Batch",
       });
-      const fetched = await provider.v1.batches.get(created.batch_id);
+      const fetched = await provider.get.v1.batches(created.batch_id);
       expect(fetched.batch_id).toBe(created.batch_id);
       expect(fetched.name).toBe("Get Test Batch");
     });
@@ -69,10 +69,10 @@ describe("xai batches integration", () => {
 
     it("should cancel a batch", async () => {
       const provider = createProvider();
-      const created = await provider.v1.batches.create({
+      const created = await provider.post.v1.batches({
         name: "Cancel Test Batch",
       });
-      const cancelled = await provider.v1.batches.cancel(created.batch_id);
+      const cancelled = await provider.post.v1.batches.cancel(created.batch_id);
       expect(cancelled.batch_id).toBe(created.batch_id);
       expect(cancelled.cancel_time).toBeTruthy();
     });
@@ -91,10 +91,10 @@ describe("xai batches integration", () => {
 
     it("should add requests and list them", async () => {
       const provider = createProvider();
-      const created = await provider.v1.batches.create({
+      const created = await provider.post.v1.batches({
         name: "Requests Test Batch",
       });
-      await provider.v1.batches.requests.add(created.batch_id, {
+      await provider.post.v1.batches.requests(created.batch_id, {
         batch_requests: [
           {
             batch_request_id: "test_req_0",
@@ -108,7 +108,7 @@ describe("xai batches integration", () => {
         ],
       });
 
-      const requests = await provider.v1.batches.requests(created.batch_id);
+      const requests = await provider.get.v1.batches.requests(created.batch_id);
       expect(requests.batch_request_metadata.length).toBeGreaterThan(0);
     });
   });

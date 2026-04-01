@@ -405,7 +405,7 @@ export function kie(opts: KieOptions): KieProvider {
           recordInfo,
         },
         common: {
-          "download-url": Object.assign(downloadUrl, {
+          downloadUrl: Object.assign(downloadUrl, {
             payloadSchema: downloadUrlSchema,
             validatePayload(data: unknown): ValidationResult {
               return validatePayload(data, downloadUrlSchema);
@@ -414,19 +414,19 @@ export function kie(opts: KieOptions): KieProvider {
         },
         chat: { credit },
       },
-      "file-stream-upload": Object.assign(fileStreamUpload, {
+      fileStreamUpload: Object.assign(fileStreamUpload, {
         payloadSchema: fileStreamUploadSchema,
         validatePayload(data: unknown): ValidationResult {
           return validatePayload(data, fileStreamUploadSchema);
         },
       }),
-      "file-url-upload": Object.assign(fileUrlUpload, {
+      fileUrlUpload: Object.assign(fileUrlUpload, {
         payloadSchema: fileUrlUploadSchema,
         validatePayload(data: unknown): ValidationResult {
           return validatePayload(data, fileUrlUploadSchema);
         },
       }),
-      "file-base64-upload": Object.assign(fileBase64Upload, {
+      fileBase64Upload: Object.assign(fileBase64Upload, {
         payloadSchema: fileBase64UploadSchema,
         validatePayload(data: unknown): ValidationResult {
           return validatePayload(data, fileBase64UploadSchema);

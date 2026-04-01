@@ -4,14 +4,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-NakedAPI is a TypeScript monorepo of standalone AI provider packages (`@nakedapi/openai`, `@nakedapi/xai`, `@nakedapi/fal`, `@nakedapi/kimicoding`, `@nakedapi/kie`). Each package has zero external dependencies and is completely self-contained. Based on [TetherAI](https://github.com/nbursa/TetherAI).
+NakedAPI is a TypeScript monorepo of standalone AI provider packages (`@nakedapi/openai`, `@nakedapi/xai`, `@nakedapi/fal`, `@nakedapi/kimicoding`, `@nakedapi/kie`, `@nakedapi/anthropic`, `@nakedapi/fireworks`). Each package has zero external dependencies and is completely self-contained. Based on [TetherAI](https://github.com/nbursa/TetherAI).
+
+## Package Naming
+
+Package names follow the pattern `@nakedapi/<provider>` where the provider name matches the upstream API name (lowercase).
+
+## Endpoint Naming
+
+Method paths mirror upstream API URL paths segment-by-segment. Kebab-case segments become camelCase. This is a strict convention — all endpoint properties must use camelCase, never bracket-notation kebab-case.
+
+```
+URL path:     /v1/chat/completions       →  openai.v1.chat.completions()
+URL path:     /v1/language-models        →  xai.v1.languageModels()
+URL path:     /api/v1/common/download-url →  kie.api.v1.common.downloadUrl()
+URL path:     /v1/tokenize-text          →  xai.v1.tokenizeText()
+```
+
+POST endpoints expose `.payloadSchema` and `.validatePayload(data)` for runtime validation.
 
 ## Commands
 
 ```bash
 pnpm install                    # Install dependencies
 pnpm run build                  # Build all packages
-pnpm run build:kimicoding       # Build single package (also: build:kie, build:xai, build:openai, build:fal)
+pnpm run build:kimicoding       # Build single package (also: build:kie, build:xai, build:openai, build:fal, build:anthropic, build:fireworks)
 pnpm run lint                   # Lint (runs build first via prelint)
 pnpm run lint:fix               # Auto-fix lint issues
 pnpm run format                 # Format with Prettier
@@ -48,15 +65,18 @@ packages/provider/<name>/
     index.ts       # Public exports (types + factory)
     types.ts       # All type definitions + error class
     <name>.ts      # Factory function + core implementation
-    sse.ts         # SSE stream parsing (kimicoding, kie)
-    middleware.ts  # withRetry, withFallback (kimicoding)
+    sse.ts         # SSE stream parsing (kimicoding, kie, fireworks, anthropic)
+    middleware.ts  # withRetry, withFallback (all providers)
+    schemas.ts     # Payload schemas + validatePayload (all providers)
 ```
 
-**openai** — OpenAI chat completions and audio transcription (`provider.v1.chat.completions()`, `provider.v1.audio.transcriptions()`)
-**xai** — xAI chat, images, video, collections, and search (`provider.v1.chat.completions()`, `provider.v1.images.generations()`, `provider.v1.videos.generations()`, `provider.v1.collections.*`, `provider.v1.documents.search()`)
-**fal** — Fal platform model management (`provider.v1.models()`, `.pricing()`, `.usage()`, `.analytics()`, `.requests`)
-**kimicoding** — Anthropic Messages API format (`provider.coding.v1.messages()`, `.stream()`), model `k2p5`, supports vision
-**kie** — Media generation (video/image/audio), `provider.api.v1.jobs.createTask()`, sub-providers (veo, suno, chat)
+**openai** — Chat, embeddings, images, files, models, moderations, batches, responses, audio, fine-tuning
+**xai** — Chat, images, video, files, batches, collections, search, models, auth, realtime, responses, tokenize-text
+**fal** — Models (pricing, usage, analytics, requests), queue, serverless (files, logs, apps, metrics), compute, workflows
+**kimicoding** — Messages, streaming, models, embeddings, countTokens
+**kie** — Media generation (video/image/audio), sub-providers (veo, suno, chat, claude)
+**anthropic** — Messages, streaming, batches, files, models, skills, admin/org APIs
+**fireworks** — Chat, completions, embeddings, rerank, messages, workflows, audio, models, deployments, training
 
 ### Testing
 

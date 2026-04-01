@@ -487,7 +487,7 @@ interface KieDownloadUrlMethod {
 }
 
 interface KieCommonNamespace {
-  "download-url": KieDownloadUrlMethod;
+  downloadUrl: KieDownloadUrlMethod;
 }
 
 interface KieCreditNamespace {
@@ -520,9 +520,9 @@ interface KieFileBase64UploadMethod {
 
 interface KieApiNamespace {
   v1: KieV1Namespace;
-  "file-stream-upload": KieFileStreamUploadMethod;
-  "file-url-upload": KieFileUrlUploadMethod;
-  "file-base64-upload": KieFileBase64UploadMethod;
+  fileStreamUpload: KieFileStreamUploadMethod;
+  fileUrlUpload: KieFileUrlUploadMethod;
+  fileBase64Upload: KieFileBase64UploadMethod;
 }
 
 // Provider interface (sub-provider types imported in index.ts)

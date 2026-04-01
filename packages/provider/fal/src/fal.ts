@@ -474,7 +474,7 @@ export function fal(opts: FalOptions): FalProvider {
   );
 
   const requests = {
-    async "by-endpoint"(
+    async byEndpoint(
       params: FalRequestsParams,
       signal?: AbortSignal
     ): Promise<FalRequestsResponse> {

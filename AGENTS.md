@@ -9,6 +9,19 @@ Uses pnpm workspaces, ES modules, and Vitest for testing.
 
 Provider method paths mirror their upstream API endpoint paths (e.g., `provider.v1.chat.completions()` maps to `POST /v1/chat/completions`). Callable namespaces use `Object.assign` for dual-purpose nodes. POST endpoints expose `.payloadSchema` and `.validatePayload(data)` for runtime validation.
 
+## Endpoint Naming Convention
+
+Method paths mirror upstream API URL paths segment-by-segment. **Kebab-case segments become camelCase** — this is a strict convention that must be followed for all endpoint properties.
+
+```
+URL path:     /v1/chat/completions       →  openai.v1.chat.completions()
+URL path:     /v1/language-models        →  xai.v1.languageModels()           // NOT ["language-models"]
+URL path:     /api/v1/common/download-url →  kie.api.v1.common.downloadUrl()   // NOT ["download-url"]
+URL path:     /v1/tokenize-text          →  xai.v1.tokenizeText()              // NOT ["tokenize-text"]
+```
+
+**Never use bracket-notation kebab-case** for endpoint properties. Always convert to camelCase.
+
 ## Build/Lint/Test Commands
 
 ```bash

@@ -665,7 +665,7 @@ interface FalDeletePayloadsMethod {
 }
 
 interface FalModelsRequestsNamespace {
-  "by-endpoint"(
+  byEndpoint(
     params: FalRequestsParams,
     signal?: AbortSignal
   ): Promise<FalRequestsResponse>;

@@ -15,7 +15,7 @@ describe("xai tokenize-text integration", () => {
     const provider = xai({
       apiKey: process.env.XAI_API_KEY ?? "sk-test-key",
     });
-    const result = await provider.v1["tokenize-text"]({
+    const result = await provider.v1.tokenizeText({
       model: "grok-3",
       text: "Hello world!",
     });
@@ -32,7 +32,7 @@ describe("xai tokenize-text integration", () => {
   // Payload validation
   it("should expose payloadSchema and validatePayload", () => {
     const provider = xai({ apiKey: "sk-test-key" });
-    const endpoint = provider.v1["tokenize-text"];
+    const endpoint = provider.v1.tokenizeText;
     expect(endpoint.payloadSchema).toBeDefined();
     expect(endpoint.payloadSchema.method).toBe("POST");
     expect(endpoint.payloadSchema.path).toBe("/tokenize-text");

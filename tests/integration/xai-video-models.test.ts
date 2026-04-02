@@ -28,7 +28,8 @@ describe("xAI video generation models integration", () => {
     const provider = xai({
       apiKey: process.env.XAI_API_KEY ?? "xai-test-key",
     });
-    const result = await provider.get.v1.videoGenerationModels("grok-video");
+    const result =
+      await provider.get.v1.videoGenerationModels("grok-imagine-video");
     expect(result.id).toBeTruthy();
     expect(result.object).toBe("model");
   });

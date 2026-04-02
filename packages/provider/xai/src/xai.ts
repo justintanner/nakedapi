@@ -84,6 +84,22 @@ import {
 } from "./schemas";
 import { validatePayload } from "./validate";
 
+// Helper function to safely handle AbortSignal across different environments
+function attachAbortHandler(
+  signal: AbortSignal | undefined,
+  controller: AbortController
+): void {
+  if (!signal) return;
+
+  // Handle both standard AbortSignal and node-fetch's AbortSignal
+  if (typeof signal.addEventListener === "function") {
+    signal.addEventListener("abort", () => controller.abort(), { once: true });
+  } else if (signal.aborted) {
+    // Already aborted, abort our controller too
+    controller.abort();
+  }
+}
+
 export function xai(opts: XaiOptions): XaiProvider {
   const baseURL = opts.baseURL ?? "https://api.x.ai/v1";
   const managementBaseURL =
@@ -102,7 +118,7 @@ export function xai(opts: XaiOptions): XaiProvider {
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     if (signal) {
-      signal.addEventListener("abort", () => controller.abort());
+      attachAbortHandler(signal, controller);
     }
 
     try {
@@ -171,7 +187,7 @@ export function xai(opts: XaiOptions): XaiProvider {
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     if (signal) {
-      signal.addEventListener("abort", () => controller.abort());
+      attachAbortHandler(signal, controller);
     }
 
     try {
@@ -846,7 +862,7 @@ export function xai(opts: XaiOptions): XaiProvider {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), timeout);
             if (signal) {
-              signal.addEventListener("abort", () => controller.abort());
+              attachAbortHandler(signal, controller);
             }
 
             try {
@@ -1006,7 +1022,7 @@ export function xai(opts: XaiOptions): XaiProvider {
             const timeoutId = setTimeout(() => controller.abort(), timeout);
 
             if (signal) {
-              signal.addEventListener("abort", () => controller.abort());
+              attachAbortHandler(signal, controller);
             }
 
             try {
@@ -1100,7 +1116,7 @@ export function xai(opts: XaiOptions): XaiProvider {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), timeout);
           if (signal) {
-            signal.addEventListener("abort", () => controller.abort());
+            attachAbortHandler(signal, controller);
           }
 
           try {

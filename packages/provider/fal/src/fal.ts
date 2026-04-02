@@ -63,6 +63,22 @@ import {
 } from "./schemas";
 import { validatePayload } from "./validate";
 
+// Helper function to safely handle AbortSignal across different environments
+function attachAbortHandler(
+  signal: AbortSignal | undefined,
+  controller: AbortController
+): void {
+  if (!signal) return;
+
+  // Handle both standard AbortSignal and node-fetch's AbortSignal
+  if (typeof signal.addEventListener === "function") {
+    signal.addEventListener("abort", () => controller.abort(), { once: true });
+  } else if (signal.aborted) {
+    // Already aborted, abort our controller too
+    controller.abort();
+  }
+}
+
 // Build query string from parameters (no case conversion)
 function buildQueryString(params: Record<string, unknown>): string {
   const searchParams = new URLSearchParams();
@@ -164,7 +180,7 @@ export function fal(opts: FalOptions): FalProvider {
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     if (signal) {
-      signal.addEventListener("abort", () => controller.abort());
+      attachAbortHandler(signal, controller);
     }
 
     const base = customBaseURL ?? baseURL;
@@ -245,7 +261,7 @@ export function fal(opts: FalOptions): FalProvider {
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     if (signal) {
-      signal.addEventListener("abort", () => controller.abort());
+      attachAbortHandler(signal, controller);
     }
 
     const requestInit: RequestInit = {
@@ -315,7 +331,7 @@ export function fal(opts: FalOptions): FalProvider {
     // No timeout for stream — connections are long-lived
 
     if (signal) {
-      signal.addEventListener("abort", () => controller.abort());
+      attachAbortHandler(signal, controller);
     }
 
     const requestInit: RequestInit = {
@@ -377,7 +393,7 @@ export function fal(opts: FalOptions): FalProvider {
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     if (signal) {
-      signal.addEventListener("abort", () => controller.abort());
+      attachAbortHandler(signal, controller);
     }
 
     let url = `${baseURL}${path}`;
@@ -817,7 +833,7 @@ export function fal(opts: FalOptions): FalProvider {
               const timeoutId = setTimeout(() => controller.abort(), timeout);
 
               if (signal) {
-                signal.addEventListener("abort", () => controller.abort());
+                attachAbortHandler(signal, controller);
               }
 
               const url = `${baseURL}/serverless/apps/${encodeURIComponent(params.owner)}/${encodeURIComponent(params.name)}/queue`;
@@ -887,7 +903,7 @@ export function fal(opts: FalOptions): FalProvider {
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       if (signal) {
-        signal.addEventListener("abort", () => controller.abort());
+        attachAbortHandler(signal, controller);
       }
 
       const url = `${baseURL}/serverless/metrics`;
@@ -1266,7 +1282,7 @@ export function fal(opts: FalOptions): FalProvider {
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       if (signal) {
-        signal.addEventListener("abort", () => controller.abort());
+        attachAbortHandler(signal, controller);
       }
 
       const url = `${baseURL}/serverless/metrics`;
@@ -1698,7 +1714,7 @@ export function fal(opts: FalOptions): FalProvider {
         const timeoutId = setTimeout(() => controller.abort(), timeout);
 
         if (signal) {
-          signal.addEventListener("abort", () => controller.abort());
+          attachAbortHandler(signal, controller);
         }
 
         const url = `${baseURL}/serverless/apps/${encodeURIComponent(params.owner)}/${encodeURIComponent(params.name)}/queue`;

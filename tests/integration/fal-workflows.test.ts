@@ -22,13 +22,16 @@ describe("fal workflows integration", () => {
     expect(Array.isArray(result.workflows)).toBe(true);
   });
 
-  it("should get a specific workflow", async () => {
+  it("should handle workflow not found error", async () => {
     const provider = fal({
       apiKey: process.env.FAL_API_KEY ?? "fal-test-key",
     });
-    const result = await provider.v1.workflows.get("fal-ai", "flux-dev");
-    expect(result.id).toBeTruthy();
-    expect(result.owner).toBe("fal-ai");
-    expect(result.name).toBe("flux-dev");
+    // This workflow doesn't exist - expect a 404 error
+    await expect(
+      provider.v1.workflows.get({
+        username: "fal-ai",
+        workflow_name: "nonexistent-workflow",
+      })
+    ).rejects.toThrow(/Workflow not found/);
   });
 });

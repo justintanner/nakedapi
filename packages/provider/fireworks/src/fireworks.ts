@@ -200,6 +200,22 @@ import {
 import { validatePayload } from "./validate";
 import { sseToIterable } from "./sse";
 
+// Helper function to safely handle AbortSignal across different environments
+function attachAbortHandler(
+  signal: AbortSignal | undefined,
+  controller: AbortController
+): void {
+  if (!signal) return;
+
+  // Handle both standard AbortSignal and node-fetch's AbortSignal
+  if (typeof signal.addEventListener === "function") {
+    signal.addEventListener("abort", () => controller.abort(), { once: true });
+  } else if (signal.aborted) {
+    // Already aborted, abort our controller too
+    controller.abort();
+  }
+}
+
 export function fireworks(opts: FireworksOptions): FireworksProvider {
   const baseURL = opts.baseURL ?? "https://api.fireworks.ai/inference/v1";
   const modelsBaseURL = "https://api.fireworks.ai";
@@ -220,7 +236,7 @@ export function fireworks(opts: FireworksOptions): FireworksProvider {
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     if (signal) {
-      signal.addEventListener("abort", () => controller.abort());
+      attachAbortHandler(signal, controller);
     }
 
     try {
@@ -274,7 +290,7 @@ export function fireworks(opts: FireworksOptions): FireworksProvider {
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     if (signal) {
-      signal.addEventListener("abort", () => controller.abort());
+      attachAbortHandler(signal, controller);
     }
 
     try {
@@ -442,7 +458,7 @@ export function fireworks(opts: FireworksOptions): FireworksProvider {
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     if (signal) {
-      signal.addEventListener("abort", () => controller.abort());
+      attachAbortHandler(signal, controller);
     }
 
     try {
@@ -513,7 +529,7 @@ export function fireworks(opts: FireworksOptions): FireworksProvider {
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     if (signal) {
-      signal.addEventListener("abort", () => controller.abort());
+      attachAbortHandler(signal, controller);
     }
 
     try {
@@ -570,7 +586,7 @@ export function fireworks(opts: FireworksOptions): FireworksProvider {
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     if (signal) {
-      signal.addEventListener("abort", () => controller.abort());
+      attachAbortHandler(signal, controller);
     }
 
     try {
@@ -626,7 +642,7 @@ export function fireworks(opts: FireworksOptions): FireworksProvider {
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     if (signal) {
-      signal.addEventListener("abort", () => controller.abort());
+      attachAbortHandler(signal, controller);
     }
 
     try {

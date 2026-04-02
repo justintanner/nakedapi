@@ -18,6 +18,22 @@ import { sseToIterable } from "./sse";
 import { messagesSchema, embeddingsSchema, countTokensSchema } from "./schemas";
 import { validatePayload } from "./validate";
 
+// Helper function to safely handle AbortSignal across different environments
+function attachAbortHandler(
+  signal: AbortSignal | undefined,
+  controller: AbortController
+): void {
+  if (!signal) return;
+
+  // Handle both standard AbortSignal and node-fetch's AbortSignal
+  if (typeof signal.addEventListener === "function") {
+    signal.addEventListener("abort", () => controller.abort(), { once: true });
+  } else if (signal.aborted) {
+    // Already aborted, abort our controller too
+    controller.abort();
+  }
+}
+
 interface AnthropicErrorBody {
   error?: { message?: string; type?: string };
 }
@@ -70,7 +86,7 @@ export function kimicoding(opts: KimiCodingOptions): KimiCodingProvider {
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     if (signal) {
-      signal.addEventListener("abort", () => controller.abort());
+      attachAbortHandler(signal, controller);
     }
 
     try {

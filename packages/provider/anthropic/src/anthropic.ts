@@ -65,6 +65,22 @@ import {
 import { validatePayload } from "./validate";
 import { parseAnthropicStream } from "./sse";
 
+// Helper function to safely handle AbortSignal across different environments
+function attachAbortHandler(
+  signal: AbortSignal | undefined,
+  controller: AbortController
+): void {
+  if (!signal) return;
+
+  // Handle both standard AbortSignal and node-fetch's AbortSignal
+  if (typeof signal.addEventListener === "function") {
+    signal.addEventListener("abort", () => controller.abort(), { once: true });
+  } else if (signal.aborted) {
+    // Already aborted, abort our controller too
+    controller.abort();
+  }
+}
+
 export function anthropic(opts: AnthropicOptions): AnthropicProvider {
   const baseURL = (opts.baseURL ?? "https://api.anthropic.com") + "/v1";
   const doFetch = opts.fetch ?? fetch;
@@ -96,7 +112,7 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
     if (signal) {
-      signal.addEventListener("abort", () => controller.abort());
+      attachAbortHandler(signal, controller);
     }
     return { controller, timeoutId };
   }

@@ -278,7 +278,7 @@ export function kie(opts: KieOptions): KieProvider {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          base64: req.base64,
+          base64Data: req.base64,
           filename: req.filename,
           uploadPath,
           ...(mimeType ? { mimeType } : {}),

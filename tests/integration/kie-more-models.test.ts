@@ -1,0 +1,77 @@
+import { describe, it, expect, afterEach } from "vitest";
+import { setupPolly, teardownPolly, type PollyContext } from "../harness";
+import { kie } from "@nakedapi/kie";
+
+describe("kie additional models", () => {
+  let ctx: PollyContext;
+
+  afterEach(async () => {
+    await teardownPolly(ctx);
+  });
+
+  describe("nano-banana-pro", () => {
+    it("should create an image generation task", async () => {
+      ctx = setupPolly("kie/models/nano-banana-pro");
+      const provider = kie({
+        apiKey: process.env.KIE_API_KEY ?? "test-key",
+      });
+
+      const result = await provider.post.api.v1.jobs.createTask({
+        model: "nano-banana-pro",
+        input: {
+          prompt: "A futuristic city with flying vehicles at night",
+        },
+      });
+
+      expect(result.code).toBe(200);
+      expect(result.data?.taskId).toBeTruthy();
+    });
+  });
+
+  describe("nano-banana-2", () => {
+    it("should create an image generation task", async () => {
+      ctx = setupPolly("kie/models/nano-banana-2");
+      const provider = kie({
+        apiKey: process.env.KIE_API_KEY ?? "test-key",
+      });
+
+      const result = await provider.post.api.v1.jobs.createTask({
+        model: "nano-banana-2",
+        input: {
+          prompt: "A beautiful garden with roses and a fountain",
+        },
+      });
+
+      expect(result.code).toBe(200);
+      expect(result.data?.taskId).toBeTruthy();
+    });
+  });
+
+  describe("additional model schemas", () => {
+    it("should validate payloads for various model types", async () => {
+      const provider = kie({
+        apiKey: "test-key",
+      });
+
+      // Validate bytedance/seedance schema
+      const seedanceResult =
+        provider.post.api.v1.jobs.createTask.validatePayload({
+          model: "bytedance/seedance-1.5-pro",
+          input: {
+            prompt: "Test video",
+          },
+        });
+      expect(seedanceResult.valid).toBe(true);
+
+      // Validate elevenlabs schema
+      const elevenlabsResult =
+        provider.post.api.v1.jobs.createTask.validatePayload({
+          model: "elevenlabs/text-to-dialogue-v3",
+          input: {
+            prompt: "Test dialogue",
+          },
+        });
+      expect(elevenlabsResult.valid).toBe(true);
+    });
+  });
+});

@@ -12,11 +12,32 @@ export interface PollyContext {
 }
 
 export function setupPolly(recordingName: string): PollyContext {
+  return setupPollyWithOptions(recordingName, {});
+}
+
+export function setupPollyForFileUploads(recordingName: string): PollyContext {
+  // Disable body matching for FormData compatibility
+  return setupPollyWithOptions(recordingName, {
+    matchRequestsBy: {
+      headers: { exclude: ["authorization", "user-agent", "x-api-key"] },
+      body: false,
+    },
+  });
+}
+
+function setupPollyWithOptions(
+  recordingName: string,
+  options: { matchRequestsBy?: Record<string, unknown> }
+): PollyContext {
   const mode = (process.env.POLLY_MODE ?? "replay") as
     | "record"
     | "replay"
     | "passthrough";
   const recordingsDir = path.resolve(import.meta.dirname, "recordings");
+
+  const defaultMatchRequestsBy = {
+    headers: { exclude: ["authorization", "user-agent", "x-api-key"] },
+  };
 
   const polly = new Polly(recordingName, {
     mode,
@@ -28,9 +49,7 @@ export function setupPolly(recordingName: string): PollyContext {
     recordIfMissing: mode === "record",
     recordFailedRequests: true,
     timing: Timing.fixed(0),
-    matchRequestsBy: {
-      headers: { exclude: ["authorization", "user-agent", "x-api-key"] },
-    },
+    matchRequestsBy: options.matchRequestsBy ?? defaultMatchRequestsBy,
   });
 
   // Redact Authorization headers before persisting to disk

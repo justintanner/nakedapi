@@ -343,6 +343,19 @@ export type MediaGenerationRequest =
   | Qwen2TextToImageRequest
   | SoraWatermarkRequest;
 
+// Standalone parameter union types (avoids verbose indexed-access types in consumers)
+export type KlingDuration = KlingVideoRequest["input"]["duration"];
+export type KlingAspectRatio = "16:9" | "9:16" | "1:1";
+export type KlingMode = "std" | "pro";
+export type GrokImagineMode = "fun" | "normal" | "spicy";
+export type GrokImagineDuration = "6" | "10";
+export type GrokImagineResolution = "480p" | "720p";
+export type SeedanceDuration = "4" | "8" | "12";
+export type SeedanceResolution = "480p" | "720p" | "1080p";
+export type NanoBananaResolution = "1K" | "2K" | "4K";
+export type NanoBananaOutputFormat = "png" | "jpg";
+export type GptImageQuality = "medium" | "high";
+
 // Raw API envelope response
 export interface KieApiEnvelope<T = Record<string, unknown>> {
   code: number;

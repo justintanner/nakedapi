@@ -1,5 +1,6 @@
 // Export main provider function
 export { kie } from "./kie";
+export { createTaskOrThrow, uploadOrThrow } from "./kie";
 
 // Export error class
 export { KieError } from "./types";
@@ -62,6 +63,18 @@ export type {
   PayloadSchema,
   ValidationResult,
   ModelInputSchema,
+  // Standalone parameter union types
+  KlingDuration,
+  KlingAspectRatio,
+  KlingMode,
+  GrokImagineMode,
+  GrokImagineDuration,
+  GrokImagineResolution,
+  SeedanceDuration,
+  SeedanceResolution,
+  NanoBananaResolution,
+  NanoBananaOutputFormat,
+  GptImageQuality,
 } from "./types";
 
 // Export sub-provider types

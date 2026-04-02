@@ -1,5 +1,11 @@
 // Export main provider function
-export { openai } from "./openai";
+export {
+  openai,
+  textPart,
+  imageUrlPart,
+  imageBase64Part,
+  firstContent,
+} from "./openai";
 
 // Export error class
 export { OpenAiError } from "./types";

@@ -443,3 +443,32 @@ export function kie(opts: KieOptions): KieProvider {
     },
   };
 }
+
+export async function createTaskOrThrow(
+  provider: KieProvider,
+  request: MediaGenerationRequest
+): Promise<string> {
+  const result = await provider.post.api.v1.jobs.createTask(request);
+  if (!result.data?.taskId) {
+    throw new KieError(
+      `createTask failed: ${result.msg ?? "no taskId in response"}`,
+      result.code
+    );
+  }
+  return result.data.taskId;
+}
+
+export async function uploadOrThrow(
+  provider: KieProvider,
+  file: Blob,
+  filename: string
+): Promise<string> {
+  const result = await provider.post.api.fileStreamUpload({ file, filename });
+  if (!result.data?.downloadUrl) {
+    throw new KieError(
+      `upload failed: no downloadUrl in response`,
+      result.code
+    );
+  }
+  return result.data.downloadUrl;
+}

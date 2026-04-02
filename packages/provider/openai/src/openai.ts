@@ -58,6 +58,8 @@ import {
   OpenAiStoredCompletionMessageListResponse,
   OpenAiProvider,
   OpenAiError,
+  OpenAiTextPart,
+  OpenAiImageUrlPart,
 } from "./types";
 import type { ValidationResult } from "./types";
 import {
@@ -84,6 +86,32 @@ import {
   storedCompletionsDeleteSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
+
+export function textPart(text: string): OpenAiTextPart {
+  return { type: "text", text };
+}
+
+export function imageUrlPart(
+  url: string,
+  detail?: "auto" | "low" | "high"
+): OpenAiImageUrlPart {
+  return {
+    type: "image_url",
+    image_url: { url, ...(detail ? { detail } : {}) },
+  };
+}
+
+export function imageBase64Part(
+  base64: string,
+  mediaType: string,
+  detail?: "auto" | "low" | "high"
+): OpenAiImageUrlPart {
+  return imageUrlPart(`data:${mediaType};base64,${base64}`, detail);
+}
+
+export function firstContent(response: OpenAiChatResponse): string {
+  return response.choices[0]?.message?.content ?? "";
+}
 
 export function openai(opts: OpenAiOptions): OpenAiProvider {
   const baseURL = opts.baseURL ?? "https://api.openai.com/v1";

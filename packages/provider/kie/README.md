@@ -187,7 +187,7 @@ Base URL: `https://api.kie.ai`
 | `POST /api/v1/veo/generate`         | `kie.veo.post.api.v1.veo.generate()`             |
 | `POST /api/v1/veo/extend`           | `kie.veo.post.api.v1.veo.extend()`               |
 | `POST /api/v1/generate`             | `kie.suno.post.api.v1.generate()`                |
-| `POST /gpt-5-2/v1/chat/completions` | `kie.chat.post["gpt-5-2"].v1.chat.completions()` |
+| `POST /gpt-5.5/v1/chat/completions` | `kie.chat.completions()` (fallback: gpt-5.5 → gpt-5-2) |
 | `POST /claude/v1/messages`          | `kie.claude.post.v1.messages()`                  |
 
 ## Data Shaping
@@ -222,7 +222,7 @@ Creates a Kie provider instance.
 - `kie.veo.post.api.v1.veo.generate(req)`: Generate video with Veo (veo3, veo3_fast)
 - `kie.veo.post.api.v1.veo.extend(req)`: Extend an existing Veo video
 - `kie.suno.post.api.v1.generate(req)`: Generate music with Suno
-- `kie.chat.post["gpt-5-2"].v1.chat.completions(req)`: Chat completions (GPT-5.2)
+- `kie.chat.completions(req)`: Chat completions with built-in fallback (gpt-5.5 → gpt-5-2)
 
 ## License
 

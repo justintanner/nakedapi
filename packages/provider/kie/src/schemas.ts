@@ -190,11 +190,60 @@ export const sunoGenerateSchema: PayloadSchema = {
   },
 };
 
+export const chatCompletions55Schema: PayloadSchema = {
+  method: "POST",
+  path: "/gpt-5.5/v1/chat/completions",
+  contentType: "application/json",
+  fields: {
+    model: {
+      type: "string",
+      required: true,
+      description: "Model ID (e.g. gpt-5.5)",
+    },
+    messages: {
+      type: "array",
+      required: true,
+      description: "Array of chat messages",
+      items: {
+        type: "object",
+        properties: {
+          role: {
+            type: "string",
+            required: true,
+            enum: ["user", "assistant", "system"],
+          },
+          content: { type: "string", required: true },
+        },
+      },
+    },
+    temperature: { type: "number", description: "Sampling temperature" },
+    max_tokens: { type: "number", description: "Max tokens to generate" },
+    stream: { type: "boolean", description: "Enable streaming" },
+    response_format: {
+      type: "object",
+      description: "Response format configuration",
+      properties: {
+        type: {
+          type: "string",
+          required: true,
+          enum: ["text", "json_object", "json_schema"],
+        },
+        json_schema: { type: "object" },
+      },
+    },
+  },
+};
+
 export const chatCompletionsSchema: PayloadSchema = {
   method: "POST",
   path: "/gpt-5-2/v1/chat/completions",
   contentType: "application/json",
   fields: {
+    model: {
+      type: "string",
+      required: true,
+      description: "Model ID (e.g. gpt-5.5)",
+    },
     messages: {
       type: "array",
       required: true,

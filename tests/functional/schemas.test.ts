@@ -44,7 +44,7 @@ import {
   veoGenerateSchema,
   veoExtendSchema,
   sunoGenerateSchema,
-  chatCompletionsSchema as kieChatSchema,
+  chatCompletions55Schema as kieChatSchema,
   claudeMessagesSchema,
   modelInputSchemas,
 } from "../../packages/provider/kie/src/schemas";

@@ -21,14 +21,15 @@ Standalone-first TypeScript AI provider packages. Each is self-contained with ze
 
 ## Providers
 
-| Package                                              | Version                                                                                                                             | Description                                                   | Docs                                                       |
-| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------- |
-| [@nakedapi/openai](packages/provider/openai)         | [![npm](https://img.shields.io/npm/v/@nakedapi/openai?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/openai)         | Chat, embeddings, images, responses, audio                    | [README](packages/provider/openai/README.md#endpoints)     |
-| [@nakedapi/xai](packages/provider/xai)               | [![npm](https://img.shields.io/npm/v/@nakedapi/xai?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/xai)               | Grok chat, images, video, files, batches, collections, search | [README](packages/provider/xai/README.md#endpoints)        |
-| [@nakedapi/fal](packages/provider/fal)               | [![npm](https://img.shields.io/npm/v/@nakedapi/fal?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/fal)               | Model registry, pricing, usage, analytics                     | [README](packages/provider/fal/README.md#endpoints)        |
-| [@nakedapi/kimicoding](packages/provider/kimicoding) | [![npm](https://img.shields.io/npm/v/@nakedapi/kimicoding?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/kimicoding) | Messages, models, embeddings                                  | [README](packages/provider/kimicoding/README.md#endpoints) |
-| [@nakedapi/kie](packages/provider/kie)               | [![npm](https://img.shields.io/npm/v/@nakedapi/kie?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/kie)               | Media generation (video/image/audio), sub-providers           | [README](packages/provider/kie/README.md#endpoints)        |
-| [@nakedapi/anthropic](packages/provider/anthropic)   | [![npm](https://img.shields.io/npm/v/@nakedapi/anthropic?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/anthropic)   | Messages, streaming, batches, files, models, admin APIs       | [README](packages/provider/anthropic/README.md#endpoints)  |
+| Package                                              | Version                                                                                                                             | Description                                                    | Docs                                                       |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------- |
+| [@nakedapi/openai](packages/provider/openai)         | [![npm](https://img.shields.io/npm/v/@nakedapi/openai?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/openai)         | Chat, embeddings, images, responses, audio                     | [README](packages/provider/openai/README.md#endpoints)     |
+| [@nakedapi/xai](packages/provider/xai)               | [![npm](https://img.shields.io/npm/v/@nakedapi/xai?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/xai)               | Grok chat, images, video, files, batches, collections, search  | [README](packages/provider/xai/README.md#endpoints)        |
+| [@nakedapi/fal](packages/provider/fal)               | [![npm](https://img.shields.io/npm/v/@nakedapi/fal?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/fal)               | Model registry, pricing, usage, analytics                      | [README](packages/provider/fal/README.md#endpoints)        |
+| [@nakedapi/kimicoding](packages/provider/kimicoding) | [![npm](https://img.shields.io/npm/v/@nakedapi/kimicoding?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/kimicoding) | Messages, models, embeddings                                   | [README](packages/provider/kimicoding/README.md#endpoints) |
+| [@nakedapi/kie](packages/provider/kie)               | [![npm](https://img.shields.io/npm/v/@nakedapi/kie?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/kie)               | Media generation (video/image/audio), sub-providers            | [README](packages/provider/kie/README.md#endpoints)        |
+| [@nakedapi/anthropic](packages/provider/anthropic)   | [![npm](https://img.shields.io/npm/v/@nakedapi/anthropic?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/anthropic)   | Messages, streaming, batches, files, models, admin APIs        | [README](packages/provider/anthropic/README.md#endpoints)  |
+| [@nakedapi/fireworks](packages/provider/fireworks)   | [![npm](https://img.shields.io/npm/v/@nakedapi/fireworks?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/fireworks)   | Chat, completions, embeddings, audio, deployments, fine-tuning | [README](packages/provider/fireworks/README.md#endpoints)  |
 
 ## Quick Start
 
@@ -65,7 +66,7 @@ URL path:     /v1/language-models        →  xai.v1.languageModels()
 URL path:     /api/v1/common/download-url →  kie.api.v1.common.downloadUrl()
 ```
 
-Full endpoint tables are in each provider's README: [OpenAI](packages/provider/openai/README.md#endpoints) | [xAI](packages/provider/xai/README.md#endpoints) | [Fal](packages/provider/fal/README.md#endpoints) | [KimiCoding](packages/provider/kimicoding/README.md#endpoints) | [KIE](packages/provider/kie/README.md#endpoints) | [Anthropic](packages/provider/anthropic/README.md#endpoints)
+Full endpoint tables are in each provider's README: [OpenAI](packages/provider/openai/README.md#endpoints) | [xAI](packages/provider/xai/README.md#endpoints) | [Fal](packages/provider/fal/README.md#endpoints) | [KimiCoding](packages/provider/kimicoding/README.md#endpoints) | [KIE](packages/provider/kie/README.md#endpoints) | [Anthropic](packages/provider/anthropic/README.md#endpoints) | [Fireworks](packages/provider/fireworks/README.md#endpoints)
 
 ## Middleware
 

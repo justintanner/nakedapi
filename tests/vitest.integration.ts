@@ -9,6 +9,7 @@ export default defineConfig({
     include: [
       "tests/integration/**/*.test.{ts,tsx}",
       "tests/functional/**/*.test.{ts,tsx}",
+      "tests/unit/**/*.test.{ts,tsx}",
     ],
     exclude: ["node_modules", "dist"],
     testTimeout: 30000,

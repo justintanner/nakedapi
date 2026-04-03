@@ -1,19 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { setupPolly, teardownPolly, type PollyContext } from "../harness";
 import { anthropic } from "@nakedapi/anthropic";
 
 describe("anthropic models", () => {
   let ctx: PollyContext;
 
-  beforeEach(() => {
-    ctx = setupPolly("anthropic/models");
-  });
-
   afterEach(async () => {
     await teardownPolly(ctx);
   });
 
   it("should list models", async () => {
+    ctx = setupPolly("anthropic/models-list");
     const provider = anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY ?? "sk-ant-test-key",
     });
@@ -26,6 +23,7 @@ describe("anthropic models", () => {
   });
 
   it("should retrieve a model", async () => {
+    ctx = setupPolly("anthropic/models-retrieve");
     const provider = anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY ?? "sk-ant-test-key",
     });

@@ -19,7 +19,7 @@ describe("openai chat stream integration", () => {
     });
 
     const stream = await provider.post.v1.chat.completions({
-      model: "gpt-5.4-2026-03-05",
+      model: "gpt-4o-mini",
       messages: [{ role: "user", content: "Say hello" }],
       stream: true,
       temperature: 0,

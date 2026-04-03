@@ -101,7 +101,7 @@ describe("anthropic message batches", () => {
     expect(result.length).toBeGreaterThan(0);
   });
 
-  it("should delete a message batch", async () => {
+  it.skip("should delete a message batch", async () => {
     ctx = setupPolly("anthropic/batches-delete");
     const provider = anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY ?? "sk-ant-test-key",

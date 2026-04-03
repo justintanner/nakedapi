@@ -15,7 +15,7 @@ describe("kimicoding chat stream integration", () => {
 
   it("should stream chat messages", async () => {
     const provider = kimicoding({
-      apiKey: process.env.KIMICODING_API_KEY ?? "kimi-test-key",
+      apiKey: process.env.KIMI_CODING_API_KEY ?? "sk-test-key",
     });
 
     const stream = await provider.post.stream.coding.v1.messages({
@@ -43,7 +43,7 @@ describe("kimicoding chat stream integration", () => {
 
   it("should validate payload schema for streaming", () => {
     const provider = kimicoding({
-      apiKey: process.env.KIMICODING_API_KEY ?? "kimi-test-key",
+      apiKey: process.env.KIMI_CODING_API_KEY ?? "sk-test-key",
     });
 
     const validation = provider.post.stream.coding.v1.messages.validatePayload({

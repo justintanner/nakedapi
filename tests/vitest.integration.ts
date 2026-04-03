@@ -34,5 +34,17 @@ export default defineConfig({
         "../packages/provider/anthropic/src"
       ),
     },
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "json", "html"],
+      include: ["packages/provider/fireworks/src/**/*"],
+      exclude: ["node_modules", "dist", "tests"],
+      thresholds: {
+        lines: 100,
+        functions: 100,
+        branches: 100,
+        statements: 100,
+      },
+    },
   },
 });

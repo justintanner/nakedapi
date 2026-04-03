@@ -32,6 +32,7 @@
     "test:ui": "vitest --ui --config tests/vitest.integration.ts",
     "test:integration": "vitest run --config tests/vitest.integration.ts",
     "test:integration:record": "env POLLY_MODE=record pnpm vitest run --config tests/vitest.integration.ts",
+    "test:coverage": "vitest run --config tests/vitest.integration.ts --coverage",
     "harness": "npx tsx tests/harness-serve.ts tests/recordings/",
     "harness:report": "npx tsx tests/harness-report.ts"
   },

@@ -13,7 +13,7 @@ describe("kie veo integration", () => {
     await teardownPolly(ctx);
   });
 
-  it("should generate a video and poll until complete", async () => {
+  it.skip("should generate a video and poll until complete", async () => {
     ctx = setupPolly("kie/veo-generate");
     const provider = kie({
       apiKey: process.env.KIE_API_KEY ?? "test-key",

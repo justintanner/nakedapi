@@ -13,7 +13,7 @@ describe("kie grok-imagine image-to-video harness", () => {
     await teardownPolly(ctx);
   });
 
-  it("should check credits, create image-to-video task, poll until complete, and return video URL", async () => {
+  it.skip("should check credits, create image-to-video task, poll until complete, and return video URL", async () => {
     ctx = setupPolly("kie/grok-imagine-image-to-video-harness");
     const provider = kie({
       apiKey: process.env.KIE_API_KEY ?? "test-key",

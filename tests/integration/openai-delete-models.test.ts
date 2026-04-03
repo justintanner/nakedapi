@@ -18,9 +18,9 @@ describe("openai delete models integration", () => {
       apiKey: process.env.OPENAI_API_KEY ?? "sk-test-key",
     });
 
-    const result = await provider.delete.v1.models({
-      model: process.env.OPENAI_FINE_TUNED_MODEL ?? "ft:gpt-4o:test",
-    });
+    const result = await provider.delete.v1.models(
+      process.env.OPENAI_FINE_TUNED_MODEL ?? "ft:gpt-4o:test"
+    );
 
     expect(result).toBeDefined();
     expect(result.id).toBeDefined();

@@ -237,13 +237,14 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
   async function makeGetBinaryRequest(
     path: string,
     signal?: AbortSignal,
-    apiKey?: string
+    apiKey?: string,
+    beta?: string[]
   ): Promise<ArrayBuffer> {
     const { controller, timeoutId } = makeController(signal);
     try {
       const res = await doFetch(`${baseURL}${path}`, {
         method: "GET",
-        headers: commonHeaders(apiKey ?? opts.apiKey),
+        headers: commonHeaders(apiKey ?? opts.apiKey, undefined, beta),
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
@@ -363,7 +364,8 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
   // Admin API key (falls back to main apiKey)
   const adminKey = opts.adminApiKey ?? opts.apiKey;
 
-  // Skills beta flag
+  // Beta flags
+  const FILES_BETA = ["files-api-2025-04-14"];
   const SKILLS_BETA = ["skills-2025-10-02"];
 
   // --- Define POST methods ---
@@ -439,7 +441,13 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
     ): Promise<AnthropicFile> {
       const form = new FormData();
       form.append("file", file);
-      return await makeFormRequest<AnthropicFile>("/files", form, signal);
+      return await makeFormRequest<AnthropicFile>(
+        "/files",
+        form,
+        signal,
+        undefined,
+        FILES_BETA
+      );
     },
     {
       payloadSchema: filesUploadSchema,
@@ -698,7 +706,9 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
     return await makeGetRequest<AnthropicFileListResponse>(
       "/files",
       listQuery(params),
-      signal
+      signal,
+      undefined,
+      FILES_BETA
     );
   }
 
@@ -709,7 +719,9 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
     return await makeGetRequest<AnthropicFile>(
       `/files/${encodeURIComponent(fileId)}`,
       undefined,
-      signal
+      signal,
+      undefined,
+      FILES_BETA
     );
   }
 
@@ -719,7 +731,9 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
   ): Promise<ArrayBuffer> {
     return await makeGetBinaryRequest(
       `/files/${encodeURIComponent(fileId)}/content`,
-      signal
+      signal,
+      undefined,
+      FILES_BETA
     );
   }
 
@@ -938,7 +952,9 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
   ): Promise<AnthropicFileDeleteResponse> {
     return await makeDeleteRequest<AnthropicFileDeleteResponse>(
       `/files/${encodeURIComponent(fileId)}`,
-      signal
+      signal,
+      undefined,
+      FILES_BETA
     );
   }
 

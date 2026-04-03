@@ -9,7 +9,7 @@ describe("anthropic files", () => {
     await teardownPolly(ctx);
   });
 
-  it.skip("should upload a file", async () => {
+  it("should upload a file", async () => {
     ctx = setupPolly("anthropic/files-upload");
     const provider = anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY ?? "sk-ant-test-key",
@@ -24,7 +24,7 @@ describe("anthropic files", () => {
     expect(result.created_at).toBeTruthy();
   });
 
-  it.skip("should list files", async () => {
+  it("should list files", async () => {
     ctx = setupPolly("anthropic/files-list");
     const provider = anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY ?? "sk-ant-test-key",
@@ -36,7 +36,7 @@ describe("anthropic files", () => {
     expect(result.data[0].type).toBe("file");
   });
 
-  it.skip("should retrieve a file", async () => {
+  it("should retrieve a file", async () => {
     ctx = setupPolly("anthropic/files-retrieve");
     const provider = anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY ?? "sk-ant-test-key",
@@ -62,7 +62,7 @@ describe("anthropic files", () => {
     expect(result.byteLength).toBeGreaterThan(0);
   });
 
-  it.skip("should delete a file", async () => {
+  it("should delete a file", async () => {
     ctx = setupPolly("anthropic/files-delete");
     const provider = anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY ?? "sk-ant-test-key",

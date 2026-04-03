@@ -20,7 +20,7 @@ describe("kie grok-imagine image-to-video harness", () => {
     });
 
     // Step 1: Check account credits before the expensive call
-    const credits = await provider.get.api.v1.chat.credit();
+    const credits = await provider.get.api.v1.chat.credit.skip();
     expect(credits.code).toBe(200);
     expect(typeof credits.data).toBe("number");
 

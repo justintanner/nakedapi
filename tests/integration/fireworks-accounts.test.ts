@@ -37,6 +37,23 @@ describe("fireworks accounts integration", () => {
       expect(valid.valid).toBe(true);
     });
 
+    it("should reject update user without role", () => {
+      const provider = fireworks({ apiKey: "test-key" });
+      const result = provider.v1.accounts.users.update.validatePayload({
+        displayName: "New Name",
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain("role is required");
+    });
+
+    it("should expose update user schema", () => {
+      const provider = fireworks({ apiKey: "test-key" });
+      const schema = provider.v1.accounts.users.update.payloadSchema;
+      expect(schema.method).toBe("PATCH");
+      expect(schema.path).toBe("/v1/accounts/{accountId}/users/{userId}");
+      expect(schema.fields.role.required).toBe(true);
+    });
+
     it("should validate create api key payload", () => {
       const provider = fireworks({ apiKey: "test-key" });
       const valid = provider.v1.accounts.apiKeys.create.validatePayload({
@@ -92,6 +109,23 @@ describe("fireworks accounts integration", () => {
         value: "new-value",
       });
       expect(valid.valid).toBe(true);
+    });
+
+    it("should reject update secret without keyName", () => {
+      const provider = fireworks({ apiKey: "test-key" });
+      const result = provider.v1.accounts.secrets.update.validatePayload({
+        value: "new-value",
+      });
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain("keyName is required");
+    });
+
+    it("should expose update secret schema", () => {
+      const provider = fireworks({ apiKey: "test-key" });
+      const schema = provider.v1.accounts.secrets.update.payloadSchema;
+      expect(schema.method).toBe("PATCH");
+      expect(schema.path).toBe("/v1/accounts/{accountId}/secrets/{secretId}");
+      expect(schema.fields.keyName.required).toBe(true);
     });
   });
 });

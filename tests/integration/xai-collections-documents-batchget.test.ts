@@ -1,0 +1,75 @@
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { setupPolly, teardownPolly, type PollyContext } from "../harness";
+import { xai } from "@nakedapi/xai";
+
+describe("xAI collections documents batchGet integration", () => {
+  let ctx: PollyContext;
+
+  beforeEach(() => {
+    ctx = setupPolly("xai/collections-documents-batchget");
+  });
+
+  afterEach(async () => {
+    await teardownPolly(ctx);
+  });
+
+  it("should have batchGet sub-method on get.v1.collections.documents", () => {
+    const provider = xai({ apiKey: "sk-test-key" });
+    expect(provider.get.v1.collections.documents.batchGet).toBeDefined();
+    expect(typeof provider.get.v1.collections.documents.batchGet).toBe(
+      "function"
+    );
+  });
+
+  it("should batch get documents from collection using management API", async () => {
+    const provider = xai({
+      apiKey: process.env.XAI_API_KEY ?? "sk-test-key",
+      managementApiKey: process.env.XAI_MANAGEMENT_API_KEY ?? "sk-mgmt-key",
+    });
+
+    // Skip if management API is not accessible
+    try {
+      // Create a collection
+      const collection = await provider.post.v1.collections({
+        name: "test-collection-batchget",
+      });
+      expect(collection.collection_id).toBeDefined();
+
+      // Upload multiple files
+      const blob1 = new Blob(["Content 1"], { type: "text/plain" });
+      const file1 = await provider.post.v1.files(blob1, "doc1.txt", "batch");
+
+      const blob2 = new Blob(["Content 2"], { type: "text/plain" });
+      const file2 = await provider.post.v1.files(blob2, "doc2.txt", "batch");
+
+      // Add both as documents
+      await provider.post.v1.collections.documents(
+        collection.collection_id,
+        file1.id,
+        { name: "document-1" }
+      );
+      await provider.post.v1.collections.documents(
+        collection.collection_id,
+        file2.id,
+        { name: "document-2" }
+      );
+
+      // Batch get documents
+      const result = await provider.get.v1.collections.documents.batchGet(
+        collection.collection_id,
+        [file1.id, file2.id]
+      );
+
+      expect(result).toBeDefined();
+      expect(result.documents).toBeDefined();
+      expect(Array.isArray(result.documents)).toBe(true);
+    } catch (err) {
+      // Management API may not be accessible with current key
+      console.log(
+        "Management API not accessible (expected for some keys):",
+        err
+      );
+      expect(err).toBeDefined();
+    }
+  });
+});

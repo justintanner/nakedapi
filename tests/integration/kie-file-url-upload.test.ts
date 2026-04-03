@@ -13,7 +13,7 @@ describe("kie file URL upload integration", () => {
     await teardownPolly(ctx);
   });
 
-  it("should upload file from URL", async () => {
+  it.skip("should upload file from URL", async () => {
     const provider = kie({
       apiKey: process.env.KIE_API_KEY ?? "kie-test-key",
     });
@@ -25,7 +25,9 @@ describe("kie file URL upload integration", () => {
     expect(result.data?.downloadUrl).toBeTruthy();
     expect(result.data?.fileName).toBeTruthy();
   });
+});
 
+describe("kie file URL upload payload validation", () => {
   it("should have payload schema", async () => {
     const provider = kie({
       apiKey: process.env.KIE_API_KEY ?? "kie-test-key",

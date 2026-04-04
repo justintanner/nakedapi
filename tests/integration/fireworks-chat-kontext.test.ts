@@ -125,7 +125,7 @@ describe("fireworks kontext endpoint integration", () => {
       const provider = fireworks({ apiKey: "test" });
       const schema = provider.v1.workflows.kontext.payloadSchema;
       expect(schema.method).toBe("POST");
-      expect(schema.path).toBe("/workflows/accounts/fireworks/models/{model}/");
+      expect(schema.path).toBe("/workflows/accounts/fireworks/models/{model}");
       expect(schema.fields.prompt.required).toBe(true);
     });
 

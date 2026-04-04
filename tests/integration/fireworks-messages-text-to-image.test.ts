@@ -123,11 +123,8 @@ describe("fireworks messages with text to image", () => {
       const provider = fireworks({ apiKey: "test" });
       const valid = provider.v1.messages.validatePayload({
         model: "accounts/fireworks/models/flux-dev",
+        system: "You are an image generation assistant.",
         messages: [
-          {
-            role: "system",
-            content: "You are an image generation assistant.",
-          },
           {
             role: "user",
             content: "Generate an image of a forest",
@@ -143,7 +140,7 @@ describe("fireworks messages with text to image", () => {
       const provider = fireworks({ apiKey: "test" });
       const schema = provider.v1.messages.payloadSchema;
       expect(schema.method).toBe("POST");
-      expect(schema.path).toBe("/messages");
+      expect(schema.path).toBe("/v1/messages");
       expect(schema.fields.model.required).toBe(true);
       expect(schema.fields.messages.required).toBe(true);
     });

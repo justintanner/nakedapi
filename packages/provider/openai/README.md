@@ -29,7 +29,7 @@ All methods include their payload schema and a `validatePayload()` function for 
 ### POST Endpoints
 
 <details>
-<summary>**`chat.completions`** — `POST /chat/completions`</summary>
+<summary><b><code>chat.completions</code></b> — <code>POST /chat/completions</code></summary>
 
 **Parameters:**
 
@@ -64,7 +64,7 @@ openai.chat.completions.validatePayload(data)
 </details>
 
 <details>
-<summary>**`chat.completions.completion_id`** — `POST /chat/completions/{completion_id}`</summary>
+<summary><b><code>chat.completions.completion_id</code></b> — <code>POST /chat/completions/{completion_id}</code></summary>
 
 **Parameters:**
 
@@ -85,7 +85,7 @@ openai.stored.completions.update.validatePayload(data)
 </details>
 
 <details>
-<summary>**`embeddings`** — `POST /embeddings`</summary>
+<summary><b><code>embeddings</code></b> — <code>POST /embeddings</code></summary>
 
 **Parameters:**
 
@@ -110,7 +110,7 @@ openai.embeddings.validatePayload(data)
 </details>
 
 <details>
-<summary>**`images.edits`** — `POST /images/edits`</summary>
+<summary><b><code>images.edits</code></b> — <code>POST /images/edits</code></summary>
 
 **Parameters:**
 
@@ -143,7 +143,7 @@ openai.image.edits.validatePayload(data)
 </details>
 
 <details>
-<summary>**`images.generations`** — `POST /images/generations`</summary>
+<summary><b><code>images.generations</code></b> — <code>POST /images/generations</code></summary>
 
 **Parameters:**
 
@@ -175,7 +175,7 @@ openai.image.generations.validatePayload(data)
 </details>
 
 <details>
-<summary>**`audio.speech`** — `POST /audio/speech`</summary>
+<summary><b><code>audio.speech</code></b> — <code>POST /audio/speech</code></summary>
 
 **Parameters:**
 
@@ -201,7 +201,7 @@ openai.audio.speech.validatePayload(data)
 </details>
 
 <details>
-<summary>**`audio.transcriptions`** — `POST /audio/transcriptions`</summary>
+<summary><b><code>audio.transcriptions</code></b> — <code>POST /audio/transcriptions</code></summary>
 
 **Parameters:**
 
@@ -227,7 +227,7 @@ openai.audio.transcriptions.validatePayload(data)
 </details>
 
 <details>
-<summary>**`responses`** — `POST /responses`</summary>
+<summary><b><code>responses</code></b> — <code>POST /responses</code></summary>
 
 **Parameters:**
 
@@ -279,7 +279,7 @@ openai.responses.validatePayload(data)
 </details>
 
 <details>
-<summary>**`responses.id.cancel`** — `POST /responses/{id}/cancel`</summary>
+<summary><b><code>responses.id.cancel</code></b> — <code>POST /responses/{id}/cancel</code></summary>
 
 **Parameters:**
 
@@ -300,7 +300,7 @@ openai.responses.cancel.validatePayload(data)
 </details>
 
 <details>
-<summary>**`responses.compact`** — `POST /responses/compact`</summary>
+<summary><b><code>responses.compact</code></b> — <code>POST /responses/compact</code></summary>
 
 **Parameters:**
 
@@ -325,7 +325,7 @@ openai.responses.compact.validatePayload(data)
 </details>
 
 <details>
-<summary>**`responses.input_tokens`** — `POST /responses/input_tokens`</summary>
+<summary><b><code>responses.input_tokens</code></b> — <code>POST /responses/input_tokens</code></summary>
 
 **Parameters:**
 
@@ -357,7 +357,7 @@ openai.responses.input.tokens.validatePayload(data)
 </details>
 
 <details>
-<summary>**`moderations`** — `POST /moderations`</summary>
+<summary><b><code>moderations</code></b> — <code>POST /moderations</code></summary>
 
 **Parameters:**
 
@@ -379,7 +379,7 @@ openai.moderations.validatePayload(data)
 </details>
 
 <details>
-<summary>**`batches`** — `POST /batches`</summary>
+<summary><b><code>batches</code></b> — <code>POST /batches</code></summary>
 
 **Parameters:**
 
@@ -403,7 +403,7 @@ openai.batches.create.validatePayload(data)
 </details>
 
 <details>
-<summary>**`batches.batch_id.cancel`** — `POST /batches/{batch_id}/cancel`</summary>
+<summary><b><code>batches.batch_id.cancel</code></b> — <code>POST /batches/{batch_id}/cancel</code></summary>
 
 **Parameters:**
 
@@ -424,7 +424,7 @@ openai.batches.cancel.validatePayload(data)
 </details>
 
 <details>
-<summary>**`fine_tuning.jobs`** — `POST /fine_tuning/jobs`</summary>
+<summary><b><code>fine_tuning.jobs</code></b> — <code>POST /fine_tuning/jobs</code></summary>
 
 **Parameters:**
 
@@ -462,7 +462,7 @@ openai.fine.tuning.jobs.create.validatePayload(data)
 </details>
 
 <details>
-<summary>**`fine_tuning.checkpoints.checkpoint.permissions`** — `POST /fine_tuning/checkpoints/{checkpoint}/permissions`</summary>
+<summary><b><code>fine_tuning.checkpoints.checkpoint.permissions</code></b> — <code>POST /fine_tuning/checkpoints/{checkpoint}/permissions</code></summary>
 
 **Parameters:**
 
@@ -483,7 +483,7 @@ openai.checkpoint.permissions.create.validatePayload(data)
 </details>
 
 <details>
-<summary>**`files`** — `POST /files`</summary>
+<summary><b><code>files</code></b> — <code>POST /files</code></summary>
 
 **Parameters:**
 
@@ -507,7 +507,7 @@ openai.files.upload.validatePayload(data)
 </details>
 
 <details>
-<summary>**`audio.translations`** — `POST /audio/translations`</summary>
+<summary><b><code>audio.translations</code></b> — <code>POST /audio/translations</code></summary>
 
 **Parameters:**
 
@@ -534,7 +534,7 @@ openai.audio.translations.validatePayload(data)
 ### DELETE Endpoints
 
 <details>
-<summary>**`chat.completions.completion_id`** — `DELETE /chat/completions/{completion_id}`</summary>
+<summary><b><code>chat.completions.completion_id</code></b> — <code>DELETE /chat/completions/{completion_id}</code></summary>
 
 **Parameters:**
 
@@ -555,7 +555,7 @@ openai.stored.completions.delete.validatePayload(data)
 </details>
 
 <details>
-<summary>**`responses.id`** — `DELETE /responses/{id}`</summary>
+<summary><b><code>responses.id</code></b> — <code>DELETE /responses/{id}</code></summary>
 
 **Parameters:**
 
@@ -576,7 +576,7 @@ openai.responses.delete.validatePayload(data)
 </details>
 
 <details>
-<summary>**`models.model`** — `DELETE /models/{model}`</summary>
+<summary><b><code>models.model</code></b> — <code>DELETE /models/{model}</code></summary>
 
 **Parameters:**
 
@@ -597,7 +597,7 @@ openai.models.delete.validatePayload(data)
 </details>
 
 <details>
-<summary>**`files.file_id`** — `DELETE /files/{file_id}`</summary>
+<summary><b><code>files.file_id</code></b> — <code>DELETE /files/{file_id}</code></summary>
 
 **Parameters:**
 

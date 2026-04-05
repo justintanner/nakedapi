@@ -278,7 +278,7 @@ async function generateReadme(providerDir, providerName) {
 
     methodSchemas.forEach((schema) => {
       const methodName = getMethodName(schema);
-      const summaryLine = `**\`${methodName}\`** — \`${schema.method} ${schema.path}\``;
+      const summaryLine = `<b><code>${methodName}</code></b> — <code>${schema.method} ${schema.path}</code>`;
 
       sections.push(`<details>`);
       sections.push(`<summary>${summaryLine}</summary>`);

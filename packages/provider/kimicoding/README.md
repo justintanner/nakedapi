@@ -29,7 +29,7 @@ All methods include their payload schema and a `validatePayload()` function for 
 ### POST Endpoints
 
 <details>
-<summary>**`v1.embeddings`** — `POST /v1/embeddings`</summary>
+<summary><b><code>v1.embeddings</code></b> — <code>POST /v1/embeddings</code></summary>
 
 **Parameters:**
 
@@ -54,7 +54,7 @@ kimicoding.embeddings.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.messages`** — `POST /v1/messages`</summary>
+<summary><b><code>v1.messages</code></b> — <code>POST /v1/messages</code></summary>
 
 **Parameters:**
 
@@ -83,7 +83,7 @@ kimicoding.messages.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.tokens.count`** — `POST /v1/tokens/count`</summary>
+<summary><b><code>v1.tokens.count</code></b> — <code>POST /v1/tokens/count</code></summary>
 
 **Parameters:**
 

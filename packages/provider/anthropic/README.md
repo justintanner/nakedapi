@@ -29,7 +29,7 @@ All methods include their payload schema and a `validatePayload()` function for 
 ### POST Endpoints
 
 <details>
-<summary>**`messages`** — `POST /messages`</summary>
+<summary><b><code>messages</code></b> — <code>POST /messages</code></summary>
 
 **Parameters:**
 
@@ -66,7 +66,7 @@ anthropic.messages.validatePayload(data)
 </details>
 
 <details>
-<summary>**`messages.count_tokens`** — `POST /messages/count_tokens`</summary>
+<summary><b><code>messages.count_tokens</code></b> — <code>POST /messages/count_tokens</code></summary>
 
 **Parameters:**
 
@@ -91,7 +91,7 @@ anthropic.count.tokens.validatePayload(data)
 </details>
 
 <details>
-<summary>**`messages.batches`** — `POST /messages/batches`</summary>
+<summary><b><code>messages.batches</code></b> — <code>POST /messages/batches</code></summary>
 
 **Parameters:**
 
@@ -113,7 +113,7 @@ anthropic.batches.create.validatePayload(data)
 </details>
 
 <details>
-<summary>**`files`** — `POST /files`</summary>
+<summary><b><code>files</code></b> — <code>POST /files</code></summary>
 
 **Parameters:**
 
@@ -134,7 +134,7 @@ anthropic.files.upload.validatePayload(data)
 </details>
 
 <details>
-<summary>**`organizations.invites`** — `POST /organizations/invites`</summary>
+<summary><b><code>organizations.invites</code></b> — <code>POST /organizations/invites</code></summary>
 
 **Parameters:**
 
@@ -156,7 +156,7 @@ anthropic.invite.create.validatePayload(data)
 </details>
 
 <details>
-<summary>**`organizations.workspaces`** — `POST /organizations/workspaces`</summary>
+<summary><b><code>organizations.workspaces</code></b> — <code>POST /organizations/workspaces</code></summary>
 
 **Parameters:**
 
@@ -178,7 +178,7 @@ anthropic.workspace.create.validatePayload(data)
 </details>
 
 <details>
-<summary>**`skills`** — `POST /skills`</summary>
+<summary><b><code>skills</code></b> — <code>POST /skills</code></summary>
 
 **Parameters:**
 
@@ -200,7 +200,7 @@ anthropic.skills.create.validatePayload(data)
 </details>
 
 <details>
-<summary>**`skills.skill_id.versions`** — `POST /skills/{skill_id}/versions`</summary>
+<summary><b><code>skills.skill_id.versions</code></b> — <code>POST /skills/{skill_id}/versions</code></summary>
 
 **Parameters:**
 
@@ -221,7 +221,7 @@ anthropic.skill.versions.create.validatePayload(data)
 </details>
 
 <details>
-<summary>**`organizations.workspaces.workspace_id.members`** — `POST /organizations/workspaces/{workspace_id}/members`</summary>
+<summary><b><code>organizations.workspaces.workspace_id.members</code></b> — <code>POST /organizations/workspaces/{workspace_id}/members</code></summary>
 
 **Parameters:**
 

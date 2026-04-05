@@ -29,7 +29,7 @@ All methods include their payload schema and a `validatePayload()` function for 
 ### POST Endpoints
 
 <details>
-<summary>**`chat.completions`** — `POST /chat/completions`</summary>
+<summary><b><code>chat.completions</code></b> — <code>POST /chat/completions</code></summary>
 
 **Parameters:**
 
@@ -60,7 +60,7 @@ xai.chat.completions.validatePayload(data)
 </details>
 
 <details>
-<summary>**`images.generations`** — `POST /images/generations`</summary>
+<summary><b><code>images.generations</code></b> — <code>POST /images/generations</code></summary>
 
 **Parameters:**
 
@@ -86,7 +86,7 @@ xai.image.generations.validatePayload(data)
 </details>
 
 <details>
-<summary>**`images.edits`** — `POST /images/edits`</summary>
+<summary><b><code>images.edits</code></b> — <code>POST /images/edits</code></summary>
 
 **Parameters:**
 
@@ -114,7 +114,7 @@ xai.image.edits.validatePayload(data)
 </details>
 
 <details>
-<summary>**`videos.generations`** — `POST /videos/generations`</summary>
+<summary><b><code>videos.generations</code></b> — <code>POST /videos/generations</code></summary>
 
 **Parameters:**
 
@@ -142,7 +142,7 @@ xai.video.generations.validatePayload(data)
 </details>
 
 <details>
-<summary>**`videos.edits`** — `POST /videos/edits`</summary>
+<summary><b><code>videos.edits</code></b> — <code>POST /videos/edits</code></summary>
 
 **Parameters:**
 
@@ -167,7 +167,7 @@ xai.video.edits.validatePayload(data)
 </details>
 
 <details>
-<summary>**`batches`** — `POST /batches`</summary>
+<summary><b><code>batches</code></b> — <code>POST /batches</code></summary>
 
 **Parameters:**
 
@@ -188,7 +188,7 @@ xai.batch.create.validatePayload(data)
 </details>
 
 <details>
-<summary>**`batches.batch_id.requests`** — `POST /batches/{batch_id}/requests`</summary>
+<summary><b><code>batches.batch_id.requests</code></b> — <code>POST /batches/{batch_id}/requests</code></summary>
 
 **Parameters:**
 
@@ -210,7 +210,7 @@ xai.batch.add.requests.validatePayload(data)
 </details>
 
 <details>
-<summary>**`collections`** — `POST /collections`</summary>
+<summary><b><code>collections</code></b> — <code>POST /collections</code></summary>
 
 **Parameters:**
 
@@ -241,7 +241,7 @@ xai.collection.create.validatePayload(data)
 </details>
 
 <details>
-<summary>**`collections.collection_id.documents.file_id`** — `POST /collections/{collection_id}/documents/{file_id}`</summary>
+<summary><b><code>collections.collection_id.documents.file_id</code></b> — <code>POST /collections/{collection_id}/documents/{file_id}</code></summary>
 
 **Parameters:**
 
@@ -263,7 +263,7 @@ xai.document.add.validatePayload(data)
 </details>
 
 <details>
-<summary>**`documents.search`** — `POST /documents/search`</summary>
+<summary><b><code>documents.search</code></b> — <code>POST /documents/search</code></summary>
 
 **Parameters:**
 
@@ -293,7 +293,7 @@ xai.document.search.validatePayload(data)
 </details>
 
 <details>
-<summary>**`responses`** — `POST /responses`</summary>
+<summary><b><code>responses</code></b> — <code>POST /responses</code></summary>
 
 **Parameters:**
 
@@ -332,7 +332,7 @@ xai.responses.validatePayload(data)
 </details>
 
 <details>
-<summary>**`realtime.client_secrets`** — `POST /realtime/client_secrets`</summary>
+<summary><b><code>realtime.client_secrets</code></b> — <code>POST /realtime/client_secrets</code></summary>
 
 **Parameters:**
 
@@ -354,7 +354,7 @@ xai.realtime.client.secrets.validatePayload(data)
 </details>
 
 <details>
-<summary>**`tokenizetext`** — `POST /tokenize-text`</summary>
+<summary><b><code>tokenizetext</code></b> — <code>POST /tokenize-text</code></summary>
 
 **Parameters:**
 
@@ -377,7 +377,7 @@ xai.tokenize.text.validatePayload(data)
 </details>
 
 <details>
-<summary>**`auth.teams.teamId.apikeys`** — `POST /auth/teams/{teamId}/api-keys`</summary>
+<summary><b><code>auth.teams.teamId.apikeys</code></b> — <code>POST /auth/teams/{teamId}/api-keys</code></summary>
 
 **Parameters:**
 
@@ -403,7 +403,7 @@ xai.api.key.create.validatePayload(data)
 </details>
 
 <details>
-<summary>**`videos.extensions`** — `POST /videos/extensions`</summary>
+<summary><b><code>videos.extensions</code></b> — <code>POST /videos/extensions</code></summary>
 
 **Parameters:**
 
@@ -429,7 +429,7 @@ xai.video.extensions.validatePayload(data)
 ### DELETE Endpoints
 
 <details>
-<summary>**`responses.id`** — `DELETE /responses/{id}`</summary>
+<summary><b><code>responses.id</code></b> — <code>DELETE /responses/{id}</code></summary>
 
 **Parameters:**
 
@@ -452,7 +452,7 @@ xai.responses.delete.validatePayload(data)
 ### PUT Endpoints
 
 <details>
-<summary>**`collections.collection_id`** — `PUT /collections/{collection_id}`</summary>
+<summary><b><code>collections.collection_id</code></b> — <code>PUT /collections/{collection_id}</code></summary>
 
 **Parameters:**
 
@@ -482,7 +482,7 @@ xai.collection.update.validatePayload(data)
 </details>
 
 <details>
-<summary>**`auth.apikeys.api_key_id`** — `PUT /auth/api-keys/{api_key_id}`</summary>
+<summary><b><code>auth.apikeys.api_key_id</code></b> — <code>PUT /auth/api-keys/{api_key_id}</code></summary>
 
 **Parameters:**
 

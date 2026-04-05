@@ -29,7 +29,7 @@ All methods include their payload schema and a `validatePayload()` function for 
 ### POST Endpoints
 
 <details>
-<summary>**`models.pricing.estimate`** — `POST /models/pricing/estimate`</summary>
+<summary><b><code>models.pricing.estimate</code></b> — <code>POST /models/pricing/estimate</code></summary>
 
 **Parameters:**
 
@@ -51,7 +51,7 @@ fal.pricing.estimate.validatePayload(data)
 </details>
 
 <details>
-<summary>**`endpoint_id`** — `POST /{endpoint_id}`</summary>
+<summary><b><code>endpoint_id</code></b> — <code>POST /{endpoint_id}</code></summary>
 
 **Parameters:**
 
@@ -77,7 +77,7 @@ fal.queue.submit.validatePayload(data)
 </details>
 
 <details>
-<summary>**`serverless.logs.history`** — `POST /serverless/logs/history`</summary>
+<summary><b><code>serverless.logs.history</code></b> — <code>POST /serverless/logs/history</code></summary>
 
 **Parameters:**
 
@@ -108,7 +108,7 @@ fal.logs.history.validatePayload(data)
 </details>
 
 <details>
-<summary>**`serverless.logs.stream`** — `POST /serverless/logs/stream`</summary>
+<summary><b><code>serverless.logs.stream</code></b> — <code>POST /serverless/logs/stream</code></summary>
 
 **Parameters:**
 
@@ -137,7 +137,7 @@ fal.logs.stream.validatePayload(data)
 </details>
 
 <details>
-<summary>**`serverless.files.file.url.file`** — `POST /serverless/files/file/url/{file}`</summary>
+<summary><b><code>serverless.files.file.url.file</code></b> — <code>POST /serverless/files/file/url/{file}</code></summary>
 
 **Parameters:**
 
@@ -159,7 +159,7 @@ fal.files.upload.url.validatePayload(data)
 </details>
 
 <details>
-<summary>**`serverless.files.file.local.target_path`** — `POST /serverless/files/file/local/{target_path}`</summary>
+<summary><b><code>serverless.files.file.local.target_path</code></b> — <code>POST /serverless/files/file/local/{target_path}</code></summary>
 
 **Parameters:**
 
@@ -183,7 +183,7 @@ fal.files.upload.local.validatePayload(data)
 </details>
 
 <details>
-<summary>**`compute.instances`** — `POST /compute/instances`</summary>
+<summary><b><code>compute.instances</code></b> — <code>POST /compute/instances</code></summary>
 
 **Parameters:**
 
@@ -206,7 +206,7 @@ fal.compute.instance.create.validatePayload(data)
 </details>
 
 <details>
-<summary>**`workflows`** — `POST /workflows`</summary>
+<summary><b><code>workflows</code></b> — <code>POST /workflows</code></summary>
 
 **Parameters:**
 
@@ -234,7 +234,7 @@ fal.workflow.create.validatePayload(data)
 ### DELETE Endpoints
 
 <details>
-<summary>**`serverless.apps.owner.name.queue`** — `DELETE /serverless/apps/{owner}/{name}/queue`</summary>
+<summary><b><code>serverless.apps.owner.name.queue</code></b> — <code>DELETE /serverless/apps/{owner}/{name}/queue</code></summary>
 
 **Parameters:**
 
@@ -257,7 +257,7 @@ fal.apps.flush.queue.validatePayload(data)
 </details>
 
 <details>
-<summary>**`models.requests.request_id.payloads`** — `DELETE /models/requests/{request_id}/payloads`</summary>
+<summary><b><code>models.requests.request_id.payloads</code></b> — <code>DELETE /models/requests/{request_id}/payloads</code></summary>
 
 **Parameters:**
 

@@ -29,7 +29,7 @@ All methods include their payload schema and a `validatePayload()` function for 
 ### GET Endpoints
 
 <details>
-<summary>**`v1.audio.transcriptions.streaming`** — `GET /v1/audio/transcriptions/streaming`</summary>
+<summary><b><code>v1.audio.transcriptions.streaming</code></b> — <code>GET /v1/audio/transcriptions/streaming</code></summary>
 
 **Parameters:**
 
@@ -54,7 +54,7 @@ fireworks.audio.streaming.transcriptions.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.models`** — `GET /v1/accounts/{account_id}/models`</summary>
+<summary><b><code>v1.accounts.account_id.models</code></b> — <code>GET /v1/accounts/{account_id}/models</code></summary>
 
 **Parameters:**
 
@@ -79,7 +79,7 @@ fireworks.models.list.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.models.model_id`** — `GET /v1/accounts/{account_id}/models/{model_id}`</summary>
+<summary><b><code>v1.accounts.account_id.models.model_id</code></b> — <code>GET /v1/accounts/{account_id}/models/{model_id}</code></summary>
 
 **Parameters:**
 
@@ -100,7 +100,7 @@ fireworks.models.get.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.models.model_id:getDownloadEndpoint`** — `GET /v1/accounts/{account_id}/models/{model_id}:getDownloadEndpoint`</summary>
+<summary><b><code>v1.accounts.account_id.models.model_id:getDownloadEndpoint</code></b> — <code>GET /v1/accounts/{account_id}/models/{model_id}:getDownloadEndpoint</code></summary>
 
 **Parameters:**
 
@@ -121,7 +121,7 @@ fireworks.models.get.download.endpoint.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.models.model_id:validateUpload`** — `GET /v1/accounts/{account_id}/models/{model_id}:validateUpload`</summary>
+<summary><b><code>v1.accounts.account_id.models.model_id:validateUpload</code></b> — <code>GET /v1/accounts/{account_id}/models/{model_id}:validateUpload</code></summary>
 
 **Parameters:**
 
@@ -144,7 +144,7 @@ fireworks.models.validate.upload.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.datasets.dataset_id:getDownloadEndpoint`** — `GET /v1/accounts/{account_id}/datasets/{dataset_id}:getDownloadEndpoint`</summary>
+<summary><b><code>v1.accounts.account_id.datasets.dataset_id:getDownloadEndpoint</code></b> — <code>GET /v1/accounts/{account_id}/datasets/{dataset_id}:getDownloadEndpoint</code></summary>
 
 **Parameters:**
 
@@ -168,7 +168,7 @@ fireworks.datasets.get.download.endpoint.validatePayload(data)
 ### POST Endpoints
 
 <details>
-<summary>**`chat.completions`** — `POST /chat/completions`</summary>
+<summary><b><code>chat.completions</code></b> — <code>POST /chat/completions</code></summary>
 
 **Parameters:**
 
@@ -213,7 +213,7 @@ fireworks.chat.completions.validatePayload(data)
 </details>
 
 <details>
-<summary>**`completions`** — `POST /completions`</summary>
+<summary><b><code>completions</code></b> — <code>POST /completions</code></summary>
 
 **Parameters:**
 
@@ -256,7 +256,7 @@ fireworks.completions.validatePayload(data)
 </details>
 
 <details>
-<summary>**`rerank`** — `POST /rerank`</summary>
+<summary><b><code>rerank</code></b> — <code>POST /rerank</code></summary>
 
 **Parameters:**
 
@@ -281,7 +281,7 @@ fireworks.rerank.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.messages`** — `POST /v1/messages`</summary>
+<summary><b><code>v1.messages</code></b> — <code>POST /v1/messages</code></summary>
 
 **Parameters:**
 
@@ -320,7 +320,7 @@ fireworks.messages.validatePayload(data)
 </details>
 
 <details>
-<summary>**`audio.transcriptions`** — `POST /audio/transcriptions`</summary>
+<summary><b><code>audio.transcriptions</code></b> — <code>POST /audio/transcriptions</code></summary>
 
 **Parameters:**
 
@@ -353,7 +353,7 @@ fireworks.audio.transcriptions.validatePayload(data)
 </details>
 
 <details>
-<summary>**`audio.translations`** — `POST /audio/translations`</summary>
+<summary><b><code>audio.translations</code></b> — <code>POST /audio/translations</code></summary>
 
 **Parameters:**
 
@@ -383,7 +383,7 @@ fireworks.audio.translations.validatePayload(data)
 </details>
 
 <details>
-<summary>**`workflows.accounts.fireworks.models.model.text_to_image`** — `POST /workflows/accounts/fireworks/models/{model}/text_to_image`</summary>
+<summary><b><code>workflows.accounts.fireworks.models.model.text_to_image</code></b> — <code>POST /workflows/accounts/fireworks/models/{model}/text_to_image</code></summary>
 
 **Parameters:**
 
@@ -408,7 +408,7 @@ fireworks.text.to.image.validatePayload(data)
 </details>
 
 <details>
-<summary>**`workflows.accounts.fireworks.models.model`** — `POST /workflows/accounts/fireworks/models/{model}`</summary>
+<summary><b><code>workflows.accounts.fireworks.models.model</code></b> — <code>POST /workflows/accounts/fireworks/models/{model}</code></summary>
 
 **Parameters:**
 
@@ -437,7 +437,7 @@ fireworks.kontext.validatePayload(data)
 </details>
 
 <details>
-<summary>**`workflows.accounts.fireworks.models.model.get_result`** — `POST /workflows/accounts/fireworks/models/{model}/get_result`</summary>
+<summary><b><code>workflows.accounts.fireworks.models.model.get_result</code></b> — <code>POST /workflows/accounts/fireworks/models/{model}/get_result</code></summary>
 
 **Parameters:**
 
@@ -458,7 +458,7 @@ fireworks.get.result.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.models`** — `POST /v1/accounts/{account_id}/models`</summary>
+<summary><b><code>v1.accounts.account_id.models</code></b> — <code>POST /v1/accounts/{account_id}/models</code></summary>
 
 **Parameters:**
 
@@ -481,7 +481,7 @@ fireworks.models.create.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.models.model_id:prepare`** — `POST /v1/accounts/{account_id}/models/{model_id}:prepare`</summary>
+<summary><b><code>v1.accounts.account_id.models.model_id:prepare</code></b> — <code>POST /v1/accounts/{account_id}/models/{model_id}:prepare</code></summary>
 
 **Parameters:**
 
@@ -503,7 +503,7 @@ fireworks.models.prepare.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.models.model_id:getUploadEndpoint`** — `POST /v1/accounts/{account_id}/models/{model_id}:getUploadEndpoint`</summary>
+<summary><b><code>v1.accounts.account_id.models.model_id:getUploadEndpoint</code></b> — <code>POST /v1/accounts/{account_id}/models/{model_id}:getUploadEndpoint</code></summary>
 
 **Parameters:**
 
@@ -526,7 +526,7 @@ fireworks.models.get.upload.endpoint.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.batchInferenceJobs`** — `POST /v1/accounts/{account_id}/batchInferenceJobs`</summary>
+<summary><b><code>v1.accounts.account_id.batchInferenceJobs</code></b> — <code>POST /v1/accounts/{account_id}/batchInferenceJobs</code></summary>
 
 **Parameters:**
 
@@ -558,7 +558,7 @@ fireworks.batch.inference.job.create.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.supervisedFineTuningJobs`** — `POST /v1/accounts/{account_id}/supervisedFineTuningJobs`</summary>
+<summary><b><code>v1.accounts.account_id.supervisedFineTuningJobs</code></b> — <code>POST /v1/accounts/{account_id}/supervisedFineTuningJobs</code></summary>
 
 **Parameters:**
 
@@ -615,7 +615,7 @@ fireworks.sft.create.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.deployments`** — `POST /v1/accounts/{account_id}/deployments`</summary>
+<summary><b><code>v1.accounts.account_id.deployments</code></b> — <code>POST /v1/accounts/{account_id}/deployments</code></summary>
 
 **Parameters:**
 
@@ -648,7 +648,7 @@ fireworks.create.deployment.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.audio.transcriptions`** — `POST /v1/audio/transcriptions`</summary>
+<summary><b><code>v1.audio.transcriptions</code></b> — <code>POST /v1/audio/transcriptions</code></summary>
 
 **Parameters:**
 
@@ -682,7 +682,7 @@ fireworks.audio.batch.transcriptions.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.audio.translations`** — `POST /v1/audio/translations`</summary>
+<summary><b><code>v1.audio.translations</code></b> — <code>POST /v1/audio/translations</code></summary>
 
 **Parameters:**
 
@@ -713,7 +713,7 @@ fireworks.audio.batch.translations.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.dpoJobs`** — `POST /v1/accounts/{account_id}/dpoJobs`</summary>
+<summary><b><code>v1.accounts.account_id.dpoJobs</code></b> — <code>POST /v1/accounts/{account_id}/dpoJobs</code></summary>
 
 **Parameters:**
 
@@ -757,7 +757,7 @@ fireworks.dpo.job.create.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.accountId.users`** — `POST /v1/accounts/{accountId}/users`</summary>
+<summary><b><code>v1.accounts.accountId.users</code></b> — <code>POST /v1/accounts/{accountId}/users</code></summary>
 
 **Parameters:**
 
@@ -781,7 +781,7 @@ fireworks.create.user.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.accountId.users.userId.apiKeys`** — `POST /v1/accounts/{accountId}/users/{userId}/apiKeys`</summary>
+<summary><b><code>v1.accounts.accountId.users.userId.apiKeys</code></b> — <code>POST /v1/accounts/{accountId}/users/{userId}/apiKeys</code></summary>
 
 **Parameters:**
 
@@ -803,7 +803,7 @@ fireworks.create.api.key.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.evaluatorsV2`** — `POST /v1/accounts/{account_id}/evaluatorsV2`</summary>
+<summary><b><code>v1.accounts.account_id.evaluatorsV2</code></b> — <code>POST /v1/accounts/{account_id}/evaluatorsV2</code></summary>
 
 **Parameters:**
 
@@ -838,7 +838,7 @@ fireworks.create.evaluator.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.datasets`** — `POST /v1/accounts/{account_id}/datasets`</summary>
+<summary><b><code>v1.accounts.account_id.datasets</code></b> — <code>POST /v1/accounts/{account_id}/datasets</code></summary>
 
 **Parameters:**
 
@@ -862,7 +862,7 @@ fireworks.datasets.create.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.accountId.users.userId.apiKeys:delete`** — `POST /v1/accounts/{accountId}/users/{userId}/apiKeys:delete`</summary>
+<summary><b><code>v1.accounts.accountId.users.userId.apiKeys:delete</code></b> — <code>POST /v1/accounts/{accountId}/users/{userId}/apiKeys:delete</code></summary>
 
 **Parameters:**
 
@@ -883,7 +883,7 @@ fireworks.delete.api.key.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.accountId.secrets`** — `POST /v1/accounts/{accountId}/secrets`</summary>
+<summary><b><code>v1.accounts.accountId.secrets</code></b> — <code>POST /v1/accounts/{accountId}/secrets</code></summary>
 
 **Parameters:**
 
@@ -906,7 +906,7 @@ fireworks.create.secret.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.evaluators.evaluator_id:getUploadEndpoint`** — `POST /v1/accounts/{account_id}/evaluators/{evaluator_id}:getUploadEndpoint`</summary>
+<summary><b><code>v1.accounts.account_id.evaluators.evaluator_id:getUploadEndpoint</code></b> — <code>POST /v1/accounts/{account_id}/evaluators/{evaluator_id}:getUploadEndpoint</code></summary>
 
 **Parameters:**
 
@@ -928,7 +928,7 @@ fireworks.get.upload.endpoint.evaluator.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.evaluationJobs`** — `POST /v1/accounts/{account_id}/evaluationJobs`</summary>
+<summary><b><code>v1.accounts.account_id.evaluationJobs</code></b> — <code>POST /v1/accounts/{account_id}/evaluationJobs</code></summary>
 
 **Parameters:**
 
@@ -957,7 +957,7 @@ fireworks.create.evaluation.job.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.datasets.dataset_id:getUploadEndpoint`** — `POST /v1/accounts/{account_id}/datasets/{dataset_id}:getUploadEndpoint`</summary>
+<summary><b><code>v1.accounts.account_id.datasets.dataset_id:getUploadEndpoint</code></b> — <code>POST /v1/accounts/{account_id}/datasets/{dataset_id}:getUploadEndpoint</code></summary>
 
 **Parameters:**
 
@@ -979,7 +979,7 @@ fireworks.datasets.get.upload.endpoint.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.reinforcementFineTuningJobs`** — `POST /v1/accounts/{account_id}/reinforcementFineTuningJobs`</summary>
+<summary><b><code>v1.accounts.account_id.reinforcementFineTuningJobs</code></b> — <code>POST /v1/accounts/{account_id}/reinforcementFineTuningJobs</code></summary>
 
 **Parameters:**
 
@@ -1028,7 +1028,7 @@ fireworks.rft.create.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.rlorTrainerJobs`** — `POST /v1/accounts/{account_id}/rlorTrainerJobs`</summary>
+<summary><b><code>v1.accounts.account_id.rlorTrainerJobs</code></b> — <code>POST /v1/accounts/{account_id}/rlorTrainerJobs</code></summary>
 
 **Parameters:**
 
@@ -1079,7 +1079,7 @@ fireworks.rlor.trainer.job.create.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.datasets.dataset_id:validateUpload`** — `POST /v1/accounts/{account_id}/datasets/{dataset_id}:validateUpload`</summary>
+<summary><b><code>v1.accounts.account_id.datasets.dataset_id:validateUpload</code></b> — <code>POST /v1/accounts/{account_id}/datasets/{dataset_id}:validateUpload</code></summary>
 
 **Validation:**
 
@@ -1094,7 +1094,7 @@ fireworks.datasets.validate.upload.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.rlorTrainerJobs.job_id:executeTrainStep`** — `POST /v1/accounts/{account_id}/rlorTrainerJobs/{job_id}:executeTrainStep`</summary>
+<summary><b><code>v1.accounts.account_id.rlorTrainerJobs.job_id:executeTrainStep</code></b> — <code>POST /v1/accounts/{account_id}/rlorTrainerJobs/{job_id}:executeTrainStep</code></summary>
 
 **Parameters:**
 
@@ -1116,7 +1116,7 @@ fireworks.rlor.trainer.job.execute.step.validatePayload(data)
 </details>
 
 <details>
-<summary>**`embeddings`** — `POST /embeddings`</summary>
+<summary><b><code>embeddings</code></b> — <code>POST /embeddings</code></summary>
 
 **Parameters:**
 
@@ -1142,7 +1142,7 @@ fireworks.embeddings.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.deployedModels`** — `POST /v1/accounts/{account_id}/deployedModels`</summary>
+<summary><b><code>v1.accounts.account_id.deployedModels</code></b> — <code>POST /v1/accounts/{account_id}/deployedModels</code></summary>
 
 **Parameters:**
 
@@ -1171,7 +1171,7 @@ fireworks.create.deployed.model.validatePayload(data)
 ### DELETE Endpoints
 
 <details>
-<summary>**`v1.accounts.account_id.models.model_id`** — `DELETE /v1/accounts/{account_id}/models/{model_id}`</summary>
+<summary><b><code>v1.accounts.account_id.models.model_id</code></b> — <code>DELETE /v1/accounts/{account_id}/models/{model_id}</code></summary>
 
 **Validation:**
 
@@ -1188,7 +1188,7 @@ fireworks.models.delete.validatePayload(data)
 ### PATCH Endpoints
 
 <details>
-<summary>**`v1.accounts.account_id.models.model_id`** — `PATCH /v1/accounts/{account_id}/models/{model_id}`</summary>
+<summary><b><code>v1.accounts.account_id.models.model_id</code></b> — <code>PATCH /v1/accounts/{account_id}/models/{model_id}</code></summary>
 
 **Parameters:**
 
@@ -1215,7 +1215,7 @@ fireworks.models.update.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.deployments.deployment_id`** — `PATCH /v1/accounts/{account_id}/deployments/{deployment_id}`</summary>
+<summary><b><code>v1.accounts.account_id.deployments.deployment_id</code></b> — <code>PATCH /v1/accounts/{account_id}/deployments/{deployment_id}</code></summary>
 
 **Parameters:**
 
@@ -1246,7 +1246,7 @@ fireworks.update.deployment.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.deployments.deployment_id:scale`** — `PATCH /v1/accounts/{account_id}/deployments/{deployment_id}:scale`</summary>
+<summary><b><code>v1.accounts.account_id.deployments.deployment_id:scale</code></b> — <code>PATCH /v1/accounts/{account_id}/deployments/{deployment_id}:scale</code></summary>
 
 **Parameters:**
 
@@ -1267,7 +1267,7 @@ fireworks.scale.deployment.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.accountId.users.userId`** — `PATCH /v1/accounts/{accountId}/users/{userId}`</summary>
+<summary><b><code>v1.accounts.accountId.users.userId</code></b> — <code>PATCH /v1/accounts/{accountId}/users/{userId}</code></summary>
 
 **Parameters:**
 
@@ -1291,7 +1291,7 @@ fireworks.update.user.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.accountId.secrets.secretId`** — `PATCH /v1/accounts/{accountId}/secrets/{secretId}`</summary>
+<summary><b><code>v1.accounts.accountId.secrets.secretId</code></b> — <code>PATCH /v1/accounts/{accountId}/secrets/{secretId}</code></summary>
 
 **Parameters:**
 
@@ -1313,7 +1313,7 @@ fireworks.update.secret.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.evaluators.evaluator_id`** — `PATCH /v1/accounts/{account_id}/evaluators/{evaluator_id}`</summary>
+<summary><b><code>v1.accounts.account_id.evaluators.evaluator_id</code></b> — <code>PATCH /v1/accounts/{account_id}/evaluators/{evaluator_id}</code></summary>
 
 **Parameters:**
 
@@ -1343,7 +1343,7 @@ fireworks.update.evaluator.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.datasets.dataset_id`** — `PATCH /v1/accounts/{account_id}/datasets/{dataset_id}`</summary>
+<summary><b><code>v1.accounts.account_id.datasets.dataset_id</code></b> — <code>PATCH /v1/accounts/{account_id}/datasets/{dataset_id}</code></summary>
 
 **Parameters:**
 
@@ -1368,7 +1368,7 @@ fireworks.datasets.update.validatePayload(data)
 </details>
 
 <details>
-<summary>**`v1.accounts.account_id.deployedModels.deployed_model_id`** — `PATCH /v1/accounts/{account_id}/deployedModels/{deployed_model_id}`</summary>
+<summary><b><code>v1.accounts.account_id.deployedModels.deployed_model_id</code></b> — <code>PATCH /v1/accounts/{account_id}/deployedModels/{deployed_model_id}</code></summary>
 
 **Parameters:**
 

@@ -29,7 +29,7 @@ All methods include their payload schema and a `validatePayload()` function for 
 ### POST Endpoints
 
 <details>
-<summary>**`api.v1.jobs.createTask`** — `POST /api/v1/jobs/createTask`</summary>
+<summary><b><code>api.v1.jobs.createTask</code></b> — <code>POST /api/v1/jobs/createTask</code></summary>
 
 **Parameters:**
 
@@ -52,7 +52,7 @@ kie.create.task.validatePayload(data)
 </details>
 
 <details>
-<summary>**`api.v1.common.downloadurl`** — `POST /api/v1/common/download-url`</summary>
+<summary><b><code>api.v1.common.downloadurl</code></b> — <code>POST /api/v1/common/download-url</code></summary>
 
 **Parameters:**
 
@@ -73,7 +73,7 @@ kie.download.url.validatePayload(data)
 </details>
 
 <details>
-<summary>**`api.filestreamupload`** — `POST /api/file-stream-upload`</summary>
+<summary><b><code>api.filestreamupload</code></b> — <code>POST /api/file-stream-upload</code></summary>
 
 **Parameters:**
 
@@ -96,7 +96,7 @@ kie.file.stream.upload.validatePayload(data)
 </details>
 
 <details>
-<summary>**`api.fileurlupload`** — `POST /api/file-url-upload`</summary>
+<summary><b><code>api.fileurlupload</code></b> — <code>POST /api/file-url-upload</code></summary>
 
 **Parameters:**
 
@@ -118,7 +118,7 @@ kie.file.url.upload.validatePayload(data)
 </details>
 
 <details>
-<summary>**`api.filebase64upload`** — `POST /api/file-base64-upload`</summary>
+<summary><b><code>api.filebase64upload</code></b> — <code>POST /api/file-base64-upload</code></summary>
 
 **Parameters:**
 
@@ -141,7 +141,7 @@ kie.file.base64.upload.validatePayload(data)
 </details>
 
 <details>
-<summary>**`api.v1.veo.generate`** — `POST /api/v1/veo/generate`</summary>
+<summary><b><code>api.v1.veo.generate</code></b> — <code>POST /api/v1/veo/generate</code></summary>
 
 **Parameters:**
 
@@ -169,7 +169,7 @@ kie.veo.generate.validatePayload(data)
 </details>
 
 <details>
-<summary>**`api.v1.veo.extend`** — `POST /api/v1/veo/extend`</summary>
+<summary><b><code>api.v1.veo.extend</code></b> — <code>POST /api/v1/veo/extend</code></summary>
 
 **Parameters:**
 
@@ -194,7 +194,7 @@ kie.veo.extend.validatePayload(data)
 </details>
 
 <details>
-<summary>**`api.v1.generate`** — `POST /api/v1/generate`</summary>
+<summary><b><code>api.v1.generate</code></b> — <code>POST /api/v1/generate</code></summary>
 
 **Parameters:**
 
@@ -221,7 +221,7 @@ kie.suno.generate.validatePayload(data)
 </details>
 
 <details>
-<summary>**`gpt5.5.v1.chat.completions`** — `POST /gpt-5.5/v1/chat/completions`</summary>
+<summary><b><code>gpt5.5.v1.chat.completions</code></b> — <code>POST /gpt-5.5/v1/chat/completions</code></summary>
 
 **Parameters:**
 
@@ -249,7 +249,7 @@ kie.chat.completions55.validatePayload(data)
 </details>
 
 <details>
-<summary>**`gpt52.v1.chat.completions`** — `POST /gpt-5-2/v1/chat/completions`</summary>
+<summary><b><code>gpt52.v1.chat.completions</code></b> — <code>POST /gpt-5-2/v1/chat/completions</code></summary>
 
 **Parameters:**
 
@@ -277,7 +277,7 @@ kie.chat.completions.validatePayload(data)
 </details>
 
 <details>
-<summary>**`claude.v1.messages`** — `POST /claude/v1/messages`</summary>
+<summary><b><code>claude.v1.messages</code></b> — <code>POST /claude/v1/messages</code></summary>
 
 **Parameters:**
 

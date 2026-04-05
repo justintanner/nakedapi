@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 
+import { xai, XaiError } from "../../packages/provider/xai/src/index";
 import { validatePayload } from "../../packages/provider/xai/src/validate";
 import {
   chatCompletionsSchema,
@@ -853,6 +854,105 @@ describe("validatePayload edge cases", () => {
 
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
+    });
+  });
+
+  describe("management key validation endpoint", () => {
+    const validationResponse = {
+      apiKeyId: "key_123",
+      teamId: "team_456",
+      scope: "SCOPE_TEAM" as const,
+      scopeId: "scope_789",
+      ownerUserId: "user_abc",
+      createTime: "2026-01-01T00:00:00Z",
+      modifyTime: "2026-01-02T00:00:00Z",
+      name: "management-key",
+      acls: ["collections:read", "collections:write"],
+      redactedApiKey: "xai-mgmt-***",
+      ipRanges: null,
+    };
+
+    it("should call the management validation endpoint with the management API key", async () => {
+      let capturedUrl = "";
+      let capturedMethod = "";
+      let capturedHeaders: Record<string, string> = {};
+
+      const provider = xai({
+        apiKey: "sk-api-key",
+        managementApiKey: "sk-mgmt-key",
+        managementBaseURL: "https://management.example/v1",
+        fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+          capturedUrl = String(input);
+          capturedMethod = init?.method ?? "";
+          capturedHeaders = Object.fromEntries(
+            new Headers(init?.headers).entries()
+          );
+
+          return new Response(JSON.stringify(validationResponse), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        },
+      });
+
+      const result = await provider.get.v1.auth.managementKeys.validation();
+
+      expect(capturedMethod).toBe("GET");
+      expect(capturedUrl).toBe(
+        "https://management.example/v1/auth/management-keys/validation"
+      );
+      expect(capturedHeaders["authorization"]).toBe("Bearer sk-mgmt-key");
+      expect(result).toEqual(validationResponse);
+    });
+
+    it("should fall back to the primary apiKey for management validation", async () => {
+      let capturedHeaders: Record<string, string> = {};
+
+      const provider = xai({
+        apiKey: "sk-api-key",
+        fetch: async (_input: RequestInfo | URL, init?: RequestInit) => {
+          capturedHeaders = Object.fromEntries(
+            new Headers(init?.headers).entries()
+          );
+
+          return new Response(JSON.stringify(validationResponse), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        },
+      });
+
+      await provider.get.v1.auth.managementKeys.validation();
+
+      expect(capturedHeaders["authorization"]).toBe("Bearer sk-api-key");
+    });
+
+    it("should surface permission errors from management validation", async () => {
+      const provider = xai({
+        apiKey: "sk-api-key",
+        managementApiKey: "sk-no-scope",
+        fetch: async () =>
+          new Response(
+            JSON.stringify({
+              error: { message: "management scope required" },
+            }),
+            {
+              status: 403,
+              headers: { "Content-Type": "application/json" },
+            }
+          ),
+      });
+
+      try {
+        await provider.get.v1.auth.managementKeys.validation();
+        throw new Error("Expected management validation to fail");
+      } catch (error) {
+        expect(error).toBeInstanceOf(XaiError);
+        expect(error).toMatchObject({
+          status: 403,
+          message: "XAI API error 403: management scope required",
+        });
+      }
     });
   });
 });

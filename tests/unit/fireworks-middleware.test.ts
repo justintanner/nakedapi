@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 import {
   withRetry,
@@ -103,17 +103,11 @@ describe("withRetry", () => {
   });
 
   it("should calculate exponential backoff", async () => {
-    const delays: number[] = [];
-    let lastTime = Date.now();
-    let callCount = 0;
+    const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
+    let calls = 0;
     const fn = async (_req: null) => {
-      const now = Date.now();
-      if (callCount > 0) {
-        delays.push(now - lastTime);
-      }
-      callCount++;
-      lastTime = now;
-      if (delays.length < 2) {
+      calls++;
+      if (calls < 3) {
         throw Object.assign(new Error("fail"), { status: 500 });
       }
       return "ok";
@@ -124,10 +118,12 @@ describe("withRetry", () => {
       factor: 2,
       jitter: false,
     });
-    await retried(null);
-    expect(delays.length).toBe(2);
-    // Second delay should be roughly 2x the first (with some tolerance)
-    expect(delays[1]).toBeGreaterThanOrEqual(delays[0] * 1.5);
+
+    await expect(retried(null)).resolves.toBe("ok");
+
+    expect(setTimeoutSpy).toHaveBeenCalledTimes(2);
+    expect(setTimeoutSpy).toHaveBeenNthCalledWith(1, expect.any(Function), 10);
+    expect(setTimeoutSpy).toHaveBeenNthCalledWith(2, expect.any(Function), 20);
   });
 
   it("should apply jitter to delay when enabled", async () => {

@@ -105,11 +105,13 @@ describe("withRetry", () => {
   it("should calculate exponential backoff", async () => {
     const delays: number[] = [];
     let lastTime = Date.now();
+    let callCount = 0;
     const fn = async (_req: null) => {
       const now = Date.now();
-      if (delays.length > 0) {
+      if (callCount > 0) {
         delays.push(now - lastTime);
       }
+      callCount++;
       lastTime = now;
       if (delays.length < 2) {
         throw Object.assign(new Error("fail"), { status: 500 });

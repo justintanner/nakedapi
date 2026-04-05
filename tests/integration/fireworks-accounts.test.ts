@@ -1,7 +1,105 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { setupPolly, teardownPolly, type PollyContext } from "../harness";
 import { fireworks } from "@nakedapi/fireworks";
 
 describe("fireworks accounts integration", () => {
+  let ctx: PollyContext;
+
+  beforeEach(() => {
+    ctx = setupPolly("fireworks/accounts-admin");
+  });
+
+  afterEach(async () => {
+    await teardownPolly(ctx);
+  });
+
+  describe("accounts get", () => {
+    it("should get account details", async () => {
+      const provider = fireworks({
+        apiKey: process.env.FIREWORKS_API_KEY ?? "fw-test-key",
+      });
+      const result = await provider.v1.accounts.get("fireworks");
+      expect(result.name).toBeTruthy();
+      expect(result.displayName).toBeTruthy();
+    });
+  });
+
+  describe("users crud", () => {
+    it("should list users", async () => {
+      const provider = fireworks({
+        apiKey: process.env.FIREWORKS_API_KEY ?? "fw-test-key",
+      });
+      const result = await provider.v1.accounts.users.list("fireworks");
+      expect(result.users).toBeInstanceOf(Array);
+    });
+
+    it("should get user details", async () => {
+      const provider = fireworks({
+        apiKey: process.env.FIREWORKS_API_KEY ?? "fw-test-key",
+      });
+      // First list users to get a valid user ID
+      const listResult = await provider.v1.accounts.users.list("fireworks");
+      if (listResult.users.length > 0) {
+        const userId = listResult.users[0].name?.split("/").pop() ?? "";
+        if (userId) {
+          const result = await provider.v1.accounts.users.get(
+            "fireworks",
+            userId
+          );
+          expect(result.name).toBeTruthy();
+        }
+      }
+    });
+  });
+
+  describe("api keys", () => {
+    it("should list api keys for a user", async () => {
+      const provider = fireworks({
+        apiKey: process.env.FIREWORKS_API_KEY ?? "fw-test-key",
+      });
+      // First list users to get a valid user ID
+      const listResult = await provider.v1.accounts.users.list("fireworks");
+      if (listResult.users.length > 0) {
+        const userId = listResult.users[0].name?.split("/").pop() ?? "";
+        if (userId) {
+          const result = await provider.v1.accounts.apiKeys.list(
+            "fireworks",
+            userId
+          );
+          expect(result.apiKeys).toBeInstanceOf(Array);
+        }
+      }
+    });
+  });
+
+  describe("secrets", () => {
+    it("should list secrets", async () => {
+      const provider = fireworks({
+        apiKey: process.env.FIREWORKS_API_KEY ?? "fw-test-key",
+      });
+      const result = await provider.v1.accounts.secrets.list("fireworks");
+      expect(result.secrets).toBeInstanceOf(Array);
+    });
+
+    it("should get secret details if secrets exist", async () => {
+      const provider = fireworks({
+        apiKey: process.env.FIREWORKS_API_KEY ?? "fw-test-key",
+      });
+      const listResult = await provider.v1.accounts.secrets.list("fireworks");
+      if (listResult.secrets.length > 0) {
+        const secretId = listResult.secrets[0].name?.split("/").pop() ?? "";
+        if (secretId) {
+          const result = await provider.v1.accounts.secrets.get(
+            "fireworks",
+            secretId
+          );
+          expect(result.name).toBeTruthy();
+          expect(result.keyName).toBeTruthy();
+        }
+      }
+    });
+  });
+
   describe("payload validation", () => {
     it("should validate create user payload", () => {
       const provider = fireworks({ apiKey: "test-key" });

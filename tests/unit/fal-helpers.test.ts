@@ -93,9 +93,12 @@ describe("buildQueryString", () => {
   it("should handle date objects by converting to string", () => {
     const date = new Date("2024-01-15T10:30:00.000Z");
     const result = buildQueryString({ since: date });
-    // Date is converted using String() which calls toString(), not toISOString()
-    expect(result).toMatch(/\?since=Mon\+Jan\+15\+2024/);
-    expect(result).toMatch(/10%3A30%3A00/);
+    // buildQueryString uses String(date) — i.e. Date.toString() — which
+    // renders in the runner's local timezone. Derive the expectation the
+    // same way buildQueryString encodes (URLSearchParams form-urlencoded)
+    // so this test is TZ-independent.
+    const expected = `?${new URLSearchParams({ since: String(date) }).toString()}`;
+    expect(result).toBe(expected);
   });
 
   it("should handle complex URL values", () => {

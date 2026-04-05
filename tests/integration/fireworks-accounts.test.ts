@@ -3,84 +3,114 @@ import { setupPolly, teardownPolly, type PollyContext } from "../harness";
 import { fireworks } from "@nakedapi/fireworks";
 
 describe("fireworks accounts integration", () => {
-  let ctx: PollyContext;
+  describe("accounts get", () => {
+    let ctx: PollyContext;
 
-  beforeEach(() => {
-    ctx = setupPolly("fireworks/accounts-admin");
-  });
+    beforeEach(() => {
+      ctx = setupPolly("fireworks/accounts-get");
+    });
 
-  afterEach(async () => {
-    await teardownPolly(ctx);
-  });
+    afterEach(async () => {
+      await teardownPolly(ctx);
+    });
 
-  // TODO: re-record "fireworks/accounts-admin" HAR against live Fireworks
-  // admin API. Skipped because the recording directory was never committed
-  // alongside the test (same for users/apiKeys/secrets blocks below).
-  describe.skip("accounts get", () => {
     it("should get account details", async () => {
       const provider = fireworks({
         apiKey: process.env.FIREWORKS_API_KEY ?? "fw-test-key",
       });
-      const result = await provider.v1.accounts.get("fireworks");
+      const result = await provider.v1.accounts.get("jwtanner");
       expect(result.name).toBeTruthy();
-      expect(result.displayName).toBeTruthy();
     });
   });
 
-  describe.skip("users crud", () => {
+  describe("users crud > should list users", () => {
+    let ctx: PollyContext;
+
+    beforeEach(() => {
+      ctx = setupPolly("fireworks/users-list");
+    });
+
+    afterEach(async () => {
+      await teardownPolly(ctx);
+    });
+
     it("should list users", async () => {
       const provider = fireworks({
         apiKey: process.env.FIREWORKS_API_KEY ?? "fw-test-key",
       });
-      const result = await provider.v1.accounts.users.list("fireworks");
+      const result = await provider.v1.accounts.users.list("jwtanner", {
+        pageSize: 5,
+      });
       expect(result.users).toBeInstanceOf(Array);
+    });
+  });
+
+  describe("users crud > should get user details", () => {
+    let ctx: PollyContext;
+
+    beforeEach(() => {
+      ctx = setupPolly("fireworks/users-get");
+    });
+
+    afterEach(async () => {
+      await teardownPolly(ctx);
     });
 
     it("should get user details", async () => {
       const provider = fireworks({
         apiKey: process.env.FIREWORKS_API_KEY ?? "fw-test-key",
       });
-      // First list users to get a valid user ID
-      const listResult = await provider.v1.accounts.users.list("fireworks");
-      if (listResult.users.length > 0) {
-        const userId = listResult.users[0].name?.split("/").pop() ?? "";
-        if (userId) {
-          const result = await provider.v1.accounts.users.get(
-            "fireworks",
-            userId
-          );
-          expect(result.name).toBeTruthy();
-        }
-      }
+      // Use the user ID from the recording (jwtanner)
+      const result = await provider.v1.accounts.users.get(
+        "jwtanner",
+        "jwtanner"
+      );
+      expect(result.name).toBeTruthy();
     });
   });
 
-  describe.skip("api keys", () => {
+  describe("api keys", () => {
+    let ctx: PollyContext;
+
+    beforeEach(() => {
+      ctx = setupPolly("fireworks/apikeys-list");
+    });
+
+    afterEach(async () => {
+      await teardownPolly(ctx);
+    });
+
     it("should list api keys for a user", async () => {
       const provider = fireworks({
         apiKey: process.env.FIREWORKS_API_KEY ?? "fw-test-key",
       });
-      // First list users to get a valid user ID
-      const listResult = await provider.v1.accounts.users.list("fireworks");
-      if (listResult.users.length > 0) {
-        const userId = listResult.users[0].name?.split("/").pop() ?? "";
-        if (userId) {
-          const result = await provider.v1.accounts.apiKeys.list(
-            "fireworks",
-            userId
-          );
-          expect(result.apiKeys).toBeInstanceOf(Array);
-        }
-      }
+      // Use the user ID from the recording (jwtanner)
+      const result = await provider.v1.accounts.apiKeys.list(
+        "jwtanner",
+        "jwtanner"
+      );
+      expect(result.apiKeys).toBeInstanceOf(Array);
     });
   });
 
-  describe.skip("secrets", () => {
+  describe("secrets", () => {
+    let ctx: PollyContext;
+
+    beforeEach(() => {
+      ctx = setupPolly("fireworks/secrets-list");
+    });
+
+    afterEach(async () => {
+      await teardownPolly(ctx);
+    });
+
     it("should list secrets", async () => {
       const provider = fireworks({
         apiKey: process.env.FIREWORKS_API_KEY ?? "fw-test-key",
       });
-      const result = await provider.v1.accounts.secrets.list("fireworks");
+      const result = await provider.v1.accounts.secrets.list("jwtanner", {
+        pageSize: 5,
+      });
       expect(result.secrets).toBeInstanceOf(Array);
     });
 
@@ -88,12 +118,14 @@ describe("fireworks accounts integration", () => {
       const provider = fireworks({
         apiKey: process.env.FIREWORKS_API_KEY ?? "fw-test-key",
       });
-      const listResult = await provider.v1.accounts.secrets.list("fireworks");
+      const listResult = await provider.v1.accounts.secrets.list("jwtanner", {
+        pageSize: 5,
+      });
       if (listResult.secrets.length > 0) {
         const secretId = listResult.secrets[0].name?.split("/").pop() ?? "";
         if (secretId) {
           const result = await provider.v1.accounts.secrets.get(
-            "fireworks",
+            "jwtanner",
             secretId
           );
           expect(result.name).toBeTruthy();

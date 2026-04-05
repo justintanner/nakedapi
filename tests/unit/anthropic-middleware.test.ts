@@ -3,8 +3,6 @@ import { describe, it, expect, vi } from "vitest";
 import {
   withRetry,
   withFallback,
-  type RetryOptions,
-  type FallbackOptions,
 } from "../../packages/provider/anthropic/src/middleware";
 
 describe("anthropic middleware", () => {

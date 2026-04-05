@@ -21,23 +21,6 @@ function createMockResponse(chunks: string[]): Response {
   return new Response(stream);
 }
 
-// Helper to create a slow stream with controlled timing
-function createSlowResponse(chunks: string[], delays: number[]): Response {
-  const encoder = new TextEncoder();
-  const stream = new ReadableStream({
-    async start(controller) {
-      for (let i = 0; i < chunks.length; i++) {
-        controller.enqueue(encoder.encode(chunks[i]));
-        if (delays[i]) {
-          await new Promise((resolve) => setTimeout(resolve, delays[i]));
-        }
-      }
-      controller.close();
-    },
-  });
-  return new Response(stream);
-}
-
 describe("anthropic sse", () => {
   describe("sseToIterable edge cases", () => {
     it("should handle chunked data across reads", async () => {

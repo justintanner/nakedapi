@@ -1,7 +1,98 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import {
+  setupPollyForFileUploads,
+  teardownPolly,
+  type PollyContext,
+} from "../harness";
 import { fireworks } from "@nakedapi/fireworks";
 
-describe("fireworks audio batch processing", () => {
+describe("fireworks audio batch integration", () => {
+  let ctx: PollyContext;
+
+  describe("batch transcription job lifecycle", () => {
+    beforeEach(() => {
+      ctx = setupPollyForFileUploads("fireworks/audio-batch-transcription");
+    });
+
+    afterEach(async () => {
+      await teardownPolly(ctx);
+    });
+
+    it("should create and retrieve batch transcription job", async () => {
+      const provider = fireworks({
+        apiKey: process.env.FIREWORKS_API_KEY ?? "fw-test-key",
+      });
+
+      // Create a mock audio file blob
+      const audioBlob = new Blob([new Uint8Array(1024).fill(0)], {
+        type: "audio/mp3",
+      });
+
+      // Submit batch transcription job
+      const submitResult = await provider.v1.audio.batch.transcriptions({
+        file: audioBlob,
+        endpoint_id: "ep-test-123",
+        model: "whisper-v3",
+        language: "en",
+        response_format: "json",
+      });
+
+      expect(submitResult).toBeDefined();
+      expect(submitResult.request_id).toBeTruthy();
+
+      // Retrieve job status
+      const jobResult = await provider.v1.audio.batch.get(
+        "fireworks",
+        submitResult.request_id
+      );
+
+      expect(jobResult).toBeDefined();
+      expect(jobResult.request_id).toBe(submitResult.request_id);
+    });
+  });
+
+  describe("batch translation job lifecycle", () => {
+    beforeEach(() => {
+      ctx = setupPollyForFileUploads("fireworks/audio-batch-translation");
+    });
+
+    afterEach(async () => {
+      await teardownPolly(ctx);
+    });
+
+    it("should create and retrieve batch translation job", async () => {
+      const provider = fireworks({
+        apiKey: process.env.FIREWORKS_API_KEY ?? "fw-test-key",
+      });
+
+      // Create a mock audio file blob
+      const audioBlob = new Blob([new Uint8Array(1024).fill(0)], {
+        type: "audio/mp3",
+      });
+
+      // Submit batch translation job
+      const submitResult = await provider.v1.audio.batch.translations({
+        file: audioBlob,
+        endpoint_id: "ep-test-123",
+        model: "whisper-v3",
+        language: "en",
+        response_format: "json",
+      });
+
+      expect(submitResult).toBeDefined();
+      expect(submitResult.request_id).toBeTruthy();
+
+      // Retrieve job status
+      const jobResult = await provider.v1.audio.batch.get(
+        "fireworks",
+        submitResult.request_id
+      );
+
+      expect(jobResult).toBeDefined();
+      expect(jobResult.request_id).toBe(submitResult.request_id);
+    });
+  });
+
   describe("payload validation", () => {
     it("should validate batch transcription with required fields", () => {
       const provider = fireworks({ apiKey: "test" });
@@ -85,6 +176,14 @@ describe("fireworks audio batch processing", () => {
       expect(typeof batch.transcriptions).toBe("function");
       expect(typeof batch.translations).toBe("function");
       expect(typeof batch.get).toBe("function");
+    });
+
+    it("should expose payload schemas on all methods", () => {
+      const provider = fireworks({ apiKey: "test" });
+      expect(
+        provider.v1.audio.batch.transcriptions.payloadSchema
+      ).toBeDefined();
+      expect(provider.v1.audio.batch.translations.payloadSchema).toBeDefined();
     });
   });
 });

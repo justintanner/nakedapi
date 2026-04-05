@@ -4,7 +4,7 @@
 [![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript&logoColor=white)](tsconfig.json)
 
-Anthropic provider — messages, streaming, token counting, batches, files, models, skills (beta), and organization admin APIs. Completely standalone with zero external dependencies.
+Anthropic / Claude provider for messages, batches, models, files, and admin APIs.
 
 ## Installation
 
@@ -20,378 +20,235 @@ pnpm add @nakedapi/anthropic
 import { anthropic as createAnthropic } from "@nakedapi/anthropic";
 
 const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
-
-const response = await anthropic.post.v1.messages({
-  model: "claude-sonnet-4-20250514",
-  max_tokens: 1024,
-  messages: [{ role: "user", content: "Hello!" }],
-});
-console.log(response.content[0].text);
 ```
 
-## Endpoints
+## API Reference
 
-The Anthropic provider uses a verb-prefix pattern that mirrors HTTP methods:
-
-```
-anthropic.<verb>.v1.<path.in.camelCase>(params)
-```
-
-Base URL: `https://api.anthropic.com/v1`
+All methods include their payload schema and a `validatePayload()` function for runtime validation.
 
 ### POST Endpoints
 
-#### Messages
+<details>
+<summary>**`messages`** — `POST /messages`</summary>
 
-| URL                                  | Method Signature                                |
-| ------------------------------------ | ----------------------------------------------- |
-| `POST /messages`                     | `anthropic.post.v1.messages(req)`               |
-| `POST /messages/count_tokens`        | `anthropic.post.v1.messages.countTokens(req)`   |
-| `POST /messages/batches`             | `anthropic.post.v1.messages.batches(req)`       |
-| `POST /messages/batches/{id}/cancel` | `anthropic.post.v1.messages.batches.cancel(id)` |
+**Parameters:**
 
-#### Files
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `model` | string | Yes | Model ID (e.g. claude-sonnet-4-6) |
+| `max_tokens` | number | Yes | Maximum output tokens |
+| `messages` | array | Yes | Array of messages<br>Enum: `user`, `assistant` |
+| `content` | string | Yes |  |
+| `system` | string | No | System prompt |
+| `temperature` | number | No | Sampling temperature 0-1 |
+| `top_p` | number | No | Nucleus sampling |
+| `top_k` | number | No | Top-K sampling |
+| `stop_sequences` | array | No | Custom stop sequences |
+| `stream` | boolean | No | Enable SSE streaming |
+| `tools` | array | No | Tool definitions |
+| `tool_choice` | object | No | Tool choice configuration<br>Enum: `auto`, `any`, `tool`, `none` |
+| `name` | string | No |  |
+| `thinking` | object | No | Extended thinking configuration<br>Enum: `enabled`, `disabled`, `adaptive` |
+| `budget_tokens` | number | No |  |
+| `metadata` | object | No | Request metadata |
+| `service_tier` | string | No | <br>Enum: `auto`, `standard_only` |
 
-| URL                       | Method Signature                |
-| ------------------------- | ------------------------------- |
-| `POST /files` (multipart) | `anthropic.post.v1.files(blob)` |
-
-#### Skills (beta)
-
-| URL                          | Method Signature                                      |
-| ---------------------------- | ----------------------------------------------------- |
-| `POST /skills`               | `anthropic.post.v1.skills.create(title, files)`       |
-| `POST /skills/{id}/versions` | `anthropic.post.v1.skills.versions.create(id, files)` |
-
-#### Admin — Organizations
-
-| URL                                                    | Method Signature                                                             |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------- |
-| `POST /organizations/invites`                          | `anthropic.post.v1.organizations.invites.create(req)`                        |
-| `POST /organizations/users/{id}`                       | `anthropic.post.v1.organizations.users.update(id, req)`                      |
-| `POST /organizations/workspaces`                       | `anthropic.post.v1.organizations.workspaces.create(req)`                     |
-| `POST /organizations/workspaces/{id}`                  | `anthropic.post.v1.organizations.workspaces.update(id, req)`                 |
-| `POST /organizations/workspaces/{id}/archive`          | `anthropic.post.v1.organizations.workspaces.archive(id)`                     |
-| `POST /organizations/workspaces/{id}/members`          | `anthropic.post.v1.organizations.workspaces.members.add(id, req)`            |
-| `POST /organizations/workspaces/{id}/members/{userId}` | `anthropic.post.v1.organizations.workspaces.members.update(id, userId, req)` |
-| `POST /organizations/api_keys/{id}`                    | `anthropic.post.v1.organizations.apiKeys.update(id, req)`                    |
-
-### POST Stream Endpoints
-
-| URL                       | Method Signature                         |
-| ------------------------- | ---------------------------------------- |
-| `POST /messages` (stream) | `anthropic.post.stream.v1.messages(req)` |
-
-### GET Endpoints
-
-#### Messages
-
-| URL                                  | Method Signature                                 |
-| ------------------------------------ | ------------------------------------------------ |
-| `GET /messages/batches`              | `anthropic.get.v1.messages.batches.list()`       |
-| `GET /messages/batches/{id}`         | `anthropic.get.v1.messages.batches.retrieve(id)` |
-| `GET /messages/batches/{id}/results` | `anthropic.get.v1.messages.batches.results(id)`  |
-
-#### Models
-
-| URL                | Method Signature                       |
-| ------------------ | -------------------------------------- |
-| `GET /models`      | `anthropic.get.v1.models.list()`       |
-| `GET /models/{id}` | `anthropic.get.v1.models.retrieve(id)` |
-
-#### Files
-
-| URL                       | Method Signature                      |
-| ------------------------- | ------------------------------------- |
-| `GET /files`              | `anthropic.get.v1.files.list()`       |
-| `GET /files/{id}`         | `anthropic.get.v1.files.retrieve(id)` |
-| `GET /files/{id}/content` | `anthropic.get.v1.files.content(id)`  |
-
-#### Skills (beta)
-
-| URL                         | Method Signature                            |
-| --------------------------- | ------------------------------------------- |
-| `GET /skills`               | `anthropic.get.v1.skills.list()`            |
-| `GET /skills/{id}`          | `anthropic.get.v1.skills.retrieve(id)`      |
-| `GET /skills/{id}/versions` | `anthropic.get.v1.skills.versions.list(id)` |
-
-#### Admin — Organizations
-
-| URL                                                   | Method Signature                                                         |
-| ----------------------------------------------------- | ------------------------------------------------------------------------ |
-| `GET /organizations/me`                               | `anthropic.get.v1.organizations.me()`                                    |
-| `GET /organizations/users`                            | `anthropic.get.v1.organizations.users.list()`                            |
-| `GET /organizations/users/{id}`                       | `anthropic.get.v1.organizations.users.retrieve(id)`                      |
-| `GET /organizations/invites`                          | `anthropic.get.v1.organizations.invites.list()`                          |
-| `GET /organizations/invites/{id}`                     | `anthropic.get.v1.organizations.invites.retrieve(id)`                    |
-| `GET /organizations/workspaces`                       | `anthropic.get.v1.organizations.workspaces.list()`                       |
-| `GET /organizations/workspaces/{id}`                  | `anthropic.get.v1.organizations.workspaces.retrieve(id)`                 |
-| `GET /organizations/workspaces/{id}/members`          | `anthropic.get.v1.organizations.workspaces.members.list(id)`             |
-| `GET /organizations/workspaces/{id}/members/{userId}` | `anthropic.get.v1.organizations.workspaces.members.retrieve(id, userId)` |
-| `GET /organizations/api_keys`                         | `anthropic.get.v1.organizations.apiKeys.list()`                          |
-| `GET /organizations/api_keys/{id}`                    | `anthropic.get.v1.organizations.apiKeys.retrieve(id)`                    |
-
-### DELETE Endpoints
-
-| URL                                                      | Method Signature                                                       |
-| -------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `DELETE /messages/batches/{id}`                          | `anthropic.delete.v1.messages.batches.del(id)`                         |
-| `DELETE /files/{id}`                                     | `anthropic.delete.v1.files.del(id)`                                    |
-| `DELETE /skills/{id}`                                    | `anthropic.delete.v1.skills.del(id)`                                   |
-| `DELETE /skills/{id}/versions/{version}`                 | `anthropic.delete.v1.skills.versions.del(id, version)`                 |
-| `DELETE /organizations/users/{id}`                       | `anthropic.delete.v1.organizations.users.del(id)`                      |
-| `DELETE /organizations/invites/{id}`                     | `anthropic.delete.v1.organizations.invites.del(id)`                    |
-| `DELETE /organizations/workspaces/{id}/members/{userId}` | `anthropic.delete.v1.organizations.workspaces.members.del(id, userId)` |
-
-## Usage Examples
-
-### Messages
+**Validation:**
 
 ```typescript
-const response = await anthropic.post.v1.messages({
-  model: "claude-sonnet-4-20250514",
-  max_tokens: 1024,
-  messages: [{ role: "user", content: "Explain monads in one sentence." }],
-});
+// Access the schema
+anthropic.messages.payloadSchema
+
+// Validate data
+anthropic.messages.validatePayload(data)
 ```
 
-### Streaming
+</details>
+
+<details>
+<summary>**`messages.count_tokens`** — `POST /messages/count_tokens`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `model` | string | Yes | Model ID |
+| `messages` | array | Yes | Array of messages<br>Enum: `user`, `assistant` |
+| `content` | string | Yes |  |
+| `system` | string | No | System prompt |
+| `tools` | array | No | Tool definitions |
+
+**Validation:**
 
 ```typescript
-const stream = await anthropic.post.stream.v1.messages({
-  model: "claude-sonnet-4-20250514",
-  max_tokens: 1024,
-  messages: [{ role: "user", content: "Write a haiku about TypeScript." }],
-});
+// Access the schema
+anthropic.count.tokens.payloadSchema
 
-for await (const event of stream) {
-  if (
-    event.type === "content_block_delta" &&
-    event.delta.type === "text_delta"
-  ) {
-    process.stdout.write(event.delta.text);
-  }
-}
+// Validate data
+anthropic.count.tokens.validatePayload(data)
 ```
 
-### Token Counting
+</details>
+
+<details>
+<summary>**`messages.batches`** — `POST /messages/batches`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `requests` | array | Yes | Array of batch requests (max 100,000) |
+| `params` | object | Yes |  |
+
+**Validation:**
 
 ```typescript
-const result = await anthropic.post.v1.messages.countTokens({
-  model: "claude-sonnet-4-20250514",
-  messages: [{ role: "user", content: "Hello, world!" }],
-});
-console.log(result.input_tokens);
+// Access the schema
+anthropic.batches.create.payloadSchema
+
+// Validate data
+anthropic.batches.create.validatePayload(data)
 ```
 
-### Batches
+</details>
+
+<details>
+<summary>**`files`** — `POST /files`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `file` | object | Yes | File to upload |
+
+**Validation:**
 
 ```typescript
-// Create a batch
-const batch = await anthropic.post.v1.messages.batches({
-  requests: [
-    {
-      custom_id: "req-1",
-      params: {
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1024,
-        messages: [{ role: "user", content: "Hello!" }],
-      },
-    },
-  ],
-});
+// Access the schema
+anthropic.files.upload.payloadSchema
 
-// List batches
-const list = await anthropic.get.v1.messages.batches.list();
-
-// Retrieve, cancel, get results
-const status = await anthropic.get.v1.messages.batches.retrieve(batch.id);
-const results = await anthropic.get.v1.messages.batches.results(batch.id);
-await anthropic.post.v1.messages.batches.cancel(batch.id);
-
-// Delete batch
-await anthropic.delete.v1.messages.batches.del(batch.id);
+// Validate data
+anthropic.files.upload.validatePayload(data)
 ```
 
-### Files
+</details>
+
+<details>
+<summary>**`organizations.invites`** — `POST /organizations/invites`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `email` | string | Yes | Email address to invite |
+| `role` | string | Yes | Role for the invited user<br>Enum: `user`, `developer`, `billing`, `claude_code_user`, `managed` |
+
+**Validation:**
 
 ```typescript
-// Upload a file
-const file = await anthropic.post.v1.files(
-  new Blob([content], { type: "text/plain" })
-);
+// Access the schema
+anthropic.invite.create.payloadSchema
 
-// List, retrieve, download, delete
-const files = await anthropic.get.v1.files.list();
-const info = await anthropic.get.v1.files.retrieve(file.id);
-const contentBuffer = await anthropic.get.v1.files.content(file.id);
-await anthropic.delete.v1.files.del(file.id);
+// Validate data
+anthropic.invite.create.validatePayload(data)
 ```
 
-### Models
+</details>
+
+<details>
+<summary>**`organizations.workspaces`** — `POST /organizations/workspaces`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Workspace name |
+| `data_residency` | object | No | Data residency configuration |
+
+**Validation:**
 
 ```typescript
-const models = await anthropic.get.v1.models.list();
-const model = await anthropic.get.v1.models.retrieve(
-  "claude-sonnet-4-20250514"
-);
+// Access the schema
+anthropic.workspace.create.payloadSchema
+
+// Validate data
+anthropic.workspace.create.validatePayload(data)
 ```
 
-### Skills (Beta)
+</details>
+
+<details>
+<summary>**`skills`** — `POST /skills`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `display_title` | string | Yes | Human-readable skill title |
+| `files` | array | Yes | Skill files (must include SKILL.md) |
+
+**Validation:**
 
 ```typescript
-// Create a skill
-const skill = await anthropic.post.v1.skills.create("My Skill", [
-  { path: "example.js", data: new Blob([code]) },
-]);
+// Access the schema
+anthropic.skills.create.payloadSchema
 
-// List skills
-const skills = await anthropic.get.v1.skills.list();
-
-// Retrieve skill
-const info = await anthropic.get.v1.skills.retrieve(skill.id);
-
-// Create skill version
-const version = await anthropic.post.v1.skills.versions.create(skill.id, [
-  { path: "updated.js", data: new Blob([newCode]) },
-]);
-
-// List versions
-const versions = await anthropic.get.v1.skills.versions.list(skill.id);
-
-// Delete skill and version
-await anthropic.delete.v1.skills.del(skill.id);
-await anthropic.delete.v1.skills.versions.del(skill.id, version.version);
+// Validate data
+anthropic.skills.create.validatePayload(data)
 ```
 
-### Admin APIs
+</details>
 
-Admin endpoints use `adminApiKey` if provided, otherwise fall back to `apiKey`.
+<details>
+<summary>**`skills.skill_id.versions`** — `POST /skills/{skill_id}/versions`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `files` | array | Yes | Updated skill files (must include SKILL.md) |
+
+**Validation:**
 
 ```typescript
-const admin = createAnthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-  adminApiKey: process.env.ANTHROPIC_ADMIN_KEY!,
-});
+// Access the schema
+anthropic.skill.versions.create.payloadSchema
 
-// Organization info
-const org = await admin.get.v1.organizations.me();
-
-// User management
-const users = await admin.get.v1.organizations.users.list();
-const user = await admin.get.v1.organizations.users.retrieve("user-id");
-await admin.post.v1.organizations.users.update("user-id", { name: "New Name" });
-await admin.delete.v1.organizations.users.del("user-id");
-
-// Invite management
-const invites = await admin.get.v1.organizations.invites.list();
-const invite = await admin.post.v1.organizations.invites.create({
-  email: "new@example.com",
-  role: "user",
-});
-await admin.delete.v1.organizations.invites.del(invite.id);
-
-// Workspace management
-const workspaces = await admin.get.v1.organizations.workspaces.list();
-const workspace = await admin.post.v1.organizations.workspaces.create({
-  name: "Engineering",
-  description: "Engineering team workspace",
-});
-await admin.post.v1.organizations.workspaces.update("workspace-id", {
-  name: "Updated Name",
-});
-await admin.post.v1.organizations.workspaces.archive("workspace-id");
-await admin.delete.v1.organizations.workspaces.members.del(
-  "workspace-id",
-  "user-id"
-);
-
-// Workspace members
-const members =
-  await admin.get.v1.organizations.workspaces.members.list("workspace-id");
-await admin.post.v1.organizations.workspaces.members.add("workspace-id", {
-  user_id: "user-id",
-  role: "user",
-});
-await admin.post.v1.organizations.workspaces.members.update(
-  "workspace-id",
-  "user-id",
-  {
-    role: "admin",
-  }
-);
-
-// API keys
-const keys = await admin.get.v1.organizations.apiKeys.list();
-const key = await admin.get.v1.organizations.apiKeys.retrieve("key-id");
-await admin.post.v1.organizations.apiKeys.update("key-id", { name: "Updated" });
+// Validate data
+anthropic.skill.versions.create.validatePayload(data)
 ```
 
-## Data Shaping
+</details>
 
-These endpoints transform input before sending (all others are pure pass-through):
+<details>
+<summary>**`organizations.workspaces.workspace_id.members`** — `POST /organizations/workspaces/{workspace_id}/members`</summary>
 
-| Method                                          | What happens                            |
-| ----------------------------------------------- | --------------------------------------- |
-| `post.stream.v1.messages()`                     | Sets `stream: true` in the request body |
-| `post.v1.files()`                               | Builds FormData from Blob               |
-| `post.v1.skills.create()`, `.versions.create()` | Builds FormData from title + file array |
+**Parameters:**
 
-## Configuration
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `user_id` | string | Yes | User ID to add |
+| `workspace_role` | string | Yes | Role in workspace<br>Enum: `workspace_user`, `workspace_developer`, `workspace_admin` |
+
+**Validation:**
 
 ```typescript
-const anthropic = createAnthropic({
-  apiKey: "your-api-key", // required
-  baseURL: "https://...", // optional, custom base URL
-  timeout: 30000, // optional, ms (default: 30000)
-  fetch: customFetch, // optional, custom fetch implementation
-  defaultVersion: "2023-06-01", // optional, anthropic-version header
-  defaultBeta: ["skills-2025-10-02"], // optional, anthropic-beta header
-  adminApiKey: "your-admin-key", // optional, for admin endpoints
-});
+// Access the schema
+anthropic.workspace.member.add.payloadSchema
+
+// Validate data
+anthropic.workspace.member.add.validatePayload(data)
 ```
+
+</details>
 
 ## Middleware
 
 ```typescript
-import {
-  anthropic as createAnthropic,
-  withRetry,
-  withFallback,
-} from "@nakedapi/anthropic";
+import { anthropic as createAnthropic, withRetry } from "@nakedapi/anthropic";
 
 const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
-
-// Retry on transient errors (429, 5xx)
-const messages = withRetry(anthropic.post.v1.messages, { retries: 3 });
-
-// Failover across accounts
-const primary = createAnthropic({ apiKey: process.env.ANTHROPIC_KEY_PRIMARY! });
-const backup = createAnthropic({ apiKey: process.env.ANTHROPIC_KEY_BACKUP! });
-const resilient = withFallback([
-  primary.post.v1.messages,
-  backup.post.v1.messages,
-]);
-```
-
-## Payload Validation
-
-All POST endpoints expose `.payloadSchema` and `.validatePayload()`:
-
-```typescript
-// Access the schema
-const schema = anthropic.post.v1.messages.payloadSchema;
-
-// Validate before sending
-const result = anthropic.post.v1.messages.validatePayload({
-  model: "claude-sonnet-4-20250514",
-  max_tokens: 1024,
-  messages: [{ role: "user", content: "Hello" }],
-});
-
-if (!result.valid) {
-  console.log(result.errors);
-}
+const models = withRetry(anthropic.get.v1.models, { retries: 3 });
 ```
 
 ## License

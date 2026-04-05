@@ -4,7 +4,7 @@
 [![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript&logoColor=white)](tsconfig.json)
 
-Kie provider for media generation — video, image, audio, and transcription. Supports Veo video generation, Suno music generation, chat completions, and Claude integration.
+Kie provider for video and image generation (Kling 3.0, Grok Imagine, Nano Banana Pro).
 
 ## Installation
 
@@ -14,367 +14,295 @@ npm install @nakedapi/kie
 pnpm add @nakedapi/kie
 ```
 
-## Supported Models
-
-| Model                                     | Type          | Description                                           |
-| ----------------------------------------- | ------------- | ----------------------------------------------------- |
-| `kling-3.0/video`                         | Video         | High-quality video generation with multi-shot support |
-| `grok-imagine/text-to-image`              | Image         | Text-to-image generation                              |
-| `grok-imagine/image-to-image`             | Image         | Image-to-image generation                             |
-| `grok-imagine/text-to-video`              | Video         | Text-to-video generation                              |
-| `grok-imagine/image-to-video`             | Video         | Image-to-video generation                             |
-| `nano-banana-pro`                         | Image         | Advanced image generation                             |
-| `bytedance/seedance-1.5-pro`              | Video         | Seedance video generation                             |
-| `nano-banana-2`                           | Image         | Image generation with Google Search support           |
-| `gpt-image/1.5-image-to-image`            | Image         | GPT image-to-image editing                            |
-| `seedream/5-lite-image-to-image`          | Image         | Seedream image-to-image editing                       |
-| `elevenlabs/text-to-dialogue-v3`          | Audio         | Multi-voice dialogue generation                       |
-| `elevenlabs/sound-effect-v2`              | Audio         | Sound effect generation                               |
-| `elevenlabs/speech-to-text`               | Transcription | Speech-to-text transcription                          |
-| `sora-watermark-remover`                  | Video         | Remove watermarks from video                          |
-| `veo3`, `veo3_fast`                       | Video         | Veo video generation (sub-provider)                   |
-| `V4`, `V4_5`, `V4_5PLUS`, `V4_5ALL`, `V5` | Audio         | Suno music generation (sub-provider)                  |
-
-## Usage
-
-### Basic Example
+## Quick Start
 
 ```typescript
 import { kie as createKie } from "@nakedapi/kie";
 
-const kie = createKie({
-  apiKey: process.env.KIE_API_KEY!,
-});
-
-// Create a video generation task with Kling 3.0
-const { taskId } = await kie.post.api.v1.jobs.createTask({
-  model: "kling-3.0/video",
-  input: {
-    prompt: "A futuristic cityscape with flying cars at sunset",
-    sound: true,
-    duration: "5",
-    mode: "pro",
-    multi_shots: false,
-  },
-});
-
-console.log("Task ID:", taskId);
+const kie = createKie({ apiKey: process.env.KIE_API_KEY! });
 ```
-
-### Grok Imagine - Text to Image
-
-```typescript
-const { taskId } = await kie.post.api.v1.jobs.createTask({
-  model: "grok-imagine/text-to-image",
-  input: {
-    prompt: "A serene mountain landscape at dawn with misty valleys",
-    aspect_ratio: "16:9",
-  },
-});
-
-console.log("Task ID:", taskId);
-```
-
-### Grok Imagine - Text to Video
-
-```typescript
-const { taskId } = await kie.post.api.v1.jobs.createTask({
-  model: "grok-imagine/text-to-video",
-  input: {
-    prompt: "A time-lapse of flowers blooming in a garden",
-    aspect_ratio: "16:9",
-    duration: "10",
-  },
-});
-
-console.log("Task ID:", taskId);
-```
-
-### Upload Media (Stream)
-
-```typescript
-import { readFile } from "node:fs/promises";
-
-const buffer = await readFile("./my-image.png");
-const file = new Blob([buffer], { type: "image/png" });
-
-const { downloadUrl } = await kie.post.api.fileStreamUpload({
-  file,
-  filename: "my-image.png",
-});
-
-console.log("Uploaded to:", downloadUrl);
-```
-
-### Upload Media (URL)
-
-```typescript
-const { downloadUrl } = await kie.post.api.fileUrlUpload({
-  url: "https://example.com/image.jpg",
-  uploadPath: "uploads/my-image.jpg",
-});
-```
-
-### Upload Media (Base64)
-
-```typescript
-const { downloadUrl } = await kie.post.api.fileBase64Upload({
-  base64:
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
-  filename: "pixel.png",
-  mimeType: "image/png",
-});
-```
-
-### Get Temporary Download URL
-
-Convert a kie.ai file URL into a temporary downloadable link (valid 20 minutes):
-
-```typescript
-const { url } = await kie.post.api.v1.common.downloadUrl({
-  url: "https://cdn.kie.ai/files/some-generated-video.mp4",
-});
-
-console.log("Download from:", url);
-```
-
-### Check Task Status
-
-```typescript
-const task = await kie.get.api.v1.jobs.recordInfo(taskId);
-
-if (task.state === "success") {
-  console.log("Result URLs:", task.result?.resultUrls);
-} else if (task.state === "fail") {
-  console.log("Failed:", task.failMsg);
-} else {
-  console.log(`In progress: ${task.progress}% (${task.state})`);
-}
-```
-
-### Check Credit Balance
-
-```typescript
-const { credit } = await kie.get.api.v1.chat.credit();
-console.log(`Available credits: ${credit}`);
-```
-
-### Nano Banana Pro
-
-```typescript
-const { taskId } = await kie.post.api.v1.jobs.createTask({
-  model: "nano-banana-pro",
-  input: {
-    prompt: "A detailed illustration of a vintage bicycle in a Parisian street",
-    aspect_ratio: "3:2",
-    resolution: "2K",
-    output_format: "png",
-  },
-});
-
-console.log("Task ID:", taskId);
-```
-
-### Kling 3.0 Multi-Shot Video
-
-```typescript
-const { taskId } = await kie.post.api.v1.jobs.createTask({
-  model: "kling-3.0/video",
-  input: {
-    image_urls: ["https://example.com/first-frame.jpg"],
-    sound: true,
-    duration: "10",
-    aspect_ratio: "16:9",
-    mode: "pro",
-    multi_shots: true,
-    multi_prompt: [
-      { prompt: "A car driving through a city", duration: 5 },
-      { prompt: "The car parks in front of a building", duration: 5 },
-    ],
-  },
-});
-```
-
-## Endpoints
-
-Base URL: `https://api.kie.ai`
-
-### POST Endpoints
-
-| URL                                | Method Signature                          |
-| ---------------------------------- | ----------------------------------------- |
-| `POST /api/v1/jobs/createTask`     | `kie.post.api.v1.jobs.createTask(req)`    |
-| `POST /api/v1/common/download-url` | `kie.post.api.v1.common.downloadUrl(req)` |
-| `POST /api/file-stream-upload`     | `kie.post.api.fileStreamUpload(req)`      |
-| `POST /api/file-url-upload`        | `kie.post.api.fileUrlUpload(req)`         |
-| `POST /api/file-base64-upload`     | `kie.post.api.fileBase64Upload(req)`      |
-
-### GET Endpoints
-
-| URL                                   | Method Signature                         |
-| ------------------------------------- | ---------------------------------------- |
-| `GET /api/v1/jobs/recordInfo?taskId=` | `kie.get.api.v1.jobs.recordInfo(taskId)` |
-| `GET /api/v1/chat/credit`             | `kie.get.api.v1.chat.credit()`           |
-
-### Sub-Providers
-
-#### Veo (Video Generation)
-
-| URL                         | Method Signature                        |
-| --------------------------- | --------------------------------------- |
-| `POST /api/v1/veo/generate` | `kie.veo.post.api.v1.veo.generate(req)` |
-| `POST /api/v1/veo/extend`   | `kie.veo.post.api.v1.veo.extend(req)`   |
-
-**Veo Example:**
-
-```typescript
-// Generate video
-const result = await kie.veo.post.api.v1.veo.generate({
-  prompt: "A drone shot of a coastal landscape",
-  model: "veo3",
-  aspectRatio: "16:9",
-  generationType: "TEXT_2_VIDEO",
-});
-
-// Extend existing video
-const extended = await kie.veo.post.api.v1.veo.extend({
-  taskId: "previous-task-id",
-  prompt: "Continue with the same style",
-  model: "fast",
-});
-```
-
-#### Suno (Music Generation)
-
-| URL                     | Method Signature                     |
-| ----------------------- | ------------------------------------ |
-| `POST /api/v1/generate` | `kie.suno.post.api.v1.generate(req)` |
-
-**Suno Example:**
-
-```typescript
-const result = await kie.suno.post.api.v1.generate({
-  prompt: "An upbeat pop song about summer",
-  model: "V4",
-  instrumental: false,
-  customMode: true,
-  style: "pop",
-  title: "Summer Vibes",
-});
-```
-
-#### Chat Completions (GPT-5.5 / GPT-5-2)
-
-| URL                                 | Method Signature                       |
-| ----------------------------------- | -------------------------------------- |
-| `POST /gpt-5.5/v1/chat/completions` | `kie.chat.completions(req)`            |
-| `POST /gpt-5-2/v1/chat/completions` | `kie.chat.completions(req)` (fallback) |
-
-**Chat Example:**
-
-```typescript
-const response = await kie.chat.completions({
-  model: "gpt-5.5",
-  messages: [{ role: "user", content: "Hello!" }],
-  temperature: 0.7,
-  max_tokens: 1024,
-});
-
-console.log(response.choices?.[0]?.message?.content);
-```
-
-#### Claude Integration
-
-| URL                        | Method Signature                   |
-| -------------------------- | ---------------------------------- |
-| `POST /claude/v1/messages` | `kie.claude.post.v1.messages(req)` |
-
-**Claude Example:**
-
-```typescript
-const response = await kie.claude.post.v1.messages({
-  model: "claude-sonnet-4-6",
-  messages: [{ role: "user", content: "Explain quantum computing" }],
-  thinkingFlag: true,
-});
-
-console.log(response.content?.[0]?.text);
-```
-
-## Data Shaping
-
-| Method                          | What happens                                                                         |
-| ------------------------------- | ------------------------------------------------------------------------------------ |
-| `post.api.fileStreamUpload()`   | Infers MIME type from filename, generates timestamped upload path, wraps in FormData |
-| `post.api.fileUrlUpload()`      | Generates timestamped upload path if not provided                                    |
-| `post.api.fileBase64Upload()`   | Infers MIME type from filename, generates timestamped upload path                    |
-| `post.api.v1.jobs.createTask()` | Passes through request body directly to model input                                  |
-| `chat.completions()`            | Built-in fallback: tries gpt-5.5 first, then gpt-5-2                                 |
 
 ## API Reference
 
-### `kie(options)`
+All methods include their payload schema and a `validatePayload()` function for runtime validation.
 
-Creates a Kie provider instance.
+### POST Endpoints
 
-**Options:**
+<details>
+<summary>**`api.v1.jobs.createTask`** — `POST /api/v1/jobs/createTask`</summary>
 
-- `apiKey` (string, required): Your Kie API key
-- `baseURL` (string, optional): Custom API base URL (default: `https://api.kie.ai`)
-- `uploadBaseURL` (string, optional): Custom upload base URL (default: `https://kieai.redpandaai.co`)
-- `timeout` (number, optional): Request timeout in milliseconds (default: 30000)
-- `fetch` (function, optional): Custom fetch implementation
+**Parameters:**
 
-**Core API methods:**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `model` | string | Yes | Model ID (discriminator for input shape) |
+| `callBackUrl` | string | No | Webhook callback URL |
+| `input` | object | Yes | Model-specific input parameters |
 
-- `kie.post.api.v1.jobs.createTask(req)`: Creates a media generation task
-- `kie.get.api.v1.jobs.recordInfo(taskId)`: Returns current task state, progress, and results
-- `kie.post.api.fileStreamUpload(req)`: Uploads a file stream and returns a hosted URL
-- `kie.post.api.fileUrlUpload(req)`: Uploads a file from URL
-- `kie.post.api.fileBase64Upload(req)`: Uploads a base64-encoded file
-- `kie.post.api.v1.common.downloadUrl(req)`: Converts a kie.ai file URL to a temporary download link (20 min)
-- `kie.get.api.v1.chat.credit()`: Returns account credit balance
-
-**Sub-providers:**
-
-- `kie.veo.post.api.v1.veo.generate(req)`: Generate video with Veo (veo3, veo3_fast)
-- `kie.veo.post.api.v1.veo.extend(req)`: Extend an existing Veo video
-- `kie.suno.post.api.v1.generate(req)`: Generate music with Suno
-- `kie.chat.completions(req)`: Chat completions with built-in fallback (gpt-5.5 → gpt-5-2)
-- `kie.claude.post.v1.messages(req)`: Claude messages API
-
-## Payload Validation
-
-All POST endpoints expose `.payloadSchema` and `.validatePayload()`:
+**Validation:**
 
 ```typescript
 // Access the schema
-const schema = kie.post.api.v1.jobs.createTask.payloadSchema;
+kie.create.task.payloadSchema
 
-// Validate before sending
-const result = kie.post.api.v1.jobs.createTask.validatePayload({
-  model: "kling-3.0/video",
-  input: { prompt: "A sunset over mountains" },
-});
-
-if (!result.valid) {
-  console.error(result.errors);
-}
+// Validate data
+kie.create.task.validatePayload(data)
 ```
 
-## Configuration
+</details>
+
+<details>
+<summary>**`api.v1.common.downloadurl`** — `POST /api/v1/common/download-url`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `url` | string | Yes | Kie CDN URL to convert to a temporary download link |
+
+**Validation:**
 
 ```typescript
-import { kie as createKie } from "@nakedapi/kie";
+// Access the schema
+kie.download.url.payloadSchema
 
-const kie = createKie({
-  apiKey: "your-api-key",
-  baseURL: "https://api.kie.ai", // optional
-  uploadBaseURL: "https://kieai.redpandaai.co", // optional
-  timeout: 30000, // optional, default: 30000ms
-  fetch: customFetch, // optional
-});
+// Validate data
+kie.download.url.validatePayload(data)
 ```
+
+</details>
+
+<details>
+<summary>**`api.filestreamupload`** — `POST /api/file-stream-upload`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `file` | object | Yes | File to upload (Blob) |
+| `filename` | string | Yes | Filename with extension |
+| `mimeType` | string | No | MIME type override |
+
+**Validation:**
+
+```typescript
+// Access the schema
+kie.file.stream.upload.payloadSchema
+
+// Validate data
+kie.file.stream.upload.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`api.fileurlupload`** — `POST /api/file-url-upload`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `url` | string | Yes | Remote URL of the file to upload |
+| `uploadPath` | string | No | Destination path (auto-generated if omitted) |
+
+**Validation:**
+
+```typescript
+// Access the schema
+kie.file.url.upload.payloadSchema
+
+// Validate data
+kie.file.url.upload.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`api.filebase64upload`** — `POST /api/file-base64-upload`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `base64` | string | Yes | Base64-encoded file data |
+| `filename` | string | Yes | Filename with extension |
+| `mimeType` | string | No | MIME type override |
+
+**Validation:**
+
+```typescript
+// Access the schema
+kie.file.base64.upload.payloadSchema
+
+// Validate data
+kie.file.base64.upload.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`api.v1.veo.generate`** — `POST /api/v1/veo/generate`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `prompt` | string | Yes | Text prompt for video generation |
+| `model` | string | No | Veo model variant<br>Enum: `veo3`, `veo3_fast` |
+| `aspectRatio` | string | No | Output aspect ratio<br>Enum: `16:9`, `9:16`, `Auto` |
+| `generationType` | string | No | Generation mode<br>Enum: `TEXT_2_VIDEO`, `REFERENCE_2_VIDEO`, `FIRST_AND_LAST_FRAMES_2_VIDEO` |
+| `imageUrls` | array | No | Reference image URLs |
+| `seeds` | number | No | Random seed |
+| `watermark` | string | No | Watermark text |
+| `enableTranslation` | boolean | No | Enable prompt translation |
+
+**Validation:**
+
+```typescript
+// Access the schema
+kie.veo.generate.payloadSchema
+
+// Validate data
+kie.veo.generate.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`api.v1.veo.extend`** — `POST /api/v1/veo/extend`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `taskId` | string | Yes | Task ID of the video to extend |
+| `prompt` | string | Yes | Text prompt for extension |
+| `model` | string | No | Extension quality mode<br>Enum: `fast`, `quality` |
+| `seeds` | number | No | Random seed |
+| `watermark` | string | No | Watermark text |
+
+**Validation:**
+
+```typescript
+// Access the schema
+kie.veo.extend.payloadSchema
+
+// Validate data
+kie.veo.extend.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`api.v1.generate`** — `POST /api/v1/generate`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `prompt` | string | Yes | Text prompt or lyrics |
+| `model` | string | Yes | Suno model version<br>Enum: `V4`, `V4_5`, `V4_5PLUS`, `V4_5ALL`, `V5` |
+| `instrumental` | boolean | Yes | Generate instrumental (no vocals) |
+| `customMode` | boolean | Yes | Enable custom mode |
+| `style` | string | No | Music style/genre |
+| `negativeTags` | string | No | Styles to avoid |
+| `title` | string | No | Song title |
+
+**Validation:**
+
+```typescript
+// Access the schema
+kie.suno.generate.payloadSchema
+
+// Validate data
+kie.suno.generate.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`gpt5.5.v1.chat.completions`** — `POST /gpt-5.5/v1/chat/completions`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `model` | string | Yes | Model ID (e.g. gpt-5.5) |
+| `messages` | array | Yes | Array of chat messages<br>Enum: `user`, `assistant`, `system` |
+| `content` | string | Yes |  |
+| `temperature` | number | No | Sampling temperature |
+| `max_tokens` | number | No | Max tokens to generate |
+| `stream` | boolean | No | Enable streaming |
+| `response_format` | object | Yes | Response format configuration<br>Enum: `text`, `json_object`, `json_schema` |
+| `json_schema` | object | No |  |
+
+**Validation:**
+
+```typescript
+// Access the schema
+kie.chat.completions55.payloadSchema
+
+// Validate data
+kie.chat.completions55.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`gpt52.v1.chat.completions`** — `POST /gpt-5-2/v1/chat/completions`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `model` | string | Yes | Model ID (e.g. gpt-5.5) |
+| `messages` | array | Yes | Array of chat messages<br>Enum: `user`, `assistant`, `system` |
+| `content` | string | Yes |  |
+| `temperature` | number | No | Sampling temperature |
+| `max_tokens` | number | No | Max tokens to generate |
+| `stream` | boolean | No | Enable streaming |
+| `response_format` | object | Yes | Response format configuration<br>Enum: `text`, `json_object`, `json_schema` |
+| `json_schema` | object | No |  |
+
+**Validation:**
+
+```typescript
+// Access the schema
+kie.chat.completions.payloadSchema
+
+// Validate data
+kie.chat.completions.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`claude.v1.messages`** — `POST /claude/v1/messages`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `model` | string | Yes | Model name<br>Enum: `claude-sonnet-4-6`, `claude-haiku-4-5` |
+| `messages` | array | Yes | Conversation messages in chronological order<br>Enum: `user`, `assistant` |
+| `content` | string | Yes |  |
+| `tools` | array | Yes | Optional callable tools with input_schema |
+| `description` | string | Yes |  |
+| `input_schema` | object | Yes |  |
+| `thinkingFlag` | boolean | No | Project-specific thinking flag |
+| `stream` | boolean | No | If true, response is returned as SSE stream |
+
+**Validation:**
+
+```typescript
+// Access the schema
+kie.claude.messages.payloadSchema
+
+// Validate data
+kie.claude.messages.validatePayload(data)
+```
+
+</details>
 
 ## Middleware
 
@@ -382,12 +310,7 @@ const kie = createKie({
 import { kie as createKie, withRetry } from "@nakedapi/kie";
 
 const kie = createKie({ apiKey: process.env.KIE_API_KEY! });
-
-// Add retry logic
-const resilientTask = withRetry(kie.post.api.v1.jobs.createTask, {
-  retries: 3,
-  baseMs: 500,
-});
+const models = withRetry(kie.get.v1.models, { retries: 3 });
 ```
 
 ## License

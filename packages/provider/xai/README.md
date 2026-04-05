@@ -4,7 +4,7 @@
 [![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript&logoColor=white)](tsconfig.json)
 
-xAI (Grok) provider — responses API, chat completions, image/video generation and editing, file management, batches, collections, document search, and model listing. Completely standalone with zero external dependencies.
+X.AI / Grok provider for chat and search.
 
 ## Installation
 
@@ -20,375 +20,502 @@ pnpm add @nakedapi/xai
 import { xai as createXai } from "@nakedapi/xai";
 
 const xai = createXai({ apiKey: process.env.XAI_API_KEY! });
-
-const response = await xai.post.v1.chat.completions({
-  model: "grok-4-fast",
-  messages: [{ role: "user", content: "Hello!" }],
-});
 ```
 
-## API Surface
+## API Reference
 
-The xAI provider uses a verb-prefix pattern that mirrors HTTP methods:
-
-```
-xai.<verb>.v1.<path.in.camelCase>(params)
-```
-
-Every call reads like an HTTP request. The path after the verb IS the URL path, segment-by-segment, with kebab-case converted to camelCase.
+All methods include their payload schema and a `validatePayload()` function for runtime validation.
 
 ### POST Endpoints
 
-Base URL: `https://api.x.ai/v1`
-
-| URL                                            | Method Signature                                          |
-| ---------------------------------------------- | --------------------------------------------------------- |
-| `POST /v1/responses`                           | `xai.post.v1.responses(req)`                              |
-| `POST /v1/chat/completions`                    | `xai.post.v1.chat.completions(req)`                       |
-| `POST /v1/images/generations`                  | `xai.post.v1.images.generations(req)`                     |
-| `POST /v1/images/edits`                        | `xai.post.v1.images.edits(req)`                           |
-| `POST /v1/videos/generations`                  | `xai.post.v1.videos.generations(req)`                     |
-| `POST /v1/videos/edits`                        | `xai.post.v1.videos.edits(req)`                           |
-| `POST /v1/videos/extensions`                   | `xai.post.v1.videos.extensions(req)`                      |
-| `POST /v1/files`                               | `xai.post.v1.files(file, filename, purpose?)`             |
-| `POST /v1/batches`                             | `xai.post.v1.batches(req)`                                |
-| `POST /v1/batches/{id}:cancel`                 | `xai.post.v1.batches.cancel(id)`                          |
-| `POST /v1/batches/{id}/requests`               | `xai.post.v1.batches.requests(id, req)`                   |
-| `POST /v1/collections`                         | `xai.post.v1.collections(req)`                            |
-| `POST /v1/collections/{id}/documents/{fileId}` | `xai.post.v1.collections.documents(collId, fileId, req?)` |
-| `POST /v1/documents/search`                    | `xai.post.v1.documents.search(req)`                       |
-| `POST /v1/tokenize-text`                       | `xai.post.v1.tokenizeText(req)`                           |
-| `POST /v1/realtime/client_secrets`             | `xai.post.v1.realtime.clientSecrets(req)`                 |
-| `POST /v1/auth/teams/{teamId}/api-keys`        | `xai.post.v1.auth.apiKeys(teamId, req)`                   |
-| `POST /v1/auth/api-keys/{id}/rotate`           | `xai.post.v1.auth.apiKeys.rotate(id)`                     |
-
-### GET Endpoints
-
-| URL                                            | Method Signature                                             |
-| ---------------------------------------------- | ------------------------------------------------------------ |
-| `GET /v1/responses/{id}`                       | `xai.get.v1.responses(id)`                                   |
-| `GET /v1/chat/deferred-completion/{requestId}` | `xai.get.v1.chat.deferredCompletion(requestId)`              |
-| `GET /v1/videos/{requestId}`                   | `xai.get.v1.videos(requestId)`                               |
-| `GET /v1/files`                                | `xai.get.v1.files()`                                         |
-| `GET /v1/files/{fileId}`                       | `xai.get.v1.files(fileId)`                                   |
-| `GET /v1/models`                               | `xai.get.v1.models()`                                        |
-| `GET /v1/models/{modelId}`                     | `xai.get.v1.models(modelId)`                                 |
-| `GET /v1/language-models`                      | `xai.get.v1.languageModels()`                                |
-| `GET /v1/language-models/{modelId}`            | `xai.get.v1.languageModels(modelId)`                         |
-| `GET /v1/image-generation-models`              | `xai.get.v1.imageGenerationModels()`                         |
-| `GET /v1/image-generation-models/{modelId}`    | `xai.get.v1.imageGenerationModels(modelId)`                  |
-| `GET /v1/video-generation-models`              | `xai.get.v1.videoGenerationModels()`                         |
-| `GET /v1/video-generation-models/{modelId}`    | `xai.get.v1.videoGenerationModels(modelId)`                  |
-| `GET /v1/batches`                              | `xai.get.v1.batches()`                                       |
-| `GET /v1/batches/{id}`                         | `xai.get.v1.batches(id)`                                     |
-| `GET /v1/batches/{id}/requests`                | `xai.get.v1.batches.requests(id)`                            |
-| `GET /v1/batches/{id}/results`                 | `xai.get.v1.batches.results(id)`                             |
-| `GET /v1/collections`                          | `xai.get.v1.collections()`                                   |
-| `GET /v1/collections/{id}`                     | `xai.get.v1.collections(id)`                                 |
-| `GET /v1/collections/{id}/documents`           | `xai.get.v1.collections.documents(collId)`                   |
-| `GET /v1/collections/{id}/documents/{fileId}`  | `xai.get.v1.collections.documents(collId, fileId)`           |
-| `GET /v1/collections/{id}/documents:batchGet`  | `xai.get.v1.collections.documents.batchGet(collId, fileIds)` |
-| `GET /v1/auth/teams/{teamId}/api-keys`         | `xai.get.v1.auth.apiKeys(teamId)`                            |
-| `GET /v1/auth/api-keys/{id}/propagation`       | `xai.get.v1.auth.apiKeys.propagation(apiKeyId)`              |
-| `GET /v1/auth/teams/{teamId}/models`           | `xai.get.v1.auth.teams.models(teamId)`                       |
-| `GET /v1/auth/teams/{teamId}/endpoints`        | `xai.get.v1.auth.teams.endpoints(teamId)`                    |
-| `GET /v1/auth/management-keys/validation`      | `xai.get.v1.auth.managementKeys.validation()`                |
-
-### DELETE Endpoints
-
-| URL                                              | Method Signature                                      |
-| ------------------------------------------------ | ----------------------------------------------------- |
-| `DELETE /v1/responses/{id}`                      | `xai.delete.v1.responses(id)`                         |
-| `DELETE /v1/files/{fileId}`                      | `xai.delete.v1.files(fileId)`                         |
-| `DELETE /v1/collections/{id}`                    | `xai.delete.v1.collections(id)`                       |
-| `DELETE /v1/collections/{id}/documents/{fileId}` | `xai.delete.v1.collections.documents(collId, fileId)` |
-| `DELETE /v1/auth/api-keys/{id}`                  | `xai.delete.v1.auth.apiKeys(apiKeyId)`                |
-
-### PUT Endpoints
-
-| URL                          | Method Signature                         |
-| ---------------------------- | ---------------------------------------- |
-| `PUT /v1/collections/{id}`   | `xai.put.v1.collections(id, req)`        |
-| `PUT /v1/auth/api-keys/{id}` | `xai.put.v1.auth.apiKeys(apiKeyId, req)` |
-
-### PATCH Endpoints
-
-| URL                                             | Method Signature                                     |
-| ----------------------------------------------- | ---------------------------------------------------- |
-| `PATCH /v1/collections/{id}/documents/{fileId}` | `xai.patch.v1.collections.documents(collId, fileId)` |
-
-### WebSocket
-
-| URL               | Method Signature            |
-| ----------------- | --------------------------- |
-| `WS /v1/realtime` | `xai.ws.v1.realtime(opts?)` |
-
-## Usage Examples
-
-### Responses API
-
-```typescript
-// Create a response
-const response = await xai.post.v1.responses({
-  model: "grok-4-fast",
-  input: "What is the capital of France?",
-});
-
-// With web search
-const searched = await xai.post.v1.responses({
-  model: "grok-4-fast",
-  input: "Latest TypeScript news",
-  tools: [{ type: "web_search" }],
-  search_parameters: { mode: "auto" },
-});
-
-// Retrieve a stored response
-const saved = await xai.get.v1.responses(response.id);
-
-// Delete a response
-await xai.delete.v1.responses(response.id);
-```
-
-### Chat Completions
-
-```typescript
-const response = await xai.post.v1.chat.completions({
-  model: "grok-4-fast",
-  messages: [{ role: "user", content: "Hello!" }],
-});
-
-// Check deferred completion status
-const deferred = await xai.get.v1.chat.deferredCompletion(requestId);
-```
-
-### Image Generation
-
-```typescript
-const response = await xai.post.v1.images.generations({
-  model: "grok-imagine-image",
-  prompt: "A futuristic cityscape",
-});
-```
-
-### Video Generation
-
-```typescript
-const response = await xai.post.v1.videos.generations({
-  model: "grok-imagine-video",
-  prompt: "A timelapse of a sunset",
-});
-// Poll for completion
-const result = await xai.get.v1.videos(response.request_id);
-```
-
-### File Management
-
-```typescript
-// Upload a file
-const file = new Blob([buffer], { type: "application/jsonl" });
-const uploaded = await xai.post.v1.files(file, "data.jsonl", "batch");
-
-// List files
-const files = await xai.get.v1.files();
-
-// Get a specific file
-const fileInfo = await xai.get.v1.files("file-id");
-
-// Delete a file
-await xai.delete.v1.files("file-id");
-```
-
-### Batches
-
-```typescript
-// Create a batch
-const batch = await xai.post.v1.batches({ name: "My Batch" });
-
-// List batches
-const batches = await xai.get.v1.batches();
-
-// Get a specific batch
-const batchInfo = await xai.get.v1.batches(batch.batch_id);
-
-// Cancel a batch
-const cancelled = await xai.post.v1.batches.cancel(batch.batch_id);
-
-// Add requests to a batch
-await xai.post.v1.batches.requests(batch.batch_id, {
-  batch_requests: [
-    {
-      batch_request_id: "req-1",
-      batch_request: {
-        chat_get_completion: {
-          messages: [{ role: "user", content: "Hello" }],
-          model: "grok-3",
-        },
-      },
-    },
-  ],
-});
-
-// List batch requests
-const requests = await xai.get.v1.batches.requests(batch.batch_id);
-
-// Get batch results
-const results = await xai.get.v1.batches.results(batch.batch_id);
-```
-
-### Collections & Documents
-
-```typescript
-// Create a collection
-const collection = await xai.post.v1.collections({
-  collection_name: "My Collection",
-});
-
-// List collections
-const collections = await xai.get.v1.collections();
-
-// Get a specific collection
-const collInfo = await xai.get.v1.collections(collection.collection_id);
-
-// Update a collection
-const updated = await xai.put.v1.collections(collection.collection_id, {
-  collection_name: "Updated Name",
-});
-
-// Delete a collection
-await xai.delete.v1.collections(collection.collection_id);
-
-// Add document to collection
-await xai.post.v1.collections.documents(collection.collection_id, fileId);
-
-// List documents in collection
-const docs = await xai.get.v1.collections.documents(collection.collection_id);
-
-// Get a specific document
-const doc = await xai.get.v1.collections.documents(
-  collection.collection_id,
-  fileId
-);
-
-// Delete a document
-await xai.delete.v1.collections.documents(collection.collection_id, fileId);
-
-// Regenerate a document (PATCH)
-await xai.patch.v1.collections.documents(collection.collection_id, fileId);
-
-// Batch get documents
-const batchDocs = await xai.get.v1.collections.documents.batchGet(
-  collection.collection_id,
-  [fileId1, fileId2]
-);
-```
-
-### Document Search
-
-```typescript
-const results = await xai.post.v1.documents.search({
-  query: "latest TypeScript news",
-  source: { collection_ids: ["your-collection-id"] },
-});
-```
-
-### Realtime WebSocket
-
-```typescript
-// Create client secret
-const secret = await xai.post.v1.realtime.clientSecrets({
-  expires_after: { seconds: 600 },
-});
-
-// Connect to WebSocket
-const connection = xai.ws.v1.realtime({ token: secret.value });
-
-// Send events
-connection.send({ type: "session.update", session: { ... } });
-
-// Receive events
-for await (const event of connection) {
-  console.log(event);
-}
-```
-
-### Auth (Management API)
-
-```typescript
-// Create API key
-const apiKey = await xai.post.v1.auth.apiKeys(teamId, {
-  name: "My API Key",
-  acls: ["api-key:endpoint:*"],
-});
-
-// List API keys
-const keys = await xai.get.v1.auth.apiKeys(teamId);
-
-// Update API key
-const updated = await xai.put.v1.auth.apiKeys(apiKey.apiKeyId, {
-  apiKey: { name: "Updated Name" },
-  fieldMask: "name",
-});
-
-// Rotate API key
-const rotated = await xai.post.v1.auth.apiKeys.rotate(apiKey.apiKeyId);
-
-// Delete API key
-await xai.delete.v1.auth.apiKeys(apiKey.apiKeyId);
-
-// Check API key propagation
-const propagation = await xai.get.v1.auth.apiKeys.propagation(apiKey.apiKeyId);
-
-// Get team models
-const models = await xai.get.v1.auth.teams.models(teamId);
-
-// Get team endpoints
-const endpoints = await xai.get.v1.auth.teams.endpoints(teamId);
-
-// Validate management key
-const validation = await xai.get.v1.auth.managementKeys.validation();
-```
-
-## Payload Validation
-
-All POST, PUT, and PATCH endpoints expose `payloadSchema` and `validatePayload` for runtime validation:
+<details>
+<summary>**`chat.completions`** — `POST /chat/completions`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `model` | string | No | Model ID (e.g. grok-3) |
+| `messages` | array | Yes | Array of chat messages<br>Enum: `user`, `assistant`, `system` |
+| `content` | string | Yes |  |
+| `temperature` | number | No | Sampling temperature 0-2 |
+| `max_tokens` | number | No | Max tokens to generate |
+| `tools` | array | Yes | Tool definitions for function calling<br>Enum: `function` |
+| `function` | object | Yes |  |
+| `description` | string | No |  |
+| `parameters` | object | No |  |
+| `tool_choice` | string | No | Tool choice strategy |
+| `deferred` | boolean | No |  |
+
+**Validation:**
 
 ```typescript
 // Access the schema
-const schema = xai.post.v1.chat.completions.payloadSchema;
-console.log(schema.method); // "POST"
-console.log(schema.path); // "/chat/completions"
+xai.chat.completions.payloadSchema
 
-// Validate before sending
-const result = xai.post.v1.chat.completions.validatePayload({
-  model: "grok-4-fast",
-  messages: [{ role: "user", content: "Hello" }],
-});
-
-if (!result.valid) {
-  console.error(result.errors);
-}
+// Validate data
+xai.chat.completions.validatePayload(data)
 ```
 
-## Configuration
+</details>
+
+<details>
+<summary>**`images.generations`** — `POST /images/generations`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `prompt` | string | Yes | Text prompt for image generation |
+| `model` | string | No | Model ID |
+| `n` | number | No | Number of images to generate |
+| `response_format` | string | No | Response format<br>Enum: `url`, `b64_json` |
+| `aspect_ratio` | string | No | Aspect ratio |
+| `resolution` | string | No | Output resolution<br>Enum: `1k`, `2k` |
+
+**Validation:**
 
 ```typescript
-const xai = createXai({
-  apiKey: "your-api-key", // required
-  baseURL: "https://...", // optional, custom base URL
-  managementApiKey: "mgmt-key", // optional, for management API
-  managementBaseURL: "https://...", // optional, for management API
-  timeout: 30000, // optional, ms (default: 30000)
-  fetch: customFetch, // optional, custom fetch implementation
-});
+// Access the schema
+xai.image.generations.payloadSchema
+
+// Validate data
+xai.image.generations.validatePayload(data)
 ```
+
+</details>
+
+<details>
+<summary>**`images.edits`** — `POST /images/edits`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `prompt` | string | Yes | Edit instruction |
+| `model` | string | No | Model ID |
+| `image` | object | Yes | Single image reference |
+| `type` | string | No | <br>Enum: `image_url` |
+| `images` | array | Yes | Multiple image references |
+| `n` | number | No | Number of images to generate |
+| `response_format` | string | No | Response format<br>Enum: `url`, `b64_json` |
+| `aspect_ratio` | string | No | Aspect ratio |
+
+**Validation:**
+
+```typescript
+// Access the schema
+xai.image.edits.payloadSchema
+
+// Validate data
+xai.image.edits.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`videos.generations`** — `POST /videos/generations`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `prompt` | string | Yes | Text prompt for video generation |
+| `model` | string | No | Model ID |
+| `duration` | number | No | Video duration in seconds |
+| `aspect_ratio` | string | No | Aspect ratio<br>Enum: `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3` |
+| `resolution` | string | No | Output resolution<br>Enum: `480p`, `720p` |
+| `image` | object | Yes | Source image reference |
+| `video` | object | Yes | Source video reference |
+| `reference_images` | array | Yes | Reference images |
+
+**Validation:**
+
+```typescript
+// Access the schema
+xai.video.generations.payloadSchema
+
+// Validate data
+xai.video.generations.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`videos.edits`** — `POST /videos/edits`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `prompt` | string | Yes | Text prompt for video editing |
+| `model` | string | No | Model ID |
+| `video` | object | Yes | Source video to edit |
+| `output` | object | Yes | Upload destination |
+| `user` | string | No | End-user identifier |
+
+**Validation:**
+
+```typescript
+// Access the schema
+xai.video.edits.payloadSchema
+
+// Validate data
+xai.video.edits.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`batches`** — `POST /batches`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | The name of the batch to create |
+
+**Validation:**
+
+```typescript
+// Access the schema
+xai.batch.create.payloadSchema
+
+// Validate data
+xai.batch.create.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`batches.batch_id.requests`** — `POST /batches/{batch_id}/requests`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `batch_requests` | array | Yes | List of batch requests to add |
+| `batch_request` | object | Yes | Chat request body for /v1/chat/completions endpoint |
+
+**Validation:**
+
+```typescript
+// Access the schema
+xai.batch.add.requests.payloadSchema
+
+// Validate data
+xai.batch.add.requests.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`collections`** — `POST /collections`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `collection_name` | string | Yes | Name of the collection |
+| `collection_description` | string | No | Description of the collection |
+| `team_id` | string | No | Team ID |
+| `index_configuration` | object | No | Index configuration |
+| `chunk_configuration` | object | No | Chunk configuration for document processing |
+| `metric_space` | string | No | Distance metric for vector search<br>Enum: `HNSW_METRIC_UNKNOWN`, `HNSW_METRIC_COSINE`, `HNSW_METRIC_EUCLIDEAN`, `HNSW_METRIC_INNER_PRODUCT` |
+| `field_definitions` | array | Yes | Custom field definitions for documents |
+| `required` | boolean | No |  |
+| `unique` | boolean | No |  |
+| `inject_into_chunk` | boolean | No |  |
+| `description` | string | No |  |
+
+**Validation:**
+
+```typescript
+// Access the schema
+xai.collection.create.payloadSchema
+
+// Validate data
+xai.collection.create.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`collections.collection_id.documents.file_id`** — `POST /collections/{collection_id}/documents/{file_id}`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `team_id` | string | No | Team ID |
+| `fields` | object | No | Metadata fields matching collection field definitions |
+
+**Validation:**
+
+```typescript
+// Access the schema
+xai.document.add.payloadSchema
+
+// Validate data
+xai.document.add.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`documents.search`** — `POST /documents/search`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `query` | string | Yes | Search query text |
+| `source` | object | Yes | Source collections to search |
+| `rag_pipeline` | string | No | RAG pipeline backend<br>Enum: `chroma_db`, `es` |
+| `filter` | string | No | AIP-160 filter expression |
+| `instructions` | string | No | Custom search instructions |
+| `limit` | number | No | Max number of results |
+| `ranking_metric` | string | No | Ranking metric for results<br>Enum: `RANKING_METRIC_UNKNOWN`, `RANKING_METRIC_L2_DISTANCE`, `RANKING_METRIC_COSINE_SIMILARITY` |
+| `group_by` | object | Yes | Grouping configuration |
+| `aggregate` | object | No |  |
+| `retrieval_mode` | object | Yes | Retrieval mode configuration<br>Enum: `hybrid`, `keyword`, `semantic` |
+
+**Validation:**
+
+```typescript
+// Access the schema
+xai.document.search.payloadSchema
+
+// Validate data
+xai.document.search.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`responses`** — `POST /responses`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `model` | string | Yes | Model ID (e.g. grok-4-fast) |
+| `input` | string | Yes | Input text or array of input items |
+| `instructions` | string | No | System instructions |
+| `previous_response_id` | string | No | ID of previous response for multi-turn |
+| `max_output_tokens` | number | No | Maximum output tokens (includes reasoning tokens) |
+| `temperature` | number | No | Sampling temperature (0-2) |
+| `top_p` | number | No | Nucleus sampling threshold |
+| `tools` | array | Yes | Tools available to the model (max 128)<br>Enum: `function`, `web_search`, `web_search_preview`, `file_search` |
+| `tool_choice` | string | No | Tool choice strategy |
+| `store` | boolean | No | Whether to persist the response (30 days) |
+| `stream` | boolean | No | Enable SSE streaming |
+| `search_parameters` | object | No | Live web/X search configuration<br>Enum: `off`, `on`, `auto` |
+| `max_search_results` | number | No | Maximum search results |
+| `return_citations` | boolean | No | Include citations in response |
+| `text` | object | No | Output text format configuration |
+| `reasoning` | object | No | Reasoning configuration<br>Enum: `low`, `medium`, `high` |
+| `prompt_cache_key` | string | No | Routing key for conversation caching |
+| `parallel_tool_calls` | boolean | No | Allow parallel tool calls |
+| `user` | string | No | End user identifier |
+
+**Validation:**
+
+```typescript
+// Access the schema
+xai.responses.payloadSchema
+
+// Validate data
+xai.responses.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`realtime.client_secrets`** — `POST /realtime/client_secrets`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `expires_after` | object | Yes | Expiration configuration for the ephemeral token |
+| `session` | object | No | Optional initial session configuration to bind |
+
+**Validation:**
+
+```typescript
+// Access the schema
+xai.realtime.client.secrets.payloadSchema
+
+// Validate data
+xai.realtime.client.secrets.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`tokenizetext`** — `POST /tokenize-text`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `model` | string | Yes | Model to use for tokenization (e.g. grok-4-0709) |
+| `text` | string | Yes | Text content to tokenize |
+| `user` | string | No | End-user identifier |
+
+**Validation:**
+
+```typescript
+// Access the schema
+xai.tokenize.text.payloadSchema
+
+// Validate data
+xai.tokenize.text.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`auth.teams.teamId.apikeys`** — `POST /auth/teams/{teamId}/api-keys`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Name for the API key |
+| `acls` | array | No | ACL permission strings (e.g. api-key:endpoint:*) |
+| `qps` | number | No | Queries per second limit |
+| `qpm` | number | No | Queries per minute limit |
+| `tpm` | string | No | Tokens per minute limit |
+| `expireTime` | string | No | Expiration time (ISO 8601) |
+
+**Validation:**
+
+```typescript
+// Access the schema
+xai.api.key.create.payloadSchema
+
+// Validate data
+xai.api.key.create.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`videos.extensions`** — `POST /videos/extensions`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `prompt` | string | Yes | Text prompt for video extension |
+| `model` | string | No | Model ID |
+| `duration` | number | No | Extension duration in seconds |
+| `video` | object | Yes | Source video to extend |
+
+**Validation:**
+
+```typescript
+// Access the schema
+xai.video.extensions.payloadSchema
+
+// Validate data
+xai.video.extensions.validatePayload(data)
+```
+
+</details>
+
+### DELETE Endpoints
+
+<details>
+<summary>**`responses.id`** — `DELETE /responses/{id}`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | string | Yes | The ID of the response to delete |
+
+**Validation:**
+
+```typescript
+// Access the schema
+xai.responses.delete.payloadSchema
+
+// Validate data
+xai.responses.delete.validatePayload(data)
+```
+
+</details>
+
+### PUT Endpoints
+
+<details>
+<summary>**`collections.collection_id`** — `PUT /collections/{collection_id}`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `team_id` | string | No | Team ID |
+| `collection_name` | string | No | New collection name |
+| `collection_description` | string | No | New collection description |
+| `chunk_configuration` | object | No | Updated chunk configuration |
+| `field_definition_updates` | array | Yes | Field definition changes |
+| `required` | boolean | No |  |
+| `unique` | boolean | No |  |
+| `inject_into_chunk` | boolean | No |  |
+| `description` | string | No |  |
+| `operation` | string | Yes | <br>Enum: `FIELD_DEFINITION_ADD`, `FIELD_DEFINITION_DELETE` |
+
+**Validation:**
+
+```typescript
+// Access the schema
+xai.collection.update.payloadSchema
+
+// Validate data
+xai.collection.update.validatePayload(data)
+```
+
+</details>
+
+<details>
+<summary>**`auth.apikeys.api_key_id`** — `PUT /auth/api-keys/{api_key_id}`</summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `apiKey` | object | Yes | Fields to update on the API key |
+| `qps` | number | No | Queries per second limit |
+| `qpm` | number | No | Queries per minute limit |
+| `tpm` | string | No | Tokens per minute limit |
+| `disabled` | boolean | No | Whether the key is disabled |
+| `expireTime` | string | No | Expiration time (ISO 8601) |
+| `aclStrings` | array | No | ACL permission strings |
+| `fieldMask` | string | Yes | Comma-separated field names to update |
+
+**Validation:**
+
+```typescript
+// Access the schema
+xai.api.key.update.payloadSchema
+
+// Validate data
+xai.api.key.update.validatePayload(data)
+```
+
+</details>
 
 ## Middleware
 
 ```typescript
-import { xai as createXai, withRetry, withFallback } from "@nakedapi/xai";
+import { xai as createXai, withRetry } from "@nakedapi/xai";
 
 const xai = createXai({ apiKey: process.env.XAI_API_KEY! });
-const chat = withRetry(xai.post.v1.chat.completions, { retries: 3 });
+const models = withRetry(xai.get.v1.models, { retries: 3 });
 ```
 
 ## License

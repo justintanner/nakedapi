@@ -161,3 +161,11 @@ vite.config.ts.timestamp-*
 # Claude Code / Gas Town runtime
 .claude/commands/
 .runtime/
+
+# Gas Town (added by gt)
+.claude/
+.logs/
+__pycache__/
+state.json
+CLAUDE.md
+CLAUDE.local.md

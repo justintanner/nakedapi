@@ -172,7 +172,6 @@ describe("KIE request utilities", () => {
     });
 
     it("should throw KieError on timeout", async () => {
-      const abortFn = vi.fn();
       const mockFetch = vi.fn().mockImplementation(() => {
         return new Promise((_, reject) => {
           setTimeout(() => {

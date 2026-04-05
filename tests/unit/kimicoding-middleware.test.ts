@@ -6,8 +6,6 @@ import {
   withFallback,
   withStreamRetry,
   withStreamFallback,
-  type RetryOptions,
-  type FallbackOptions,
 } from "../../packages/provider/kimicoding/src/middleware";
 
 describe("middleware", () => {
@@ -334,6 +332,7 @@ describe("middleware", () => {
       });
 
       await expect(async () => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for await (const _ of wrapped("request")) {
           // consume
         }
@@ -343,6 +342,7 @@ describe("middleware", () => {
     });
 
     it("should not retry on non-transient stream errors", async () => {
+      // eslint-disable-next-line require-yield
       async function* failingStream(): AsyncIterable<string> {
         throw Object.assign(new Error("Client error"), { status: 400 });
       }
@@ -351,6 +351,7 @@ describe("middleware", () => {
       const wrapped = withStreamRetry(fn);
 
       await expect(async () => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for await (const _ of wrapped("request")) {
           // consume
         }
@@ -406,6 +407,7 @@ describe("middleware", () => {
       }
     }
 
+    // eslint-disable-next-line require-yield
     async function* createFailingStream(
       errorMsg: string
     ): AsyncIterable<string> {
@@ -455,6 +457,7 @@ describe("middleware", () => {
       const wrapped = withStreamFallback([fn1, fn2]);
 
       await expect(async () => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for await (const _ of wrapped("request")) {
           // consume
         }
@@ -490,6 +493,7 @@ describe("middleware", () => {
       const wrapped = withStreamFallback([fn1, fn2]);
       const controller = new AbortController();
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       for await (const _ of wrapped("request", controller.signal)) {
         // consume
       }

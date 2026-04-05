@@ -205,10 +205,6 @@ describe("withRetry", () => {
     const fn = vi.fn().mockRejectedValue(error);
 
     const delays: number[] = [];
-    const mockSleep = (ms: number) => {
-      delays.push(ms);
-      return Promise.resolve();
-    };
 
     // Run multiple times to check jitter variance
     for (let i = 0; i < 5; i++) {

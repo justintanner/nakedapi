@@ -721,7 +721,12 @@ export const modelInputSchemas: Record<KieMediaModel, ModelInputSchema> = {
       },
       web_search: {
         type: "boolean",
-        description: "Use online search (default false)",
+        required: true,
+        description: "Use online search",
+      },
+      nsfw_checker: {
+        type: "boolean",
+        description: "Content safety filter (default false)",
       },
     },
   },

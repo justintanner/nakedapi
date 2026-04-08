@@ -24,6 +24,7 @@ describe("kie bytedance/seedance-2-fast integration", () => {
         aspect_ratio: "16:9",
         duration: 4,
         generate_audio: false,
+        web_search: false,
       },
     });
 
@@ -49,6 +50,7 @@ describe("kie bytedance/seedance-2-fast integration", () => {
         aspect_ratio: "16:9",
         duration: 4,
         generate_audio: false,
+        web_search: false,
       },
     });
     expect(valid.valid).toBe(true);
@@ -78,5 +80,8 @@ describe("kie bytedance/seedance-2-fast integration", () => {
     expect(schema.fields.last_frame_url).toBeDefined();
     expect(schema.fields.reference_image_urls.type).toBe("array");
     expect(schema.fields.web_search.type).toBe("boolean");
+    expect(schema.fields.web_search.required).toBe(true);
+    expect(schema.fields.nsfw_checker).toBeDefined();
+    expect(schema.fields.nsfw_checker.type).toBe("boolean");
   });
 });

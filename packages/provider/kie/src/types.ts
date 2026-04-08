@@ -238,7 +238,8 @@ export interface Seedance2FastRequest extends MediaRequest {
       | "21:9"
       | "adaptive";
     duration?: number;
-    web_search?: boolean;
+    web_search: boolean;
+    nsfw_checker?: boolean;
   };
 }
 

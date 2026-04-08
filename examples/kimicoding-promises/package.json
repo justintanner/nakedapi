@@ -7,6 +7,6 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "@nakedapi/kimicoding": "0.1.0"
+    "@nakedapi/kimicoding": "file:../../packages/provider/kimicoding"
   }
 }

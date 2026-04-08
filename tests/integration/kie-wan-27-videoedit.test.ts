@@ -1,0 +1,116 @@
+import { describe, it, expect, afterEach } from "vitest";
+import {
+  setupPolly,
+  teardownPolly,
+  getPollyMode,
+  type PollyContext,
+} from "../harness";
+import { kie } from "@nakedapi/kie";
+
+describe("kie wan/2-7-videoedit integration", () => {
+  let ctx: PollyContext;
+
+  afterEach(async () => {
+    await teardownPolly(ctx);
+  });
+
+  it(
+    "should create a videoedit task and poll to completion",
+    async () => {
+      ctx = setupPolly("kie/wan-27-videoedit");
+
+      const provider = kie({
+        apiKey: process.env.KIE_API_KEY ?? "test-key",
+      });
+
+      const task = await provider.post.api.v1.jobs.createTask({
+        model: "wan/2-7-videoedit",
+        input: {
+          prompt: "Make the scene look like a watercolor painting.",
+          negative_prompt:
+            "low resolution, errors, worst quality, low quality, malformed",
+          video_url:
+            "https://static.aiquickdraw.com/tools/example/1767525918769_QyvTNib2.mp4",
+          resolution: "720p",
+          duration: 0,
+          audio_setting: "auto",
+          prompt_extend: true,
+          watermark: false,
+          nsfw_checker: false,
+        },
+      });
+
+      expect(task.code).toBe(200);
+      expect(task.data?.taskId).toBeTruthy();
+
+      // Poll until terminal state (skip delay in replay mode)
+      const pollDelay = getPollyMode() === "replay" ? 0 : 5000;
+      const taskId = task.data!.taskId;
+      let state = "waiting";
+      for (let i = 0; i < 120; i++) {
+        const info = await provider.get.api.v1.jobs.recordInfo(taskId);
+        state = info.data?.state ?? "waiting";
+        if (state === "success" || state === "fail") {
+          expect(info.data?.taskId).toBe(taskId);
+          if (state === "success") {
+            expect(info.data?.resultJson).toBeTruthy();
+          }
+          break;
+        }
+        if (pollDelay) await new Promise((r) => setTimeout(r, pollDelay));
+      }
+
+      expect(state).toBe("success");
+    },
+    { timeout: 660_000 }
+  );
+
+  it("should validate wan/2-7-videoedit payload", () => {
+    const provider = kie({ apiKey: "test-key" });
+
+    const valid = provider.post.api.v1.jobs.createTask.validatePayload({
+      model: "wan/2-7-videoedit",
+      input: {
+        video_url: "https://example.com/demo/video.mp4",
+        prompt: "Make it look cinematic",
+      },
+    });
+    expect(valid.valid).toBe(true);
+    expect(valid.errors).toHaveLength(0);
+
+    // Missing required model field
+    const invalid = provider.post.api.v1.jobs.createTask.validatePayload({
+      input: {},
+    });
+    expect(invalid.valid).toBe(false);
+    expect(invalid.errors.length).toBeGreaterThan(0);
+  });
+
+  it("should expose model input schema for wan/2-7-videoedit", () => {
+    const provider = kie({ apiKey: "test-key" });
+    const schema = provider.modelInputSchemas["wan/2-7-videoedit"];
+
+    expect(schema).toBeDefined();
+    expect(schema.type).toBe("video");
+    expect(schema.fields.video_url.required).toBe(true);
+    expect(schema.fields.video_url.type).toBe("string");
+    expect(schema.fields.prompt.type).toBe("string");
+    expect(schema.fields.negative_prompt).toBeDefined();
+    expect(schema.fields.reference_image.type).toBe("string");
+    expect(schema.fields.resolution.enum).toContain("720p");
+    expect(schema.fields.resolution.enum).toContain("1080p");
+    expect(schema.fields.aspect_ratio.enum).toContain("16:9");
+    expect(schema.fields.aspect_ratio.enum).toContain("9:16");
+    expect(schema.fields.aspect_ratio.enum).toContain("1:1");
+    expect(schema.fields.aspect_ratio.enum).toContain("4:3");
+    expect(schema.fields.aspect_ratio.enum).toContain("3:4");
+    expect(schema.fields.duration.type).toBe("number");
+    expect(schema.fields.audio_setting.enum).toContain("auto");
+    expect(schema.fields.audio_setting.enum).toContain("origin");
+    expect(schema.fields.prompt_extend.type).toBe("boolean");
+    expect(schema.fields.watermark.type).toBe("boolean");
+    expect(schema.fields.seed.type).toBe("number");
+    expect(schema.fields.nsfw_checker).toBeDefined();
+    expect(schema.fields.nsfw_checker.type).toBe("boolean");
+  });
+});

@@ -53,6 +53,7 @@ export type {
   Seedance2FastRequest,
   Wan27ImageToVideoRequest,
   Wan27RefToVideoRequest,
+  Wan27VideoEditRequest,
   SoraWatermarkRequest,
   MediaGenerationRequest,
   TaskResponse,
@@ -87,6 +88,7 @@ export type {
   GptImageQuality,
   Wan27Resolution,
   Wan27AspectRatio,
+  Wan27AudioSetting,
 } from "./types";
 
 // Export sub-provider types

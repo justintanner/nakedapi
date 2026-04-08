@@ -1153,6 +1153,66 @@ export const modelInputSchemas: Record<KieMediaModel, ModelInputSchema> = {
     },
   },
 
+  "wan/2-7-videoedit": {
+    type: "video",
+    fields: {
+      prompt: {
+        type: "string",
+        description: "Positive prompt (max 5000 chars)",
+      },
+      negative_prompt: {
+        type: "string",
+        description: "Negative prompt (max 500 chars)",
+      },
+      video_url: {
+        type: "string",
+        required: true,
+        description: "Source video URL (mp4/mov, 2-10s, max 100MB)",
+      },
+      reference_image: {
+        type: "string",
+        description: "Reference image URL for style guidance (max 20MB)",
+      },
+      resolution: {
+        type: "string",
+        enum: ["720p", "1080p"],
+        description: "Video resolution (default 1080p)",
+      },
+      aspect_ratio: {
+        type: "string",
+        enum: ["16:9", "9:16", "1:1", "4:3", "3:4"],
+        description: "Output aspect ratio (default matches input video)",
+      },
+      duration: {
+        type: "number",
+        description:
+          "Duration in seconds, 0 or 2-10 (default 0 = full input duration)",
+      },
+      audio_setting: {
+        type: "string",
+        enum: ["auto", "origin"],
+        description:
+          "Audio handling: auto (model decides) or origin (keep original)",
+      },
+      prompt_extend: {
+        type: "boolean",
+        description: "Intelligent prompt rewriting (default true)",
+      },
+      watermark: {
+        type: "boolean",
+        description: "AI-generated watermark (default false)",
+      },
+      seed: {
+        type: "number",
+        description: "Random seed (0-2147483647)",
+      },
+      nsfw_checker: {
+        type: "boolean",
+        description: "Content safety filter (default false)",
+      },
+    },
+  },
+
   "sora-watermark-remover": {
     type: "video",
     fields: {

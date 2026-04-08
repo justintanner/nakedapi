@@ -36,6 +36,7 @@ pnpm run test:run               # Run all tests once (Polly.js replay)
 pnpm run test                   # Run tests in watch mode
 pnpm run test:integration:record  # Re-record test fixtures (needs 1Password CLI)
 pnpm run harness                # HAR viewer at localhost:3475 (all recordings)
+npm run check:op                # Verify 1Password service account is working
 
 # Standalone HAR viewer
 npx tsx tests/harness-serve.ts path/to/file.har       # View specific HAR file(s)

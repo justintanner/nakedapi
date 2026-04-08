@@ -148,6 +148,7 @@ Each package exports `PayloadSchema`, `PayloadFieldSchema`, and `ValidationResul
 pnpm run test:run                 # All tests (Polly.js replay)
 pnpm run test:integration:record  # Re-record fixtures (needs 1Password CLI)
 pnpm run harness                  # Recording review UI at localhost:3475
+npm run check:op                  # Verify 1Password service account is working
 ```
 
 ### Secrets Management

@@ -52,6 +52,7 @@ export type {
   Qwen2ImageEditRequest,
   Seedance2FastRequest,
   Wan27ImageToVideoRequest,
+  Wan27RefToVideoRequest,
   SoraWatermarkRequest,
   MediaGenerationRequest,
   TaskResponse,
@@ -85,6 +86,7 @@ export type {
   NanoBananaOutputFormat,
   GptImageQuality,
   Wan27Resolution,
+  Wan27AspectRatio,
 } from "./types";
 
 // Export sub-provider types

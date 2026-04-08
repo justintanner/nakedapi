@@ -273,6 +273,24 @@ function extractInputMedia(
         items.push({ type: "image", url });
       }
     }
+    const refImage = input.reference_image as string[] | undefined;
+    if (Array.isArray(refImage)) {
+      for (const url of refImage) {
+        items.push({ type: "image", url });
+      }
+    }
+    const refVideo = input.reference_video as string[] | undefined;
+    if (Array.isArray(refVideo)) {
+      for (const url of refVideo) {
+        items.push({ type: "video", url });
+      }
+    }
+    if (typeof input.first_frame === "string") {
+      items.push({ type: "image", url: input.first_frame as string });
+    }
+    if (typeof input.reference_voice === "string") {
+      items.push({ type: "audio", url: input.reference_voice as string });
+    }
   }
 
   const refImages = body.reference_images as

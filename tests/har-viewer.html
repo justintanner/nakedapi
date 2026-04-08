@@ -910,6 +910,38 @@
               info.assets.push(body.input.image_urls[k2]);
             }
           }
+          if (
+            body.input &&
+            body.input.reference_image &&
+            Array.isArray(body.input.reference_image)
+          ) {
+            for (
+              var ri = 0;
+              ri < body.input.reference_image.length;
+              ri++
+            ) {
+              info.assets.push(body.input.reference_image[ri]);
+            }
+          }
+          if (
+            body.input &&
+            body.input.reference_video &&
+            Array.isArray(body.input.reference_video)
+          ) {
+            for (
+              var rv = 0;
+              rv < body.input.reference_video.length;
+              rv++
+            ) {
+              info.assets.push(body.input.reference_video[rv]);
+            }
+          }
+          if (body.input && body.input.first_frame) {
+            info.assets.push(body.input.first_frame);
+          }
+          if (body.input && body.input.reference_voice) {
+            info.assets.push(body.input.reference_voice);
+          }
           var skipKeys = {
             messages: 1,
             prompt: 1,
@@ -928,6 +960,10 @@
               image_urls: 1,
               video_urls: 1,
               input_urls: 1,
+              reference_image: 1,
+              reference_video: 1,
+              first_frame: 1,
+              reference_voice: 1,
             };
             for (var ik in body.input) {
               if (!inputSkip[ik] && body.input.hasOwnProperty(ik))

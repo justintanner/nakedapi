@@ -20,6 +20,7 @@ export type KieMediaModel =
   | "qwen2/image-edit"
   | "bytedance/seedance-2-fast"
   | "wan/2-7-image-to-video"
+  | "wan/2-7-r2v"
   | "sora-watermark-remover";
 
 // Media generation types
@@ -391,6 +392,26 @@ export interface Wan27ImageToVideoRequest extends MediaRequest {
   };
 }
 
+// Wan 2.7 reference-to-video request
+export interface Wan27RefToVideoRequest extends MediaRequest {
+  model: "wan/2-7-r2v";
+  input: {
+    prompt: string;
+    negative_prompt?: string;
+    reference_image?: string[];
+    reference_video?: string[];
+    first_frame?: string;
+    reference_voice?: string;
+    resolution?: "720p" | "1080p";
+    aspect_ratio?: "16:9" | "9:16" | "1:1" | "4:3" | "3:4";
+    duration?: number;
+    prompt_extend?: boolean;
+    watermark?: boolean;
+    seed?: number;
+    nsfw_checker?: boolean;
+  };
+}
+
 // Union type for all media requests
 export type MediaGenerationRequest =
   | KlingVideoRequest
@@ -413,6 +434,7 @@ export type MediaGenerationRequest =
   | Qwen2ImageEditRequest
   | Seedance2FastRequest
   | Wan27ImageToVideoRequest
+  | Wan27RefToVideoRequest
   | SoraWatermarkRequest;
 
 // Standalone parameter union types (avoids verbose indexed-access types in consumers)
@@ -428,6 +450,7 @@ export type NanoBananaResolution = "1K" | "2K" | "4K";
 export type NanoBananaOutputFormat = "png" | "jpg";
 export type GptImageQuality = "medium" | "high";
 export type Wan27Resolution = "720p" | "1080p";
+export type Wan27AspectRatio = "16:9" | "9:16" | "1:1" | "4:3" | "3:4";
 
 // Raw API envelope response
 export interface KieApiEnvelope<T = Record<string, unknown>> {

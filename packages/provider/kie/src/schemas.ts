@@ -1213,6 +1213,131 @@ export const modelInputSchemas: Record<KieMediaModel, ModelInputSchema> = {
     },
   },
 
+  "wan/2-7-image": {
+    type: "image",
+    fields: {
+      prompt: {
+        type: "string",
+        required: true,
+        description: "Prompt for image generation or editing (max 5000 chars)",
+      },
+      input_urls: {
+        type: "array",
+        description: "Array of input image URLs (max 9)",
+      },
+      aspect_ratio: {
+        type: "string",
+        enum: ["1:1", "16:9", "4:3", "21:9", "3:4", "9:16", "8:1", "1:8"],
+        description:
+          "Output aspect ratio when no image input is provided (default 1:1)",
+      },
+      enable_sequential: {
+        type: "boolean",
+        description: "Enable sequential/group image mode (default false)",
+      },
+      n: {
+        type: "number",
+        description:
+          "Number of images to generate: 1-4 when sequential=false (default 4), 1-12 when sequential=true (default 12)",
+      },
+      resolution: {
+        type: "string",
+        enum: ["1K", "2K", "4K"],
+        description: "Output resolution (default 2K)",
+      },
+      thinking_mode: {
+        type: "boolean",
+        description:
+          "Enable thinking mode (only when sequential=false and no input_urls, default false)",
+      },
+      color_palette: {
+        type: "array",
+        description:
+          "Custom color theme with 3-10 {hex, ratio} entries (only when sequential=false)",
+      },
+      bbox_list: {
+        type: "array",
+        description:
+          "Interactive editing bounding boxes, max 2 per image, format [x1, y1, x2, y2]",
+      },
+      watermark: {
+        type: "boolean",
+        description: "Add watermark (default false)",
+      },
+      seed: {
+        type: "number",
+        description: "Random seed (0-2147483647)",
+      },
+      nsfw_checker: {
+        type: "boolean",
+        description: "Content safety filter (default false)",
+      },
+    },
+  },
+
+  "wan/2-7-image-pro": {
+    type: "image",
+    fields: {
+      prompt: {
+        type: "string",
+        required: true,
+        description: "Prompt for image generation or editing (max 5000 chars)",
+      },
+      input_urls: {
+        type: "array",
+        description: "Array of input image URLs (max 9)",
+      },
+      aspect_ratio: {
+        type: "string",
+        enum: ["1:1", "16:9", "4:3", "21:9", "3:4", "9:16", "8:1", "1:8"],
+        description:
+          "Output aspect ratio when no image input is provided (default 1:1)",
+      },
+      enable_sequential: {
+        type: "boolean",
+        description: "Enable sequential/group image mode (default false)",
+      },
+      n: {
+        type: "number",
+        description:
+          "Number of images to generate: 1-4 when sequential=false (default 4), 1-12 when sequential=true (default 12)",
+      },
+      resolution: {
+        type: "string",
+        enum: ["1K", "2K", "4K"],
+        description:
+          "Output resolution (default 2K, 4K only for text-to-image in standard mode)",
+      },
+      thinking_mode: {
+        type: "boolean",
+        description:
+          "Enable thinking mode (only when sequential=false and no input_urls, default false)",
+      },
+      color_palette: {
+        type: "array",
+        description:
+          "Custom color theme with 3-10 {hex, ratio} entries (only when sequential=false)",
+      },
+      bbox_list: {
+        type: "array",
+        description:
+          "Interactive editing bounding boxes, max 2 per image, format [x1, y1, x2, y2]",
+      },
+      watermark: {
+        type: "boolean",
+        description: "Add watermark (default false)",
+      },
+      seed: {
+        type: "number",
+        description: "Random seed (0-2147483647)",
+      },
+      nsfw_checker: {
+        type: "boolean",
+        description: "Content safety filter (default false)",
+      },
+    },
+  },
+
   "sora-watermark-remover": {
     type: "video",
     fields: {

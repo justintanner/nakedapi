@@ -54,6 +54,9 @@ export type {
   Wan27ImageToVideoRequest,
   Wan27RefToVideoRequest,
   Wan27VideoEditRequest,
+  Wan27ImageColorPalette,
+  Wan27ImageRequest,
+  Wan27ImageProRequest,
   SoraWatermarkRequest,
   MediaGenerationRequest,
   TaskResponse,
@@ -89,6 +92,8 @@ export type {
   Wan27Resolution,
   Wan27AspectRatio,
   Wan27AudioSetting,
+  Wan27ImageResolution,
+  Wan27ImageAspectRatio,
 } from "./types";
 
 // Export sub-provider types

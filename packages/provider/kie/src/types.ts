@@ -22,6 +22,8 @@ export type KieMediaModel =
   | "wan/2-7-image-to-video"
   | "wan/2-7-r2v"
   | "wan/2-7-videoedit"
+  | "wan/2-7-image"
+  | "wan/2-7-image-pro"
   | "sora-watermark-remover";
 
 // Media generation types
@@ -432,6 +434,66 @@ export interface Wan27VideoEditRequest extends MediaRequest {
   };
 }
 
+// Wan 2.7 image color palette entry
+export interface Wan27ImageColorPalette {
+  hex: string;
+  ratio: string;
+}
+
+// Wan 2.7 image request
+export interface Wan27ImageRequest extends MediaRequest {
+  model: "wan/2-7-image";
+  input: {
+    prompt: string;
+    input_urls?: string[];
+    aspect_ratio?:
+      | "1:1"
+      | "16:9"
+      | "4:3"
+      | "21:9"
+      | "3:4"
+      | "9:16"
+      | "8:1"
+      | "1:8";
+    enable_sequential?: boolean;
+    n?: number;
+    resolution?: "1K" | "2K" | "4K";
+    thinking_mode?: boolean;
+    color_palette?: Wan27ImageColorPalette[];
+    bbox_list?: number[][][];
+    watermark?: boolean;
+    seed?: number;
+    nsfw_checker?: boolean;
+  };
+}
+
+// Wan 2.7 image pro request
+export interface Wan27ImageProRequest extends MediaRequest {
+  model: "wan/2-7-image-pro";
+  input: {
+    prompt: string;
+    input_urls?: string[];
+    aspect_ratio?:
+      | "1:1"
+      | "16:9"
+      | "4:3"
+      | "21:9"
+      | "3:4"
+      | "9:16"
+      | "8:1"
+      | "1:8";
+    enable_sequential?: boolean;
+    n?: number;
+    resolution?: "1K" | "2K" | "4K";
+    thinking_mode?: boolean;
+    color_palette?: Wan27ImageColorPalette[];
+    bbox_list?: number[][][];
+    watermark?: boolean;
+    seed?: number;
+    nsfw_checker?: boolean;
+  };
+}
+
 // Union type for all media requests
 export type MediaGenerationRequest =
   | KlingVideoRequest
@@ -456,6 +518,8 @@ export type MediaGenerationRequest =
   | Wan27ImageToVideoRequest
   | Wan27RefToVideoRequest
   | Wan27VideoEditRequest
+  | Wan27ImageRequest
+  | Wan27ImageProRequest
   | SoraWatermarkRequest;
 
 // Standalone parameter union types (avoids verbose indexed-access types in consumers)
@@ -473,6 +537,16 @@ export type GptImageQuality = "medium" | "high";
 export type Wan27Resolution = "720p" | "1080p";
 export type Wan27AspectRatio = "16:9" | "9:16" | "1:1" | "4:3" | "3:4";
 export type Wan27AudioSetting = "auto" | "origin";
+export type Wan27ImageResolution = "1K" | "2K" | "4K";
+export type Wan27ImageAspectRatio =
+  | "1:1"
+  | "16:9"
+  | "4:3"
+  | "21:9"
+  | "3:4"
+  | "9:16"
+  | "8:1"
+  | "1:8";
 
 // Raw API envelope response
 export interface KieApiEnvelope<T = Record<string, unknown>> {

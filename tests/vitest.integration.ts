@@ -38,6 +38,10 @@ export default defineConfig({
         __dirname,
         "../packages/provider/alibaba/src"
       ),
+      "@nakedapi/free": path.resolve(
+        __dirname,
+        "../packages/provider/free/src"
+      ),
     },
     coverage: {
       provider: "v8",

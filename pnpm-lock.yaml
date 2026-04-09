@@ -76,6 +76,8 @@ importers:
 
   packages/provider/fireworks: {}
 
+  packages/provider/free: {}
+
   packages/provider/kie: {}
 
   packages/provider/kimicoding: {}

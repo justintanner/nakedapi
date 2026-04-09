@@ -79,8 +79,9 @@ kie.download.url.validatePayload(data)
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `file` | object | Yes | File to upload (Blob) |
-| `filename` | string | Yes | Filename with extension |
+| `file` | object | Yes | File to upload (binary data) |
+| `uploadPath` | string | Yes | File upload path, without leading or trailing slashes |
+| `fileName` | string | No | Filename with extension (optional, auto-generated if omitted) |
 | `mimeType` | string | No | MIME type override |
 
 **Validation:**
@@ -102,8 +103,9 @@ kie.file.stream.upload.validatePayload(data)
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `url` | string | Yes | Remote URL of the file to upload |
-| `uploadPath` | string | No | Destination path (auto-generated if omitted) |
+| `fileUrl` | string | Yes | Remote URL of the file to upload |
+| `uploadPath` | string | Yes | File upload path, without leading or trailing slashes |
+| `fileName` | string | No | Filename with extension (optional, auto-generated if omitted) |
 
 **Validation:**
 
@@ -124,8 +126,9 @@ kie.file.url.upload.validatePayload(data)
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `base64` | string | Yes | Base64-encoded file data |
-| `filename` | string | Yes | Filename with extension |
+| `base64Data` | string | Yes | Base64-encoded file data (supports data URI format) |
+| `uploadPath` | string | Yes | File upload path, without leading or trailing slashes |
+| `fileName` | string | No | Filename with extension (optional, auto-generated if omitted) |
 | `mimeType` | string | No | MIME type override |
 
 **Validation:**

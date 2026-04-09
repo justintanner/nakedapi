@@ -32,6 +32,7 @@ describe("kie file uploads", () => {
     const result = await provider.post.api.fileStreamUpload({
       file,
       filename: "test-upload.png",
+      uploadPath: "images/test-uploads",
     });
 
     expect(result.code).toBe(200);
@@ -49,8 +50,9 @@ describe("kie file uploads", () => {
       "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFCcSAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
 
     const result = await provider.post.api.fileBase64Upload({
-      base64: base64Pixel,
-      filename: "test-base64.png",
+      base64Data: base64Pixel,
+      uploadPath: "images/test-uploads",
+      fileName: "test-base64.png",
       mimeType: "image/png",
     });
 
@@ -66,7 +68,7 @@ describe("kie file uploads", () => {
     // Valid payload
     const validResult = provider.post.api.fileStreamUpload.validatePayload({
       file: new Blob(["test"]),
-      filename: "test.txt",
+      uploadPath: "uploads",
     });
     expect(validResult.valid).toBe(true);
 

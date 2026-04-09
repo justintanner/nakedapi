@@ -165,13 +165,13 @@ export function kie(opts: KieOptions): KieProvider {
         );
       }
 
-      const timestamp = Date.now();
-      const uploadPath = `uploads/${timestamp}_${req.filename}`;
-
       const formData = new FormData();
       const file = new File([req.file], req.filename, { type: mimeType });
       formData.append("file", file);
-      formData.append("uploadPath", uploadPath);
+      formData.append("uploadPath", req.uploadPath);
+      if (req.fileName) {
+        formData.append("fileName", req.fileName);
+      }
 
       const res = await doFetch(`${uploadBaseURL}/api/file-stream-upload`, {
         method: "POST",
@@ -218,17 +218,17 @@ export function kie(opts: KieOptions): KieProvider {
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     try {
-      const uploadPath =
-        req.uploadPath ??
-        `uploads/${Date.now()}_${req.url.split("/").pop() ?? "file"}`;
-
       const res = await doFetch(`${uploadBaseURL}/api/file-url-upload`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${opts.apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ url: req.url, uploadPath }),
+        body: JSON.stringify({
+          fileUrl: req.fileUrl,
+          uploadPath: req.uploadPath,
+          ...(req.fileName ? { fileName: req.fileName } : {}),
+        }),
         signal: controller.signal,
       });
 
@@ -268,9 +268,6 @@ export function kie(opts: KieOptions): KieProvider {
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     try {
-      const mimeType = req.mimeType ?? inferMimeType(req.filename);
-      const uploadPath = `uploads/${Date.now()}_${req.filename}`;
-
       const res = await doFetch(`${uploadBaseURL}/api/file-base64-upload`, {
         method: "POST",
         headers: {
@@ -278,10 +275,10 @@ export function kie(opts: KieOptions): KieProvider {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          base64Data: req.base64,
-          filename: req.filename,
-          uploadPath,
-          ...(mimeType ? { mimeType } : {}),
+          base64Data: req.base64Data,
+          uploadPath: req.uploadPath,
+          ...(req.fileName ? { fileName: req.fileName } : {}),
+          ...(req.mimeType ? { mimeType: req.mimeType } : {}),
         }),
         signal: controller.signal,
       });
@@ -461,9 +458,14 @@ export async function submitMediaJob(
 export async function uploadFile(
   provider: KieProvider,
   file: Blob,
-  filename: string
+  filename: string,
+  uploadPath: string = "uploads"
 ): Promise<string> {
-  const result = await provider.post.api.fileStreamUpload({ file, filename });
+  const result = await provider.post.api.fileStreamUpload({
+    file,
+    filename,
+    uploadPath,
+  });
   if (!result.data?.downloadUrl) {
     throw new KieError(
       `upload failed: no downloadUrl in response`,

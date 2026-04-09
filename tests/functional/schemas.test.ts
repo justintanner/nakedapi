@@ -304,21 +304,24 @@ describe("schema + validatePayload integration", () => {
 
   it("kie fileUrlUpload: accepts valid request", () => {
     const result = validatePayload(
-      { url: "https://example.com/image.png" },
+      { fileUrl: "https://example.com/image.png", uploadPath: "images" },
       fileUrlUploadSchema
     );
     expect(result.valid).toBe(true);
   });
 
-  it("kie fileUrlUpload: rejects missing url", () => {
-    const result = validatePayload({}, fileUrlUploadSchema);
+  it("kie fileUrlUpload: rejects missing fileUrl", () => {
+    const result = validatePayload(
+      { uploadPath: "images" },
+      fileUrlUploadSchema
+    );
     expect(result.valid).toBe(false);
-    expect(result.errors).toContain("url is required");
+    expect(result.errors).toContain("fileUrl is required");
   });
 
   it("kie fileBase64Upload: accepts valid request", () => {
     const result = validatePayload(
-      { base64: "aGVsbG8=", filename: "test.png" },
+      { base64Data: "aGVsbG8=", uploadPath: "uploads" },
       fileBase64UploadSchema
     );
     expect(result.valid).toBe(true);
@@ -327,8 +330,8 @@ describe("schema + validatePayload integration", () => {
   it("kie fileBase64Upload: rejects missing required fields", () => {
     const result = validatePayload({}, fileBase64UploadSchema);
     expect(result.valid).toBe(false);
-    expect(result.errors).toContain("base64 is required");
-    expect(result.errors).toContain("filename is required");
+    expect(result.errors).toContain("base64Data is required");
+    expect(result.errors).toContain("uploadPath is required");
   });
 
   it("kie claude: accepts valid request", () => {

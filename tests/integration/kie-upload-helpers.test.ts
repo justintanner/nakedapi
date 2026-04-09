@@ -56,6 +56,7 @@ describe("kie helper functions", () => {
       const result = await provider.post.api.fileStreamUpload({
         file,
         filename: "helper-test.png",
+        uploadPath: "uploads",
       });
 
       expect(result.code).toBe(200);
@@ -96,7 +97,7 @@ describe("kie helper functions", () => {
       // Valid payload
       const validResult = provider.post.api.fileStreamUpload.validatePayload({
         file: new Blob(["test"]),
-        filename: "test.txt",
+        uploadPath: "uploads",
       });
       expect(validResult.valid).toBe(true);
 

@@ -15,7 +15,8 @@ describe("kie file URL upload payload validation", () => {
       apiKey: process.env.KIE_API_KEY ?? "kie-test-key",
     });
     const validPayload = {
-      url: "https://example.com/image.png",
+      fileUrl: "https://example.com/image.png",
+      uploadPath: "images",
     };
     const result =
       provider.post.api.fileUrlUpload.validatePayload(validPayload);

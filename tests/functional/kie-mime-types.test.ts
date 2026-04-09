@@ -21,7 +21,11 @@ describe("kie inferMimeType", () => {
     // Should not throw for known image types
     const file = new Blob(["test content"]);
     await expect(
-      p.post.api.fileStreamUpload({ file, filename: "test.jpg" })
+      p.post.api.fileStreamUpload({
+        file,
+        filename: "test.jpg",
+        uploadPath: "uploads",
+      })
     ).resolves.toBeDefined();
   });
 
@@ -32,7 +36,11 @@ describe("kie inferMimeType", () => {
     });
     const file = new Blob(["test content"]);
     await expect(
-      p.post.api.fileStreamUpload({ file, filename: "test.jpeg" })
+      p.post.api.fileStreamUpload({
+        file,
+        filename: "test.jpeg",
+        uploadPath: "uploads",
+      })
     ).resolves.toBeDefined();
   });
 
@@ -43,7 +51,11 @@ describe("kie inferMimeType", () => {
     });
     const file = new Blob(["test content"]);
     await expect(
-      p.post.api.fileStreamUpload({ file, filename: "test.png" })
+      p.post.api.fileStreamUpload({
+        file,
+        filename: "test.png",
+        uploadPath: "uploads",
+      })
     ).resolves.toBeDefined();
   });
 
@@ -54,7 +66,11 @@ describe("kie inferMimeType", () => {
     });
     const file = new Blob(["test content"]);
     await expect(
-      p.post.api.fileStreamUpload({ file, filename: "test.gif" })
+      p.post.api.fileStreamUpload({
+        file,
+        filename: "test.gif",
+        uploadPath: "uploads",
+      })
     ).resolves.toBeDefined();
   });
 
@@ -65,7 +81,11 @@ describe("kie inferMimeType", () => {
     });
     const file = new Blob(["test content"]);
     await expect(
-      p.post.api.fileStreamUpload({ file, filename: "test.webp" })
+      p.post.api.fileStreamUpload({
+        file,
+        filename: "test.webp",
+        uploadPath: "uploads",
+      })
     ).resolves.toBeDefined();
   });
 
@@ -76,7 +96,11 @@ describe("kie inferMimeType", () => {
     });
     const file = new Blob(["test content"]);
     await expect(
-      p.post.api.fileStreamUpload({ file, filename: "test.mp4" })
+      p.post.api.fileStreamUpload({
+        file,
+        filename: "test.mp4",
+        uploadPath: "uploads",
+      })
     ).resolves.toBeDefined();
   });
 
@@ -87,7 +111,11 @@ describe("kie inferMimeType", () => {
     });
     const file = new Blob(["test content"]);
     await expect(
-      p.post.api.fileStreamUpload({ file, filename: "test.mp3" })
+      p.post.api.fileStreamUpload({
+        file,
+        filename: "test.mp3",
+        uploadPath: "uploads",
+      })
     ).resolves.toBeDefined();
   });
 
@@ -101,6 +129,7 @@ describe("kie inferMimeType", () => {
       p.post.api.fileStreamUpload({
         file: new Blob(["test content"]),
         filename: "test.JPG",
+        uploadPath: "uploads",
       })
     ).resolves.toBeDefined();
     // Test mixed case extension
@@ -108,6 +137,7 @@ describe("kie inferMimeType", () => {
       p.post.api.fileStreamUpload({
         file: new Blob(["test content"]),
         filename: "test.PnG",
+        uploadPath: "uploads",
       })
     ).resolves.toBeDefined();
   });
@@ -119,7 +149,11 @@ describe("kie inferMimeType", () => {
     });
     const file = new Blob(["test content"]);
     await expect(
-      p.post.api.fileStreamUpload({ file, filename: "test.unknown" })
+      p.post.api.fileStreamUpload({
+        file,
+        filename: "test.unknown",
+        uploadPath: "uploads",
+      })
     ).rejects.toThrow(/Cannot determine MIME type/);
   });
 
@@ -131,7 +165,11 @@ describe("kie inferMimeType", () => {
     const file = new Blob(["test content"]);
     // file.jpg.png should use png
     await expect(
-      p.post.api.fileStreamUpload({ file, filename: "file.jpg.png" })
+      p.post.api.fileStreamUpload({
+        file,
+        filename: "file.jpg.png",
+        uploadPath: "uploads",
+      })
     ).resolves.toBeDefined();
   });
 
@@ -142,7 +180,11 @@ describe("kie inferMimeType", () => {
     });
     const file = new Blob(["test content"]);
     await expect(
-      p.post.api.fileStreamUpload({ file, filename: "noextension" })
+      p.post.api.fileStreamUpload({
+        file,
+        filename: "noextension",
+        uploadPath: "uploads",
+      })
     ).rejects.toThrow(/Cannot determine MIME type/);
   });
 
@@ -157,6 +199,7 @@ describe("kie inferMimeType", () => {
       p.post.api.fileStreamUpload({
         file,
         filename: "test.unknown",
+        uploadPath: "uploads",
         mimeType: "application/octet-stream",
       })
     ).resolves.toBeDefined();
@@ -169,7 +212,11 @@ describe("kie inferMimeType", () => {
     });
     const file = new Blob(["test content"]);
     await expect(
-      p.post.api.fileStreamUpload({ file, filename: "test.svg" })
+      p.post.api.fileStreamUpload({
+        file,
+        filename: "test.svg",
+        uploadPath: "uploads",
+      })
     ).resolves.toBeDefined();
   });
 
@@ -180,7 +227,11 @@ describe("kie inferMimeType", () => {
     });
     const file = new Blob(["test content"]);
     await expect(
-      p.post.api.fileStreamUpload({ file, filename: "test.mov" })
+      p.post.api.fileStreamUpload({
+        file,
+        filename: "test.mov",
+        uploadPath: "uploads",
+      })
     ).resolves.toBeDefined();
   });
 
@@ -191,7 +242,11 @@ describe("kie inferMimeType", () => {
     });
     const file = new Blob(["test content"]);
     await expect(
-      p.post.api.fileStreamUpload({ file, filename: "test.wav" })
+      p.post.api.fileStreamUpload({
+        file,
+        filename: "test.wav",
+        uploadPath: "uploads",
+      })
     ).resolves.toBeDefined();
   });
 });
@@ -206,31 +261,30 @@ describe("kie fileBase64Upload with inferMimeType", () => {
       status: 200,
     });
 
-  it("infers mime type from filename for base64 uploads", async () => {
+  it("sends mimeType when provided for base64 uploads", async () => {
     const p = kie({
       apiKey: "test",
       fetch: mockFetch(successResponse),
     });
-    // Should work when mimeType is inferred from filename
     await expect(
       p.post.api.fileBase64Upload({
-        base64: "aGVsbG8=",
-        filename: "test.png",
+        base64Data: "aGVsbG8=",
+        uploadPath: "uploads",
+        mimeType: "image/png",
       })
     ).resolves.toBeDefined();
   });
 
-  it("proceeds without mimeType when cannot infer for base64 uploads", async () => {
+  it("proceeds without mimeType when not provided for base64 uploads", async () => {
     const p = kie({
       apiKey: "test",
       fetch: mockFetch(successResponse),
     });
-    // For base64 uploads, if mimeType can't be inferred, it just omits it
-    // The upload proceeds without it (server may reject or use default)
+    // For base64 uploads, if mimeType is not provided, it just omits it
     await expect(
       p.post.api.fileBase64Upload({
-        base64: "aGVsbG8=",
-        filename: "test.unknown",
+        base64Data: "aGVsbG8=",
+        uploadPath: "uploads",
       })
     ).resolves.toBeDefined();
   });
@@ -240,11 +294,10 @@ describe("kie fileBase64Upload with inferMimeType", () => {
       apiKey: "test",
       fetch: mockFetch(successResponse),
     });
-    // Even with unknown extension, explicit mimeType should work
     await expect(
       p.post.api.fileBase64Upload({
-        base64: "aGVsbG8=",
-        filename: "test.unknown",
+        base64Data: "aGVsbG8=",
+        uploadPath: "uploads",
         mimeType: "application/octet-stream",
       })
     ).resolves.toBeDefined();

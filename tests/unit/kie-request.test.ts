@@ -341,8 +341,7 @@ describe("KIE request utilities", () => {
   });
 
   describe("top-level KIE provider helpers", () => {
-    it("should build multipart uploads with inferred MIME type and upload path", async () => {
-      vi.spyOn(Date, "now").mockReturnValue(1712345678901);
+    it("should build multipart uploads with inferred MIME type", async () => {
       const mockFetch = vi.fn().mockResolvedValue(
         new Response(JSON.stringify({ code: 200, data: {} }), {
           status: 200,
@@ -358,6 +357,7 @@ describe("KIE request utilities", () => {
       await provider.post.api.fileStreamUpload({
         file: new Blob(["image-bytes"]),
         filename: "sample.png",
+        uploadPath: "images/user-uploads",
       });
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -370,9 +370,8 @@ describe("KIE request utilities", () => {
       expect(init.body).toBeInstanceOf(FormData);
 
       const formData = init.body as FormData;
-      expect(formData.get("uploadPath")).toBe(
-        "uploads/1712345678901_sample.png"
-      );
+      expect(formData.get("uploadPath")).toBe("images/user-uploads");
+      expect(formData.get("fileName")).toBeNull();
 
       const uploadedFile = formData.get("file");
       expect(uploadedFile).toBeInstanceOf(File);
@@ -381,8 +380,31 @@ describe("KIE request utilities", () => {
       await expect((uploadedFile as File).text()).resolves.toBe("image-bytes");
     });
 
-    it("should JSON-encode URL uploads with a generated upload path", async () => {
-      vi.spyOn(Date, "now").mockReturnValue(1712345678902);
+    it("should pass optional fileName in multipart uploads", async () => {
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ code: 200, data: {} }), {
+          status: 200,
+        })
+      );
+
+      const provider = kie({
+        apiKey: "test-key",
+        uploadBaseURL: "https://uploads.kie.ai",
+        fetch: mockFetch,
+      });
+
+      await provider.post.api.fileStreamUpload({
+        file: new Blob(["image-bytes"]),
+        filename: "sample.png",
+        uploadPath: "images/user-uploads",
+        fileName: "custom-name.png",
+      });
+
+      const formData = mockFetch.mock.calls[0][1].body as FormData;
+      expect(formData.get("fileName")).toBe("custom-name.png");
+    });
+
+    it("should JSON-encode URL uploads with fileUrl field", async () => {
       const mockFetch = vi.fn().mockResolvedValue(
         new Response(JSON.stringify({ code: 200, data: {} }), {
           status: 200,
@@ -396,7 +418,8 @@ describe("KIE request utilities", () => {
       });
 
       await provider.post.api.fileUrlUpload({
-        url: "https://cdn.example.com/assets/source-image.png",
+        fileUrl: "https://cdn.example.com/assets/source-image.png",
+        uploadPath: "images/downloads",
       });
 
       const [url, init] = mockFetch.mock.calls[0];
@@ -407,12 +430,12 @@ describe("KIE request utilities", () => {
         "Content-Type": "application/json",
       });
       expect(JSON.parse(init.body as string)).toEqual({
-        url: "https://cdn.example.com/assets/source-image.png",
-        uploadPath: "uploads/1712345678902_source-image.png",
+        fileUrl: "https://cdn.example.com/assets/source-image.png",
+        uploadPath: "images/downloads",
       });
     });
 
-    it("should preserve explicit upload paths for URL uploads", async () => {
+    it("should pass optional fileName for URL uploads", async () => {
       const mockFetch = vi.fn().mockResolvedValue(
         new Response(JSON.stringify({ code: 200, data: {} }), {
           status: 200,
@@ -426,19 +449,20 @@ describe("KIE request utilities", () => {
       });
 
       await provider.post.api.fileUrlUpload({
-        url: "https://cdn.example.com/video.mov",
-        uploadPath: "custom/path/video.mov",
+        fileUrl: "https://cdn.example.com/video.mov",
+        uploadPath: "custom/path",
+        fileName: "my-video.mov",
       });
 
       const [, init] = mockFetch.mock.calls[0];
       expect(JSON.parse(init.body as string)).toEqual({
-        url: "https://cdn.example.com/video.mov",
-        uploadPath: "custom/path/video.mov",
+        fileUrl: "https://cdn.example.com/video.mov",
+        uploadPath: "custom/path",
+        fileName: "my-video.mov",
       });
     });
 
     it("should map base64 uploads to the API payload shape", async () => {
-      vi.spyOn(Date, "now").mockReturnValue(1712345678903);
       const mockFetch = vi.fn().mockResolvedValue(
         new Response(JSON.stringify({ code: 200, data: {} }), {
           status: 200,
@@ -452,8 +476,10 @@ describe("KIE request utilities", () => {
       });
 
       await provider.post.api.fileBase64Upload({
-        base64: "aGVsbG8=",
-        filename: "clip.mp4",
+        base64Data: "aGVsbG8=",
+        uploadPath: "videos/uploads",
+        fileName: "clip.mp4",
+        mimeType: "video/mp4",
       });
 
       const [url, init] = mockFetch.mock.calls[0];
@@ -464,9 +490,34 @@ describe("KIE request utilities", () => {
       });
       expect(JSON.parse(init.body as string)).toEqual({
         base64Data: "aGVsbG8=",
-        filename: "clip.mp4",
-        uploadPath: "uploads/1712345678903_clip.mp4",
+        uploadPath: "videos/uploads",
+        fileName: "clip.mp4",
         mimeType: "video/mp4",
+      });
+    });
+
+    it("should omit optional fields from base64 upload when not provided", async () => {
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ code: 200, data: {} }), {
+          status: 200,
+        })
+      );
+
+      const provider = kie({
+        apiKey: "test-key",
+        uploadBaseURL: "https://uploads.kie.ai",
+        fetch: mockFetch,
+      });
+
+      await provider.post.api.fileBase64Upload({
+        base64Data: "aGVsbG8=",
+        uploadPath: "uploads",
+      });
+
+      const [, init] = mockFetch.mock.calls[0];
+      expect(JSON.parse(init.body as string)).toEqual({
+        base64Data: "aGVsbG8=",
+        uploadPath: "uploads",
       });
     });
 

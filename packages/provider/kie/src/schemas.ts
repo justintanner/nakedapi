@@ -40,12 +40,17 @@ export const fileStreamUploadSchema: PayloadSchema = {
     file: {
       type: "object",
       required: true,
-      description: "File to upload (Blob)",
+      description: "File to upload (binary data)",
     },
-    filename: {
+    uploadPath: {
       type: "string",
       required: true,
-      description: "Filename with extension",
+      description: "File upload path, without leading or trailing slashes",
+    },
+    fileName: {
+      type: "string",
+      description:
+        "Filename with extension (optional, auto-generated if omitted)",
     },
     mimeType: { type: "string", description: "MIME type override" },
   },
@@ -56,14 +61,20 @@ export const fileUrlUploadSchema: PayloadSchema = {
   path: "/api/file-url-upload",
   contentType: "application/json",
   fields: {
-    url: {
+    fileUrl: {
       type: "string",
       required: true,
       description: "Remote URL of the file to upload",
     },
     uploadPath: {
       type: "string",
-      description: "Destination path (auto-generated if omitted)",
+      required: true,
+      description: "File upload path, without leading or trailing slashes",
+    },
+    fileName: {
+      type: "string",
+      description:
+        "Filename with extension (optional, auto-generated if omitted)",
     },
   },
 };
@@ -73,15 +84,20 @@ export const fileBase64UploadSchema: PayloadSchema = {
   path: "/api/file-base64-upload",
   contentType: "application/json",
   fields: {
-    base64: {
+    base64Data: {
       type: "string",
       required: true,
-      description: "Base64-encoded file data",
+      description: "Base64-encoded file data (supports data URI format)",
     },
-    filename: {
+    uploadPath: {
       type: "string",
       required: true,
-      description: "Filename with extension",
+      description: "File upload path, without leading or trailing slashes",
+    },
+    fileName: {
+      type: "string",
+      description:
+        "Filename with extension (optional, auto-generated if omitted)",
     },
     mimeType: { type: "string", description: "MIME type override" },
   },

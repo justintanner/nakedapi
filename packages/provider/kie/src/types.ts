@@ -562,27 +562,42 @@ export type TaskResponse = KieApiEnvelope<{ taskId: string }>;
 export interface UploadMediaRequest {
   file: Blob;
   filename: string;
+  uploadPath: string;
+  fileName?: string;
   mimeType?: string;
 }
 
 // Upload file from URL request (file-url-upload)
 export interface FileUrlUploadRequest {
-  url: string;
-  uploadPath?: string;
+  fileUrl: string;
+  uploadPath: string;
+  fileName?: string;
 }
 
 // Upload file as base64 request (file-base64-upload)
 export interface FileBase64UploadRequest {
-  base64: string;
-  filename: string;
+  base64Data: string;
+  uploadPath: string;
+  fileName?: string;
   mimeType?: string;
+}
+
+// Upload response data
+export interface UploadFileData {
+  fileName: string;
+  filePath: string;
+  downloadUrl: string;
+  fileSize: number;
+  mimeType: string;
+  uploadedAt: string;
 }
 
 // Upload media response (raw envelope, shared by all upload endpoints)
 export interface UploadMediaResponse {
   success: boolean;
   code: number;
-  data?: { downloadUrl: string };
+  msg: string;
+  data?: UploadFileData;
 }
 
 // Provider options

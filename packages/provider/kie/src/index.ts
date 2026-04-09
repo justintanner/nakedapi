@@ -71,6 +71,7 @@ export type {
   DownloadUrlResponse,
   UploadMediaRequest,
   UploadMediaResponse,
+  UploadFileData,
   FileUrlUploadRequest,
   FileBase64UploadRequest,
   PayloadFieldSchema,

@@ -25,8 +25,9 @@ describe("kie file base64 upload integration", () => {
     const base64Image =
       "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==";
     const result = await provider.post.api.fileBase64Upload({
-      base64: base64Image,
-      filename: "test-base64.png",
+      base64Data: base64Image,
+      uploadPath: "images/test-uploads",
+      fileName: "test-base64.png",
       mimeType: "image/png",
     });
     expect(result.data).toBeDefined();
@@ -40,9 +41,9 @@ describe("kie file base64 upload integration", () => {
     });
     const base64Content = "SGVsbG8gV29ybGQ="; // "Hello World" in base64
     const result = await provider.post.api.fileBase64Upload({
-      base64: base64Content,
-      filename: "test.txt",
-      // No mimeType provided - should infer
+      base64Data: base64Content,
+      uploadPath: "documents/test-uploads",
+      fileName: "test.txt",
     });
     expect(result.data).toBeDefined();
     expect(result.data?.downloadUrl).toBeTruthy();
@@ -61,8 +62,8 @@ describe("kie file base64 upload integration", () => {
       apiKey: process.env.KIE_API_KEY ?? "kie-test-key",
     });
     const validPayload = {
-      base64: "SGVsbG8=",
-      filename: "test.txt",
+      base64Data: "SGVsbG8=",
+      uploadPath: "uploads",
     };
     const result =
       provider.post.api.fileBase64Upload.validatePayload(validPayload);

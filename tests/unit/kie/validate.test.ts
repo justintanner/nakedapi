@@ -182,7 +182,7 @@ describe("kie validatePayload", () => {
       const result = validatePayload(
         {
           file: new Blob(["test"]),
-          filename: "test.txt",
+          uploadPath: "uploads",
         },
         fileStreamUploadSchema
       );
@@ -190,11 +190,12 @@ describe("kie validatePayload", () => {
       expect(result.errors).toHaveLength(0);
     });
 
-    it("should validate fileStreamUpload with optional mimeType", () => {
+    it("should validate fileStreamUpload with optional fields", () => {
       const result = validatePayload(
         {
           file: new Blob(["test"]),
-          filename: "test.txt",
+          uploadPath: "uploads",
+          fileName: "test.txt",
           mimeType: "text/plain",
         },
         fileStreamUploadSchema
@@ -205,7 +206,7 @@ describe("kie validatePayload", () => {
     it("should reject fileStreamUpload without required file", () => {
       const result = validatePayload(
         {
-          filename: "test.txt",
+          uploadPath: "uploads",
         },
         fileStreamUploadSchema
       );
@@ -213,7 +214,7 @@ describe("kie validatePayload", () => {
       expect(result.errors).toContain("file is required");
     });
 
-    it("should reject fileStreamUpload without required filename", () => {
+    it("should reject fileStreamUpload without required uploadPath", () => {
       const result = validatePayload(
         {
           file: new Blob(["test"]),
@@ -221,15 +222,16 @@ describe("kie validatePayload", () => {
         fileStreamUploadSchema
       );
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain("filename is required");
+      expect(result.errors).toContain("uploadPath is required");
     });
   });
 
   describe("fileUrlUpload schema validation", () => {
-    it("should validate fileUrlUpload with required url", () => {
+    it("should validate fileUrlUpload with required fields", () => {
       const result = validatePayload(
         {
-          url: "https://example.com/file.txt",
+          fileUrl: "https://example.com/file.txt",
+          uploadPath: "uploads",
         },
         fileUrlUploadSchema
       );
@@ -237,21 +239,34 @@ describe("kie validatePayload", () => {
       expect(result.errors).toHaveLength(0);
     });
 
-    it("should validate fileUrlUpload with optional uploadPath", () => {
+    it("should validate fileUrlUpload with optional fileName", () => {
       const result = validatePayload(
         {
-          url: "https://example.com/file.txt",
-          uploadPath: "/uploads/test.txt",
+          fileUrl: "https://example.com/file.txt",
+          uploadPath: "uploads",
+          fileName: "test.txt",
         },
         fileUrlUploadSchema
       );
       expect(result.valid).toBe(true);
     });
 
-    it("should reject fileUrlUpload without required url", () => {
-      const result = validatePayload({}, fileUrlUploadSchema);
+    it("should reject fileUrlUpload without required fileUrl", () => {
+      const result = validatePayload(
+        { uploadPath: "uploads" },
+        fileUrlUploadSchema
+      );
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain("url is required");
+      expect(result.errors).toContain("fileUrl is required");
+    });
+
+    it("should reject fileUrlUpload without required uploadPath", () => {
+      const result = validatePayload(
+        { fileUrl: "https://example.com/file.txt" },
+        fileUrlUploadSchema
+      );
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain("uploadPath is required");
     });
   });
 
@@ -259,8 +274,8 @@ describe("kie validatePayload", () => {
     it("should validate fileBase64Upload with required fields", () => {
       const result = validatePayload(
         {
-          base64: "dGVzdCBjb250ZW50",
-          filename: "test.txt",
+          base64Data: "dGVzdCBjb250ZW50",
+          uploadPath: "uploads",
         },
         fileBase64UploadSchema
       );
@@ -268,11 +283,12 @@ describe("kie validatePayload", () => {
       expect(result.errors).toHaveLength(0);
     });
 
-    it("should validate fileBase64Upload with optional mimeType", () => {
+    it("should validate fileBase64Upload with optional fields", () => {
       const result = validatePayload(
         {
-          base64: "dGVzdCBjb250ZW50",
-          filename: "test.txt",
+          base64Data: "dGVzdCBjb250ZW50",
+          uploadPath: "uploads",
+          fileName: "test.txt",
           mimeType: "text/plain",
         },
         fileBase64UploadSchema
@@ -280,26 +296,26 @@ describe("kie validatePayload", () => {
       expect(result.valid).toBe(true);
     });
 
-    it("should reject fileBase64Upload without required base64", () => {
+    it("should reject fileBase64Upload without required base64Data", () => {
       const result = validatePayload(
         {
-          filename: "test.txt",
+          uploadPath: "uploads",
         },
         fileBase64UploadSchema
       );
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain("base64 is required");
+      expect(result.errors).toContain("base64Data is required");
     });
 
-    it("should reject fileBase64Upload without required filename", () => {
+    it("should reject fileBase64Upload without required uploadPath", () => {
       const result = validatePayload(
         {
-          base64: "dGVzdCBjb250ZW50",
+          base64Data: "dGVzdCBjb250ZW50",
         },
         fileBase64UploadSchema
       );
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain("filename is required");
+      expect(result.errors).toContain("uploadPath is required");
     });
   });
 

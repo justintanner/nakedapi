@@ -12,9 +12,7 @@ import {
   workspaceMemberAddSchema,
 } from "../../../packages/provider/anthropic/src/schemas";
 
-import {
-  validatePayload,
-} from "../../../packages/provider/anthropic/src/validate";
+import { validatePayload } from "../../../packages/provider/anthropic/src/validate";
 
 describe("anthropic schemas", () => {
   describe("messagesSchema", () => {
@@ -352,10 +350,7 @@ describe("anthropic schemas", () => {
     });
 
     it("should reject payload missing file", () => {
-      const result = validatePayload(
-        {},
-        filesUploadSchema
-      );
+      const result = validatePayload({}, filesUploadSchema);
       expect(result.valid).toBe(false);
     });
   });
@@ -404,7 +399,13 @@ describe("anthropic schemas", () => {
     });
 
     it("should validate all valid role values", () => {
-      const validRoles = ["user", "developer", "billing", "claude_code_user", "managed"];
+      const validRoles = [
+        "user",
+        "developer",
+        "billing",
+        "claude_code_user",
+        "managed",
+      ];
       for (const role of validRoles) {
         const result = validatePayload(
           {
@@ -430,7 +431,9 @@ describe("anthropic schemas", () => {
     });
 
     it("should define optional fields", () => {
-      expect(workspaceCreateSchema.fields.data_residency.required).toBeUndefined();
+      expect(
+        workspaceCreateSchema.fields.data_residency.required
+      ).toBeUndefined();
     });
 
     it("should validate valid payload", () => {
@@ -444,10 +447,7 @@ describe("anthropic schemas", () => {
     });
 
     it("should reject payload missing name", () => {
-      const result = validatePayload(
-        {},
-        workspaceCreateSchema
-      );
+      const result = validatePayload({}, workspaceCreateSchema);
       expect(result.valid).toBe(false);
     });
 
@@ -510,7 +510,9 @@ describe("anthropic schemas", () => {
   describe("skillVersionsCreateSchema", () => {
     it("should have correct metadata", () => {
       expect(skillVersionsCreateSchema.method).toBe("POST");
-      expect(skillVersionsCreateSchema.path).toBe("/skills/{skill_id}/versions");
+      expect(skillVersionsCreateSchema.path).toBe(
+        "/skills/{skill_id}/versions"
+      );
       expect(skillVersionsCreateSchema.contentType).toBe("multipart/form-data");
     });
 
@@ -529,10 +531,7 @@ describe("anthropic schemas", () => {
     });
 
     it("should reject payload missing files", () => {
-      const result = validatePayload(
-        {},
-        skillVersionsCreateSchema
-      );
+      const result = validatePayload({}, skillVersionsCreateSchema);
       expect(result.valid).toBe(false);
     });
   });
@@ -548,7 +547,9 @@ describe("anthropic schemas", () => {
 
     it("should define required fields", () => {
       expect(workspaceMemberAddSchema.fields.user_id.required).toBe(true);
-      expect(workspaceMemberAddSchema.fields.workspace_role.required).toBe(true);
+      expect(workspaceMemberAddSchema.fields.workspace_role.required).toBe(
+        true
+      );
     });
 
     it("should validate valid payload", () => {
@@ -621,10 +622,9 @@ describe("anthropic schemas", () => {
     });
 
     it("should have correct enum definitions for constrained fields", () => {
-      expect(messagesSchema.fields.messages.items.properties.role.enum).toEqual([
-        "user",
-        "assistant",
-      ]);
+      expect(messagesSchema.fields.messages.items.properties.role.enum).toEqual(
+        ["user", "assistant"]
+      );
       expect(messagesSchema.fields.tool_choice.properties.type.enum).toEqual([
         "auto",
         "any",

@@ -160,10 +160,7 @@ describe("kie validatePayload", () => {
     });
 
     it("should reject downloadUrl without required url", () => {
-      const result = validatePayload(
-        {},
-        downloadUrlSchema
-      );
+      const result = validatePayload({}, downloadUrlSchema);
       expect(result.valid).toBe(false);
       expect(result.errors).toContain("url is required");
     });
@@ -252,10 +249,7 @@ describe("kie validatePayload", () => {
     });
 
     it("should reject fileUrlUpload without required url", () => {
-      const result = validatePayload(
-        {},
-        fileUrlUploadSchema
-      );
+      const result = validatePayload({}, fileUrlUploadSchema);
       expect(result.valid).toBe(false);
       expect(result.errors).toContain("url is required");
     });
@@ -339,10 +333,7 @@ describe("kie validatePayload", () => {
     });
 
     it("should reject veoGenerate without required prompt", () => {
-      const result = validatePayload(
-        {},
-        veoGenerateSchema
-      );
+      const result = validatePayload({}, veoGenerateSchema);
       expect(result.valid).toBe(false);
       expect(result.errors).toContain("prompt is required");
     });
@@ -359,9 +350,7 @@ describe("kie validatePayload", () => {
         veoGenerateSchema
       );
       expect(invalid.valid).toBe(false);
-      expect(invalid.errors).toContain(
-        'model must be one of: veo3, veo3_fast'
-      );
+      expect(invalid.errors).toContain("model must be one of: veo3, veo3_fast");
     });
 
     it("should validate veoGenerate enum values for aspectRatio", () => {
@@ -590,7 +579,7 @@ describe("kie validatePayload", () => {
       );
       expect(result.valid).toBe(false);
       expect(result.errors).toContain(
-        'messages[0].role must be one of: user, assistant, system'
+        "messages[0].role must be one of: user, assistant, system"
       );
     });
 
@@ -671,7 +660,7 @@ describe("kie validatePayload", () => {
       );
       expect(result.valid).toBe(false);
       expect(result.errors).toContain(
-        'model must be one of: claude-sonnet-4-6, claude-haiku-4-5'
+        "model must be one of: claude-sonnet-4-6, claude-haiku-4-5"
       );
     });
 
@@ -699,7 +688,7 @@ describe("kie validatePayload", () => {
       );
       expect(result.valid).toBe(false);
       expect(result.errors).toContain(
-        'messages[0].role must be one of: user, assistant'
+        "messages[0].role must be one of: user, assistant"
       );
     });
 
@@ -743,10 +732,7 @@ describe("kie validatePayload", () => {
 
   describe("multiple errors", () => {
     it("should collect multiple validation errors", () => {
-      const result = validatePayload(
-        {},
-        createTaskSchema
-      );
+      const result = validatePayload({}, createTaskSchema);
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThanOrEqual(2);
       expect(result.errors).toContain("model is required");

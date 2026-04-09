@@ -1128,7 +1128,8 @@ export const modelInputSchemas: Record<KieMediaModel, ModelInputSchema> = {
       aspect_ratio: {
         type: "string",
         enum: ["16:9", "9:16", "1:1", "4:3", "3:4"],
-        description: "Video aspect ratio (default 16:9, ignored if first_frame set)",
+        description:
+          "Video aspect ratio (default 16:9, ignored if first_frame set)",
       },
       duration: {
         type: "number",

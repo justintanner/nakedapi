@@ -1,6 +1,8 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, it, expect, afterEach } from "vitest";
 import {
-  setupPolly,
+  setupPollyForFileUploads,
   teardownPolly,
   getPollyMode,
   type PollyContext,
@@ -15,14 +17,28 @@ describe("kie wan/2-7-videoedit integration", () => {
   });
 
   it(
-    "should create a videoedit task and poll to completion",
-    { timeout: 660_000 },
+    "should upload video, create a videoedit task and poll to completion",
+    { timeout: 1200_000 },
     async () => {
-      ctx = setupPolly("kie/wan-27-videoedit");
+      ctx = setupPollyForFileUploads("kie/wan-27-videoedit");
 
       const provider = kie({
         apiKey: process.env.KIE_API_KEY ?? "test-key",
       });
+
+      // Upload local jump.mp4 fixture
+      const videoPath = resolve(__dirname, "../fixtures/jump.mp4");
+      const videoBuffer = readFileSync(videoPath);
+      const videoBlob = new Blob([videoBuffer], { type: "video/mp4" });
+
+      const upload = await provider.post.api.fileStreamUpload({
+        file: videoBlob,
+        filename: "jump.mp4",
+        uploadPath: "videos/test-uploads",
+      });
+
+      expect(upload.code).toBe(200);
+      expect(upload.data?.downloadUrl).toBeTruthy();
 
       const task = await provider.post.api.v1.jobs.createTask({
         model: "wan/2-7-videoedit",
@@ -30,8 +46,7 @@ describe("kie wan/2-7-videoedit integration", () => {
           prompt: "Make the scene look like a watercolor painting.",
           negative_prompt:
             "low resolution, errors, worst quality, low quality, malformed",
-          video_url:
-            "https://static.aiquickdraw.com/tools/example/1767525918769_QyvTNib2.mp4",
+          video_url: upload.data!.downloadUrl,
           resolution: "720p",
           duration: 0,
           audio_setting: "auto",
@@ -48,7 +63,7 @@ describe("kie wan/2-7-videoedit integration", () => {
       const pollDelay = getPollyMode() === "replay" ? 0 : 5000;
       const taskId = task.data!.taskId;
       let state = "waiting";
-      for (let i = 0; i < 120; i++) {
+      for (let i = 0; i < 200; i++) {
         const info = await provider.get.api.v1.jobs.recordInfo(taskId);
         state = info.data?.state ?? "waiting";
         if (state === "success" || state === "fail") {

@@ -529,8 +529,14 @@
           .replace(/&/g, "&amp;")
           .replace(/</g, "&lt;")
           .replace(/>/g, "&gt;")
-          .replace(/"([^"]+)"\s*:/g, '<span class="json-key">"$1"</span>:')
-          .replace(/: "([^"]*)"/g, ': <span class="json-str">"$1"</span>')
+          .replace(
+            /"((?:\\.|[^"\\])+)"(\s*:)/g,
+            '<span class="json-key">"$1"</span>$2'
+          )
+          .replace(
+            /: "((?:\\.|[^"\\])*)"/g,
+            ': <span class="json-str">"$1"</span>'
+          )
           .replace(/: (\d+\.?\d*)/g, ': <span class="json-num">$1</span>')
           .replace(/: (true|false)/g, ': <span class="json-bool">$1</span>')
           .replace(/: (null)/g, ': <span class="json-null">$1</span>');
@@ -702,6 +708,65 @@
                   if (parsed.works[w].cover) urls.push(parsed.works[w].cover);
                 }
               }
+              var previews = "";
+              for (var u = 0; u < urls.length; u++) {
+                var url = urls[u];
+                if (/\.mp4|\.webm|\.mov|video/i.test(url)) {
+                  previews +=
+                    '<video class="video-preview" controls src="' +
+                    url +
+                    '"></video>';
+                } else if (/\.mp3|\.wav|\.flac|\.aac|audio/i.test(url)) {
+                  previews +=
+                    '<audio class="audio-preview" controls src="' +
+                    url +
+                    '"></audio>';
+                } else {
+                  previews +=
+                    '<img class="b64-img-preview" src="' +
+                    url +
+                    '" onerror="this.style.display=&apos;none&apos;">';
+                }
+              }
+              return prefix + escapedJson + '"</span>' + previews;
+            } catch (e) {
+              return match;
+            }
+          }
+        );
+        // KIE param: nested JSON string containing input media URLs
+        html = html.replace(
+          /(<span class="json-key">"param"<\/span>:\s*<span class="json-str">")((?:\\.|[^"])*)"<\/span>/g,
+          function (match, prefix, escapedJson) {
+            try {
+              var jsonStr = JSON.parse('"' + escapedJson + '"');
+              var parsed = JSON.parse(jsonStr);
+              var input =
+                typeof parsed.input === "string"
+                  ? JSON.parse(parsed.input)
+                  : parsed.input;
+              if (!input) return match;
+              var urls = [];
+              var mediaKeys = [
+                "video_url",
+                "first_frame_url",
+                "last_frame_url",
+                "first_clip_url",
+                "driving_audio_url",
+                "image_url",
+              ];
+              for (var k = 0; k < mediaKeys.length; k++) {
+                if (input[mediaKeys[k]]) urls.push(input[mediaKeys[k]]);
+              }
+              if (Array.isArray(input.reference_image)) {
+                for (var ri = 0; ri < input.reference_image.length; ri++)
+                  urls.push(input.reference_image[ri]);
+              }
+              if (Array.isArray(input.reference_video)) {
+                for (var rv = 0; rv < input.reference_video.length; rv++)
+                  urls.push(input.reference_video[rv]);
+              }
+              if (!urls.length) return match;
               var previews = "";
               for (var u = 0; u < urls.length; u++) {
                 var url = urls[u];

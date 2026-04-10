@@ -19,7 +19,7 @@ describe("xAI collections PUT update integration", () => {
     expect(provider.put.v1.collections.validatePayload).toBeDefined();
 
     const result = provider.put.v1.collections.validatePayload({
-      name: "test-collection",
+      collection_name: "test-collection",
     });
     expect(result.valid).toBe(true);
   });
@@ -30,31 +30,21 @@ describe("xAI collections PUT update integration", () => {
       managementApiKey: process.env.XAI_MANAGEMENT_API_KEY ?? "sk-mgmt-key",
     });
 
-    // Skip if management API is not accessible
-    try {
-      // Create a collection first
-      const collection = await provider.post.v1.collections({
-        name: "test-collection-for-update",
-      });
-      expect(collection.collection_id).toBeDefined();
+    // Create a collection first
+    const collection = await provider.post.v1.collections({
+      collection_name: "test-collection-for-update",
+    });
+    expect(collection.collection_id).toBeDefined();
 
-      // Update the collection
-      const updated = await provider.put.v1.collections(
-        collection.collection_id,
-        {
-          name: "updated-collection-name",
-        }
-      );
+    // Update the collection
+    const updated = await provider.put.v1.collections(
+      collection.collection_id,
+      {
+        collection_name: "updated-collection-name",
+      }
+    );
 
-      expect(updated).toBeDefined();
-      expect(updated.collection_id).toBe(collection.collection_id);
-    } catch (err) {
-      // Management API may not be accessible with current key
-      console.log(
-        "Management API not accessible (expected for some keys):",
-        err
-      );
-      expect(err).toBeDefined();
-    }
+    expect(updated).toBeDefined();
+    expect(updated.collection_id).toBe(collection.collection_id);
   });
 });

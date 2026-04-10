@@ -27,49 +27,37 @@ describe("xAI collections documents batchGet integration", () => {
       managementApiKey: process.env.XAI_MANAGEMENT_API_KEY ?? "sk-mgmt-key",
     });
 
-    // Skip if management API is not accessible
-    try {
-      // Create a collection
-      const collection = await provider.post.v1.collections({
-        name: "test-collection-batchget",
-      });
-      expect(collection.collection_id).toBeDefined();
+    // Create a collection
+    const collection = await provider.post.v1.collections({
+      collection_name: "test-collection-batchget",
+    });
+    expect(collection.collection_id).toBeDefined();
 
-      // Upload multiple files
-      const blob1 = new Blob(["Content 1"], { type: "text/plain" });
-      const file1 = await provider.post.v1.files(blob1, "doc1.txt", "batch");
+    // Upload multiple files
+    const blob1 = new Blob(["Content 1"], { type: "text/plain" });
+    const file1 = await provider.post.v1.files(blob1, "doc1.txt", "batch");
 
-      const blob2 = new Blob(["Content 2"], { type: "text/plain" });
-      const file2 = await provider.post.v1.files(blob2, "doc2.txt", "batch");
+    const blob2 = new Blob(["Content 2"], { type: "text/plain" });
+    const file2 = await provider.post.v1.files(blob2, "doc2.txt", "batch");
 
-      // Add both as documents
-      await provider.post.v1.collections.documents(
-        collection.collection_id,
-        file1.id,
-        { name: "document-1" }
-      );
-      await provider.post.v1.collections.documents(
-        collection.collection_id,
-        file2.id,
-        { name: "document-2" }
-      );
+    // Add both as documents
+    await provider.post.v1.collections.documents(
+      collection.collection_id,
+      file1.id
+    );
+    await provider.post.v1.collections.documents(
+      collection.collection_id,
+      file2.id
+    );
 
-      // Batch get documents
-      const result = await provider.get.v1.collections.documents.batchGet(
-        collection.collection_id,
-        [file1.id, file2.id]
-      );
+    // Batch get documents
+    const result = await provider.get.v1.collections.documents.batchGet(
+      collection.collection_id,
+      [file1.id, file2.id]
+    );
 
-      expect(result).toBeDefined();
-      expect(result.documents).toBeDefined();
-      expect(Array.isArray(result.documents)).toBe(true);
-    } catch (err) {
-      // Management API may not be accessible with current key
-      console.log(
-        "Management API not accessible (expected for some keys):",
-        err
-      );
-      expect(err).toBeDefined();
-    }
+    expect(result).toBeDefined();
+    expect(result.documents).toBeDefined();
+    expect(Array.isArray(result.documents)).toBe(true);
   });
 });

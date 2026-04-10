@@ -25,46 +25,35 @@ describe("xAI collections documents delete integration", () => {
       managementApiKey: process.env.XAI_MANAGEMENT_API_KEY ?? "sk-mgmt-key",
     });
 
-    // Skip if management API is not accessible
-    try {
-      // Create a collection
-      const collection = await provider.post.v1.collections({
-        name: "test-collection-delete-doc",
-      });
-      expect(collection.collection_id).toBeDefined();
+    // Create a collection
+    const collection = await provider.post.v1.collections({
+      collection_name: "test-collection-delete-doc",
+    });
+    expect(collection.collection_id).toBeDefined();
 
-      // Upload a file
-      const blob = new Blob(["Test content for deletion"], {
-        type: "text/plain",
-      });
-      const file = await provider.post.v1.files(blob, "test-del.txt", "batch");
-      expect(file.id).toBeDefined();
+    // Upload a file
+    const blob = new Blob(["Test content for deletion"], {
+      type: "text/plain",
+    });
+    const file = await provider.post.v1.files(blob, "test-del.txt", "batch");
+    expect(file.id).toBeDefined();
 
-      // Add document to collection
-      await provider.post.v1.collections.documents(
-        collection.collection_id,
-        file.id,
-        { name: "document-to-delete" }
-      );
+    // Add document to collection
+    await provider.post.v1.collections.documents(
+      collection.collection_id,
+      file.id
+    );
 
-      // Delete the document
-      await provider.delete.v1.collections.documents(
-        collection.collection_id,
-        file.id
-      );
+    // Delete the document
+    await provider.delete.v1.collections.documents(
+      collection.collection_id,
+      file.id
+    );
 
-      // Verify by listing documents
-      const documents = await provider.get.v1.collections.documents(
-        collection.collection_id
-      );
-      expect(documents).toBeDefined();
-    } catch (err) {
-      // Management API may not be accessible with current key
-      console.log(
-        "Management API not accessible (expected for some keys):",
-        err
-      );
-      expect(err).toBeDefined();
-    }
+    // Verify by listing documents
+    const documents = await provider.get.v1.collections.documents(
+      collection.collection_id
+    );
+    expect(documents).toBeDefined();
   });
 });

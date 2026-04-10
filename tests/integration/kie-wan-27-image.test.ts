@@ -16,6 +16,7 @@ describe("kie wan/2-7-image integration", () => {
 
   it(
     "should create an image generation task and poll to completion",
+    { timeout: 660_000 },
     async () => {
       ctx = setupPolly("kie/wan-27-image");
 
@@ -60,8 +61,7 @@ describe("kie wan/2-7-image integration", () => {
       }
 
       expect(state).toBe("success");
-    },
-    { timeout: 660_000 }
+    }
   );
 
   it("should validate wan/2-7-image payload", () => {

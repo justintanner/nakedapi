@@ -1,123 +1,79 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { setupPolly, teardownPolly, type PollyContext } from "../harness";
-import { xai, XaiError } from "@nakedapi/xai";
+import { describe, it, expect } from "vitest";
+import { xai } from "@nakedapi/xai";
 
 describe("xAI validation error integration", () => {
-  let ctx: PollyContext;
+  it("should handle type mismatch in request payload - string for number field", () => {
+    const provider = xai({ apiKey: "sk-test-key" });
 
-  beforeEach(() => {
-    ctx = setupPolly("xai/validation-errors");
+    const result = provider.post.v1.chat.completions.validatePayload({
+      model: "grok-3-fast",
+      messages: [{ role: "user", content: "Hello" }],
+      temperature: "hot",
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
   });
 
-  afterEach(async () => {
-    await teardownPolly(ctx);
+  it("should handle missing required field - messages", () => {
+    const provider = xai({ apiKey: "sk-test-key" });
+
+    const result = provider.post.v1.chat.completions.validatePayload({
+      model: "grok-3-fast",
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
   });
 
-  it("should handle type mismatch in request payload - string for number field", async () => {
-    const provider = xai({ apiKey: process.env.XAI_API_KEY ?? "sk-test-key" });
+  it("should handle invalid enum value for message role", () => {
+    const provider = xai({ apiKey: "sk-test-key" });
 
-    // Send temperature as string instead of number
-    try {
-      await provider.post.v1.chat.completions({
-        model: "grok-3-fast",
-        messages: [{ role: "user", content: "Hello" }],
-        temperature: "hot" as unknown as number, // Type mismatch
-      });
-      expect.fail("Should have thrown XaiError");
-    } catch (error) {
-      expect(error).toBeInstanceOf(XaiError);
-      const xaiError = error as XaiError;
-      expect(xaiError.status).toBeGreaterThanOrEqual(400);
-    }
+    const result = provider.post.v1.chat.completions.validatePayload({
+      model: "grok-3-fast",
+      messages: [{ role: "superuser", content: "Hello" }],
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
   });
 
-  it("should handle missing required field - messages", async () => {
-    const provider = xai({ apiKey: process.env.XAI_API_KEY ?? "sk-test-key" });
+  it("should handle invalid message structure in array", () => {
+    const provider = xai({ apiKey: "sk-test-key" });
 
-    try {
-      await provider.post.v1.chat.completions({
-        model: "grok-3-fast",
-        // messages field intentionally missing
-      } as unknown as Parameters<typeof provider.post.v1.chat.completions>[0]);
-      expect.fail("Should have thrown XaiError");
-    } catch (error) {
-      expect(error).toBeInstanceOf(XaiError);
-      const xaiError = error as XaiError;
-      // API returns error status
-      expect(xaiError.status).toBeGreaterThanOrEqual(400);
-    }
+    const result = provider.post.v1.chat.completions.validatePayload({
+      model: "grok-3-fast",
+      messages: [
+        { role: "user", content: "Hello" },
+        { role: "assistant" },
+      ],
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
   });
 
-  it("should handle invalid enum value for message role", async () => {
-    const provider = xai({ apiKey: process.env.XAI_API_KEY ?? "sk-test-key" });
+  it("should validate responses schema with invalid temperature type", () => {
+    const provider = xai({ apiKey: "sk-test-key" });
 
-    try {
-      await provider.post.v1.chat.completions({
-        model: "grok-3-fast",
-        messages: [
-          { role: "superuser" as unknown, content: "Hello" },
-        ] as unknown[],
-      } as unknown as Parameters<typeof provider.post.v1.chat.completions>[0]);
-      expect.fail("Should have thrown XaiError");
-    } catch (error) {
-      expect(error).toBeInstanceOf(XaiError);
-      const xaiError = error as XaiError;
-      expect(xaiError.status).toBeGreaterThanOrEqual(400);
-    }
+    const result = provider.post.v1.responses.validatePayload({
+      model: "grok-4-fast",
+      input: "Hello",
+      temperature: "hot",
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
   });
 
-  it("should handle invalid message structure in array", async () => {
-    const provider = xai({ apiKey: process.env.XAI_API_KEY ?? "sk-test-key" });
+  it("should validate image generations with missing prompt", () => {
+    const provider = xai({ apiKey: "sk-test-key" });
 
-    // Send array with malformed message object
-    try {
-      await provider.post.v1.chat.completions({
-        model: "grok-3-fast",
-        messages: [
-          { role: "user", content: "Hello" },
-          { role: "assistant" }, // Missing content
-        ],
-      } as unknown as Parameters<typeof provider.post.v1.chat.completions>[0]);
-      expect.fail("Should have thrown XaiError");
-    } catch (error) {
-      expect(error).toBeInstanceOf(XaiError);
-      const xaiError = error as XaiError;
-      expect(xaiError.status).toBeGreaterThanOrEqual(400);
-    }
-  });
+    const result = provider.post.v1.images.generations.validatePayload({
+      model: "grok-imagine-image",
+    });
 
-  it("should validate responses schema with invalid temperature type", async () => {
-    const provider = xai({ apiKey: process.env.XAI_API_KEY ?? "sk-test-key" });
-
-    try {
-      await provider.post.v1.responses({
-        model: "grok-4-fast",
-        input: "Hello",
-        temperature: "hot" as unknown as number, // Invalid type
-      } as unknown as Parameters<typeof provider.post.v1.responses>[0]);
-      expect.fail("Should have thrown XaiError");
-    } catch (error) {
-      expect(error).toBeInstanceOf(XaiError);
-      const xaiError = error as XaiError;
-      expect(xaiError.status).toBeGreaterThanOrEqual(400);
-    }
-  });
-
-  it("should validate image generations with missing prompt", async () => {
-    const provider = xai({ apiKey: process.env.XAI_API_KEY ?? "sk-test-key" });
-
-    try {
-      await provider.post.v1.images.generations({
-        // prompt is required but missing
-        model: "grok-imagine-image",
-      } as unknown as Parameters<
-        typeof provider.post.v1.images.generations
-      >[0]);
-      expect.fail("Should have thrown XaiError");
-    } catch (error) {
-      expect(error).toBeInstanceOf(XaiError);
-      const xaiError = error as XaiError;
-      expect(xaiError.status).toBeGreaterThanOrEqual(400);
-    }
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
   });
 });

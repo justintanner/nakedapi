@@ -16,6 +16,7 @@ describe("kie wan/2-7-videoedit integration", () => {
 
   it(
     "should create a videoedit task and poll to completion",
+    { timeout: 660_000 },
     async () => {
       ctx = setupPolly("kie/wan-27-videoedit");
 
@@ -61,8 +62,7 @@ describe("kie wan/2-7-videoedit integration", () => {
       }
 
       expect(state).toBe("success");
-    },
-    { timeout: 660_000 }
+    }
   );
 
   it("should validate wan/2-7-videoedit payload", () => {

@@ -13,7 +13,8 @@ function createProvider() {
   return xai({ apiKey: process.env.XAI_API_KEY ?? "sk-test-key" });
 }
 
-describe("xai image generation integration", () => {
+// SKIP: recordings contain 429 rate-limit responses — re-record when API limits clear
+describe.skip("xai image generation integration", () => {
   let ctx: PollyContext;
 
   afterEach(async () => {

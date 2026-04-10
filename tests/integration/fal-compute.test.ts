@@ -93,4 +93,19 @@ describe("fal compute instances", () => {
       "function"
     );
   });
+
+  it("should expose verb-prefixed compute instances accessors", () => {
+    const provider = fal({ apiKey: "fal-test-key" });
+    expect(typeof provider.get.ai.v1.compute.instances).toBe("function");
+    expect(typeof provider.get.ai.v1.compute.instances.get).toBe("function");
+    expect(typeof provider.post.ai.v1.compute.instances.create).toBe(
+      "function"
+    );
+    expect(
+      provider.post.ai.v1.compute.instances.create.payloadSchema
+    ).toBeDefined();
+    expect(
+      typeof provider.post.ai.v1.compute.instances.create.validatePayload
+    ).toBe("function");
+  });
 });

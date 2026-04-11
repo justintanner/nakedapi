@@ -226,3 +226,80 @@ export const bytedanceSeedance2p0ImageToVideoSchema: PayloadSchema = {
     },
   },
 };
+
+export const nanoBananaProEditSchema: PayloadSchema = {
+  method: "POST",
+  path: "/fal-ai/nano-banana-pro/edit",
+  contentType: "application/json",
+  fields: {
+    prompt: {
+      type: "string",
+      required: true,
+      description: "The prompt for image editing",
+    },
+    image_urls: {
+      type: "array",
+      required: true,
+      items: { type: "string" },
+      description:
+        "URLs of the images to use for image-to-image generation or editing",
+    },
+    num_images: {
+      type: "number",
+      description: "The number of images to generate (1-4, default 1)",
+    },
+    seed: {
+      type: "number",
+      description: "The seed for the random number generator",
+    },
+    aspect_ratio: {
+      type: "string",
+      enum: [
+        "auto",
+        "21:9",
+        "16:9",
+        "3:2",
+        "4:3",
+        "5:4",
+        "1:1",
+        "4:5",
+        "3:4",
+        "2:3",
+        "9:16",
+      ],
+      description: "Aspect ratio of the generated image (default auto)",
+    },
+    output_format: {
+      type: "string",
+      enum: ["jpeg", "png", "webp"],
+      description: "Format of the generated image (default png)",
+    },
+    safety_tolerance: {
+      type: "string",
+      enum: ["1", "2", "3", "4", "5", "6"],
+      description:
+        "Content moderation level: 1 strictest, 6 most permissive (default 4)",
+    },
+    sync_mode: {
+      type: "boolean",
+      description:
+        "If true, media is returned as a data URI and not recorded in request history",
+    },
+    resolution: {
+      type: "string",
+      enum: ["1K", "2K", "4K"],
+      description:
+        "Resolution of the generated image; 4K costs double (default 1K)",
+    },
+    limit_generations: {
+      type: "boolean",
+      description:
+        "Experimental: limit generations to 1 per prompt regardless of prompt instructions",
+    },
+    enable_web_search: {
+      type: "boolean",
+      description:
+        "Enable web search to use the latest web information (adds $0.015 per call)",
+    },
+  },
+};

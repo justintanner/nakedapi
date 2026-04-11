@@ -1,0 +1,92 @@
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { setupPolly, teardownPolly, type PollyContext } from "../harness";
+import { fal } from "@nakedapi/fal";
+
+describe("fal nano-banana-pro edit integration", () => {
+  let ctx: PollyContext;
+
+  beforeEach(() => {
+    ctx = setupPolly("fal/nano-banana-pro-edit");
+  });
+
+  afterEach(async () => {
+    await teardownPolly(ctx);
+  });
+
+  it("should edit images with a prompt", async () => {
+    const provider = fal({
+      apiKey: process.env.FAL_API_KEY ?? "fal-test-key",
+      timeout: 300000,
+    });
+
+    const result = await provider.run.nanoBananaPro.edit({
+      prompt:
+        "make a photo of the man driving the car down the california coastline",
+      image_urls: [
+        "https://storage.googleapis.com/falserverless/example_inputs/nano-banana-edit-input.png",
+        "https://storage.googleapis.com/falserverless/example_inputs/nano-banana-edit-input-2.png",
+      ],
+    });
+
+    expect(result).toBeDefined();
+    expect(Array.isArray(result.images)).toBe(true);
+    expect(result.images.length).toBeGreaterThan(0);
+    expect(typeof result.images[0].url).toBe("string");
+    expect(result.images[0].url.startsWith("http")).toBe(true);
+    expect(typeof result.description).toBe("string");
+  }, 300000);
+
+  it("should validate a valid payload", () => {
+    const provider = fal({ apiKey: "fal-test-key" });
+    const v = provider.run.nanoBananaPro.edit.validatePayload({
+      prompt: "a cat",
+      image_urls: ["https://example.com/cat.png"],
+    });
+    expect(v.valid).toBe(true);
+    expect(v.errors).toHaveLength(0);
+  });
+
+  it("should reject payload missing required fields", () => {
+    const provider = fal({ apiKey: "fal-test-key" });
+    const v = provider.run.nanoBananaPro.edit.validatePayload({});
+    expect(v.valid).toBe(false);
+    expect(v.errors).toContain("prompt is required");
+    expect(v.errors).toContain("image_urls is required");
+  });
+
+  it("should reject payload with wrong enum value", () => {
+    const provider = fal({ apiKey: "fal-test-key" });
+    const v = provider.run.nanoBananaPro.edit.validatePayload({
+      prompt: "a cat",
+      image_urls: ["https://example.com/cat.png"],
+      resolution: "8K",
+    });
+    expect(v.valid).toBe(false);
+  });
+
+  it("should reject non-string items in image_urls", () => {
+    const provider = fal({ apiKey: "fal-test-key" });
+    const v = provider.run.nanoBananaPro.edit.validatePayload({
+      prompt: "a cat",
+      image_urls: [123, 456],
+    });
+    expect(v.valid).toBe(false);
+  });
+
+  it("should expose payloadSchema", () => {
+    const provider = fal({ apiKey: "fal-test-key" });
+    const schema = provider.run.nanoBananaPro.edit.payloadSchema;
+    expect(schema.method).toBe("POST");
+    expect(schema.path).toBe("/fal-ai/nano-banana-pro/edit");
+    expect(schema.contentType).toBe("application/json");
+    expect(schema.fields.prompt.required).toBe(true);
+    expect(schema.fields.image_urls.required).toBe(true);
+  });
+
+  it("should expose the same function via run and post.run", () => {
+    const provider = fal({ apiKey: "fal-test-key" });
+    expect(provider.run.nanoBananaPro.edit).toBe(
+      provider.post.run.nanoBananaPro.edit
+    );
+  });
+});

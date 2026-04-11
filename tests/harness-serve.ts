@@ -2,11 +2,7 @@ import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
-import {
-  parseHarPaths,
-  getGitStatus,
-  recordingHasMedia,
-} from "./har-data.js";
+import { parseHarPaths, getGitStatus, recordingHasMedia } from "./har-data.js";
 
 const args = process.argv.slice(2);
 

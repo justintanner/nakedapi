@@ -36,6 +36,8 @@ import {
   FalAppsQueueResponse,
   FalSeedance2p0ImageToVideoParams,
   FalSeedance2p0ImageToVideoResponse,
+  FalNanoBananaProEditParams,
+  FalNanoBananaProEditResponse,
   FalRunNamespace,
 } from "./types";
 import type { ValidationResult } from "./types";
@@ -47,6 +49,7 @@ import {
   filesUploadUrlSchema,
   filesUploadLocalSchema,
   bytedanceSeedance2p0ImageToVideoSchema,
+  nanoBananaProEditSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
 
@@ -513,11 +516,36 @@ export function fal(opts: FalOptions): FalProvider {
     }
   );
 
+  const nanoBananaProEdit = Object.assign(
+    async function edit(
+      params: FalNanoBananaProEditParams,
+      signal?: AbortSignal
+    ): Promise<FalNanoBananaProEditResponse> {
+      return makeRequest<FalNanoBananaProEditResponse>(
+        "POST",
+        "/fal-ai/nano-banana-pro/edit",
+        params as unknown as Record<string, unknown>,
+        signal,
+        undefined,
+        runBaseURL
+      );
+    },
+    {
+      payloadSchema: nanoBananaProEditSchema,
+      validatePayload(data: unknown): ValidationResult {
+        return validatePayload(data, nanoBananaProEditSchema);
+      },
+    }
+  );
+
   const run: FalRunNamespace = {
     bytedance: {
       seedance2p0: {
         imageToVideo: bytedanceSeedance2p0ImageToVideo,
       },
+    },
+    nanoBananaPro: {
+      edit: nanoBananaProEdit,
     },
   };
 

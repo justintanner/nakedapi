@@ -146,18 +146,18 @@ Each package exports `PayloadSchema`, `PayloadFieldSchema`, and `ValidationResul
 
 Every dev-loop phase is one named pnpm script:
 
-| Command                                 | When to run it                                                |
-| --------------------------------------- | ------------------------------------------------------------- |
-| `pnpm run test:run`                     | Replay all tests from disk (no network, no keys)              |
-| `pnpm run test:run <file>`              | Replay a single test file                                     |
-| `pnpm run dev:record -- <file>`         | Record fixtures for a _new_ test (1Password, safe)            |
-| `pnpm run dev:rerecord -- <file>`       | Overwrite an existing HAR (destructive, file-filter required) |
-| `pnpm run dev:preflight`                | Format + lint + replay tests — run this before `git push`     |
-| `pnpm run ci:local`                     | Exact CI mirror: build + lint + replay tests                  |
-| `pnpm run harness`                      | Review recordings in a local viewer (localhost:3475)          |
-| `pnpm run harness:screenshot`           | Generate the full harness-report PNG locally                  |
-| `pnpm run harness:screenshot:media`     | Generate the media-only harness-report PNG locally            |
-| `pnpm run check:op`                     | Verify 1Password is resolving all 8 provider keys             |
+| Command                             | When to run it                                                |
+| ----------------------------------- | ------------------------------------------------------------- |
+| `pnpm run test:run`                 | Replay all tests from disk (no network, no keys)              |
+| `pnpm run test:run <file>`          | Replay a single test file                                     |
+| `pnpm run dev:record -- <file>`     | Record fixtures for a _new_ test (1Password, safe)            |
+| `pnpm run dev:rerecord -- <file>`   | Overwrite an existing HAR (destructive, file-filter required) |
+| `pnpm run dev:preflight`            | Format + lint + replay tests — run this before `git push`     |
+| `pnpm run ci:local`                 | Exact CI mirror: build + lint + replay tests                  |
+| `pnpm run harness`                  | Review recordings in a local viewer (localhost:3475)          |
+| `pnpm run harness:screenshot`       | Generate the full harness-report PNG locally                  |
+| `pnpm run harness:screenshot:media` | Generate the media-only harness-report PNG locally            |
+| `pnpm run check:op`                 | Verify 1Password is resolving all 8 provider keys             |
 
 ### Secrets Management
 

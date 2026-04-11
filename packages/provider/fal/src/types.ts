@@ -399,6 +399,45 @@ export interface FalSeedance2p0ImageToVideoResponse {
   seed: number;
 }
 
+// Nano Banana Pro image editing (Google state-of-the-art image edit model)
+export type FalNanoBananaProAspectRatio =
+  | "auto"
+  | "21:9"
+  | "16:9"
+  | "3:2"
+  | "4:3"
+  | "5:4"
+  | "1:1"
+  | "4:5"
+  | "3:4"
+  | "2:3"
+  | "9:16";
+
+export type FalNanoBananaProOutputFormat = "jpeg" | "png" | "webp";
+
+export type FalNanoBananaProSafetyTolerance = "1" | "2" | "3" | "4" | "5" | "6";
+
+export type FalNanoBananaProResolution = "1K" | "2K" | "4K";
+
+export interface FalNanoBananaProEditParams {
+  prompt: string;
+  image_urls: string[];
+  num_images?: number;
+  seed?: number;
+  aspect_ratio?: FalNanoBananaProAspectRatio;
+  output_format?: FalNanoBananaProOutputFormat;
+  safety_tolerance?: FalNanoBananaProSafetyTolerance;
+  sync_mode?: boolean;
+  resolution?: FalNanoBananaProResolution;
+  limit_generations?: boolean;
+  enable_web_search?: boolean;
+}
+
+export interface FalNanoBananaProEditResponse {
+  images: FalFile[];
+  description: string;
+}
+
 // Payload schema types
 export interface PayloadFieldSchema {
   type: "string" | "number" | "boolean" | "array" | "object";
@@ -744,8 +783,21 @@ export interface FalRunBytedanceNamespace {
   seedance2p0: FalRunBytedanceSeedance2p0Namespace;
 }
 
+type FalNanoBananaProEditFn = ((
+  params: FalNanoBananaProEditParams,
+  signal?: AbortSignal
+) => Promise<FalNanoBananaProEditResponse>) & {
+  payloadSchema: PayloadSchema;
+  validatePayload(data: unknown): ValidationResult;
+};
+
+export interface FalRunNanoBananaProNamespace {
+  edit: FalNanoBananaProEditFn;
+}
+
 export interface FalRunNamespace {
   bytedance: FalRunBytedanceNamespace;
+  nanoBananaPro: FalRunNanoBananaProNamespace;
 }
 
 // ==================== Verb-Prefixed API Surface ====================

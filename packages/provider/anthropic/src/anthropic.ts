@@ -22,29 +22,6 @@ import {
   AnthropicSkillVersionsListParams,
   AnthropicSkillVersionsListResponse,
   AnthropicSkillVersionDeleteResponse,
-  AnthropicOrganization,
-  AnthropicUser,
-  AnthropicUserListResponse,
-  AnthropicUserUpdateRequest,
-  AnthropicUserDeleteResponse,
-  AnthropicInvite,
-  AnthropicInviteListResponse,
-  AnthropicInviteCreateRequest,
-  AnthropicInviteDeleteResponse,
-  AnthropicWorkspace,
-  AnthropicWorkspaceListResponse,
-  AnthropicWorkspaceListParams,
-  AnthropicWorkspaceCreateRequest,
-  AnthropicWorkspaceUpdateRequest,
-  AnthropicWorkspaceMember,
-  AnthropicWorkspaceMemberListResponse,
-  AnthropicWorkspaceMemberAddRequest,
-  AnthropicWorkspaceMemberUpdateRequest,
-  AnthropicWorkspaceMemberDeleteResponse,
-  AnthropicApiKey,
-  AnthropicApiKeyListResponse,
-  AnthropicApiKeyListParams,
-  AnthropicApiKeyUpdateRequest,
   AnthropicListParams,
   AnthropicStreamEvent,
   AnthropicProvider,
@@ -58,9 +35,6 @@ import {
   filesUploadSchema,
   skillsCreateSchema,
   skillVersionsCreateSchema,
-  inviteCreateSchema,
-  workspaceCreateSchema,
-  workspaceMemberAddSchema,
 } from "./schemas";
 import { validatePayload } from "./validate";
 import { parseAnthropicStream } from "./sse";
@@ -361,9 +335,6 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
     };
   }
 
-  // Admin API key (falls back to main apiKey)
-  const adminKey = opts.adminApiKey ?? opts.apiKey;
-
   // Beta flags
   const FILES_BETA = ["files-api-2025-04-14"];
   const SKILLS_BETA = ["skills-2025-10-02"];
@@ -518,131 +489,6 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
     }
   );
 
-  const postInvitesCreate = Object.assign(
-    async function create(
-      req: AnthropicInviteCreateRequest,
-      signal?: AbortSignal
-    ): Promise<AnthropicInvite> {
-      return await makeJsonRequest<AnthropicInvite>(
-        "/organizations/invites",
-        req,
-        signal,
-        adminKey
-      );
-    },
-    {
-      payloadSchema: inviteCreateSchema,
-      validatePayload(data: unknown): ValidationResult {
-        return validatePayload(data, inviteCreateSchema);
-      },
-    }
-  );
-
-  const postWorkspacesCreate = Object.assign(
-    async function create(
-      req: AnthropicWorkspaceCreateRequest,
-      signal?: AbortSignal
-    ): Promise<AnthropicWorkspace> {
-      return await makeJsonRequest<AnthropicWorkspace>(
-        "/organizations/workspaces",
-        req,
-        signal,
-        adminKey
-      );
-    },
-    {
-      payloadSchema: workspaceCreateSchema,
-      validatePayload(data: unknown): ValidationResult {
-        return validatePayload(data, workspaceCreateSchema);
-      },
-    }
-  );
-
-  const postWorkspaceMembersAdd = Object.assign(
-    async function add(
-      workspaceId: string,
-      req: AnthropicWorkspaceMemberAddRequest,
-      signal?: AbortSignal
-    ): Promise<AnthropicWorkspaceMember> {
-      return await makeJsonRequest<AnthropicWorkspaceMember>(
-        `/organizations/workspaces/${encodeURIComponent(workspaceId)}/members`,
-        req,
-        signal,
-        adminKey
-      );
-    },
-    {
-      payloadSchema: workspaceMemberAddSchema,
-      validatePayload(data: unknown): ValidationResult {
-        return validatePayload(data, workspaceMemberAddSchema);
-      },
-    }
-  );
-
-  async function postApiKeysUpdate(
-    apiKeyId: string,
-    req: AnthropicApiKeyUpdateRequest,
-    signal?: AbortSignal
-  ): Promise<AnthropicApiKey> {
-    return await makeJsonRequest<AnthropicApiKey>(
-      `/organizations/api_keys/${encodeURIComponent(apiKeyId)}`,
-      req,
-      signal,
-      adminKey
-    );
-  }
-
-  async function postUsersUpdate(
-    userId: string,
-    req: AnthropicUserUpdateRequest,
-    signal?: AbortSignal
-  ): Promise<AnthropicUser> {
-    return await makeJsonRequest<AnthropicUser>(
-      `/organizations/users/${encodeURIComponent(userId)}`,
-      req,
-      signal,
-      adminKey
-    );
-  }
-
-  async function postWorkspacesUpdate(
-    workspaceId: string,
-    req: AnthropicWorkspaceUpdateRequest,
-    signal?: AbortSignal
-  ): Promise<AnthropicWorkspace> {
-    return await makeJsonRequest<AnthropicWorkspace>(
-      `/organizations/workspaces/${encodeURIComponent(workspaceId)}`,
-      req,
-      signal,
-      adminKey
-    );
-  }
-
-  async function postWorkspacesArchive(
-    workspaceId: string,
-    signal?: AbortSignal
-  ): Promise<AnthropicWorkspace> {
-    return await makeEmptyPostRequest<AnthropicWorkspace>(
-      `/organizations/workspaces/${encodeURIComponent(workspaceId)}/archive`,
-      signal,
-      adminKey
-    );
-  }
-
-  async function postWorkspaceMembersUpdate(
-    workspaceId: string,
-    userId: string,
-    req: AnthropicWorkspaceMemberUpdateRequest,
-    signal?: AbortSignal
-  ): Promise<AnthropicWorkspaceMember> {
-    return await makeJsonRequest<AnthropicWorkspaceMember>(
-      `/organizations/workspaces/${encodeURIComponent(workspaceId)}/members/${encodeURIComponent(userId)}`,
-      req,
-      signal,
-      adminKey
-    );
-  }
-
   // --- Define GET methods ---
 
   async function getBatchesList(
@@ -784,156 +630,6 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
     );
   }
 
-  async function getOrganizationsMe(
-    signal?: AbortSignal
-  ): Promise<AnthropicOrganization> {
-    return await makeGetRequest<AnthropicOrganization>(
-      "/organizations/me",
-      undefined,
-      signal,
-      adminKey
-    );
-  }
-
-  async function getUsersList(
-    params?: AnthropicListParams & { email?: string },
-    signal?: AbortSignal
-  ): Promise<AnthropicUserListResponse> {
-    const query: Record<string, string | undefined> = {
-      ...listQuery(params),
-    };
-    if (params?.email) query.email = params.email;
-    return await makeGetRequest<AnthropicUserListResponse>(
-      "/organizations/users",
-      query,
-      signal,
-      adminKey
-    );
-  }
-
-  async function getUsersRetrieve(
-    userId: string,
-    signal?: AbortSignal
-  ): Promise<AnthropicUser> {
-    return await makeGetRequest<AnthropicUser>(
-      `/organizations/users/${encodeURIComponent(userId)}`,
-      undefined,
-      signal,
-      adminKey
-    );
-  }
-
-  async function getInvitesList(
-    params?: AnthropicListParams,
-    signal?: AbortSignal
-  ): Promise<AnthropicInviteListResponse> {
-    return await makeGetRequest<AnthropicInviteListResponse>(
-      "/organizations/invites",
-      listQuery(params),
-      signal,
-      adminKey
-    );
-  }
-
-  async function getInvitesRetrieve(
-    inviteId: string,
-    signal?: AbortSignal
-  ): Promise<AnthropicInvite> {
-    return await makeGetRequest<AnthropicInvite>(
-      `/organizations/invites/${encodeURIComponent(inviteId)}`,
-      undefined,
-      signal,
-      adminKey
-    );
-  }
-
-  async function getWorkspacesList(
-    params?: AnthropicWorkspaceListParams,
-    signal?: AbortSignal
-  ): Promise<AnthropicWorkspaceListResponse> {
-    const query: Record<string, string | undefined> = {
-      ...listQuery(params),
-    };
-    if (params?.include_archived !== undefined) {
-      query.include_archived = String(params.include_archived);
-    }
-    return await makeGetRequest<AnthropicWorkspaceListResponse>(
-      "/organizations/workspaces",
-      query,
-      signal,
-      adminKey
-    );
-  }
-
-  async function getWorkspacesRetrieve(
-    workspaceId: string,
-    signal?: AbortSignal
-  ): Promise<AnthropicWorkspace> {
-    return await makeGetRequest<AnthropicWorkspace>(
-      `/organizations/workspaces/${encodeURIComponent(workspaceId)}`,
-      undefined,
-      signal,
-      adminKey
-    );
-  }
-
-  async function getWorkspaceMembersList(
-    workspaceId: string,
-    params?: AnthropicListParams,
-    signal?: AbortSignal
-  ): Promise<AnthropicWorkspaceMemberListResponse> {
-    return await makeGetRequest<AnthropicWorkspaceMemberListResponse>(
-      `/organizations/workspaces/${encodeURIComponent(workspaceId)}/members`,
-      listQuery(params),
-      signal,
-      adminKey
-    );
-  }
-
-  async function getWorkspaceMembersRetrieve(
-    workspaceId: string,
-    userId: string,
-    signal?: AbortSignal
-  ): Promise<AnthropicWorkspaceMember> {
-    return await makeGetRequest<AnthropicWorkspaceMember>(
-      `/organizations/workspaces/${encodeURIComponent(workspaceId)}/members/${encodeURIComponent(userId)}`,
-      undefined,
-      signal,
-      adminKey
-    );
-  }
-
-  async function getApiKeysList(
-    params?: AnthropicApiKeyListParams,
-    signal?: AbortSignal
-  ): Promise<AnthropicApiKeyListResponse> {
-    const query: Record<string, string | undefined> = {
-      ...listQuery(params),
-    };
-    if (params?.status) query.status = params.status;
-    if (params?.workspace_id) query.workspace_id = params.workspace_id;
-    if (params?.created_by_user_id)
-      query.created_by_user_id = params.created_by_user_id;
-    return await makeGetRequest<AnthropicApiKeyListResponse>(
-      "/organizations/api_keys",
-      query,
-      signal,
-      adminKey
-    );
-  }
-
-  async function getApiKeysRetrieve(
-    apiKeyId: string,
-    signal?: AbortSignal
-  ): Promise<AnthropicApiKey> {
-    return await makeGetRequest<AnthropicApiKey>(
-      `/organizations/api_keys/${encodeURIComponent(apiKeyId)}`,
-      undefined,
-      signal,
-      adminKey
-    );
-  }
-
   // --- Define DELETE methods ---
 
   async function deleteBatchesDel(
@@ -983,40 +679,6 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
     );
   }
 
-  async function deleteUsersDel(
-    userId: string,
-    signal?: AbortSignal
-  ): Promise<AnthropicUserDeleteResponse> {
-    return await makeDeleteRequest<AnthropicUserDeleteResponse>(
-      `/organizations/users/${encodeURIComponent(userId)}`,
-      signal,
-      adminKey
-    );
-  }
-
-  async function deleteInvitesDel(
-    inviteId: string,
-    signal?: AbortSignal
-  ): Promise<AnthropicInviteDeleteResponse> {
-    return await makeDeleteRequest<AnthropicInviteDeleteResponse>(
-      `/organizations/invites/${encodeURIComponent(inviteId)}`,
-      signal,
-      adminKey
-    );
-  }
-
-  async function deleteWorkspaceMembersDel(
-    workspaceId: string,
-    userId: string,
-    signal?: AbortSignal
-  ): Promise<AnthropicWorkspaceMemberDeleteResponse> {
-    return await makeDeleteRequest<AnthropicWorkspaceMemberDeleteResponse>(
-      `/organizations/workspaces/${encodeURIComponent(workspaceId)}/members/${encodeURIComponent(userId)}`,
-      signal,
-      adminKey
-    );
-  }
-
   // --- Build namespaces ---
 
   const postV1 = {
@@ -1026,26 +688,6 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
       create: postSkillsCreate,
       versions: {
         create: postSkillVersionsCreate,
-      },
-    },
-    organizations: {
-      invites: {
-        create: postInvitesCreate,
-      },
-      users: {
-        update: postUsersUpdate,
-      },
-      workspaces: {
-        create: postWorkspacesCreate,
-        update: postWorkspacesUpdate,
-        archive: postWorkspacesArchive,
-        members: {
-          add: postWorkspaceMembersAdd,
-          update: postWorkspaceMembersUpdate,
-        },
-      },
-      apiKeys: {
-        update: postApiKeysUpdate,
       },
     },
   };
@@ -1078,29 +720,6 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
         list: getSkillVersionsList,
       },
     },
-    organizations: {
-      me: getOrganizationsMe,
-      users: {
-        list: getUsersList,
-        retrieve: getUsersRetrieve,
-      },
-      invites: {
-        list: getInvitesList,
-        retrieve: getInvitesRetrieve,
-      },
-      workspaces: {
-        list: getWorkspacesList,
-        retrieve: getWorkspacesRetrieve,
-        members: {
-          list: getWorkspaceMembersList,
-          retrieve: getWorkspaceMembersRetrieve,
-        },
-      },
-      apiKeys: {
-        list: getApiKeysList,
-        retrieve: getApiKeysRetrieve,
-      },
-    },
   };
 
   const deleteV1 = {
@@ -1116,19 +735,6 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
       del: deleteSkillsDel,
       versions: {
         del: deleteSkillVersionsDel,
-      },
-    },
-    organizations: {
-      users: {
-        del: deleteUsersDel,
-      },
-      invites: {
-        del: deleteInvitesDel,
-      },
-      workspaces: {
-        members: {
-          del: deleteWorkspaceMembersDel,
-        },
       },
     },
   };
@@ -1207,45 +813,6 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
         create: postSkillVersionsCreate,
         list: getSkillVersionsList,
         del: deleteSkillVersionsDel,
-      },
-    },
-
-    organizations: {
-      me: getOrganizationsMe,
-
-      users: {
-        list: getUsersList,
-        retrieve: getUsersRetrieve,
-        update: postUsersUpdate,
-        del: deleteUsersDel,
-      },
-
-      invites: {
-        create: postInvitesCreate,
-        list: getInvitesList,
-        retrieve: getInvitesRetrieve,
-        del: deleteInvitesDel,
-      },
-
-      workspaces: {
-        create: postWorkspacesCreate,
-        list: getWorkspacesList,
-        retrieve: getWorkspacesRetrieve,
-        update: postWorkspacesUpdate,
-        archive: postWorkspacesArchive,
-        members: {
-          add: postWorkspaceMembersAdd,
-          list: getWorkspaceMembersList,
-          retrieve: getWorkspaceMembersRetrieve,
-          update: postWorkspaceMembersUpdate,
-          del: deleteWorkspaceMembersDel,
-        },
-      },
-
-      api_keys: {
-        list: getApiKeysList,
-        retrieve: getApiKeysRetrieve,
-        update: postApiKeysUpdate,
       },
     },
   };

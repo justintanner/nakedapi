@@ -2,7 +2,6 @@
 export interface AnthropicOptions {
   apiKey: string;
   baseURL?: string;
-  adminApiKey?: string;
   timeout?: number;
   defaultVersion?: string;
   defaultBeta?: string[];
@@ -454,140 +453,6 @@ export interface AnthropicFileDeleteResponse {
   type: "file_deleted";
 }
 
-// ---------- Admin API ----------
-
-export interface AnthropicOrganization {
-  id: string;
-  type: "organization";
-  name: string;
-}
-
-// Users
-
-export interface AnthropicUser {
-  id: string;
-  type: "user";
-  name: string;
-  email: string;
-  role:
-    | "user"
-    | "developer"
-    | "billing"
-    | "admin"
-    | "claude_code_user"
-    | "managed";
-  added_at: string;
-}
-
-export type AnthropicUserListResponse = AnthropicListResponse<AnthropicUser>;
-
-export interface AnthropicUserUpdateRequest {
-  role: "user" | "developer" | "billing" | "claude_code_user" | "managed";
-}
-
-export interface AnthropicUserDeleteResponse {
-  id: string;
-  type: "user_deleted";
-}
-
-// Invites
-
-export interface AnthropicInvite {
-  id: string;
-  type: "invite";
-  email: string;
-  role: string;
-  status: "accepted" | "expired" | "deleted" | "pending";
-  invited_at: string;
-  expires_at: string;
-}
-
-export type AnthropicInviteListResponse =
-  AnthropicListResponse<AnthropicInvite>;
-
-export interface AnthropicInviteCreateRequest {
-  email: string;
-  role: "user" | "developer" | "billing" | "claude_code_user" | "managed";
-}
-
-export interface AnthropicInviteDeleteResponse {
-  id: string;
-  type: "invite_deleted";
-}
-
-// Workspaces
-
-export interface AnthropicDataResidency {
-  workspace_geo?: string;
-  allowed_inference_geos?: string[];
-  default_inference_geo?: string;
-}
-
-export interface AnthropicWorkspace {
-  id: string;
-  type: "workspace";
-  name: string;
-  display_color: string;
-  created_at: string;
-  archived_at: string | null;
-  data_residency?: AnthropicDataResidency;
-}
-
-export type AnthropicWorkspaceListResponse =
-  AnthropicListResponse<AnthropicWorkspace>;
-
-export interface AnthropicWorkspaceListParams extends AnthropicListParams {
-  include_archived?: boolean;
-}
-
-export interface AnthropicWorkspaceCreateRequest {
-  name: string;
-  data_residency?: AnthropicDataResidency;
-}
-
-export interface AnthropicWorkspaceUpdateRequest {
-  name: string;
-  data_residency?: {
-    allowed_inference_geos?: string[];
-    default_inference_geo?: string;
-  };
-}
-
-// Workspace Members
-
-export interface AnthropicWorkspaceMember {
-  type: "workspace_member";
-  user_id: string;
-  workspace_id: string;
-  workspace_role:
-    | "workspace_user"
-    | "workspace_developer"
-    | "workspace_admin"
-    | "workspace_billing";
-}
-
-export type AnthropicWorkspaceMemberListResponse =
-  AnthropicListResponse<AnthropicWorkspaceMember>;
-
-export interface AnthropicWorkspaceMemberAddRequest {
-  user_id: string;
-  workspace_role: "workspace_user" | "workspace_developer" | "workspace_admin";
-}
-
-export interface AnthropicWorkspaceMemberUpdateRequest {
-  workspace_role:
-    | "workspace_user"
-    | "workspace_developer"
-    | "workspace_admin"
-    | "workspace_billing";
-}
-
-export interface AnthropicWorkspaceMemberDeleteResponse {
-  type: "workspace_member_deleted";
-  user_id: string;
-  workspace_id: string;
-}
-
 // ---------- Skills API (Beta) ----------
 
 export interface AnthropicSkillFile {
@@ -647,33 +512,6 @@ export interface AnthropicSkillVersionsListResponse {
 export interface AnthropicSkillVersionDeleteResponse {
   id: string;
   type: "skill_version_deleted";
-}
-
-// API Keys
-
-export interface AnthropicApiKey {
-  id: string;
-  type: "api_key";
-  name: string;
-  status: "active" | "inactive" | "archived";
-  partial_key_hint: string;
-  workspace_id: string | null;
-  created_at: string;
-  created_by: { id: string; type: string };
-}
-
-export type AnthropicApiKeyListResponse =
-  AnthropicListResponse<AnthropicApiKey>;
-
-export interface AnthropicApiKeyListParams extends AnthropicListParams {
-  status?: "active" | "inactive" | "archived";
-  workspace_id?: string;
-  created_by_user_id?: string;
-}
-
-export interface AnthropicApiKeyUpdateRequest {
-  name?: string;
-  status?: "active" | "inactive" | "archived";
 }
 
 // ---------- Schema types ----------
@@ -764,34 +602,6 @@ export interface AnthropicPostSkillVersionsCreateMethod {
   payloadSchema: PayloadSchema;
 }
 
-export interface AnthropicPostInvitesCreateMethod {
-  (
-    req: AnthropicInviteCreateRequest,
-    signal?: AbortSignal
-  ): Promise<AnthropicInvite>;
-  payloadSchema: PayloadSchema;
-  validatePayload: (data: unknown) => ValidationResult;
-}
-
-export interface AnthropicPostWorkspacesCreateMethod {
-  (
-    req: AnthropicWorkspaceCreateRequest,
-    signal?: AbortSignal
-  ): Promise<AnthropicWorkspace>;
-  payloadSchema: PayloadSchema;
-  validatePayload: (data: unknown) => ValidationResult;
-}
-
-export interface AnthropicPostWorkspaceMembersAddMethod {
-  (
-    workspaceId: string,
-    req: AnthropicWorkspaceMemberAddRequest,
-    signal?: AbortSignal
-  ): Promise<AnthropicWorkspaceMember>;
-  payloadSchema: PayloadSchema;
-  validatePayload: (data: unknown) => ValidationResult;
-}
-
 export interface AnthropicPostStreamV1Namespace {
   messages: AnthropicPostMessagesStreamMethod;
 }
@@ -803,46 +613,6 @@ export interface AnthropicPostV1Namespace {
     create: AnthropicPostSkillsCreateMethod;
     versions: {
       create: AnthropicPostSkillVersionsCreateMethod;
-    };
-  };
-  organizations: {
-    invites: {
-      create: AnthropicPostInvitesCreateMethod;
-    };
-    users: {
-      update: (
-        userId: string,
-        req: AnthropicUserUpdateRequest,
-        signal?: AbortSignal
-      ) => Promise<AnthropicUser>;
-    };
-    workspaces: {
-      create: AnthropicPostWorkspacesCreateMethod;
-      update: (
-        workspaceId: string,
-        req: AnthropicWorkspaceUpdateRequest,
-        signal?: AbortSignal
-      ) => Promise<AnthropicWorkspace>;
-      archive: (
-        workspaceId: string,
-        signal?: AbortSignal
-      ) => Promise<AnthropicWorkspace>;
-      members: {
-        add: AnthropicPostWorkspaceMembersAddMethod;
-        update: (
-          workspaceId: string,
-          userId: string,
-          req: AnthropicWorkspaceMemberUpdateRequest,
-          signal?: AbortSignal
-        ) => Promise<AnthropicWorkspaceMember>;
-      };
-    };
-    apiKeys: {
-      update: (
-        apiKeyId: string,
-        req: AnthropicApiKeyUpdateRequest,
-        signal?: AbortSignal
-      ) => Promise<AnthropicApiKey>;
     };
   };
 }
@@ -897,61 +667,6 @@ export interface AnthropicGetV1Namespace {
       ) => Promise<AnthropicSkillVersionsListResponse>;
     };
   };
-  organizations: {
-    me: (signal?: AbortSignal) => Promise<AnthropicOrganization>;
-    users: {
-      list: (
-        params?: AnthropicListParams & { email?: string },
-        signal?: AbortSignal
-      ) => Promise<AnthropicUserListResponse>;
-      retrieve: (
-        userId: string,
-        signal?: AbortSignal
-      ) => Promise<AnthropicUser>;
-    };
-    invites: {
-      list: (
-        params?: AnthropicListParams,
-        signal?: AbortSignal
-      ) => Promise<AnthropicInviteListResponse>;
-      retrieve: (
-        inviteId: string,
-        signal?: AbortSignal
-      ) => Promise<AnthropicInvite>;
-    };
-    workspaces: {
-      list: (
-        params?: AnthropicWorkspaceListParams,
-        signal?: AbortSignal
-      ) => Promise<AnthropicWorkspaceListResponse>;
-      retrieve: (
-        workspaceId: string,
-        signal?: AbortSignal
-      ) => Promise<AnthropicWorkspace>;
-      members: {
-        list: (
-          workspaceId: string,
-          params?: AnthropicListParams,
-          signal?: AbortSignal
-        ) => Promise<AnthropicWorkspaceMemberListResponse>;
-        retrieve: (
-          workspaceId: string,
-          userId: string,
-          signal?: AbortSignal
-        ) => Promise<AnthropicWorkspaceMember>;
-      };
-    };
-    apiKeys: {
-      list: (
-        params?: AnthropicApiKeyListParams,
-        signal?: AbortSignal
-      ) => Promise<AnthropicApiKeyListResponse>;
-      retrieve: (
-        apiKeyId: string,
-        signal?: AbortSignal
-      ) => Promise<AnthropicApiKey>;
-    };
-  };
 }
 
 // DELETE namespace types
@@ -981,29 +696,6 @@ export interface AnthropicDeleteV1Namespace {
         version: string,
         signal?: AbortSignal
       ) => Promise<AnthropicSkillVersionDeleteResponse>;
-    };
-  };
-  organizations: {
-    users: {
-      del: (
-        userId: string,
-        signal?: AbortSignal
-      ) => Promise<AnthropicUserDeleteResponse>;
-    };
-    invites: {
-      del: (
-        inviteId: string,
-        signal?: AbortSignal
-      ) => Promise<AnthropicInviteDeleteResponse>;
-    };
-    workspaces: {
-      members: {
-        del: (
-          workspaceId: string,
-          userId: string,
-          signal?: AbortSignal
-        ) => Promise<AnthropicWorkspaceMemberDeleteResponse>;
-      };
     };
   };
 }
@@ -1080,132 +772,6 @@ export interface AnthropicFilesUploadMethod {
   payloadSchema: PayloadSchema;
 }
 
-// Admin sub-namespaces
-
-export interface AnthropicUsersNamespace {
-  list: (
-    params?: AnthropicListParams & { email?: string },
-    signal?: AbortSignal
-  ) => Promise<AnthropicUserListResponse>;
-  retrieve: (userId: string, signal?: AbortSignal) => Promise<AnthropicUser>;
-  update: (
-    userId: string,
-    req: AnthropicUserUpdateRequest,
-    signal?: AbortSignal
-  ) => Promise<AnthropicUser>;
-  del: (
-    userId: string,
-    signal?: AbortSignal
-  ) => Promise<AnthropicUserDeleteResponse>;
-}
-
-export interface AnthropicInvitesNamespace {
-  create: AnthropicInvitesCreateMethod;
-  list: (
-    params?: AnthropicListParams,
-    signal?: AbortSignal
-  ) => Promise<AnthropicInviteListResponse>;
-  retrieve: (
-    inviteId: string,
-    signal?: AbortSignal
-  ) => Promise<AnthropicInvite>;
-  del: (
-    inviteId: string,
-    signal?: AbortSignal
-  ) => Promise<AnthropicInviteDeleteResponse>;
-}
-
-export interface AnthropicInvitesCreateMethod {
-  (
-    req: AnthropicInviteCreateRequest,
-    signal?: AbortSignal
-  ): Promise<AnthropicInvite>;
-  payloadSchema: PayloadSchema;
-  validatePayload: (data: unknown) => ValidationResult;
-}
-
-export interface AnthropicWorkspacesNamespace {
-  create: AnthropicWorkspacesCreateMethod;
-  list: (
-    params?: AnthropicWorkspaceListParams,
-    signal?: AbortSignal
-  ) => Promise<AnthropicWorkspaceListResponse>;
-  retrieve: (
-    workspaceId: string,
-    signal?: AbortSignal
-  ) => Promise<AnthropicWorkspace>;
-  update: (
-    workspaceId: string,
-    req: AnthropicWorkspaceUpdateRequest,
-    signal?: AbortSignal
-  ) => Promise<AnthropicWorkspace>;
-  archive: (
-    workspaceId: string,
-    signal?: AbortSignal
-  ) => Promise<AnthropicWorkspace>;
-  members: AnthropicWorkspaceMembersNamespace;
-}
-
-export interface AnthropicWorkspacesCreateMethod {
-  (
-    req: AnthropicWorkspaceCreateRequest,
-    signal?: AbortSignal
-  ): Promise<AnthropicWorkspace>;
-  payloadSchema: PayloadSchema;
-  validatePayload: (data: unknown) => ValidationResult;
-}
-
-export interface AnthropicWorkspaceMembersNamespace {
-  add: AnthropicWorkspaceMembersAddMethod;
-  list: (
-    workspaceId: string,
-    params?: AnthropicListParams,
-    signal?: AbortSignal
-  ) => Promise<AnthropicWorkspaceMemberListResponse>;
-  retrieve: (
-    workspaceId: string,
-    userId: string,
-    signal?: AbortSignal
-  ) => Promise<AnthropicWorkspaceMember>;
-  update: (
-    workspaceId: string,
-    userId: string,
-    req: AnthropicWorkspaceMemberUpdateRequest,
-    signal?: AbortSignal
-  ) => Promise<AnthropicWorkspaceMember>;
-  del: (
-    workspaceId: string,
-    userId: string,
-    signal?: AbortSignal
-  ) => Promise<AnthropicWorkspaceMemberDeleteResponse>;
-}
-
-export interface AnthropicWorkspaceMembersAddMethod {
-  (
-    workspaceId: string,
-    req: AnthropicWorkspaceMemberAddRequest,
-    signal?: AbortSignal
-  ): Promise<AnthropicWorkspaceMember>;
-  payloadSchema: PayloadSchema;
-  validatePayload: (data: unknown) => ValidationResult;
-}
-
-export interface AnthropicApiKeysNamespace {
-  list: (
-    params?: AnthropicApiKeyListParams,
-    signal?: AbortSignal
-  ) => Promise<AnthropicApiKeyListResponse>;
-  retrieve: (
-    apiKeyId: string,
-    signal?: AbortSignal
-  ) => Promise<AnthropicApiKey>;
-  update: (
-    apiKeyId: string,
-    req: AnthropicApiKeyUpdateRequest,
-    signal?: AbortSignal
-  ) => Promise<AnthropicApiKey>;
-}
-
 // Skills namespaces
 
 export interface AnthropicSkillsCreateMethod {
@@ -1254,20 +820,11 @@ export interface AnthropicSkillsNamespace {
   versions: AnthropicSkillVersionsNamespace;
 }
 
-export interface AnthropicOrganizationsNamespace {
-  me: (signal?: AbortSignal) => Promise<AnthropicOrganization>;
-  users: AnthropicUsersNamespace;
-  invites: AnthropicInvitesNamespace;
-  workspaces: AnthropicWorkspacesNamespace;
-  api_keys: AnthropicApiKeysNamespace;
-}
-
 export interface AnthropicV1Namespace {
   messages: AnthropicMessagesMethod;
   models: AnthropicModelsNamespace;
   files: AnthropicFilesNamespace;
   skills: AnthropicSkillsNamespace;
-  organizations: AnthropicOrganizationsNamespace;
 }
 
 export interface AnthropicProvider {

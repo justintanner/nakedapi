@@ -134,50 +134,6 @@ anthropic.files.upload.validatePayload(data)
 </details>
 
 <details>
-<summary><b><code>organizations.invites</code></b> — <code>POST /organizations/invites</code></summary>
-
-**Parameters:**
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `email` | string | Yes | Email address to invite |
-| `role` | string | Yes | Role for the invited user<br>Enum: `user`, `developer`, `billing`, `claude_code_user`, `managed` |
-
-**Validation:**
-
-```typescript
-// Access the schema
-anthropic.invite.create.payloadSchema
-
-// Validate data
-anthropic.invite.create.validatePayload(data)
-```
-
-</details>
-
-<details>
-<summary><b><code>organizations.workspaces</code></b> — <code>POST /organizations/workspaces</code></summary>
-
-**Parameters:**
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `name` | string | Yes | Workspace name |
-| `data_residency` | object | No | Data residency configuration |
-
-**Validation:**
-
-```typescript
-// Access the schema
-anthropic.workspace.create.payloadSchema
-
-// Validate data
-anthropic.workspace.create.validatePayload(data)
-```
-
-</details>
-
-<details>
 <summary><b><code>skills</code></b> — <code>POST /skills</code></summary>
 
 **Parameters:**
@@ -216,28 +172,6 @@ anthropic.skill.versions.create.payloadSchema
 
 // Validate data
 anthropic.skill.versions.create.validatePayload(data)
-```
-
-</details>
-
-<details>
-<summary><b><code>organizations.workspaces.workspace_id.members</code></b> — <code>POST /organizations/workspaces/{workspace_id}/members</code></summary>
-
-**Parameters:**
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `user_id` | string | Yes | User ID to add |
-| `workspace_role` | string | Yes | Role in workspace<br>Enum: `workspace_user`, `workspace_developer`, `workspace_admin` |
-
-**Validation:**
-
-```typescript
-// Access the schema
-anthropic.workspace.member.add.payloadSchema
-
-// Validate data
-anthropic.workspace.member.add.validatePayload(data)
 ```
 
 </details>

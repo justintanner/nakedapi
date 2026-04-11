@@ -74,7 +74,6 @@ import {
   batchesCreateSchema as anthropicBatchesCreateSchema,
   filesUploadSchema as anthropicFilesUploadSchema,
   skillsCreateSchema,
-  workspaceCreateSchema,
 } from "../../packages/provider/anthropic/src/schemas";
 
 // Import validatePayload to test schemas with real validation
@@ -571,20 +570,6 @@ describe("schema + validatePayload integration", () => {
     expect(result.valid).toBe(false);
     expect(result.errors).toContain("display_title is required");
     expect(result.errors).toContain("files is required");
-  });
-
-  it("anthropic workspaceCreate: accepts valid request", () => {
-    const result = validatePayload(
-      { name: "test-workspace" },
-      workspaceCreateSchema
-    );
-    expect(result.valid).toBe(true);
-  });
-
-  it("anthropic workspaceCreate: rejects missing name", () => {
-    const result = validatePayload({}, workspaceCreateSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("name is required");
   });
 
   // OpenAI missing schema tests

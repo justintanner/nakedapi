@@ -5,11 +5,8 @@ import {
   countTokensSchema,
   batchesCreateSchema,
   filesUploadSchema,
-  inviteCreateSchema,
-  workspaceCreateSchema,
   skillsCreateSchema,
   skillVersionsCreateSchema,
-  workspaceMemberAddSchema,
 } from "../../../packages/provider/anthropic/src/schemas";
 
 import { validatePayload } from "../../../packages/provider/anthropic/src/validate";
@@ -355,114 +352,6 @@ describe("anthropic schemas", () => {
     });
   });
 
-  describe("inviteCreateSchema", () => {
-    it("should have correct metadata", () => {
-      expect(inviteCreateSchema.method).toBe("POST");
-      expect(inviteCreateSchema.path).toBe("/organizations/invites");
-      expect(inviteCreateSchema.contentType).toBe("application/json");
-    });
-
-    it("should define required fields", () => {
-      expect(inviteCreateSchema.fields.email.required).toBe(true);
-      expect(inviteCreateSchema.fields.role.required).toBe(true);
-    });
-
-    it("should validate valid payload", () => {
-      const result = validatePayload(
-        {
-          email: "user@example.com",
-          role: "developer",
-        },
-        inviteCreateSchema
-      );
-      expect(result.valid).toBe(true);
-    });
-
-    it("should reject payload missing email", () => {
-      const result = validatePayload(
-        {
-          role: "developer",
-        },
-        inviteCreateSchema
-      );
-      expect(result.valid).toBe(false);
-    });
-
-    it("should reject payload missing role", () => {
-      const result = validatePayload(
-        {
-          email: "user@example.com",
-        },
-        inviteCreateSchema
-      );
-      expect(result.valid).toBe(false);
-    });
-
-    it("should validate all valid role values", () => {
-      const validRoles = [
-        "user",
-        "developer",
-        "billing",
-        "claude_code_user",
-        "managed",
-      ];
-      for (const role of validRoles) {
-        const result = validatePayload(
-          {
-            email: "user@example.com",
-            role,
-          },
-          inviteCreateSchema
-        );
-        expect(result.valid).toBe(true);
-      }
-    });
-  });
-
-  describe("workspaceCreateSchema", () => {
-    it("should have correct metadata", () => {
-      expect(workspaceCreateSchema.method).toBe("POST");
-      expect(workspaceCreateSchema.path).toBe("/organizations/workspaces");
-      expect(workspaceCreateSchema.contentType).toBe("application/json");
-    });
-
-    it("should define required fields", () => {
-      expect(workspaceCreateSchema.fields.name.required).toBe(true);
-    });
-
-    it("should define optional fields", () => {
-      expect(
-        workspaceCreateSchema.fields.data_residency.required
-      ).toBeUndefined();
-    });
-
-    it("should validate valid payload", () => {
-      const result = validatePayload(
-        {
-          name: "My Workspace",
-        },
-        workspaceCreateSchema
-      );
-      expect(result.valid).toBe(true);
-    });
-
-    it("should reject payload missing name", () => {
-      const result = validatePayload({}, workspaceCreateSchema);
-      expect(result.valid).toBe(false);
-    });
-
-    it("should validate payload with data_residency", () => {
-      const result = validatePayload(
-        {
-          name: "My Workspace",
-          data_residency: { region: "us-east-1" },
-        },
-        workspaceCreateSchema
-      );
-      expect(result.valid).toBe(true);
-    });
-  });
-
   describe("skillsCreateSchema", () => {
     it("should have correct metadata", () => {
       expect(skillsCreateSchema.method).toBe("POST");
@@ -533,72 +422,6 @@ describe("anthropic schemas", () => {
     it("should reject payload missing files", () => {
       const result = validatePayload({}, skillVersionsCreateSchema);
       expect(result.valid).toBe(false);
-    });
-  });
-
-  describe("workspaceMemberAddSchema", () => {
-    it("should have correct metadata", () => {
-      expect(workspaceMemberAddSchema.method).toBe("POST");
-      expect(workspaceMemberAddSchema.path).toBe(
-        "/organizations/workspaces/{workspace_id}/members"
-      );
-      expect(workspaceMemberAddSchema.contentType).toBe("application/json");
-    });
-
-    it("should define required fields", () => {
-      expect(workspaceMemberAddSchema.fields.user_id.required).toBe(true);
-      expect(workspaceMemberAddSchema.fields.workspace_role.required).toBe(
-        true
-      );
-    });
-
-    it("should validate valid payload", () => {
-      const result = validatePayload(
-        {
-          user_id: "user_123",
-          workspace_role: "workspace_developer",
-        },
-        workspaceMemberAddSchema
-      );
-      expect(result.valid).toBe(true);
-    });
-
-    it("should reject payload missing user_id", () => {
-      const result = validatePayload(
-        {
-          workspace_role: "workspace_developer",
-        },
-        workspaceMemberAddSchema
-      );
-      expect(result.valid).toBe(false);
-    });
-
-    it("should reject payload missing workspace_role", () => {
-      const result = validatePayload(
-        {
-          user_id: "user_123",
-        },
-        workspaceMemberAddSchema
-      );
-      expect(result.valid).toBe(false);
-    });
-
-    it("should validate all valid workspace_role values", () => {
-      const validRoles = [
-        "workspace_user",
-        "workspace_developer",
-        "workspace_admin",
-      ];
-      for (const workspace_role of validRoles) {
-        const result = validatePayload(
-          {
-            user_id: "user_123",
-            workspace_role,
-          },
-          workspaceMemberAddSchema
-        );
-        expect(result.valid).toBe(true);
-      }
     });
   });
 

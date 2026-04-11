@@ -150,42 +150,6 @@ export const filesUploadSchema: PayloadSchema = {
   },
 };
 
-export const inviteCreateSchema: PayloadSchema = {
-  method: "POST",
-  path: "/organizations/invites",
-  contentType: "application/json",
-  fields: {
-    email: {
-      type: "string",
-      required: true,
-      description: "Email address to invite",
-    },
-    role: {
-      type: "string",
-      required: true,
-      description: "Role for the invited user",
-      enum: ["user", "developer", "billing", "claude_code_user", "managed"],
-    },
-  },
-};
-
-export const workspaceCreateSchema: PayloadSchema = {
-  method: "POST",
-  path: "/organizations/workspaces",
-  contentType: "application/json",
-  fields: {
-    name: {
-      type: "string",
-      required: true,
-      description: "Workspace name",
-    },
-    data_residency: {
-      type: "object",
-      description: "Data residency configuration",
-    },
-  },
-};
-
 export const skillsCreateSchema: PayloadSchema = {
   method: "POST",
   path: "/skills",
@@ -215,25 +179,6 @@ export const skillVersionsCreateSchema: PayloadSchema = {
       required: true,
       description: "Updated skill files (must include SKILL.md)",
       items: { type: "object" },
-    },
-  },
-};
-
-export const workspaceMemberAddSchema: PayloadSchema = {
-  method: "POST",
-  path: "/organizations/workspaces/{workspace_id}/members",
-  contentType: "application/json",
-  fields: {
-    user_id: {
-      type: "string",
-      required: true,
-      description: "User ID to add",
-    },
-    workspace_role: {
-      type: "string",
-      required: true,
-      description: "Role in workspace",
-      enum: ["workspace_user", "workspace_developer", "workspace_admin"],
     },
   },
 };

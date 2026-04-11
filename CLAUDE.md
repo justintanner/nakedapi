@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-NakedAPI is a TypeScript monorepo of standalone AI provider packages (`@nakedapi/openai`, `@nakedapi/xai`, `@nakedapi/fal`, `@nakedapi/kimicoding`, `@nakedapi/kie`, `@nakedapi/anthropic`, `@nakedapi/fireworks`, `@nakedapi/free`). Each package has zero external dependencies and is completely self-contained. Based on [TetherAI](https://github.com/nbursa/TetherAI).
+Apicity is a TypeScript monorepo of standalone AI provider packages (`@apicity/openai`, `@apicity/xai`, `@apicity/fal`, `@apicity/kimicoding`, `@apicity/kie`, `@apicity/anthropic`, `@apicity/fireworks`, `@apicity/free`). Each package has zero external dependencies and is completely self-contained. Based on [TetherAI](https://github.com/nbursa/TetherAI).
 
 ## Package Naming
 
-Package names follow the pattern `@nakedapi/<provider>` where the provider name matches the upstream API name (lowercase).
+Package names follow the pattern `@apicity/<provider>` where the provider name matches the upstream API name (lowercase).
 
 ## Endpoint Naming
 
@@ -102,7 +102,7 @@ packages/provider/<name>/
 All tests use Polly.js HTTP record/replay (no mocks):
 
 - **Config**: `tests/vitest.integration.ts` — includes `tests/integration/**/*.test.ts`, 30s timeout
-- **Setup**: `tests/integration-setup.ts` — aliases `@nakedapi/*` to source directories so tests run against source (not dist)
+- **Setup**: `tests/integration-setup.ts` — aliases `@apicity/*` to source directories so tests run against source (not dist)
 
 Tests use `setupPolly(recordingName)` / `teardownPolly(ctx)` from `tests/harness.ts`. Recordings stored as HAR files in `tests/recordings/`. Auth headers are auto-redacted before persisting.
 
@@ -143,7 +143,7 @@ Recordings are committed alongside source code and included in PRs. The CI harne
 
 **Secrets management:**
 
-API keys are resolved at runtime via the [1Password CLI](https://developer.1password.com/docs/cli/) (`op run --env-file=.env.tpl`). The `.env.tpl` file contains `op://` secret references (e.g., `op://NakedAPI/OPENAI_API_KEY/password`) — no plaintext secrets are stored on disk. Both `test:integration:record` and `test:integration:record-missing` use `op run` automatically.
+API keys are resolved at runtime via the [1Password CLI](https://developer.1password.com/docs/cli/) (`op run --env-file=.env.tpl`). The `.env.tpl` file contains `op://` secret references (e.g., `op://Apicity/OPENAI_API_KEY/password`) — no plaintext secrets are stored on disk. Both `test:integration:record` and `test:integration:record-missing` use `op run` automatically.
 
 Alternatively, copy `.env.template` to `.env` and fill in your keys manually. Use `source .env` before running tests with `POLLY_MODE=record`.
 

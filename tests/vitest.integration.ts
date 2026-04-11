@@ -15,33 +15,30 @@ export default defineConfig({
     testTimeout: 30000,
     setupFiles: ["tests/integration-setup.ts"],
     alias: {
-      "@nakedapi/kimicoding": path.resolve(
+      "@apicity/kimicoding": path.resolve(
         __dirname,
         "../packages/provider/kimicoding/src"
       ),
-      "@nakedapi/kie": path.resolve(__dirname, "../packages/provider/kie/src"),
-      "@nakedapi/xai": path.resolve(__dirname, "../packages/provider/xai/src"),
-      "@nakedapi/openai": path.resolve(
+      "@apicity/kie": path.resolve(__dirname, "../packages/provider/kie/src"),
+      "@apicity/xai": path.resolve(__dirname, "../packages/provider/xai/src"),
+      "@apicity/openai": path.resolve(
         __dirname,
         "../packages/provider/openai/src"
       ),
-      "@nakedapi/fal": path.resolve(__dirname, "../packages/provider/fal/src"),
-      "@nakedapi/fireworks": path.resolve(
+      "@apicity/fal": path.resolve(__dirname, "../packages/provider/fal/src"),
+      "@apicity/fireworks": path.resolve(
         __dirname,
         "../packages/provider/fireworks/src"
       ),
-      "@nakedapi/anthropic": path.resolve(
+      "@apicity/anthropic": path.resolve(
         __dirname,
         "../packages/provider/anthropic/src"
       ),
-      "@nakedapi/alibaba": path.resolve(
+      "@apicity/alibaba": path.resolve(
         __dirname,
         "../packages/provider/alibaba/src"
       ),
-      "@nakedapi/free": path.resolve(
-        __dirname,
-        "../packages/provider/free/src"
-      ),
+      "@apicity/free": path.resolve(__dirname, "../packages/provider/free/src"),
     },
     coverage: {
       provider: "v8",

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { kie } from "@nakedapi/kie";
+import { kie } from "@apicity/kie";
 
 describe("kie file URL upload payload validation", () => {
   it("should have payload schema", async () => {

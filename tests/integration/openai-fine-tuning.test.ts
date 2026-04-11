@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { openai } from "@nakedapi/openai";
+import { openai } from "@apicity/openai";
 
 describe("openai fine-tuning", () => {
   describe("payload validation", () => {

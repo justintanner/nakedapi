@@ -1,9 +1,9 @@
 {
-  "name": "@nakedapi/fal",
+  "name": "@apicity/fal",
   "version": "0.1.0",
   "description": "Fal Platform API provider for model management, pricing, usage, and analytics.",
   "license": "MIT",
-  "repository": "github:justintanner/nakedapi",
+  "repository": "github:justintanner/apicity",
   "type": "module",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -28,7 +28,7 @@
     "pricing",
     "usage",
     "analytics",
-    "nakedapi"
+    "apicity"
   ],
   "author": "Justin Tanner",
   "engines": {

@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { setupPolly, teardownPolly, type PollyContext } from "../harness";
-import { fal, FalError } from "@nakedapi/fal";
+import { fal, FalError } from "@apicity/fal";
 
 describe("fal integration", () => {
   let ctx: PollyContext;

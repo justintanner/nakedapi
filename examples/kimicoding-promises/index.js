@@ -2,7 +2,7 @@ import {
   kimicoding as createKimicoding,
   textBlock,
   imageBase64,
-} from "@nakedapi/kimicoding";
+} from "@apicity/kimicoding";
 
 const kimicoding = createKimicoding({
   apiKey: process.env.KIMI_CODING_API_KEY || "your-api-key-here",

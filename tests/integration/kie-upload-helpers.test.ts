@@ -5,7 +5,7 @@ import {
   teardownPolly,
   type PollyContext,
 } from "../harness";
-import { kie, submitMediaJob } from "@nakedapi/kie";
+import { kie, submitMediaJob } from "@apicity/kie";
 
 describe("kie helper functions", () => {
   let ctx: PollyContext;
@@ -118,7 +118,7 @@ describe("kie helper functions", () => {
       });
 
       // Import the alias
-      const { createTaskOrThrow } = await import("@nakedapi/kie");
+      const { createTaskOrThrow } = await import("@apicity/kie");
 
       const taskId = await createTaskOrThrow(provider, {
         model: "grok-imagine/text-to-image",

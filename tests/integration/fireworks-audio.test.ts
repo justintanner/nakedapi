@@ -6,7 +6,7 @@ import {
   teardownPolly,
   type PollyContext,
 } from "../harness";
-import { fireworks } from "@nakedapi/fireworks";
+import { fireworks } from "@apicity/fireworks";
 
 // Audio fixture: tests/fixtures/dialog.mp3 (48KB, multi-speaker meeting dialog)
 

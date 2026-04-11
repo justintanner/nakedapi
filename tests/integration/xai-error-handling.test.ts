@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { setupPolly, teardownPolly, type PollyContext } from "../harness";
-import { XaiError } from "@nakedapi/xai";
+import { XaiError } from "@apicity/xai";
 import { createXaiProvider } from "../xai-provider";
 
 describe("xAI error handling integration", () => {

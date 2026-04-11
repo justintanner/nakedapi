@@ -2,11 +2,11 @@ import { describe, it, expect, afterEach } from "vitest";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { setupPolly, teardownPolly, type PollyContext } from "../harness";
-import { openai } from "@nakedapi/openai";
+import { openai } from "@apicity/openai";
 import type {
   OpenAiResponseOutputMessage,
   OpenAiResponseOutputText,
-} from "@nakedapi/openai";
+} from "@apicity/openai";
 
 describe("openai responses integration", () => {
   let ctx: PollyContext;

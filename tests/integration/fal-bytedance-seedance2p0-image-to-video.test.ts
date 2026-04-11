@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "fs";
 import path from "path";
 import { setupPolly, teardownPolly, type PollyContext } from "../harness";
-import { fal } from "@nakedapi/fal";
+import { fal } from "@apicity/fal";
 
 describe("fal bytedance seedance2p0 image-to-video integration", () => {
   let ctx: PollyContext;

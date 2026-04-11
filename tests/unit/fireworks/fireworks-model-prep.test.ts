@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fireworks } from "@nakedapi/fireworks";
+import { fireworks } from "@apicity/fireworks";
 
 import type { FireworksModel } from "../../../packages/provider/fireworks/src/types";
 

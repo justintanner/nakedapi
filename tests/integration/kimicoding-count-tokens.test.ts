@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { kimicoding } from "@nakedapi/kimicoding";
+import { kimicoding } from "@apicity/kimicoding";
 
 describe("kimicoding count tokens integration", () => {
   it("should have payload schema", async () => {

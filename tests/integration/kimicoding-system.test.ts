@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { setupPolly, teardownPolly, type PollyContext } from "../harness";
-import { kimicoding } from "@nakedapi/kimicoding";
+import { kimicoding } from "@apicity/kimicoding";
 
 describe("kimicoding system prompt", () => {
   let ctx: PollyContext;

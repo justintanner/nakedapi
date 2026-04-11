@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Documentation Generator for NakedAPI Providers
+ * Documentation Generator for Apicity Providers
  *
  * Generates README.md files with collapsible method documentation
  * extracted from provider source files.
@@ -222,10 +222,10 @@ async function generateReadme(providerDir, providerName) {
   const sections = [];
 
   // Header
-  sections.push(`# ${pkg.name || `@nakedapi/${providerName}`}`);
+  sections.push(`# ${pkg.name || `@apicity/${providerName}`}`);
   sections.push("");
   sections.push(
-    `[![npm](https://img.shields.io/npm/v/${pkg.name || "@nakedapi/" + providerName}?color=cb0000)](https://www.npmjs.com/package/${pkg.name || "@nakedapi/" + providerName})`
+    `[![npm](https://img.shields.io/npm/v/${pkg.name || "@apicity/" + providerName}?color=cb0000)](https://www.npmjs.com/package/${pkg.name || "@apicity/" + providerName})`
   );
   sections.push(
     "[![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)"
@@ -234,16 +234,16 @@ async function generateReadme(providerDir, providerName) {
     "[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript&logoColor=white)](tsconfig.json)"
   );
   sections.push("");
-  sections.push(pkg.description || `${providerName} provider for nakedapi.`);
+  sections.push(pkg.description || `${providerName} provider for apicity.`);
   sections.push("");
 
   // Installation
   sections.push("## Installation");
   sections.push("");
   sections.push("```bash");
-  sections.push(`npm install ${pkg.name || `@nakedapi/${providerName}`}`);
+  sections.push(`npm install ${pkg.name || `@apicity/${providerName}`}`);
   sections.push("# or");
-  sections.push(`pnpm add ${pkg.name || `@nakedapi/${providerName}`}`);
+  sections.push(`pnpm add ${pkg.name || `@apicity/${providerName}`}`);
   sections.push("```");
   sections.push("");
 
@@ -252,7 +252,7 @@ async function generateReadme(providerDir, providerName) {
   sections.push("");
   sections.push("```typescript");
   sections.push(
-    `import { ${providerName} as create${providerName.charAt(0).toUpperCase() + providerName.slice(1)} } from "${pkg.name || `@nakedapi/${providerName}`}";`
+    `import { ${providerName} as create${providerName.charAt(0).toUpperCase() + providerName.slice(1)} } from "${pkg.name || `@apicity/${providerName}`}";`
   );
   sections.push("");
   sections.push(
@@ -323,7 +323,7 @@ async function generateReadme(providerDir, providerName) {
   sections.push("");
   sections.push("```typescript");
   sections.push(
-    `import { ${providerName} as create${providerName.charAt(0).toUpperCase() + providerName.slice(1)}, withRetry } from "${pkg.name || `@nakedapi/${providerName}`}";`
+    `import { ${providerName} as create${providerName.charAt(0).toUpperCase() + providerName.slice(1)}, withRetry } from "${pkg.name || `@apicity/${providerName}`}";`
   );
   sections.push("");
   sections.push(
@@ -350,7 +350,7 @@ async function generateReadme(providerDir, providerName) {
     sections.push("  withRetry,");
     sections.push("  createRateLimiter,");
     sections.push("  XAI_RATE_LIMITS,");
-    sections.push('} from "@nakedapi/xai";');
+    sections.push('} from "@apicity/xai";');
     sections.push("");
     sections.push(
       "const xai = createXai({ apiKey: process.env.XAI_API_KEY! });"

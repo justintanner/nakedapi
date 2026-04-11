@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { setupPolly, teardownPolly, type PollyContext } from "../harness";
-import { fireworks, FireworksError } from "@nakedapi/fireworks";
+import { fireworks, FireworksError } from "@apicity/fireworks";
 
 describe("fireworks models download endpoint and validate upload", () => {
   let ctx: PollyContext;

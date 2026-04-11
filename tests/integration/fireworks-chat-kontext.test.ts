@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { setupPolly, teardownPolly, type PollyContext } from "../harness";
-import { fireworks } from "@nakedapi/fireworks";
+import { fireworks } from "@apicity/fireworks";
 
 describe("fireworks kontext endpoint integration", () => {
   let ctx: PollyContext;

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { alibaba } from "@nakedapi/alibaba";
+import { alibaba } from "@apicity/alibaba";
 import {
   setupPolly,
   teardownPolly,

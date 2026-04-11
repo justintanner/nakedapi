@@ -1,4 +1,4 @@
-// Shared payload validation engine (same pattern across all @nakedapi providers)
+// Shared payload validation engine (same pattern across all @apicity providers)
 import type {
   PayloadFieldSchema,
   PayloadSchema,

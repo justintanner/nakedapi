@@ -1,11 +1,11 @@
-# NakedAPI
+# Apicity
 
-[![CI](https://github.com/justintanner/nakedapi/actions/workflows/ci.yml/badge.svg)](https://github.com/justintanner/nakedapi/actions)
+[![CI](https://github.com/justintanner/apicity/actions/workflows/ci.yml/badge.svg)](https://github.com/justintanner/apicity/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript&logoColor=white)](tsconfig.base.json)
 [![Node](https://img.shields.io/badge/Node.js-%E2%89%A518-339933?logo=nodedotjs&logoColor=white)](package.json)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/justintanner/nakedapi/pulls)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/justintanner/apicity/pulls)
 
 Standalone-first TypeScript AI provider packages. Each is self-contained with zero external dependencies.
 
@@ -23,22 +23,22 @@ Standalone-first TypeScript AI provider packages. Each is self-contained with ze
 
 | Package                                              | Version                                                                                                                             | Description                                                    | Docs                                                       |
 | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------- |
-| [@nakedapi/openai](packages/provider/openai)         | [![npm](https://img.shields.io/npm/v/@nakedapi/openai?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/openai)         | Chat, embeddings, images, responses, audio                     | [README](packages/provider/openai/README.md#endpoints)     |
-| [@nakedapi/xai](packages/provider/xai)               | [![npm](https://img.shields.io/npm/v/@nakedapi/xai?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/xai)               | Grok chat, images, video, files, batches, collections, search  | [README](packages/provider/xai/README.md#endpoints)        |
-| [@nakedapi/fal](packages/provider/fal)               | [![npm](https://img.shields.io/npm/v/@nakedapi/fal?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/fal)               | Model registry, pricing, usage, analytics                      | [README](packages/provider/fal/README.md#endpoints)        |
-| [@nakedapi/kimicoding](packages/provider/kimicoding) | [![npm](https://img.shields.io/npm/v/@nakedapi/kimicoding?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/kimicoding) | Messages, models, embeddings                                   | [README](packages/provider/kimicoding/README.md#endpoints) |
-| [@nakedapi/kie](packages/provider/kie)               | [![npm](https://img.shields.io/npm/v/@nakedapi/kie?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/kie)               | Media generation (video/image/audio), sub-providers            | [README](packages/provider/kie/README.md#endpoints)        |
-| [@nakedapi/anthropic](packages/provider/anthropic)   | [![npm](https://img.shields.io/npm/v/@nakedapi/anthropic?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/anthropic)   | Messages, streaming, batches, files, models, admin APIs        | [README](packages/provider/anthropic/README.md#endpoints)  |
-| [@nakedapi/fireworks](packages/provider/fireworks)   | [![npm](https://img.shields.io/npm/v/@nakedapi/fireworks?color=cb0000&label=)](https://www.npmjs.com/package/@nakedapi/fireworks)   | Chat, completions, embeddings, audio, deployments, fine-tuning | [README](packages/provider/fireworks/README.md#endpoints)  |
+| [@apicity/openai](packages/provider/openai)         | [![npm](https://img.shields.io/npm/v/@apicity/openai?color=cb0000&label=)](https://www.npmjs.com/package/@apicity/openai)         | Chat, embeddings, images, responses, audio                     | [README](packages/provider/openai/README.md#endpoints)     |
+| [@apicity/xai](packages/provider/xai)               | [![npm](https://img.shields.io/npm/v/@apicity/xai?color=cb0000&label=)](https://www.npmjs.com/package/@apicity/xai)               | Grok chat, images, video, files, batches, collections, search  | [README](packages/provider/xai/README.md#endpoints)        |
+| [@apicity/fal](packages/provider/fal)               | [![npm](https://img.shields.io/npm/v/@apicity/fal?color=cb0000&label=)](https://www.npmjs.com/package/@apicity/fal)               | Model registry, pricing, usage, analytics                      | [README](packages/provider/fal/README.md#endpoints)        |
+| [@apicity/kimicoding](packages/provider/kimicoding) | [![npm](https://img.shields.io/npm/v/@apicity/kimicoding?color=cb0000&label=)](https://www.npmjs.com/package/@apicity/kimicoding) | Messages, models, embeddings                                   | [README](packages/provider/kimicoding/README.md#endpoints) |
+| [@apicity/kie](packages/provider/kie)               | [![npm](https://img.shields.io/npm/v/@apicity/kie?color=cb0000&label=)](https://www.npmjs.com/package/@apicity/kie)               | Media generation (video/image/audio), sub-providers            | [README](packages/provider/kie/README.md#endpoints)        |
+| [@apicity/anthropic](packages/provider/anthropic)   | [![npm](https://img.shields.io/npm/v/@apicity/anthropic?color=cb0000&label=)](https://www.npmjs.com/package/@apicity/anthropic)   | Messages, streaming, batches, files, models, admin APIs        | [README](packages/provider/anthropic/README.md#endpoints)  |
+| [@apicity/fireworks](packages/provider/fireworks)   | [![npm](https://img.shields.io/npm/v/@apicity/fireworks?color=cb0000&label=)](https://www.npmjs.com/package/@apicity/fireworks)   | Chat, completions, embeddings, audio, deployments, fine-tuning | [README](packages/provider/fireworks/README.md#endpoints)  |
 
 ## Quick Start
 
 ```bash
-npm install @nakedapi/xai
+npm install @apicity/xai
 ```
 
 ```typescript
-import { xai as createXai } from "@nakedapi/xai";
+import { xai as createXai } from "@apicity/xai";
 
 const xai = createXai({ apiKey: process.env.XAI_API_KEY! });
 
@@ -70,14 +70,14 @@ Full endpoint tables are in each provider's README: [OpenAI](packages/provider/o
 
 ## Middleware
 
-Every package exports `withRetry` and `withFallback` — generic function-level wrappers that work with any `(req, signal?) => Promise<T>` call. `@nakedapi/kimicoding` additionally exports `withStreamRetry` and `withStreamFallback` for async iterables.
+Every package exports `withRetry` and `withFallback` — generic function-level wrappers that work with any `(req, signal?) => Promise<T>` call. `@apicity/kimicoding` additionally exports `withStreamRetry` and `withStreamFallback` for async iterables.
 
 ### `withRetry` — Exponential Backoff
 
 Retries on transient errors (HTTP 429 and 5xx) with configurable backoff.
 
 ```typescript
-import { openai as createOpenai, withRetry } from "@nakedapi/openai";
+import { openai as createOpenai, withRetry } from "@apicity/openai";
 
 const openai = createOpenai({ apiKey: process.env.OPENAI_API_KEY! });
 
@@ -94,7 +94,7 @@ const chat = withRetry(openai.v1.chat.completions, {
 Tries each function in order. If one fails, the next picks up.
 
 ```typescript
-import { openai as createOpenai, withFallback } from "@nakedapi/openai";
+import { openai as createOpenai, withFallback } from "@apicity/openai";
 
 const primary = createOpenai({ apiKey: process.env.OPENAI_KEY_PRIMARY! });
 const backup = createOpenai({ apiKey: process.env.OPENAI_KEY_BACKUP! });
@@ -114,7 +114,7 @@ import {
   kimicoding as createKimicoding,
   withRetry,
   withFallback,
-} from "@nakedapi/kimicoding";
+} from "@apicity/kimicoding";
 
 const kimi1 = createKimicoding({ apiKey: process.env.KIMI_CODING_API_KEY_1! });
 const kimi2 = createKimicoding({ apiKey: process.env.KIMI_CODING_API_KEY_2! });

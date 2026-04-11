@@ -1,6 +1,6 @@
-# @nakedapi/openai
+# @apicity/openai
 
-[![npm](https://img.shields.io/npm/v/@nakedapi/openai?color=cb0000)](https://www.npmjs.com/package/@nakedapi/openai)
+[![npm](https://img.shields.io/npm/v/@apicity/openai?color=cb0000)](https://www.npmjs.com/package/@apicity/openai)
 [![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript&logoColor=white)](tsconfig.json)
 
@@ -9,15 +9,15 @@ OpenAI / GPT provider for chat completions.
 ## Installation
 
 ```bash
-npm install @nakedapi/openai
+npm install @apicity/openai
 # or
-pnpm add @nakedapi/openai
+pnpm add @apicity/openai
 ```
 
 ## Quick Start
 
 ```typescript
-import { openai as createOpenai } from "@nakedapi/openai";
+import { openai as createOpenai } from "@apicity/openai";
 
 const openai = createOpenai({ apiKey: process.env.OPENAI_API_KEY! });
 ```
@@ -620,7 +620,7 @@ openai.files.delete.validatePayload(data)
 ## Middleware
 
 ```typescript
-import { openai as createOpenai, withRetry } from "@nakedapi/openai";
+import { openai as createOpenai, withRetry } from "@apicity/openai";
 
 const openai = createOpenai({ apiKey: process.env.OPENAI_API_KEY! });
 const models = withRetry(openai.get.v1.models, { retries: 3 });

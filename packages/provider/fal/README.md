@@ -1,6 +1,6 @@
-# @nakedapi/fal
+# @apicity/fal
 
-[![npm](https://img.shields.io/npm/v/@nakedapi/fal?color=cb0000)](https://www.npmjs.com/package/@nakedapi/fal)
+[![npm](https://img.shields.io/npm/v/@apicity/fal?color=cb0000)](https://www.npmjs.com/package/@apicity/fal)
 [![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript&logoColor=white)](tsconfig.json)
 
@@ -9,15 +9,15 @@ Fal Platform API provider for model management, pricing, usage, and analytics.
 ## Installation
 
 ```bash
-npm install @nakedapi/fal
+npm install @apicity/fal
 # or
-pnpm add @nakedapi/fal
+pnpm add @apicity/fal
 ```
 
 ## Quick Start
 
 ```typescript
-import { fal as createFal } from "@nakedapi/fal";
+import { fal as createFal } from "@apicity/fal";
 
 const fal = createFal({ apiKey: process.env.FAL_API_KEY! });
 ```
@@ -238,7 +238,7 @@ fal.delete.payloads.validatePayload(data)
 ## Middleware
 
 ```typescript
-import { fal as createFal, withRetry } from "@nakedapi/fal";
+import { fal as createFal, withRetry } from "@apicity/fal";
 
 const fal = createFal({ apiKey: process.env.FAL_API_KEY! });
 const models = withRetry(fal.get.v1.models, { retries: 3 });

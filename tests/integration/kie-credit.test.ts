@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { setupPolly, teardownPolly, type PollyContext } from "../harness";
-import { kie } from "@nakedapi/kie";
+import { kie } from "@apicity/kie";
 
 describe("kie credit integration", () => {
   let ctx: PollyContext;

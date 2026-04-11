@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { setupPolly, teardownPolly, type PollyContext } from "../harness";
-import { openai } from "@nakedapi/openai";
+import { openai } from "@apicity/openai";
 
 describe("openai image edits integration", () => {
   let ctx: PollyContext;

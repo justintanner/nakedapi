@@ -4,7 +4,7 @@ import {
   teardownPolly,
   type PollyContext,
 } from "../harness";
-import { fireworks, FireworksError } from "@nakedapi/fireworks";
+import { fireworks, FireworksError } from "@apicity/fireworks";
 
 describe("fireworks audio batch integration", () => {
   let ctx: PollyContext;

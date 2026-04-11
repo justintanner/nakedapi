@@ -1,6 +1,6 @@
-# @nakedapi/kie
+# @apicity/kie
 
-[![npm](https://img.shields.io/npm/v/@nakedapi/kie?color=cb0000)](https://www.npmjs.com/package/@nakedapi/kie)
+[![npm](https://img.shields.io/npm/v/@apicity/kie?color=cb0000)](https://www.npmjs.com/package/@apicity/kie)
 [![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript&logoColor=white)](tsconfig.json)
 
@@ -9,15 +9,15 @@ Kie provider for video and image generation (Kling 3.0, Grok Imagine, Nano Banan
 ## Installation
 
 ```bash
-npm install @nakedapi/kie
+npm install @apicity/kie
 # or
-pnpm add @nakedapi/kie
+pnpm add @apicity/kie
 ```
 
 ## Quick Start
 
 ```typescript
-import { kie as createKie } from "@nakedapi/kie";
+import { kie as createKie } from "@apicity/kie";
 
 const kie = createKie({ apiKey: process.env.KIE_API_KEY! });
 ```
@@ -310,7 +310,7 @@ kie.claude.messages.validatePayload(data)
 ## Middleware
 
 ```typescript
-import { kie as createKie, withRetry } from "@nakedapi/kie";
+import { kie as createKie, withRetry } from "@apicity/kie";
 
 const kie = createKie({ apiKey: process.env.KIE_API_KEY! });
 const models = withRetry(kie.get.v1.models, { retries: 3 });

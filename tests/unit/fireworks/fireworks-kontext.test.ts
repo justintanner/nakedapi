@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fireworks } from "@nakedapi/fireworks";
+import { fireworks } from "@apicity/fireworks";
 
 function createJsonResponse(body: unknown): Response {
   return new Response(JSON.stringify(body), {

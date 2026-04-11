@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { fireworks } from "@nakedapi/fireworks";
+import { fireworks } from "@apicity/fireworks";
 
 describe("fireworks DELETE endpoint handlers", () => {
   const provider = fireworks({ apiKey: "test-key" });

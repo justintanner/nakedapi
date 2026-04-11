@@ -1,10 +1,10 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { setupPolly, teardownPolly, type PollyContext } from "../harness";
-import { openai } from "@nakedapi/openai";
+import { openai } from "@apicity/openai";
 import type {
   OpenAiStoredCompletionListResponse,
   OpenAiStoredCompletionMessageListResponse,
-} from "@nakedapi/openai";
+} from "@apicity/openai";
 
 describe("openai stored completions integration", () => {
   let ctx: PollyContext;

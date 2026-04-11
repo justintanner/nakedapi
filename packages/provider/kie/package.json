@@ -1,9 +1,9 @@
 {
-  "name": "@nakedapi/kie",
+  "name": "@apicity/kie",
   "version": "0.1.0",
   "description": "Kie provider for video and image generation (Kling 3.0, Grok Imagine, Nano Banana Pro).",
   "license": "MIT",
-  "repository": "github:justintanner/nakedapi",
+  "repository": "github:justintanner/apicity",
   "type": "module",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -26,7 +26,7 @@
     "grok",
     "video-generation",
     "image-generation",
-    "nakedapi"
+    "apicity"
   ],
   "author": "Justin Tanner",
   "engines": {

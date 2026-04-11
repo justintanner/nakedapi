@@ -1,6 +1,6 @@
-# @nakedapi/free
+# @apicity/free
 
-[![npm](https://img.shields.io/npm/v/@nakedapi/free?color=cb0000)](https://www.npmjs.com/package/@nakedapi/free)
+[![npm](https://img.shields.io/npm/v/@apicity/free?color=cb0000)](https://www.npmjs.com/package/@apicity/free)
 [![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript&logoColor=white)](tsconfig.json)
 
@@ -9,15 +9,15 @@ Free file hosting providers — tmpfiles.org and file.io.
 ## Installation
 
 ```bash
-npm install @nakedapi/free
+npm install @apicity/free
 # or
-pnpm add @nakedapi/free
+pnpm add @apicity/free
 ```
 
 ## Quick Start
 
 ```typescript
-import { free as createFree } from "@nakedapi/free";
+import { free as createFree } from "@apicity/free";
 
 const free = createFree({ apiKey: process.env.FREE_API_KEY! });
 ```
@@ -209,7 +209,7 @@ free.tflink.upload.validatePayload(data)
 ## Middleware
 
 ```typescript
-import { free as createFree, withRetry } from "@nakedapi/free";
+import { free as createFree, withRetry } from "@apicity/free";
 
 const free = createFree({ apiKey: process.env.FREE_API_KEY! });
 const models = withRetry(free.get.v1.models, { retries: 3 });

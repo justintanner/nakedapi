@@ -1,6 +1,6 @@
-# @nakedapi/xai
+# @apicity/xai
 
-[![npm](https://img.shields.io/npm/v/@nakedapi/xai?color=cb0000)](https://www.npmjs.com/package/@nakedapi/xai)
+[![npm](https://img.shields.io/npm/v/@apicity/xai?color=cb0000)](https://www.npmjs.com/package/@apicity/xai)
 [![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript&logoColor=white)](tsconfig.json)
 
@@ -9,15 +9,15 @@ X.AI / Grok provider for chat and search.
 ## Installation
 
 ```bash
-npm install @nakedapi/xai
+npm install @apicity/xai
 # or
-pnpm add @nakedapi/xai
+pnpm add @apicity/xai
 ```
 
 ## Quick Start
 
 ```typescript
-import { xai as createXai } from "@nakedapi/xai";
+import { xai as createXai } from "@apicity/xai";
 
 const xai = createXai({ apiKey: process.env.XAI_API_KEY! });
 ```
@@ -458,7 +458,7 @@ xai.collection.update.validatePayload(data)
 ## Middleware
 
 ```typescript
-import { xai as createXai, withRetry } from "@nakedapi/xai";
+import { xai as createXai, withRetry } from "@apicity/xai";
 
 const xai = createXai({ apiKey: process.env.XAI_API_KEY! });
 const models = withRetry(xai.get.v1.models, { retries: 3 });
@@ -475,7 +475,7 @@ import {
   withRetry,
   createRateLimiter,
   XAI_RATE_LIMITS,
-} from "@nakedapi/xai";
+} from "@apicity/xai";
 
 const xai = createXai({ apiKey: process.env.XAI_API_KEY! });
 ```

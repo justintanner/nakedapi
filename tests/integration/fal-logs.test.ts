@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { fal } from "@nakedapi/fal";
+import { fal } from "@apicity/fal";
 
 describe("fal serverless logs validation", () => {
   it("should expose payloadSchema on stream", () => {

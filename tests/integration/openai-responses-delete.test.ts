@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { setupPolly, teardownPolly, type PollyContext } from "../harness";
-import { openai } from "@nakedapi/openai";
-import type { OpenAiResponseDeleteResponse } from "@nakedapi/openai";
+import { openai } from "@apicity/openai";
+import type { OpenAiResponseDeleteResponse } from "@apicity/openai";
 
 describe("openai responses delete integration", () => {
   let ctx: PollyContext;

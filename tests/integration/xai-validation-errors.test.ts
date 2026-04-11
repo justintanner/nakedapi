@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { xai } from "@nakedapi/xai";
+import { xai } from "@apicity/xai";
 
 describe("xAI validation error integration", () => {
   it("should handle type mismatch in request payload - string for number field", () => {

@@ -6,7 +6,7 @@ import {
   teardownPolly,
   type PollyContext,
 } from "../harness";
-import { free } from "@nakedapi/free";
+import { free } from "@apicity/free";
 
 describe("free temp.sh upload", () => {
   let ctx: PollyContext;

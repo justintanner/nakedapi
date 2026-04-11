@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { setupPolly, teardownPolly, type PollyContext } from "../harness";
-import { kie } from "@nakedapi/kie";
+import { kie } from "@apicity/kie";
 
 describe("kie bytedance/seedance-2-fast integration", () => {
   let ctx: PollyContext;

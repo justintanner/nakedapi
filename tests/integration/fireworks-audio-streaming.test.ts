@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { fireworks } from "@nakedapi/fireworks";
+import { fireworks } from "@apicity/fireworks";
 
 describe("fireworks audio streaming transcriptions", () => {
   it("should expose streaming method with schema and validation", () => {

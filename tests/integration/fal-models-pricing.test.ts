@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { setupPolly, teardownPolly, type PollyContext } from "../harness";
-import { fal } from "@nakedapi/fal";
+import { fal } from "@apicity/fal";
 
 describe("fal models pricing integration", () => {
   let ctx: PollyContext;

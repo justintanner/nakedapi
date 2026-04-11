@@ -5,7 +5,7 @@ import {
   getPollyMode,
   type PollyContext,
 } from "../harness";
-import { kie } from "@nakedapi/kie";
+import { kie } from "@apicity/kie";
 
 describe("kie wan/2-7-image-pro integration", () => {
   let ctx: PollyContext;

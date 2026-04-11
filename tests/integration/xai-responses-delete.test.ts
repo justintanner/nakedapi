@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { xai } from "@nakedapi/xai";
+import { xai } from "@apicity/xai";
 
 describe("xai responses delete", () => {
   it("should expose delete method on delete.v1 namespace", () => {

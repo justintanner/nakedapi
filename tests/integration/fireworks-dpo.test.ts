@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { fireworks } from "@nakedapi/fireworks";
+import { fireworks } from "@apicity/fireworks";
 
 describe("fireworks dpo fine-tuning jobs", () => {
   describe("payload validation", () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { setupPolly, teardownPolly, type PollyContext } from "../harness";
-import { alibaba } from "@nakedapi/alibaba";
+import { alibaba } from "@apicity/alibaba";
 
 describe("alibaba chat completions", () => {
   let ctx: PollyContext;

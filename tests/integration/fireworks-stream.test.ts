@@ -4,7 +4,7 @@ import {
   fireworks,
   type FireworksChatStreamChunk,
   type FireworksCompletionStreamChunk,
-} from "@nakedapi/fireworks";
+} from "@apicity/fireworks";
 
 describe("fireworks streaming integration", () => {
   let ctx: PollyContext;

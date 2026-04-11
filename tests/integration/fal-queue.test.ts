@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { fal } from "@nakedapi/fal";
+import { fal } from "@apicity/fal";
 
 describe("fal queue validation", () => {
   it("should expose queue submit payloadSchema", () => {

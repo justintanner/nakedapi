@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { setupPolly, teardownPolly, type PollyContext } from "../harness";
-import { xai } from "@nakedapi/xai";
+import { xai } from "@apicity/xai";
 
 describe("xai video edits integration", () => {
   let ctx: PollyContext;

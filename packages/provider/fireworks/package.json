@@ -1,9 +1,9 @@
 {
-  "name": "@nakedapi/fireworks",
+  "name": "@apicity/fireworks",
   "version": "0.1.0",
   "description": "Fireworks AI provider for chat completions, completions, and embeddings.",
   "license": "MIT",
-  "repository": "github:justintanner/nakedapi",
+  "repository": "github:justintanner/apicity",
   "type": "module",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -25,7 +25,7 @@
     "fireworks-ai",
     "chat",
     "embeddings",
-    "nakedapi"
+    "apicity"
   ],
   "author": "Justin Tanner",
   "engines": {

@@ -8,8 +8,8 @@
  * The rate limiter does NOT receive the provider's internal AbortSignal
  * so that the provider's 30s timeout doesn't cancel queued requests.
  */
-import { xai, createRateLimiter, XAI_RATE_LIMITS } from "@nakedapi/xai";
-import type { RateLimiter } from "@nakedapi/xai";
+import { xai, createRateLimiter, XAI_RATE_LIMITS } from "@apicity/xai";
+import type { RateLimiter } from "@apicity/xai";
 
 const limiter: RateLimiter & {
   _acquire: (signal?: AbortSignal, maxQueueMs?: number) => Promise<void>;

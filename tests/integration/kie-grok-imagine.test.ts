@@ -5,7 +5,7 @@ import {
   getPollyMode,
   type PollyContext,
 } from "../harness";
-import { kie } from "@nakedapi/kie";
+import { kie } from "@apicity/kie";
 
 describe("kie grok-imagine full lifecycle", () => {
   let ctx: PollyContext;

@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { setupPolly, teardownPolly, type PollyContext } from "../harness";
-import { openai } from "@nakedapi/openai";
+import { openai } from "@apicity/openai";
 
 describe("openai responses inputItems integration", () => {
   let ctx: PollyContext;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { fireworks } from "@nakedapi/fireworks";
+import { fireworks } from "@apicity/fireworks";
 
 // Direct imports for unit-level coverage
 import { validatePayload } from "../../packages/provider/fireworks/src/validate";

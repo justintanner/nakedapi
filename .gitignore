@@ -4,6 +4,9 @@ tests/workflow-state.json
 # CI-generated harness artifacts
 harness-summary.md
 harness-report.html
+harness-report.png
+harness-report-media.html
+harness-report-media.png
 
 # Cached media from harness workflows
 harness_media/

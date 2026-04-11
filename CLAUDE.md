@@ -25,27 +25,43 @@ POST endpoints expose `.payloadSchema` and `.validatePayload(data)` for runtime 
 
 ## Commands
 
+Every phase of the dev loop maps to a single named pnpm script. Prefer these
+over raw `vitest` / `op run` invocations.
+
 ```bash
-pnpm install                    # Install dependencies
-pnpm run build                  # Build all packages
-pnpm run build:kimicoding       # Build single package (also: build:kie, build:xai, build:openai, build:fal, build:anthropic, build:fireworks, build:free)
-pnpm run lint                   # Lint (runs build first via prelint)
-pnpm run lint:fix               # Auto-fix lint issues
-pnpm run format                 # Format with Prettier
-pnpm run test:run               # Run all tests once (Polly.js replay)
-pnpm run test                   # Run tests in watch mode
-pnpm run test:integration:record  # Re-record test fixtures (needs 1Password CLI)
-pnpm run harness                # HAR viewer at localhost:3475 (all recordings)
-npm run check:op                # Verify 1Password service account is working
+# Build / lint / format
+pnpm install                     # Install dependencies
+pnpm run build                   # Build all packages
+pnpm run build:kimicoding        # Build single package (also: build:kie, build:xai, build:openai, build:fal, build:anthropic, build:fireworks, build:alibaba, build:free)
+pnpm run lint                    # Lint (runs build first via prelint)
+pnpm run lint:fix                # Auto-fix lint issues
+pnpm run format                  # Format with Prettier
+
+# Test (replay-only; no network, no keys)
+pnpm run test:run                # Run all tests once (Polly.js replay)
+pnpm run test:run <file>         # Replay a single test file
+pnpm run test                    # Run tests in watch mode
+
+# Dev workflow (discrete per-phase aliases)
+pnpm run dev:record -- <file>    # Safe record for a NEW test (record-missing + 1Password)
+pnpm run dev:rerecord -- <file>  # Destructive re-record (guarded by check-record-args.mjs)
+pnpm run dev:preflight           # format + lint + test:run (run before `git push`)
+pnpm run ci:local                # build + lint + test:run (exact CI mirror)
+
+# Harness viewer + screenshots
+pnpm run harness                 # HAR viewer at localhost:3475 (all recordings)
+pnpm run harness:report          # Generate PR-diff harness report HTML (stdout)
+pnpm run harness:screenshot      # Generate + screenshot the full harness report locally
+pnpm run harness:screenshot:media # Generate + screenshot ONLY media-bearing recordings
+
+# Secrets
+pnpm run check:op                # Verify 1Password service account is working
 
 # Standalone HAR viewer
-npx tsx tests/harness-serve.ts path/to/file.har       # View specific HAR file(s)
+npx tsx tests/harness-serve.ts path/to/file.har        # View specific HAR file(s)
 npx tsx tests/harness-serve.ts tests/recordings/       # View a directory of recordings
 npx tsx tests/harness-serve.ts --html out.html <paths> # Generate self-contained HTML
 npx tsx tests/harness-serve.ts --git-approve <paths>   # Enable approve button (git add)
-
-# Run a single test file
-pnpm run test:run tests/integration/openai-chat.test.ts
 ```
 
 ## Architecture
@@ -164,36 +180,38 @@ When assigned an endpoint task (e.g., "Add openai POST /v1/embeddings"):
 
 ## Development Workflow
 
-Format and lint gates are enforced automatically by git hooks (pre-commit: format + lint).
+Every phase of the dev loop is one `pnpm` command. Format/lint gates are also
+wired into `dev:preflight`, so you don't need a separate hook step.
 
-### 1. Implement
+| # | Phase             | Command                                                          |
+| - | ----------------- | ---------------------------------------------------------------- |
+| 1 | Implement         | _(edit code — types, schema, factory, integration test)_         |
+| 2 | Record fixtures   | `pnpm run dev:record -- tests/integration/<file>.test.ts`        |
+| 3 | Verify replay     | `pnpm run test:run tests/integration/<file>.test.ts`             |
+| 4 | Pre-push          | `pnpm run dev:preflight`                                         |
+| 5 | CI dry-run        | `pnpm run ci:local`                                              |
+| 6 | Push + open PR    | `git push -u origin HEAD && gh pr create`                        |
+| 7 | CI + harness diff | _(automatic — same 3 commands as `ci:local` + harness report)_   |
 
-Code the feature/fix following the provider pattern. Add types, factory method, and integration test. One endpoint per PR.
+**Escape hatches**
 
-### 2. Record integration test fixtures
+- `pnpm run dev:rerecord -- tests/integration/<file>.test.ts` — destructive
+  re-record of an existing HAR. Requires a file filter (`POLLY_FORCE_ALL=1`
+  overrides the guard).
+- `pnpm run check:op` — confirm 1Password is resolving all 8 provider keys
+  before recording.
+- `pnpm run harness` — local HAR viewer at `localhost:3475`.
+- `pnpm run harness:screenshot:media` — generate the same media-only PNG that
+  the CI harness-report job attaches to PRs, useful when iterating on
+  `har-viewer.html` rendering.
 
-```bash
-# Record fixtures (1Password CLI resolves secrets from .env.tpl):
-pnpm run test:integration:record -- tests/integration/<file>.test.ts
-# Verify replay works
-pnpm vitest run --config tests/vitest.integration.ts tests/integration/<file>.test.ts
-```
-
-### 3. Push + open PR
-
-```bash
-git add .
-git commit -m "feat: <description>"
-git push -u origin HEAD
-gh pr create --title "<title>" --body "<description>"
-```
-
-Recordings are committed alongside source code. The CI harness-report job posts a summary of changed recordings as a PR comment for visibility.
-
-### 4. CI validates + posts harness report (automatic)
-
-Three jobs run on the PR:
+### CI jobs (automatic on PR)
 
 - **build** — compile + verify artifacts
-- **test** — lint + integration tests (Polly.js replay)
-- **harness-report** — posts a visual summary with embedded prompts, input media, and output results as a PR comment + uploads interactive HTML viewer as artifact
+- **test** — `ci:local` line-for-line: `pnpm run build && pnpm run lint && pnpm run test:run`
+- **harness-report** — generates two screenshots via the reusable
+  `.github/actions/screenshot-harness` composite action: a full report
+  (`harness-report.png`) and a media-only report (`harness-report-media.png`)
+  filtered to recordings that contain embedded images, video, or audio. Both
+  PNGs + HTMLs are uploaded as artifacts and a Markdown summary is posted as a
+  PR comment.

@@ -108,11 +108,22 @@ jobs:
         env:
           GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref }}
 
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Screenshot harness viewer (full)
+        uses: ./.github/actions/screenshot-harness
+        with:
+          html-source: harness-report.html
+          output: harness-report.png
 
-      - name: Screenshot harness viewer
-        run: npx tsx tests/harness-screenshot.ts harness-report.html harness-report.png
+      - name: Generate media-only harness report
+        run: npx tsx tests/harness-report.ts --media-only > harness-report-media.html
+        env:
+          GITHUB_BASE_REF: ${{ github.event.pull_request.base.ref }}
+
+      - name: Screenshot harness viewer (media)
+        uses: ./.github/actions/screenshot-harness
+        with:
+          html-source: harness-report-media.html
+          output: harness-report-media.png
 
       - name: Generate harness summary
         id: summary
@@ -150,4 +161,6 @@ jobs:
           path: |
             harness-report.html
             harness-report.png
+            harness-report-media.html
+            harness-report-media.png
           retention-days: 30

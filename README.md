@@ -144,30 +144,40 @@ Each package exports `PayloadSchema`, `PayloadFieldSchema`, and `ValidationResul
 
 ## Testing
 
-```bash
-pnpm run test:run                 # All tests (Polly.js replay)
-pnpm run test:integration:record  # Re-record fixtures (needs 1Password CLI)
-pnpm run harness                  # Recording review UI at localhost:3475
-npm run check:op                  # Verify 1Password service account is working
-```
+Every dev-loop phase is one named pnpm script:
+
+| Command                                 | When to run it                                                |
+| --------------------------------------- | ------------------------------------------------------------- |
+| `pnpm run test:run`                     | Replay all tests from disk (no network, no keys)              |
+| `pnpm run test:run <file>`              | Replay a single test file                                     |
+| `pnpm run dev:record -- <file>`         | Record fixtures for a _new_ test (1Password, safe)            |
+| `pnpm run dev:rerecord -- <file>`       | Overwrite an existing HAR (destructive, file-filter required) |
+| `pnpm run dev:preflight`                | Format + lint + replay tests — run this before `git push`     |
+| `pnpm run ci:local`                     | Exact CI mirror: build + lint + replay tests                  |
+| `pnpm run harness`                      | Review recordings in a local viewer (localhost:3475)          |
+| `pnpm run harness:screenshot`           | Generate the full harness-report PNG locally                  |
+| `pnpm run harness:screenshot:media`     | Generate the media-only harness-report PNG locally            |
+| `pnpm run check:op`                     | Verify 1Password is resolving all 8 provider keys             |
 
 ### Secrets Management
 
-API keys are resolved at runtime via the [1Password CLI](https://developer.1password.com/docs/cli/) (`op run`). The `.env.tpl` file contains `op://` secret references — no plaintext secrets are stored on disk.
+API keys are resolved at runtime via the [1Password CLI](https://developer.1password.com/docs/cli/) (`op run`). The `.env.tpl` file contains `op://` secret references — no plaintext secrets are stored on disk. Both `dev:record` and `dev:rerecord` invoke `op run` automatically.
 
 ```bash
-# Record integration tests (1Password resolves secrets automatically):
-pnpm run test:integration:record
+# Record fixtures for a single new test:
+pnpm run dev:record -- tests/integration/<file>.test.ts
 
-# Or manually for a single test file:
-op run --env-file=.env.tpl -- env POLLY_MODE=record pnpm vitest run --config tests/vitest.integration.ts tests/integration/<file>.test.ts
+# Verify the recording replays cleanly (no network):
+pnpm run test:run tests/integration/<file>.test.ts
 ```
+
+`dev:rerecord` refuses to run without a test-file filter (guarded by `tests/check-record-args.mjs`) so you can't accidentally overwrite every HAR in the repo. Override with `POLLY_FORCE_ALL=1` if you really do mean to re-record everything.
 
 Alternatively, copy `.env.template` to `.env`, fill in your keys manually, and run:
 
 ```bash
 source .env
-POLLY_MODE=record pnpm vitest run --config tests/vitest.integration.ts tests/integration/<file>.test.ts
+POLLY_MODE=record pnpm run test:run tests/integration/<file>.test.ts
 ```
 
 ## Development

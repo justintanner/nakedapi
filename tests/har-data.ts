@@ -13,7 +13,7 @@ export interface HarEntry {
     status: number;
     statusText: string;
     headers: Array<{ name: string; value: string }>;
-    content: { text?: string };
+    content: { text?: string; mimeType?: string };
   };
 }
 
@@ -84,6 +84,43 @@ export function parseHarDir(dirPath: string): HarRecording[] {
 
   walk(dirPath, "");
   return results;
+}
+
+const BASE64_MEDIA_MARKERS = [
+  "data:image/",
+  "data:video/",
+  "data:audio/",
+  "iVBOR",
+  "/9j/",
+  "R0lGOD",
+  "UklGR",
+];
+
+const MEDIA_URL_EXT =
+  /\.(mp4|webm|mov|png|jpe?g|gif|webp|wav|mp3|ogg|flac|m4a)(\?|")/i;
+
+export function entryHasMedia(entry: HarEntry): boolean {
+  const mime = (entry.response.content?.mimeType ?? "").toLowerCase();
+  if (
+    mime.startsWith("image/") ||
+    mime.startsWith("video/") ||
+    mime.startsWith("audio/")
+  ) {
+    return true;
+  }
+
+  const respBody = entry.response.content?.text ?? "";
+  if (BASE64_MEDIA_MARKERS.some((m) => respBody.includes(m))) return true;
+  if (MEDIA_URL_EXT.test(respBody)) return true;
+
+  const reqBody = entry.request.postData?.text ?? "";
+  if (BASE64_MEDIA_MARKERS.some((m) => reqBody.includes(m))) return true;
+
+  return false;
+}
+
+export function recordingHasMedia(rec: { entries: HarEntry[] }): boolean {
+  return rec.entries.some(entryHasMedia);
 }
 
 export function parseHarPaths(paths: string[]): HarRecording[] {

@@ -68,7 +68,7 @@ importers:
 
   examples/kimicoding-promises:
     dependencies:
-      '@nakedapi/kimicoding':
+      '@apicity/kimicoding':
         specifier: file:../../packages/provider/kimicoding
         version: link:../../packages/provider/kimicoding
 

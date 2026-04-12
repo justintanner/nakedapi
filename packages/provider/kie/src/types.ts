@@ -162,6 +162,7 @@ export interface GrokImageToVideoRequest extends MediaRequest {
     mode?: "fun" | "normal" | "spicy";
     duration?: "6" | "10";
     resolution?: "480p" | "720p";
+    aspect_ratio?: "2:3" | "3:2" | "1:1" | "16:9" | "9:16";
   };
 }
 

@@ -36,6 +36,8 @@ import {
   FalAppsQueueResponse,
   FalSeedance2p0ImageToVideoParams,
   FalSeedance2p0ImageToVideoResponse,
+  FalNanoBananaProTextToImageParams,
+  FalNanoBananaProTextToImageResponse,
   FalNanoBananaProEditParams,
   FalNanoBananaProEditResponse,
   FalSeedreamV5LiteEditParams,
@@ -51,6 +53,7 @@ import {
   filesUploadUrlSchema,
   filesUploadLocalSchema,
   bytedanceSeedance2p0ImageToVideoSchema,
+  nanoBananaProTextToImageSchema,
   nanoBananaProEditSchema,
   seedreamV5LiteEditSchema,
 } from "./schemas";
@@ -541,6 +544,28 @@ export function fal(opts: FalOptions): FalProvider {
     }
   );
 
+  const nanoBananaProTextToImage = Object.assign(
+    async function textToImage(
+      params: FalNanoBananaProTextToImageParams,
+      signal?: AbortSignal
+    ): Promise<FalNanoBananaProTextToImageResponse> {
+      return makeRequest<FalNanoBananaProTextToImageResponse>(
+        "POST",
+        "/fal-ai/nano-banana-pro",
+        params as unknown as Record<string, unknown>,
+        signal,
+        undefined,
+        runBaseURL
+      );
+    },
+    {
+      payloadSchema: nanoBananaProTextToImageSchema,
+      validatePayload(data: unknown): ValidationResult {
+        return validatePayload(data, nanoBananaProTextToImageSchema);
+      },
+    }
+  );
+
   const seedreamV5LiteEdit = Object.assign(
     async function edit(
       params: FalSeedreamV5LiteEditParams,
@@ -577,6 +602,7 @@ export function fal(opts: FalOptions): FalProvider {
       },
     },
     nanoBananaPro: {
+      textToImage: nanoBananaProTextToImage,
       edit: nanoBananaProEdit,
     },
   };

@@ -1,0 +1,43 @@
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { setupPolly, teardownPolly, type PollyContext } from "../harness";
+import { fal } from "@apicity/fal";
+
+describe("fal nano-banana-pro text-to-image integration", () => {
+  let ctx: PollyContext;
+
+  beforeEach(() => {
+    ctx = setupPolly("fal/nano-banana-pro");
+  });
+
+  afterEach(async () => {
+    await teardownPolly(ctx);
+  });
+
+  it("should generate an image from a text prompt", async () => {
+    const provider = fal({
+      apiKey: process.env.FAL_API_KEY ?? "fal-test-key",
+      timeout: 300000,
+    });
+
+    const result = await provider.run.nanoBananaPro.textToImage({
+      prompt:
+        "An action shot of a black lab swimming in an inground suburban swimming pool.",
+      num_images: 1,
+      aspect_ratio: "1:1",
+      output_format: "png",
+      safety_tolerance: "4",
+      resolution: "1K",
+    });
+
+    expect(result).toBeDefined();
+    expect(Array.isArray(result.images)).toBe(true);
+    expect(result.images.length).toBeGreaterThan(0);
+    expect(result.images[0].content_type).toBe("image/png");
+    expect(result.images[0].file_name).toBe(
+      "nano-banana-pro-t2i-output.png"
+    );
+    expect(typeof result.images[0].url).toBe("string");
+    expect(result.images[0].url.startsWith("http")).toBe(true);
+    expect(typeof result.description).toBe("string");
+  }, 300000);
+});

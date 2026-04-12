@@ -2,9 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 
 import { anthropic } from "../../packages/provider/anthropic/src/anthropic";
 import {
-  countTokensSchema,
-  messagesSchema,
-} from "../../packages/provider/anthropic/src/schemas";
+  AnthropicCountTokensRequestSchema,
+  AnthropicMessageRequestSchema,
+} from "../../packages/provider/anthropic/src/zod";
 import type {
   AnthropicCountTokensRequest,
   AnthropicMessageRequest,
@@ -121,25 +121,27 @@ describe("anthropic tool calls", () => {
     expect(result).toEqual({ input_tokens: 42 });
   });
 
-  it("should enforce max_tokens for messages but not countTokens", () => {
+  it("should enforce max_tokens for messages but not countTokens via Zod schemas", () => {
     const client = anthropic({ apiKey: "test-key" });
 
-    expect(client.v1.messages.payloadSchema).toBe(messagesSchema);
-    expect(client.v1.messages.countTokens.payloadSchema).toBe(
-      countTokensSchema
+    expect(client.v1.messages.schema).toBe(AnthropicMessageRequestSchema);
+    expect(client.v1.messages.countTokens.schema).toBe(
+      AnthropicCountTokensRequestSchema
     );
 
-    const messageValidation = client.v1.messages.validatePayload({
+    const messageValidation = client.v1.messages.schema.safeParse({
       model: messageRequest.model,
       messages: messageRequest.messages,
     });
-    const countValidation = client.v1.messages.countTokens.validatePayload({
+    const countValidation = client.v1.messages.countTokens.schema.safeParse({
       model: messageRequest.model,
       messages: messageRequest.messages,
     });
 
-    expect(messageValidation.valid).toBe(false);
-    expect(messageValidation.errors).toContain("max_tokens is required");
-    expect(countValidation).toEqual({ valid: true, errors: [] });
+    expect(messageValidation.success).toBe(false);
+    expect(
+      messageValidation.error?.issues.some((i) => i.path.includes("max_tokens"))
+    ).toBe(true);
+    expect(countValidation.success).toBe(true);
   });
 });

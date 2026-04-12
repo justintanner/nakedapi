@@ -2,19 +2,25 @@
 // @apicity/free – free file hosting providers
 // ---------------------------------------------------------------------------
 
-// -- Options ----------------------------------------------------------------
+import type { z } from "zod";
 
-export interface FreeOptions {
-  timeout?: number;
-  fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
-}
+// -- Request types — derived from Zod schemas (source of truth in zod.ts) ---
+
+export type {
+  FreeOptions,
+  TmpfilesUploadRequest,
+  UguuUploadRequest,
+  CatboxUploadRequest,
+  LitterboxUploadRequest,
+  GofileUploadRequest,
+  FilebinUploadRequest,
+  TempshUploadRequest,
+  TflinkUploadRequest,
+} from "./zod";
+
+// -- Response types (hand-written) ------------------------------------------
 
 // -- Tmpfiles.org types -----------------------------------------------------
-
-export interface TmpfilesUploadRequest {
-  file: Blob;
-  filename?: string;
-}
 
 export interface TmpfilesUploadData {
   url: string;
@@ -26,11 +32,6 @@ export interface TmpfilesUploadResponse {
 }
 
 // -- Uguu.se types ----------------------------------------------------------
-
-export interface UguuUploadRequest {
-  file: Blob;
-  filename?: string;
-}
 
 export interface UguuFileEntry {
   hash: string;
@@ -45,27 +46,7 @@ export interface UguuUploadResponse {
   files: UguuFileEntry[];
 }
 
-// -- Catbox types -----------------------------------------------------------
-
-export interface CatboxUploadRequest {
-  file: Blob;
-  filename?: string;
-}
-
-// -- Litterbox types --------------------------------------------------------
-
-export interface LitterboxUploadRequest {
-  file: Blob;
-  filename?: string;
-  time?: "1h" | "12h" | "24h" | "72h";
-}
-
 // -- Gofile types -----------------------------------------------------------
-
-export interface GofileUploadRequest {
-  file: Blob;
-  filename?: string;
-}
 
 export interface GofileUploadData {
   id: string;
@@ -89,12 +70,6 @@ export interface GofileUploadResponse {
 }
 
 // -- Filebin types ----------------------------------------------------------
-
-export interface FilebinUploadRequest {
-  file: Blob;
-  filename?: string;
-  bin?: string;
-}
 
 export interface FilebinBin {
   id: string;
@@ -123,19 +98,7 @@ export interface FilebinUploadResponse {
   file: FilebinFile;
 }
 
-// -- Temp.sh types ----------------------------------------------------------
-
-export interface TempshUploadRequest {
-  file: Blob;
-  filename?: string;
-}
-
 // -- tfLink types -----------------------------------------------------------
-
-export interface TflinkUploadRequest {
-  file: Blob;
-  filename?: string;
-}
 
 export interface TflinkUploadResponse {
   fileName: string;
@@ -160,56 +123,40 @@ export class FreeError extends Error {
   }
 }
 
-// -- Payload validation types -----------------------------------------------
-
-export interface PayloadFieldSchema {
-  type: "string" | "number" | "boolean" | "array" | "object";
-  required?: boolean;
-  description?: string;
-  enum?: readonly (string | number | boolean)[];
-  items?: PayloadFieldSchema;
-  properties?: Record<string, PayloadFieldSchema>;
-}
-
-export interface PayloadSchema {
-  method: "POST" | "DELETE";
-  path: string;
-  contentType: "application/json" | "multipart/form-data";
-  fields: Record<string, PayloadFieldSchema>;
-}
-
-export interface ValidationResult {
-  valid: boolean;
-  errors: string[];
-}
-
 // -- Method interfaces ------------------------------------------------------
+
+import type {
+  TmpfilesUploadRequest,
+  UguuUploadRequest,
+  CatboxUploadRequest,
+  LitterboxUploadRequest,
+  GofileUploadRequest,
+  FilebinUploadRequest,
+  TempshUploadRequest,
+  TflinkUploadRequest,
+} from "./zod";
 
 export interface TmpfilesUploadMethod {
   (
     req: TmpfilesUploadRequest,
     signal?: AbortSignal
   ): Promise<TmpfilesUploadResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<TmpfilesUploadRequest>;
 }
 
 export interface UguuUploadMethod {
   (req: UguuUploadRequest, signal?: AbortSignal): Promise<UguuUploadResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<UguuUploadRequest>;
 }
 
 export interface CatboxUploadMethod {
   (req: CatboxUploadRequest, signal?: AbortSignal): Promise<string>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<CatboxUploadRequest>;
 }
 
 export interface LitterboxUploadMethod {
   (req: LitterboxUploadRequest, signal?: AbortSignal): Promise<string>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<LitterboxUploadRequest>;
 }
 
 export interface GofileUploadMethod {
@@ -217,8 +164,7 @@ export interface GofileUploadMethod {
     req: GofileUploadRequest,
     signal?: AbortSignal
   ): Promise<GofileUploadResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<GofileUploadRequest>;
 }
 
 export interface FilebinUploadMethod {
@@ -226,14 +172,12 @@ export interface FilebinUploadMethod {
     req: FilebinUploadRequest,
     signal?: AbortSignal
   ): Promise<FilebinUploadResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<FilebinUploadRequest>;
 }
 
 export interface TempshUploadMethod {
   (req: TempshUploadRequest, signal?: AbortSignal): Promise<string>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<TempshUploadRequest>;
 }
 
 export interface TflinkUploadMethod {
@@ -241,8 +185,7 @@ export interface TflinkUploadMethod {
     req: TflinkUploadRequest,
     signal?: AbortSignal
   ): Promise<TflinkUploadResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<TflinkUploadRequest>;
 }
 
 // -- Namespace interfaces ---------------------------------------------------

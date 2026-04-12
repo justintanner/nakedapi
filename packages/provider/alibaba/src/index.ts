@@ -18,6 +18,7 @@ export type {
 
 export { sseToIterable } from "./sse";
 
+// Export all types (request types now flow from zod.ts via types.ts)
 export type {
   AlibabaOptions,
   AlibabaRole,
@@ -49,7 +50,4 @@ export type {
   AlibabaTaskUsage,
   AlibabaTaskStatusResponse,
   AlibabaProvider,
-  PayloadFieldSchema,
-  PayloadSchema,
-  ValidationResult,
 } from "./types";

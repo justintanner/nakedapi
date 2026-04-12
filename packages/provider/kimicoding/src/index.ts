@@ -45,7 +45,4 @@ export type {
   Role,
   KimiCodingModel,
   KimiCodingModelListResponse,
-  PayloadFieldSchema,
-  PayloadSchema,
-  ValidationResult,
 } from "./types";

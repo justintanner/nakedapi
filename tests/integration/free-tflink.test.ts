@@ -48,9 +48,11 @@ describe("free tflink upload", () => {
   it("should validate payload - missing file", () => {
     ctx = setupPollyForFileUploads("free/tflink-validate");
     const provider = free();
-    const result = provider.tflink.upload.validatePayload({});
+    const result = provider.tflink.upload.schema.safeParse({});
 
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("file is required");
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("file"))).toBe(
+      true
+    );
   });
 });

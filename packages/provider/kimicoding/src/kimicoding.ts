@@ -13,10 +13,12 @@ import {
   CountTokensRequest,
   CountTokensResponse,
 } from "./types";
-import type { ValidationResult } from "./types";
 import { sseToIterable } from "./sse";
-import { messagesSchema, embeddingsSchema, countTokensSchema } from "./schemas";
-import { validatePayload } from "./validate";
+import {
+  ChatRequestSchema,
+  EmbeddingRequestSchema,
+  CountTokensRequestSchema,
+} from "./zod";
 
 // Helper function to safely handle AbortSignal across different environments
 function attachAbortHandler(
@@ -298,31 +300,19 @@ export function kimicoding(opts: KimiCodingOptions): KimiCodingProvider {
   }
 
   const messages = Object.assign(chatImpl, {
-    payloadSchema: messagesSchema,
-    validatePayload(data: unknown): ValidationResult {
-      return validatePayload(data, messagesSchema);
-    },
+    schema: ChatRequestSchema,
   });
 
   const streamMessages = Object.assign(streamImpl, {
-    payloadSchema: messagesSchema,
-    validatePayload(data: unknown): ValidationResult {
-      return validatePayload(data, messagesSchema);
-    },
+    schema: ChatRequestSchema,
   });
 
   const embeddings = Object.assign(embeddingsImpl, {
-    payloadSchema: embeddingsSchema,
-    validatePayload(data: unknown): ValidationResult {
-      return validatePayload(data, embeddingsSchema);
-    },
+    schema: EmbeddingRequestSchema,
   });
 
   const countTokens = Object.assign(countTokensImpl, {
-    payloadSchema: countTokensSchema,
-    validatePayload(data: unknown): ValidationResult {
-      return validatePayload(data, countTokensSchema);
-    },
+    schema: CountTokensRequestSchema,
   });
 
   async function listModelsFn(

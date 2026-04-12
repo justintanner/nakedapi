@@ -55,23 +55,21 @@ import {
   XaiProvider,
   XaiError,
 } from "./types";
-import type { ValidationResult } from "./types";
 import {
-  chatCompletionsSchema,
-  responsesSchema,
-  imageGenerationsSchema,
-  imageEditsSchema,
-  videoGenerationsSchema,
-  videoEditsSchema,
-  videoExtensionsSchema,
-  batchCreateSchema,
-  collectionCreateSchema,
-  collectionUpdateSchema,
-  documentSearchSchema,
-  tokenizeTextSchema,
-  realtimeClientSecretsSchema,
-} from "./schemas";
-import { validatePayload } from "./validate";
+  XaiChatRequestSchema,
+  XaiImageGenerateRequestSchema,
+  XaiImageEditRequestSchema,
+  XaiVideoGenerateRequestSchema,
+  XaiVideoEditRequestSchema,
+  XaiVideoExtendRequestSchema,
+  XaiBatchCreateRequestSchema,
+  XaiCollectionCreateRequestSchema,
+  XaiCollectionUpdateRequestSchema,
+  XaiDocumentSearchRequestSchema,
+  XaiResponseRequestSchema,
+  XaiTokenizeTextRequestSchema,
+  XaiRealtimeClientSecretRequestSchema,
+} from "./zod";
 
 // Helper function to safely handle AbortSignal across different environments
 function attachAbortHandler(
@@ -256,10 +254,7 @@ export function xai(opts: XaiOptions): XaiProvider {
       return await makeRequest("POST", "/batches", req, signal);
     },
     {
-      payloadSchema: batchCreateSchema,
-      validatePayload(data: unknown): ValidationResult {
-        return validatePayload(data, batchCreateSchema);
-      },
+      schema: XaiBatchCreateRequestSchema,
       cancel: async function cancelBatch(
         batchId: string,
         signal?: AbortSignal
@@ -290,10 +285,7 @@ export function xai(opts: XaiOptions): XaiProvider {
       return await makeManagementRequest("POST", "/collections", req, signal);
     },
     {
-      payloadSchema: collectionCreateSchema,
-      validatePayload(data: unknown): ValidationResult {
-        return validatePayload(data, collectionCreateSchema);
-      },
+      schema: XaiCollectionCreateRequestSchema,
       documents: async function addDocument(
         collectionId: string,
         fileId: string,
@@ -578,10 +570,7 @@ export function xai(opts: XaiOptions): XaiProvider {
       );
     },
     {
-      payloadSchema: collectionUpdateSchema,
-      validatePayload(data: unknown): ValidationResult {
-        return validatePayload(data, collectionUpdateSchema);
-      },
+      schema: XaiCollectionUpdateRequestSchema,
     }
   );
 
@@ -601,10 +590,7 @@ export function xai(opts: XaiOptions): XaiProvider {
             );
           },
           {
-            payloadSchema: responsesSchema,
-            validatePayload(data: unknown): ValidationResult {
-              return validatePayload(data, responsesSchema);
-            },
+            schema: XaiResponseRequestSchema,
           }
         ),
         chat: {
@@ -621,10 +607,7 @@ export function xai(opts: XaiOptions): XaiProvider {
               );
             },
             {
-              payloadSchema: chatCompletionsSchema,
-              validatePayload(data: unknown): ValidationResult {
-                return validatePayload(data, chatCompletionsSchema);
-              },
+              schema: XaiChatRequestSchema,
             }
           ),
         },
@@ -642,10 +625,7 @@ export function xai(opts: XaiOptions): XaiProvider {
               );
             },
             {
-              payloadSchema: imageGenerationsSchema,
-              validatePayload(data: unknown): ValidationResult {
-                return validatePayload(data, imageGenerationsSchema);
-              },
+              schema: XaiImageGenerateRequestSchema,
             }
           ),
           edits: Object.assign(
@@ -656,10 +636,7 @@ export function xai(opts: XaiOptions): XaiProvider {
               return await makeRequest("POST", "/images/edits", req, signal);
             },
             {
-              payloadSchema: imageEditsSchema,
-              validatePayload(data: unknown): ValidationResult {
-                return validatePayload(data, imageEditsSchema);
-              },
+              schema: XaiImageEditRequestSchema,
             }
           ),
         },
@@ -677,10 +654,7 @@ export function xai(opts: XaiOptions): XaiProvider {
               );
             },
             {
-              payloadSchema: videoGenerationsSchema,
-              validatePayload(data: unknown): ValidationResult {
-                return validatePayload(data, videoGenerationsSchema);
-              },
+              schema: XaiVideoGenerateRequestSchema,
             }
           ),
           edits: Object.assign(
@@ -691,10 +665,7 @@ export function xai(opts: XaiOptions): XaiProvider {
               return await makeRequest("POST", "/videos/edits", req, signal);
             },
             {
-              payloadSchema: videoEditsSchema,
-              validatePayload(data: unknown): ValidationResult {
-                return validatePayload(data, videoEditsSchema);
-              },
+              schema: XaiVideoEditRequestSchema,
             }
           ),
           extensions: Object.assign(
@@ -710,93 +681,64 @@ export function xai(opts: XaiOptions): XaiProvider {
               );
             },
             {
-              payloadSchema: videoExtensionsSchema,
-              validatePayload(data: unknown): ValidationResult {
-                return validatePayload(data, videoExtensionsSchema);
-              },
+              schema: XaiVideoExtendRequestSchema,
             }
           ),
         },
-        files: Object.assign(
-          async function postFiles(
-            file: Blob,
-            filename: string,
-            purpose?: string,
-            signal?: AbortSignal
-          ): Promise<XaiFileObject> {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), timeout);
-            if (signal) {
-              attachAbortHandler(signal, controller);
-            }
-
-            try {
-              const formData = new FormData();
-              formData.append("file", file, filename);
-              if (purpose !== undefined) formData.append("purpose", purpose);
-
-              const res = await doFetch(`${baseURL}/files`, {
-                method: "POST",
-                headers: { Authorization: `Bearer ${opts.apiKey}` },
-                body: formData,
-                signal: controller.signal,
-              });
-
-              clearTimeout(timeoutId);
-
-              if (!res.ok) {
-                let message = `XAI API error: ${res.status}`;
-                let body: unknown = null;
-                try {
-                  body = await res.json();
-                  if (
-                    typeof body === "object" &&
-                    body !== null &&
-                    "error" in body
-                  ) {
-                    const err = (body as { error: { message?: string } }).error;
-                    if (err?.message) {
-                      message = `XAI API error ${res.status}: ${err.message}`;
-                    }
-                  }
-                } catch {
-                  // ignore parse errors
-                }
-                throw new XaiError(message, res.status, body);
-              }
-
-              return (await res.json()) as XaiFileObject;
-            } catch (error) {
-              clearTimeout(timeoutId);
-              if (error instanceof XaiError) throw error;
-              throw new XaiError(`XAI request failed: ${error}`, 500);
-            }
-          },
-          {
-            payloadSchema: {
-              method: "POST" as const,
-              path: "/files",
-              contentType: "multipart/form-data" as const,
-              fields: {
-                file: {
-                  type: "string" as const,
-                  required: true,
-                  description: "File content",
-                },
-                filename: {
-                  type: "string" as const,
-                  required: true,
-                  description: "Filename",
-                },
-                purpose: {
-                  type: "string" as const,
-                  required: false,
-                  description: "Purpose of the file",
-                },
-              },
-            },
+        files: Object.assign(async function postFiles(
+          file: Blob,
+          filename: string,
+          purpose?: string,
+          signal?: AbortSignal
+        ): Promise<XaiFileObject> {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), timeout);
+          if (signal) {
+            attachAbortHandler(signal, controller);
           }
-        ),
+
+          try {
+            const formData = new FormData();
+            formData.append("file", file, filename);
+            if (purpose !== undefined) formData.append("purpose", purpose);
+
+            const res = await doFetch(`${baseURL}/files`, {
+              method: "POST",
+              headers: { Authorization: `Bearer ${opts.apiKey}` },
+              body: formData,
+              signal: controller.signal,
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!res.ok) {
+              let message = `XAI API error: ${res.status}`;
+              let body: unknown = null;
+              try {
+                body = await res.json();
+                if (
+                  typeof body === "object" &&
+                  body !== null &&
+                  "error" in body
+                ) {
+                  const err = (body as { error: { message?: string } }).error;
+                  if (err?.message) {
+                    message = `XAI API error ${res.status}: ${err.message}`;
+                  }
+                }
+              } catch {
+                // ignore parse errors
+              }
+              throw new XaiError(message, res.status, body);
+            }
+
+            return (await res.json()) as XaiFileObject;
+          } catch (error) {
+            clearTimeout(timeoutId);
+            if (error instanceof XaiError) throw error;
+            throw new XaiError(`XAI request failed: ${error}`, 500);
+          }
+        }, {}),
         batches: postBatches,
         collections: postCollections,
         documents: {
@@ -813,10 +755,7 @@ export function xai(opts: XaiOptions): XaiProvider {
               );
             },
             {
-              payloadSchema: documentSearchSchema,
-              validatePayload(data: unknown): ValidationResult {
-                return validatePayload(data, documentSearchSchema);
-              },
+              schema: XaiDocumentSearchRequestSchema,
             }
           ),
         },
@@ -833,10 +772,7 @@ export function xai(opts: XaiOptions): XaiProvider {
             );
           },
           {
-            payloadSchema: tokenizeTextSchema,
-            validatePayload(data: unknown): ValidationResult {
-              return validatePayload(data, tokenizeTextSchema);
-            },
+            schema: XaiTokenizeTextRequestSchema,
           }
         ),
         realtime: {
@@ -853,10 +789,7 @@ export function xai(opts: XaiOptions): XaiProvider {
               );
             },
             {
-              payloadSchema: realtimeClientSecretsSchema,
-              validatePayload(data: unknown): ValidationResult {
-                return validatePayload(data, realtimeClientSecretsSchema);
-              },
+              schema: XaiRealtimeClientSecretRequestSchema,
             }
           ),
         },

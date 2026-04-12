@@ -1,12 +1,49 @@
-// Anthropic provider options
-export interface AnthropicOptions {
-  apiKey: string;
-  baseURL?: string;
-  timeout?: number;
-  defaultVersion?: string;
-  defaultBeta?: string[];
-  fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
-}
+import type { z } from "zod";
+
+// ---------------------------------------------------------------------------
+// Request types — derived from Zod schemas (source of truth in zod.ts)
+// ---------------------------------------------------------------------------
+
+export type {
+  AnthropicOptions,
+  AnthropicCacheControl,
+  AnthropicTextBlock,
+  AnthropicImageSource,
+  AnthropicImageBlock,
+  AnthropicDocumentSource,
+  AnthropicDocumentBlock,
+  AnthropicToolUseBlock,
+  AnthropicToolResultBlock,
+  AnthropicThinkingBlock,
+  AnthropicRedactedThinkingBlock,
+  AnthropicServerToolUseBlock,
+  AnthropicServerToolResultBlock,
+  AnthropicFileBlock,
+  AnthropicContentBlock,
+  AnthropicMessage,
+  AnthropicToolInputSchema,
+  AnthropicCustomTool,
+  AnthropicBashTool,
+  AnthropicTextEditorTool,
+  AnthropicWebSearchTool,
+  AnthropicCodeExecutionTool,
+  AnthropicTool,
+  AnthropicToolChoice,
+  AnthropicThinkingConfig,
+  AnthropicMetadata,
+  AnthropicMessageRequest,
+  AnthropicCountTokensRequest,
+  AnthropicBatchRequest,
+  AnthropicBatchCreateRequest,
+  AnthropicFileUploadRequest,
+  AnthropicSkillFile,
+  AnthropicSkillsCreateRequest,
+  AnthropicSkillVersionsCreateRequest,
+} from "./zod";
+
+// ---------------------------------------------------------------------------
+// Response types (hand-written — not schema-ified yet)
+// ---------------------------------------------------------------------------
 
 // ---------- Shared pagination ----------
 
@@ -23,189 +60,9 @@ export interface AnthropicListResponse<T> {
   has_more: boolean;
 }
 
-// ---------- Messages API ----------
+// ---------- Messages API response ----------
 
-export interface AnthropicTextBlock {
-  type: "text";
-  text: string;
-  cache_control?: { type: "ephemeral"; ttl?: "5m" | "1h" };
-}
-
-export interface AnthropicImageSource {
-  type: "base64";
-  media_type: "image/jpeg" | "image/png" | "image/gif" | "image/webp";
-  data: string;
-}
-
-export interface AnthropicImageBlock {
-  type: "image";
-  source: AnthropicImageSource;
-  cache_control?: { type: "ephemeral"; ttl?: "5m" | "1h" };
-}
-
-export interface AnthropicDocumentSource {
-  type: "base64";
-  media_type: "application/pdf";
-  data: string;
-}
-
-export interface AnthropicDocumentBlock {
-  type: "document";
-  source: AnthropicDocumentSource;
-  cache_control?: { type: "ephemeral"; ttl?: "5m" | "1h" };
-}
-
-export interface AnthropicToolUseBlock {
-  type: "tool_use";
-  id: string;
-  name: string;
-  input: Record<string, unknown>;
-}
-
-export interface AnthropicToolResultBlock {
-  type: "tool_result";
-  tool_use_id: string;
-  content?: string | AnthropicContentBlock[];
-  is_error?: boolean;
-}
-
-export interface AnthropicThinkingBlock {
-  type: "thinking";
-  thinking: string;
-  signature: string;
-}
-
-export interface AnthropicRedactedThinkingBlock {
-  type: "redacted_thinking";
-  data: string;
-}
-
-export interface AnthropicServerToolUseBlock {
-  type: "server_tool_use";
-  id: string;
-  name: string;
-  input: Record<string, unknown>;
-}
-
-export interface AnthropicServerToolResultBlock {
-  type: "server_tool_result";
-  tool_use_id: string;
-  content: AnthropicContentBlock[];
-}
-
-export interface AnthropicFileBlock {
-  type: "file";
-  source: {
-    type: "file";
-    file_id: string;
-  };
-}
-
-export type AnthropicContentBlock =
-  | AnthropicTextBlock
-  | AnthropicImageBlock
-  | AnthropicDocumentBlock
-  | AnthropicToolUseBlock
-  | AnthropicToolResultBlock
-  | AnthropicThinkingBlock
-  | AnthropicRedactedThinkingBlock
-  | AnthropicServerToolUseBlock
-  | AnthropicServerToolResultBlock
-  | AnthropicFileBlock;
-
-export interface AnthropicMessage {
-  role: "user" | "assistant";
-  content: string | AnthropicContentBlock[];
-}
-
-export interface AnthropicToolInputSchema {
-  type: "object";
-  properties?: Record<string, unknown>;
-  required?: string[];
-}
-
-export interface AnthropicCustomTool {
-  type?: "custom";
-  name: string;
-  description?: string;
-  input_schema: AnthropicToolInputSchema;
-  cache_control?: { type: "ephemeral" };
-}
-
-export interface AnthropicBashTool {
-  type: "bash_20250124";
-  name?: "bash";
-  cache_control?: { type: "ephemeral" };
-}
-
-export interface AnthropicTextEditorTool {
-  type: "text_editor_20250124";
-  name?: "str_replace_editor";
-  cache_control?: { type: "ephemeral" };
-}
-
-export interface AnthropicWebSearchTool {
-  type: "web_search_20250305";
-  name?: "web_search";
-  max_uses?: number;
-  allowed_domains?: string[];
-  blocked_domains?: string[];
-  user_location?: {
-    type: "approximate";
-    city?: string;
-    region?: string;
-    country?: string;
-    timezone?: string;
-  };
-  cache_control?: { type: "ephemeral" };
-}
-
-export interface AnthropicCodeExecutionTool {
-  type: "code_execution_20250522";
-  name?: "code_execution";
-  cache_control?: { type: "ephemeral" };
-}
-
-export type AnthropicTool =
-  | AnthropicCustomTool
-  | AnthropicBashTool
-  | AnthropicTextEditorTool
-  | AnthropicWebSearchTool
-  | AnthropicCodeExecutionTool;
-
-export interface AnthropicToolChoice {
-  type: "auto" | "any" | "tool" | "none";
-  name?: string;
-  disable_parallel_tool_use?: boolean;
-}
-
-export interface AnthropicThinkingConfig {
-  type: "enabled" | "disabled" | "adaptive";
-  budget_tokens?: number;
-  display?: "summarized" | "omitted";
-}
-
-export interface AnthropicMetadata {
-  user_id?: string;
-}
-
-export interface AnthropicMessageRequest {
-  model: string;
-  max_tokens: number;
-  messages: AnthropicMessage[];
-  system?: string | AnthropicTextBlock[];
-  temperature?: number;
-  top_p?: number;
-  top_k?: number;
-  stop_sequences?: string[];
-  stream?: boolean;
-  metadata?: AnthropicMetadata;
-  tools?: AnthropicTool[];
-  tool_choice?: AnthropicToolChoice;
-  thinking?: AnthropicThinkingConfig;
-  service_tier?: "auto" | "standard_only";
-  container?: string;
-}
+import type { AnthropicContentBlock } from "./zod";
 
 export interface AnthropicUsage {
   input_tokens: number;
@@ -240,6 +97,12 @@ export interface AnthropicMessageResponse {
   stop_sequence: string | null;
   usage: AnthropicUsage;
   container?: { id: string; expires_at: string };
+}
+
+// ---------- Token counting ----------
+
+export interface AnthropicCountTokensResponse {
+  input_tokens: number;
 }
 
 // ---------- SSE streaming types ----------
@@ -324,21 +187,6 @@ export type AnthropicStreamEvent =
   | AnthropicStreamPing
   | AnthropicStreamError;
 
-// ---------- Token counting ----------
-
-export interface AnthropicCountTokensRequest {
-  model: string;
-  messages: AnthropicMessage[];
-  system?: string | AnthropicTextBlock[];
-  tools?: AnthropicTool[];
-  tool_choice?: AnthropicToolChoice;
-  thinking?: AnthropicThinkingConfig;
-}
-
-export interface AnthropicCountTokensResponse {
-  input_tokens: number;
-}
-
 // ---------- Models API ----------
 
 export interface AnthropicModelCapabilities {
@@ -367,15 +215,6 @@ export interface AnthropicModel {
 export type AnthropicModelListResponse = AnthropicListResponse<AnthropicModel>;
 
 // ---------- Message Batches API ----------
-
-export interface AnthropicBatchRequest {
-  custom_id: string;
-  params: AnthropicMessageRequest;
-}
-
-export interface AnthropicBatchCreateRequest {
-  requests: AnthropicBatchRequest[];
-}
 
 export interface AnthropicBatchRequestCounts {
   processing: number;
@@ -455,11 +294,6 @@ export interface AnthropicFileDeleteResponse {
 
 // ---------- Skills API (Beta) ----------
 
-export interface AnthropicSkillFile {
-  data: Blob;
-  path: string;
-}
-
 export interface AnthropicSkill {
   id: string;
   type: "skill";
@@ -514,30 +348,16 @@ export interface AnthropicSkillVersionDeleteResponse {
   type: "skill_version_deleted";
 }
 
-// ---------- Schema types ----------
+// ---------------------------------------------------------------------------
+// Method interface types (endpoint shapes with .schema)
+// ---------------------------------------------------------------------------
 
-export interface PayloadFieldSchema {
-  type: "string" | "number" | "boolean" | "array" | "object";
-  required?: boolean;
-  description?: string;
-  enum?: readonly (string | number | boolean)[];
-  items?: PayloadFieldSchema;
-  properties?: Record<string, PayloadFieldSchema>;
-}
-
-export interface PayloadSchema {
-  method: "POST" | "DELETE" | "GET";
-  path: string;
-  contentType: "application/json" | "multipart/form-data";
-  fields: Record<string, PayloadFieldSchema>;
-}
-
-export interface ValidationResult {
-  valid: boolean;
-  errors: string[];
-}
-
-// ---------- Provider interface ----------
+import type {
+  AnthropicMessageRequest,
+  AnthropicCountTokensRequest,
+  AnthropicBatchCreateRequest,
+  AnthropicSkillFile,
+} from "./zod";
 
 // POST namespace types
 export interface AnthropicPostMessagesStreamMethod {
@@ -545,8 +365,7 @@ export interface AnthropicPostMessagesStreamMethod {
     req: AnthropicMessageRequest,
     signal?: AbortSignal
   ): Promise<AsyncIterable<AnthropicStreamEvent>>;
-  payloadSchema: PayloadSchema;
-  validatePayload: (data: unknown) => ValidationResult;
+  schema: z.ZodType<AnthropicMessageRequest>;
 }
 
 export interface AnthropicPostMessagesMethod {
@@ -554,8 +373,7 @@ export interface AnthropicPostMessagesMethod {
     req: AnthropicMessageRequest,
     signal?: AbortSignal
   ): Promise<AnthropicMessageResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload: (data: unknown) => ValidationResult;
+  schema: z.ZodType<AnthropicMessageRequest>;
   countTokens: AnthropicPostCountTokensMethod;
   batches: AnthropicPostBatchesMethod;
 }
@@ -565,8 +383,7 @@ export interface AnthropicPostCountTokensMethod {
     req: AnthropicCountTokensRequest,
     signal?: AbortSignal
   ): Promise<AnthropicCountTokensResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload: (data: unknown) => ValidationResult;
+  schema: z.ZodType<AnthropicCountTokensRequest>;
 }
 
 export interface AnthropicPostBatchesMethod {
@@ -574,14 +391,13 @@ export interface AnthropicPostBatchesMethod {
     req: AnthropicBatchCreateRequest,
     signal?: AbortSignal
   ): Promise<AnthropicBatch>;
-  payloadSchema: PayloadSchema;
-  validatePayload: (data: unknown) => ValidationResult;
+  schema: z.ZodType<AnthropicBatchCreateRequest>;
   cancel: (batchId: string, signal?: AbortSignal) => Promise<AnthropicBatch>;
 }
 
 export interface AnthropicPostFilesMethod {
   (file: Blob, signal?: AbortSignal): Promise<AnthropicFile>;
-  payloadSchema: PayloadSchema;
+  schema: z.ZodType;
 }
 
 export interface AnthropicPostSkillsCreateMethod {
@@ -590,7 +406,7 @@ export interface AnthropicPostSkillsCreateMethod {
     files: AnthropicSkillFile[],
     signal?: AbortSignal
   ): Promise<AnthropicSkill>;
-  payloadSchema: PayloadSchema;
+  schema: z.ZodType;
 }
 
 export interface AnthropicPostSkillVersionsCreateMethod {
@@ -599,7 +415,7 @@ export interface AnthropicPostSkillVersionsCreateMethod {
     files: AnthropicSkillFile[],
     signal?: AbortSignal
   ): Promise<AnthropicSkillVersion>;
-  payloadSchema: PayloadSchema;
+  schema: z.ZodType;
 }
 
 export interface AnthropicPostStreamV1Namespace {
@@ -706,8 +522,7 @@ export interface AnthropicMessagesMethod {
     req: AnthropicMessageRequest,
     signal?: AbortSignal
   ): Promise<AnthropicMessageResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload: (data: unknown) => ValidationResult;
+  schema: z.ZodType<AnthropicMessageRequest>;
   stream: (
     req: AnthropicMessageRequest,
     signal?: AbortSignal
@@ -721,8 +536,7 @@ export interface AnthropicCountTokensMethod {
     req: AnthropicCountTokensRequest,
     signal?: AbortSignal
   ): Promise<AnthropicCountTokensResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload: (data: unknown) => ValidationResult;
+  schema: z.ZodType<AnthropicCountTokensRequest>;
 }
 
 export interface AnthropicBatchesMethod {
@@ -730,8 +544,7 @@ export interface AnthropicBatchesMethod {
     req: AnthropicBatchCreateRequest,
     signal?: AbortSignal
   ): Promise<AnthropicBatch>;
-  payloadSchema: PayloadSchema;
-  validatePayload: (data: unknown) => ValidationResult;
+  schema: z.ZodType<AnthropicBatchCreateRequest>;
   list: (
     params?: AnthropicListParams,
     signal?: AbortSignal
@@ -769,7 +582,7 @@ export interface AnthropicFilesNamespace {
 
 export interface AnthropicFilesUploadMethod {
   (file: Blob, signal?: AbortSignal): Promise<AnthropicFile>;
-  payloadSchema: PayloadSchema;
+  schema: z.ZodType;
 }
 
 // Skills namespaces
@@ -780,7 +593,7 @@ export interface AnthropicSkillsCreateMethod {
     files: AnthropicSkillFile[],
     signal?: AbortSignal
   ): Promise<AnthropicSkill>;
-  payloadSchema: PayloadSchema;
+  schema: z.ZodType;
 }
 
 export interface AnthropicSkillVersionsCreateMethod {
@@ -789,7 +602,7 @@ export interface AnthropicSkillVersionsCreateMethod {
     files: AnthropicSkillFile[],
     signal?: AbortSignal
   ): Promise<AnthropicSkillVersion>;
-  payloadSchema: PayloadSchema;
+  schema: z.ZodType;
 }
 
 export interface AnthropicSkillVersionsNamespace {

@@ -46,9 +46,11 @@ describe("free litterbox upload", () => {
   it("should validate payload - missing file", () => {
     ctx = setupPollyForFileUploads("free/litterbox-validate");
     const provider = free();
-    const result = provider.litterbox.upload.validatePayload({});
+    const result = provider.litterbox.upload.schema.safeParse({});
 
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("file is required");
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("file"))).toBe(
+      true
+    );
   });
 });

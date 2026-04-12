@@ -65,23 +65,23 @@ describe("free tmpfiles upload", () => {
     expect(result.data.url).toContain("tmpfiles.org");
   });
 
-  it("should expose payloadSchema on upload", () => {
+  it("should expose schema on upload", () => {
     ctx = setupPollyForFileUploads("free/tmpfiles-schema");
     const provider = free();
-    const schema = provider.tmpfiles.api.v1.upload.payloadSchema;
+    const schema = provider.tmpfiles.api.v1.upload.schema;
 
-    expect(schema.method).toBe("POST");
-    expect(schema.path).toBe("/api/v1/upload");
-    expect(schema.contentType).toBe("multipart/form-data");
-    expect(schema.fields.file.required).toBe(true);
+    expect(typeof schema.safeParse).toBe("function");
+    expect(typeof schema.parse).toBe("function");
   });
 
   it("should validate payload - missing file", () => {
     ctx = setupPollyForFileUploads("free/tmpfiles-validate");
     const provider = free();
-    const result = provider.tmpfiles.api.v1.upload.validatePayload({});
+    const result = provider.tmpfiles.api.v1.upload.schema.safeParse({});
 
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("file is required");
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("file"))).toBe(
+      true
+    );
   });
 });

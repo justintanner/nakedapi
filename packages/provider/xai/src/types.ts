@@ -1,31 +1,52 @@
-// XAI provider options
-export interface XaiOptions {
-  apiKey: string;
-  baseURL?: string;
-  managementApiKey?: string;
-  managementBaseURL?: string;
-  timeout?: number;
-  fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
-}
+import type { z } from "zod";
 
-// Chat message
-export interface XaiMessage {
-  role: "user" | "assistant" | "system";
-  content: string;
-}
+// ---------------------------------------------------------------------------
+// Request types — derived from Zod schemas (source of truth in zod.ts)
+// ---------------------------------------------------------------------------
 
-// Tool function definition
-export interface XaiToolFunction {
-  name: string;
-  description?: string;
-  parameters?: Record<string, unknown>;
-}
+export type {
+  XaiOptions,
+  XaiMessage,
+  XaiToolFunction,
+  XaiTool,
+  XaiImageReference,
+  XaiVideoReference,
+  XaiChunkConfiguration,
+  XaiFieldDefinition,
+  XaiChatRequest,
+  XaiImageGenerateRequest,
+  XaiImageEditRequest,
+  XaiVideoGenerateRequest,
+  XaiVideoEditRequest,
+  XaiVideoExtendRequest,
+  XaiBatchCreateRequest,
+  XaiBatchAddRequestsBody,
+  XaiCollectionCreateRequest,
+  XaiCollectionUpdateRequest,
+  XaiDocumentAddRequest,
+  XaiDocumentSearchRequest,
+  XaiResponseInputTextContent,
+  XaiResponseInputImageContent,
+  XaiResponseInputContent,
+  XaiResponseInputMessage,
+  XaiResponseFunctionCallOutput,
+  XaiResponseItemReference,
+  XaiResponseInputItem,
+  XaiResponseFunctionTool,
+  XaiResponseWebSearchTool,
+  XaiResponseFileSearchTool,
+  XaiResponseTool,
+  XaiResponseTextFormat,
+  XaiResponseReasoning,
+  XaiResponseSearchParameters,
+  XaiResponseRequest,
+  XaiTokenizeTextRequest,
+  XaiRealtimeClientSecretRequest,
+} from "./zod";
 
-// Tool definition
-export interface XaiTool {
-  type: "function";
-  function: XaiToolFunction;
-}
+// ---------------------------------------------------------------------------
+// Response types (hand-written — not schema-ified yet)
+// ---------------------------------------------------------------------------
 
 // Tool call in response
 export interface XaiToolCall {
@@ -42,20 +63,6 @@ export interface XaiUsage {
   prompt_tokens: number;
   completion_tokens: number;
   total_tokens: number;
-}
-
-// Chat request
-export interface XaiChatRequest {
-  model?: string;
-  messages: XaiMessage[];
-  temperature?: number;
-  max_tokens?: number;
-  tools?: XaiTool[];
-  tool_choice?:
-    | "auto"
-    | "none"
-    | { type: "function"; function: { name: string } };
-  deferred?: boolean;
 }
 
 // Deferred chat completion result
@@ -87,33 +94,6 @@ export interface XaiChatResponse {
   error?: { message?: string; type?: string };
 }
 
-// Image generation request
-export interface XaiImageGenerateRequest {
-  prompt: string;
-  model?: string;
-  n?: number;
-  response_format?: "url" | "b64_json";
-  aspect_ratio?: string;
-  resolution?: "1k" | "2k";
-}
-
-// Image reference for editing
-export interface XaiImageReference {
-  url: string;
-  type?: "image_url";
-}
-
-// Image editing request
-export interface XaiImageEditRequest {
-  prompt: string;
-  model?: string;
-  image?: XaiImageReference;
-  images?: XaiImageReference[];
-  n?: number;
-  response_format?: "url" | "b64_json";
-  aspect_ratio?: string;
-}
-
 // Single generated image data
 export interface XaiGeneratedImage {
   url?: string;
@@ -143,40 +123,6 @@ export interface XaiFileObject {
 export interface XaiFileListResponse {
   data: XaiFileObject[];
   object: string;
-}
-
-// Video reference (image-to-video, editing, extension, reference images)
-export interface XaiVideoReference {
-  url: string;
-}
-
-// Video generation request — matches API body for /v1/videos/generations
-export interface XaiVideoGenerateRequest {
-  prompt: string;
-  model?: string;
-  duration?: number;
-  aspect_ratio?: "1:1" | "16:9" | "9:16" | "4:3" | "3:4" | "3:2" | "2:3";
-  resolution?: "480p" | "720p";
-  image?: XaiVideoReference;
-  video?: XaiVideoReference;
-  reference_images?: XaiVideoReference[];
-}
-
-// Video edit request — matches API body for /v1/videos/edits
-export interface XaiVideoEditRequest {
-  prompt: string;
-  model?: string;
-  video: XaiVideoReference;
-  output?: { upload_url: string };
-  user?: string;
-}
-
-// Video extension request — matches API body for /v1/videos/extensions
-export interface XaiVideoExtendRequest {
-  prompt: string;
-  model?: string;
-  duration?: number;
-  video: XaiVideoReference;
 }
 
 // Video async response (returned from generate/edit)
@@ -295,11 +241,6 @@ export interface XaiBatch {
   state: XaiBatchState;
 }
 
-// POST /v1/batches request
-export interface XaiBatchCreateRequest {
-  name: string;
-}
-
 // GET /v1/batches response
 export interface XaiBatchListResponse {
   batches: XaiBatch[];
@@ -340,10 +281,6 @@ export interface XaiBatchRequestItem {
   };
 }
 
-export interface XaiBatchAddRequestsBody {
-  batch_requests: XaiBatchRequestItem[];
-}
-
 // Batch result item (GET /v1/batches/{batch_id}/results)
 export interface XaiBatchResultItem {
   batch_request_id: string;
@@ -360,72 +297,9 @@ export interface XaiBatchResultListParams {
   pagination_token?: string;
 }
 
-// Chunk configuration for collections
-export interface XaiChunkConfiguration {
-  chars_configuration?: {
-    max_chunk_size_chars: number;
-    chunk_overlap_chars: number;
-  };
-  tokens_configuration?: {
-    max_chunk_size_tokens: number;
-    chunk_overlap_tokens: number;
-    encoding_name?: string;
-  };
-  markdown_tokens_configuration?: {
-    max_chunk_size_tokens: number;
-    chunk_overlap_tokens: number;
-    encoding_name?: string;
-  };
-  markdown_chars_configuration?: {
-    max_chunk_size_chars: number;
-    chunk_overlap_chars: number;
-  };
-  code_tokens_configuration?: {
-    max_chunk_size_tokens: number;
-    chunk_overlap_tokens: number;
-    encoding_name?: string;
-  };
-  code_chars_configuration?: {
-    max_chunk_size_chars: number;
-    chunk_overlap_chars: number;
-  };
-  table_configuration?: {
-    max_chunk_size_tokens: number;
-    encoding_name?: string;
-  };
-  bytes_configuration?: {
-    max_chunk_size_bytes: number;
-    chunk_overlap_bytes: number;
-  };
-  strip_whitespace?: boolean;
-  inject_name_into_chunks?: boolean;
-}
-
-// Field definition for collection schema
-export interface XaiFieldDefinition {
-  key: string;
-  required?: boolean;
-  unique?: boolean;
-  inject_into_chunk?: boolean;
-  description?: string;
-}
-
-// POST /v1/collections request
-export interface XaiCollectionCreateRequest {
-  collection_name: string;
-  collection_description?: string;
-  team_id?: string;
-  index_configuration?: { model_name: string };
-  chunk_configuration?: XaiChunkConfiguration;
-  metric_space?:
-    | "HNSW_METRIC_UNKNOWN"
-    | "HNSW_METRIC_COSINE"
-    | "HNSW_METRIC_EUCLIDEAN"
-    | "HNSW_METRIC_INNER_PRODUCT";
-  field_definitions?: XaiFieldDefinition[];
-}
-
 // Collection object (returned from create, get, list, update)
+import type { XaiChunkConfiguration, XaiFieldDefinition } from "./zod";
+
 export interface XaiCollection {
   collection_id: string;
   collection_name: string;
@@ -451,18 +325,6 @@ export interface XaiCollectionListParams {
 export interface XaiCollectionListResponse {
   collections: XaiCollection[];
   pagination_token?: string;
-}
-
-// PUT /v1/collections/{collection_id} request
-export interface XaiCollectionUpdateRequest {
-  team_id?: string;
-  collection_name?: string;
-  collection_description?: string;
-  chunk_configuration?: XaiChunkConfiguration;
-  field_definition_updates?: {
-    field_definition: XaiFieldDefinition;
-    operation: "FIELD_DEFINITION_ADD" | "FIELD_DEFINITION_DELETE";
-  }[];
 }
 
 // Document file metadata
@@ -512,35 +374,6 @@ export interface XaiDocumentListResponse {
   pagination_token?: string;
 }
 
-// POST /v1/collections/{id}/documents/{file_id} request
-export interface XaiDocumentAddRequest {
-  team_id?: string;
-  fields?: Record<string, string>;
-}
-
-// POST /v1/documents/search request
-export interface XaiDocumentSearchRequest {
-  query: string;
-  source: {
-    collection_ids: string[];
-    rag_pipeline?: "chroma_db" | "es";
-  };
-  filter?: string | null;
-  instructions?: string | null;
-  limit?: number | null;
-  ranking_metric?:
-    | "RANKING_METRIC_UNKNOWN"
-    | "RANKING_METRIC_L2_DISTANCE"
-    | "RANKING_METRIC_COSINE_SIMILARITY";
-  group_by?: {
-    keys: string[];
-    aggregate?: Record<string, unknown>;
-  };
-  retrieval_mode?: {
-    type: "hybrid" | "keyword" | "semantic";
-  };
-}
-
 // Search result match
 export interface XaiDocumentSearchMatch {
   file_id: string;
@@ -555,133 +388,6 @@ export interface XaiDocumentSearchMatch {
 // POST /v1/documents/search response
 export interface XaiDocumentSearchResponse {
   matches: XaiDocumentSearchMatch[];
-}
-
-// Responses API types (POST /v1/responses, GET /v1/responses/{id})
-
-export interface XaiResponseInputMessage {
-  role: "user" | "assistant" | "system" | "developer";
-  content: string | XaiResponseInputContent[];
-}
-
-export interface XaiResponseInputTextContent {
-  type: "input_text";
-  text: string;
-}
-
-export interface XaiResponseInputImageContent {
-  type: "input_image";
-  image_url?: string;
-  file_id?: string;
-  detail?: "auto" | "low" | "high";
-}
-
-export type XaiResponseInputContent =
-  | XaiResponseInputTextContent
-  | XaiResponseInputImageContent;
-
-export interface XaiResponseFunctionCallOutput {
-  type: "function_call_output";
-  call_id: string;
-  output: string;
-}
-
-export interface XaiResponseItemReference {
-  type: "item_reference";
-  id: string;
-}
-
-export type XaiResponseInputItem =
-  | XaiResponseInputMessage
-  | XaiResponseFunctionCallOutput
-  | XaiResponseItemReference;
-
-export interface XaiResponseFunctionTool {
-  type: "function";
-  name: string;
-  description?: string;
-  parameters?: Record<string, unknown>;
-  strict?: boolean;
-}
-
-export interface XaiResponseWebSearchTool {
-  type: "web_search" | "web_search_preview";
-  filters?: {
-    allowed_domains?: string[];
-    excluded_domains?: string[];
-  };
-  search_context_size?: "low" | "medium" | "high";
-  user_location?: {
-    type: "approximate";
-    city?: string;
-    state?: string;
-    country?: string;
-    timezone?: string;
-  };
-}
-
-export interface XaiResponseFileSearchTool {
-  type: "file_search";
-  vector_store_ids: string[];
-  max_num_results?: number;
-}
-
-export type XaiResponseTool =
-  | XaiResponseFunctionTool
-  | XaiResponseWebSearchTool
-  | XaiResponseFileSearchTool;
-
-export interface XaiResponseTextFormat {
-  format:
-    | { type: "text" }
-    | { type: "json_object" }
-    | {
-        type: "json_schema";
-        name: string;
-        schema: Record<string, unknown>;
-        description?: string;
-        strict?: boolean;
-      };
-}
-
-export interface XaiResponseReasoning {
-  effort?: "low" | "medium" | "high";
-  summary?: "auto" | "concise" | "detailed";
-}
-
-export interface XaiResponseSearchParameters {
-  mode?: "off" | "on" | "auto";
-  max_search_results?: number;
-  return_citations?: boolean;
-  sources?: string[];
-  from_date?: string;
-  to_date?: string;
-}
-
-export interface XaiResponseRequest {
-  model: string;
-  input: string | XaiResponseInputItem[];
-  instructions?: string;
-  previous_response_id?: string;
-  max_output_tokens?: number;
-  temperature?: number;
-  top_p?: number;
-  tools?: XaiResponseTool[];
-  tool_choice?:
-    | "auto"
-    | "none"
-    | "required"
-    | { type: "function"; name: string };
-  store?: boolean;
-  stream?: boolean;
-  metadata?: Record<string, string>;
-  text?: XaiResponseTextFormat;
-  reasoning?: XaiResponseReasoning;
-  search_parameters?: XaiResponseSearchParameters;
-  prompt_cache_key?: string;
-  parallel_tool_calls?: boolean;
-  include?: string[];
-  user?: string;
 }
 
 // Response output types
@@ -754,6 +460,13 @@ export interface XaiResponseUsage {
   output_tokens_details?: { reasoning_tokens: number };
 }
 
+import type {
+  XaiResponseRequest,
+  XaiResponseReasoning,
+  XaiResponseTextFormat,
+  XaiResponseTool,
+} from "./zod";
+
 export interface XaiResponseResponse {
   id: string;
   object: "response";
@@ -783,15 +496,6 @@ export interface XaiResponseDeleteResponse {
   deleted: boolean;
 }
 
-// Tokenize text types
-
-// POST /v1/tokenize-text request
-export interface XaiTokenizeTextRequest {
-  model: string;
-  text: string;
-  user?: string | null;
-}
-
 // Single token in tokenize-text response
 export interface XaiToken {
   token_id: number;
@@ -802,14 +506,6 @@ export interface XaiToken {
 // POST /v1/tokenize-text response
 export interface XaiTokenizeTextResponse {
   token_ids: XaiToken[];
-}
-
-// Realtime API types
-
-// POST /v1/realtime/client_secrets request
-export interface XaiRealtimeClientSecretRequest {
-  expires_after?: { seconds: number };
-  session?: Record<string, unknown> | null;
 }
 
 // POST /v1/realtime/client_secrets response
@@ -1115,33 +811,30 @@ export interface XaiRealtimeConnection {
   [Symbol.asyncIterator](): AsyncIterableIterator<XaiRealtimeServerEvent>;
 }
 
-// Payload schema types
-export interface PayloadFieldSchema {
-  type: "string" | "number" | "boolean" | "array" | "object";
-  required?: boolean;
-  description?: string;
-  enum?: readonly (string | number | boolean)[];
-  items?: PayloadFieldSchema;
-  properties?: Record<string, PayloadFieldSchema>;
-}
+// ---------------------------------------------------------------------------
+// Method interface types (endpoint shapes with .schema)
+// ---------------------------------------------------------------------------
 
-export interface PayloadSchema {
-  method: "POST" | "PUT" | "DELETE";
-  path: string;
-  contentType: "application/json" | "multipart/form-data";
-  fields: Record<string, PayloadFieldSchema>;
-}
+import type {
+  XaiChatRequest,
+  XaiImageGenerateRequest,
+  XaiImageEditRequest,
+  XaiVideoGenerateRequest,
+  XaiVideoEditRequest,
+  XaiVideoExtendRequest,
+  XaiBatchCreateRequest,
+  XaiBatchAddRequestsBody,
+  XaiCollectionCreateRequest,
+  XaiCollectionUpdateRequest,
+  XaiDocumentAddRequest,
+  XaiDocumentSearchRequest,
+  XaiTokenizeTextRequest,
+  XaiRealtimeClientSecretRequest,
+} from "./zod";
 
-export interface ValidationResult {
-  valid: boolean;
-  errors: string[];
-}
-
-// Method types with payload validation
 interface XaiChatCompletionsMethod {
   (req: XaiChatRequest, signal?: AbortSignal): Promise<XaiChatResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<XaiChatRequest>;
 }
 
 interface XaiImageGenerationsMethod {
@@ -1149,14 +842,12 @@ interface XaiImageGenerationsMethod {
     req: XaiImageGenerateRequest,
     signal?: AbortSignal
   ): Promise<XaiImageResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<XaiImageGenerateRequest>;
 }
 
 interface XaiImageEditsMethod {
   (req: XaiImageEditRequest, signal?: AbortSignal): Promise<XaiImageResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<XaiImageEditRequest>;
 }
 
 interface XaiVideoGenerationsMethod {
@@ -1164,8 +855,7 @@ interface XaiVideoGenerationsMethod {
     req: XaiVideoGenerateRequest,
     signal?: AbortSignal
   ): Promise<XaiVideoAsyncResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<XaiVideoGenerateRequest>;
 }
 
 interface XaiVideoEditsMethod {
@@ -1173,8 +863,7 @@ interface XaiVideoEditsMethod {
     req: XaiVideoEditRequest,
     signal?: AbortSignal
   ): Promise<XaiVideoAsyncResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<XaiVideoEditRequest>;
 }
 
 interface XaiVideoExtensionsMethod {
@@ -1182,14 +871,12 @@ interface XaiVideoExtensionsMethod {
     req: XaiVideoExtendRequest,
     signal?: AbortSignal
   ): Promise<XaiVideoAsyncResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<XaiVideoExtendRequest>;
 }
 
 interface XaiPostResponsesMethod {
   (req: XaiResponseRequest, signal?: AbortSignal): Promise<XaiResponseResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<XaiResponseRequest>;
 }
 
 interface XaiPostFilesMethod {
@@ -1199,13 +886,11 @@ interface XaiPostFilesMethod {
     purpose?: string,
     signal?: AbortSignal
   ): Promise<XaiFileObject>;
-  payloadSchema: PayloadSchema;
 }
 
 interface XaiPostBatchesMethod {
   (req: XaiBatchCreateRequest, signal?: AbortSignal): Promise<XaiBatch>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<XaiBatchCreateRequest>;
   cancel(batchId: string, signal?: AbortSignal): Promise<XaiBatch>;
   requests(
     batchId: string,
@@ -1219,8 +904,7 @@ interface XaiPostCollectionsMethod {
     req: XaiCollectionCreateRequest,
     signal?: AbortSignal
   ): Promise<XaiCollection>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<XaiCollectionCreateRequest>;
   documents(
     collectionId: string,
     fileId: string,
@@ -1234,8 +918,7 @@ interface XaiDocumentSearchMethod {
     req: XaiDocumentSearchRequest,
     signal?: AbortSignal
   ): Promise<XaiDocumentSearchResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<XaiDocumentSearchRequest>;
 }
 
 interface XaiTokenizeTextMethod {
@@ -1243,8 +926,7 @@ interface XaiTokenizeTextMethod {
     req: XaiTokenizeTextRequest,
     signal?: AbortSignal
   ): Promise<XaiTokenizeTextResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<XaiTokenizeTextRequest>;
 }
 
 interface XaiRealtimeClientSecretsMethod {
@@ -1252,8 +934,7 @@ interface XaiRealtimeClientSecretsMethod {
     req: XaiRealtimeClientSecretRequest,
     signal?: AbortSignal
   ): Promise<XaiRealtimeClientSecretResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<XaiRealtimeClientSecretRequest>;
 }
 
 // Generic list/get method type for models
@@ -1385,8 +1066,7 @@ interface XaiPutCollectionsMethod {
     req: XaiCollectionUpdateRequest,
     signal?: AbortSignal
   ): Promise<XaiCollection>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<XaiCollectionUpdateRequest>;
 }
 
 interface XaiPutV1 {

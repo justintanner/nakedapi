@@ -27,16 +27,14 @@ import {
   AnthropicProvider,
   AnthropicError,
 } from "./types";
-import type { ValidationResult } from "./types";
 import {
-  messagesSchema,
-  countTokensSchema,
-  batchesCreateSchema,
-  filesUploadSchema,
-  skillsCreateSchema,
-  skillVersionsCreateSchema,
-} from "./schemas";
-import { validatePayload } from "./validate";
+  AnthropicMessageRequestSchema,
+  AnthropicCountTokensRequestSchema,
+  AnthropicBatchCreateRequestSchema,
+  AnthropicFileUploadRequestSchema,
+  AnthropicSkillsCreateRequestSchema,
+  AnthropicSkillVersionsCreateRequestSchema,
+} from "./zod";
 import { parseAnthropicStream } from "./sse";
 
 // Helper function to safely handle AbortSignal across different environments
@@ -353,10 +351,7 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
       );
     },
     {
-      payloadSchema: messagesSchema,
-      validatePayload(data: unknown): ValidationResult {
-        return validatePayload(data, messagesSchema);
-      },
+      schema: AnthropicMessageRequestSchema,
       countTokens: Object.assign(
         async function countTokens(
           req: AnthropicCountTokensRequest,
@@ -369,10 +364,7 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
           );
         },
         {
-          payloadSchema: countTokensSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, countTokensSchema);
-          },
+          schema: AnthropicCountTokensRequestSchema,
         }
       ),
       batches: Object.assign(
@@ -387,10 +379,7 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
           );
         },
         {
-          payloadSchema: batchesCreateSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, batchesCreateSchema);
-          },
+          schema: AnthropicBatchCreateRequestSchema,
           cancel: async function cancel(
             batchId: string,
             signal?: AbortSignal
@@ -421,7 +410,7 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
       );
     },
     {
-      payloadSchema: filesUploadSchema,
+      schema: AnthropicFileUploadRequestSchema,
     }
   );
 
@@ -435,10 +424,7 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
       return parseAnthropicStream(res);
     },
     {
-      payloadSchema: messagesSchema,
-      validatePayload(data: unknown): ValidationResult {
-        return validatePayload(data, messagesSchema);
-      },
+      schema: AnthropicMessageRequestSchema,
     }
   );
 
@@ -462,7 +448,7 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
       );
     },
     {
-      payloadSchema: skillsCreateSchema,
+      schema: AnthropicSkillsCreateRequestSchema,
     }
   );
 
@@ -485,7 +471,7 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
       );
     },
     {
-      payloadSchema: skillVersionsCreateSchema,
+      schema: AnthropicSkillVersionsCreateRequestSchema,
     }
   );
 
@@ -750,10 +736,7 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
         return await postMessages(req, signal);
       },
       {
-        payloadSchema: messagesSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, messagesSchema);
-        },
+        schema: AnthropicMessageRequestSchema,
         stream: postMessagesStream,
         countTokens: Object.assign(
           async function countTokens(
@@ -763,10 +746,7 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
             return await postMessages.countTokens(req, signal);
           },
           {
-            payloadSchema: countTokensSchema,
-            validatePayload(data: unknown): ValidationResult {
-              return validatePayload(data, countTokensSchema);
-            },
+            schema: AnthropicCountTokensRequestSchema,
           }
         ),
         batches: Object.assign(
@@ -777,10 +757,7 @@ export function anthropic(opts: AnthropicOptions): AnthropicProvider {
             return await postMessages.batches(req, signal);
           },
           {
-            payloadSchema: batchesCreateSchema,
-            validatePayload(data: unknown): ValidationResult {
-              return validatePayload(data, batchesCreateSchema);
-            },
+            schema: AnthropicBatchCreateRequestSchema,
             list: getBatchesList,
             retrieve: getBatchesRetrieve,
             cancel: postMessages.batches.cancel,

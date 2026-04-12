@@ -1,84 +1,35 @@
+import type { z } from "zod";
+
 // ---------------------------------------------------------------------------
-// Alibaba Cloud Model Studio (DashScope) – OpenAI-compatible mode types
+// Request types — derived from Zod schemas (source of truth in zod.ts)
 // ---------------------------------------------------------------------------
 
-// -- Options ----------------------------------------------------------------
+export type {
+  AlibabaOptions,
+  AlibabaMessage,
+  AlibabaFunctionDefinition,
+  AlibabaTool,
+  AlibabaToolCallFunction,
+  AlibabaToolCall,
+  AlibabaStreamOptions,
+  AlibabaResponseFormat,
+  AlibabaChatRequest,
+  AlibabaVideoSynthesisInput,
+  AlibabaVideoSynthesisParameters,
+  AlibabaVideoSynthesisRequest,
+} from "./zod";
 
-export interface AlibabaOptions {
-  apiKey: string;
-  baseURL?: string;
-  timeout?: number;
-  fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
-}
+// ---------------------------------------------------------------------------
+// Response types (hand-written — not schema-ified yet)
+// ---------------------------------------------------------------------------
 
 // -- Chat messages ----------------------------------------------------------
 
 export type AlibabaRole = "system" | "user" | "assistant" | "tool";
 
-export interface AlibabaMessage {
-  role: AlibabaRole;
-  content: string | null;
-  name?: string;
-  tool_calls?: AlibabaToolCall[];
-  tool_call_id?: string;
-}
-
-// -- Tools / function calling -----------------------------------------------
-
-export interface AlibabaFunctionDefinition {
-  name: string;
-  description?: string;
-  parameters?: Record<string, unknown>;
-}
-
-export interface AlibabaTool {
-  type: "function";
-  function: AlibabaFunctionDefinition;
-}
-
-export interface AlibabaToolCallFunction {
-  name: string;
-  arguments: string;
-}
-
-export interface AlibabaToolCall {
-  id: string;
-  type: "function";
-  function: AlibabaToolCallFunction;
-}
-
-// -- Chat request -----------------------------------------------------------
-
-export interface AlibabaStreamOptions {
-  include_usage?: boolean;
-}
-
-export interface AlibabaResponseFormat {
-  type: "text" | "json_object";
-}
-
-export interface AlibabaChatRequest {
-  model: string;
-  messages: AlibabaMessage[];
-  temperature?: number;
-  top_p?: number;
-  max_tokens?: number;
-  n?: number;
-  stop?: string | string[];
-  stream?: boolean;
-  seed?: number;
-  presence_penalty?: number;
-  tools?: AlibabaTool[];
-  tool_choice?:
-    | "auto"
-    | "none"
-    | { type: "function"; function: { name: string } };
-  stream_options?: AlibabaStreamOptions;
-  response_format?: AlibabaResponseFormat;
-  enable_search?: boolean;
-}
-
 // -- Chat response ----------------------------------------------------------
+
+import type { AlibabaToolCall } from "./zod";
 
 export interface AlibabaChatResponseMessage {
   role: string;
@@ -146,29 +97,6 @@ export interface AlibabaModelListResponse {
 
 // -- Video synthesis (native DashScope /api/v1) -----------------------------
 
-export interface AlibabaVideoSynthesisInput {
-  prompt: string;
-  img_url: string;
-  audio_url?: string;
-}
-
-export interface AlibabaVideoSynthesisParameters {
-  resolution?: "480P" | "720P" | "1080P";
-  duration?: number;
-  shot_type?: "single" | "multi";
-  prompt_extend?: boolean;
-  watermark?: boolean;
-  audio?: boolean;
-  seed?: number;
-  negative_prompt?: string;
-}
-
-export interface AlibabaVideoSynthesisRequest {
-  model: string;
-  input: AlibabaVideoSynthesisInput;
-  parameters?: AlibabaVideoSynthesisParameters;
-}
-
 export type AlibabaTaskStatus =
   | "PENDING"
   | "RUNNING"
@@ -229,35 +157,13 @@ export class AlibabaError extends Error {
   }
 }
 
-// -- Payload validation types -----------------------------------------------
-
-export interface PayloadFieldSchema {
-  type: "string" | "number" | "boolean" | "array" | "object";
-  required?: boolean;
-  description?: string;
-  enum?: readonly (string | number | boolean)[];
-  items?: PayloadFieldSchema;
-  properties?: Record<string, PayloadFieldSchema>;
-}
-
-export interface PayloadSchema {
-  method: "POST" | "DELETE";
-  path: string;
-  contentType: "application/json" | "multipart/form-data";
-  fields: Record<string, PayloadFieldSchema>;
-}
-
-export interface ValidationResult {
-  valid: boolean;
-  errors: string[];
-}
-
 // -- Method interfaces ------------------------------------------------------
+
+import type { AlibabaChatRequest, AlibabaVideoSynthesisRequest } from "./zod";
 
 export interface AlibabaChatCompletionsMethod {
   (req: AlibabaChatRequest, signal?: AbortSignal): Promise<AlibabaChatResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<AlibabaChatRequest>;
 }
 
 export interface AlibabaChatCompletionsStreamMethod {
@@ -265,8 +171,7 @@ export interface AlibabaChatCompletionsStreamMethod {
     req: AlibabaChatRequest,
     signal?: AbortSignal
   ): AsyncIterable<AlibabaChatStreamChunk>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<AlibabaChatRequest>;
 }
 
 export interface AlibabaVideoSynthesisMethod {
@@ -274,8 +179,7 @@ export interface AlibabaVideoSynthesisMethod {
     req: AlibabaVideoSynthesisRequest,
     signal?: AbortSignal
   ): Promise<AlibabaVideoSynthesisSubmitResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<AlibabaVideoSynthesisRequest>;
 }
 
 // -- Namespace interfaces ---------------------------------------------------

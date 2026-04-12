@@ -23,11 +23,12 @@ export type {
 export { sseToIterable, parseAnthropicStream } from "./sse";
 export type { SSEEvent } from "./sse";
 
-// Export all types
+// Export all types (request types now flow from zod.ts via types.ts)
 export type {
   AnthropicOptions,
   AnthropicListParams,
   AnthropicListResponse,
+  AnthropicCacheControl,
   AnthropicTextBlock,
   AnthropicImageSource,
   AnthropicImageBlock,
@@ -89,15 +90,18 @@ export type {
   AnthropicFile,
   AnthropicFileListResponse,
   AnthropicFileDeleteResponse,
+  AnthropicFileUploadRequest,
   AnthropicSkillFile,
   AnthropicSkill,
   AnthropicSkillsListParams,
   AnthropicSkillsListResponse,
   AnthropicSkillDeleteResponse,
+  AnthropicSkillsCreateRequest,
   AnthropicSkillVersion,
   AnthropicSkillVersionsListParams,
   AnthropicSkillVersionsListResponse,
   AnthropicSkillVersionDeleteResponse,
+  AnthropicSkillVersionsCreateRequest,
   AnthropicMessagesMethod,
   AnthropicCountTokensMethod,
   AnthropicBatchesMethod,
@@ -110,7 +114,4 @@ export type {
   AnthropicSkillsNamespace,
   AnthropicV1Namespace,
   AnthropicProvider,
-  PayloadFieldSchema,
-  PayloadSchema,
-  ValidationResult,
 } from "./types";

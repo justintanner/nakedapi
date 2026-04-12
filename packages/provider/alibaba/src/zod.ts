@@ -1,0 +1,142 @@
+import { z } from "zod";
+
+// ---------------------------------------------------------------------------
+// Sub-schemas (composable building blocks)
+// ---------------------------------------------------------------------------
+
+export const AlibabaFunctionDefinitionSchema = z.object({
+  name: z.string(),
+  description: z.string().optional(),
+  parameters: z.record(z.string(), z.unknown()).optional(),
+});
+
+export const AlibabaToolSchema = z.object({
+  type: z.literal("function"),
+  function: AlibabaFunctionDefinitionSchema,
+});
+
+export const AlibabaToolCallFunctionSchema = z.object({
+  name: z.string(),
+  arguments: z.string(),
+});
+
+export const AlibabaToolCallSchema = z.object({
+  id: z.string(),
+  type: z.literal("function"),
+  function: AlibabaToolCallFunctionSchema,
+});
+
+export const AlibabaMessageSchema = z.object({
+  role: z.enum(["system", "user", "assistant", "tool"]),
+  content: z.string().nullable(),
+  name: z.string().optional(),
+  tool_calls: z.array(AlibabaToolCallSchema).optional(),
+  tool_call_id: z.string().optional(),
+});
+
+export const AlibabaStreamOptionsSchema = z.object({
+  include_usage: z.boolean().optional(),
+});
+
+export const AlibabaResponseFormatSchema = z.object({
+  type: z.enum(["text", "json_object"]),
+});
+
+// ---------------------------------------------------------------------------
+// Chat completions request
+// ---------------------------------------------------------------------------
+
+export const AlibabaChatRequestSchema = z.object({
+  model: z.string(),
+  messages: z.array(AlibabaMessageSchema),
+  temperature: z.number().optional(),
+  top_p: z.number().optional(),
+  max_tokens: z.number().optional(),
+  n: z.number().optional(),
+  stop: z.union([z.string(), z.array(z.string())]).optional(),
+  stream: z.boolean().optional(),
+  seed: z.number().optional(),
+  presence_penalty: z.number().optional(),
+  tools: z.array(AlibabaToolSchema).optional(),
+  tool_choice: z
+    .union([
+      z.enum(["auto", "none"]),
+      z.object({
+        type: z.literal("function"),
+        function: z.object({ name: z.string() }),
+      }),
+    ])
+    .optional(),
+  stream_options: AlibabaStreamOptionsSchema.optional(),
+  response_format: AlibabaResponseFormatSchema.optional(),
+  enable_search: z.boolean().optional(),
+});
+
+// ---------------------------------------------------------------------------
+// Video synthesis request
+// ---------------------------------------------------------------------------
+
+export const AlibabaVideoSynthesisInputSchema = z.object({
+  prompt: z.string(),
+  img_url: z.string(),
+  audio_url: z.string().optional(),
+});
+
+export const AlibabaVideoSynthesisParametersSchema = z.object({
+  resolution: z.enum(["480P", "720P", "1080P"]).optional(),
+  duration: z.number().optional(),
+  shot_type: z.enum(["single", "multi"]).optional(),
+  prompt_extend: z.boolean().optional(),
+  watermark: z.boolean().optional(),
+  audio: z.boolean().optional(),
+  seed: z.number().optional(),
+  negative_prompt: z.string().optional(),
+});
+
+export const AlibabaVideoSynthesisRequestSchema = z.object({
+  model: z.string(),
+  input: AlibabaVideoSynthesisInputSchema,
+  parameters: AlibabaVideoSynthesisParametersSchema.optional(),
+});
+
+// ---------------------------------------------------------------------------
+// Options
+// ---------------------------------------------------------------------------
+
+export const AlibabaOptionsSchema = z.object({
+  apiKey: z.string().min(1),
+  baseURL: z.string().url().optional(),
+  timeout: z.number().int().positive().optional(),
+  fetch: z
+    .custom<
+      (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+    >()
+    .optional(),
+});
+
+// ---------------------------------------------------------------------------
+// Inferred types (source of truth — replaces hand-written interfaces)
+// ---------------------------------------------------------------------------
+
+export type AlibabaFunctionDefinition = z.infer<
+  typeof AlibabaFunctionDefinitionSchema
+>;
+export type AlibabaTool = z.infer<typeof AlibabaToolSchema>;
+export type AlibabaToolCallFunction = z.infer<
+  typeof AlibabaToolCallFunctionSchema
+>;
+export type AlibabaToolCall = z.infer<typeof AlibabaToolCallSchema>;
+export type AlibabaMessage = z.infer<typeof AlibabaMessageSchema>;
+export type AlibabaStreamOptions = z.infer<typeof AlibabaStreamOptionsSchema>;
+export type AlibabaResponseFormat = z.infer<typeof AlibabaResponseFormatSchema>;
+export type AlibabaChatRequest = z.infer<typeof AlibabaChatRequestSchema>;
+export type AlibabaVideoSynthesisInput = z.infer<
+  typeof AlibabaVideoSynthesisInputSchema
+>;
+export type AlibabaVideoSynthesisParameters = z.infer<
+  typeof AlibabaVideoSynthesisParametersSchema
+>;
+export type AlibabaVideoSynthesisRequest = z.infer<
+  typeof AlibabaVideoSynthesisRequestSchema
+>;
+export type AlibabaOptions = z.infer<typeof AlibabaOptionsSchema>;

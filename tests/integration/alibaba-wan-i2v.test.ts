@@ -87,11 +87,11 @@ describe("alibaba wan i2v integration", () => {
     ]).toContain(status.output.task_status);
   }, 300_000);
 
-  it("should validate video-synthesis payload", () => {
+  it("should validate video-synthesis payload via .schema.safeParse", () => {
     const provider = alibaba({ apiKey: "test-key" });
 
     const valid =
-      provider.post.api.v1.services.aigc.videoGeneration.videoSynthesis.validatePayload(
+      provider.post.api.v1.services.aigc.videoGeneration.videoSynthesis.schema.safeParse(
         {
           model: "wan2.7-i2v",
           input: {
@@ -101,24 +101,24 @@ describe("alibaba wan i2v integration", () => {
           parameters: { resolution: "720P", duration: 5 },
         }
       );
-    expect(valid.valid).toBe(true);
-    expect(valid.errors).toHaveLength(0);
+    expect(valid.success).toBe(true);
 
     const missingInput =
-      provider.post.api.v1.services.aigc.videoGeneration.videoSynthesis.validatePayload(
+      provider.post.api.v1.services.aigc.videoGeneration.videoSynthesis.schema.safeParse(
         { model: "wan2.7-i2v" }
       );
-    expect(missingInput.valid).toBe(false);
-    expect(missingInput.errors.length).toBeGreaterThan(0);
+    expect(missingInput.success).toBe(false);
 
     const missingImg =
-      provider.post.api.v1.services.aigc.videoGeneration.videoSynthesis.validatePayload(
+      provider.post.api.v1.services.aigc.videoGeneration.videoSynthesis.schema.safeParse(
         {
           model: "wan2.7-i2v",
           input: { prompt: "hi" },
         }
       );
-    expect(missingImg.valid).toBe(false);
-    expect(missingImg.errors.some((e) => e.includes("img_url"))).toBe(true);
+    expect(missingImg.success).toBe(false);
+    expect(
+      missingImg.error?.issues.some((i) => i.path.includes("img_url"))
+    ).toBe(true);
   });
 });

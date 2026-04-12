@@ -71,23 +71,23 @@ describe("free uguu upload", () => {
     expect(result.files[0].size).toBe(vidBuffer.length);
   });
 
-  it("should expose payloadSchema on upload", () => {
+  it("should expose schema on upload", () => {
     ctx = setupPollyForFileUploads("free/uguu-schema");
     const provider = free();
-    const schema = provider.uguu.upload.payloadSchema;
+    const schema = provider.uguu.upload.schema;
 
-    expect(schema.method).toBe("POST");
-    expect(schema.path).toBe("/upload");
-    expect(schema.contentType).toBe("multipart/form-data");
-    expect(schema.fields.file.required).toBe(true);
+    expect(typeof schema.safeParse).toBe("function");
+    expect(typeof schema.parse).toBe("function");
   });
 
   it("should validate payload - missing file", () => {
     ctx = setupPollyForFileUploads("free/uguu-validate");
     const provider = free();
-    const result = provider.uguu.upload.validatePayload({});
+    const result = provider.uguu.upload.schema.safeParse({});
 
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("file is required");
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("file"))).toBe(
+      true
+    );
   });
 });

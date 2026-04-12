@@ -15,6 +15,10 @@ export default defineConfig({
     testTimeout: 30000,
     setupFiles: ["tests/integration-setup.ts"],
     alias: {
+      "@apicity/kimicoding/zod": path.resolve(
+        __dirname,
+        "../packages/provider/kimicoding/src/zod"
+      ),
       "@apicity/kimicoding": path.resolve(
         __dirname,
         "../packages/provider/kimicoding/src"
@@ -24,6 +28,10 @@ export default defineConfig({
         "../packages/provider/kie/src/zod"
       ),
       "@apicity/kie": path.resolve(__dirname, "../packages/provider/kie/src"),
+      "@apicity/xai/zod": path.resolve(
+        __dirname,
+        "../packages/provider/xai/src/zod"
+      ),
       "@apicity/xai": path.resolve(__dirname, "../packages/provider/xai/src"),
       "@apicity/openai/zod": path.resolve(
         __dirname,
@@ -38,13 +46,25 @@ export default defineConfig({
         __dirname,
         "../packages/provider/fireworks/src"
       ),
+      "@apicity/anthropic/zod": path.resolve(
+        __dirname,
+        "../packages/provider/anthropic/src/zod"
+      ),
       "@apicity/anthropic": path.resolve(
         __dirname,
         "../packages/provider/anthropic/src"
       ),
+      "@apicity/alibaba/zod": path.resolve(
+        __dirname,
+        "../packages/provider/alibaba/src/zod"
+      ),
       "@apicity/alibaba": path.resolve(
         __dirname,
         "../packages/provider/alibaba/src"
+      ),
+      "@apicity/free/zod": path.resolve(
+        __dirname,
+        "../packages/provider/free/src/zod"
       ),
       "@apicity/free": path.resolve(__dirname, "../packages/provider/free/src"),
     },

@@ -46,14 +46,13 @@ describe("kimicoding chat stream integration", () => {
       apiKey: process.env.KIMI_CODING_API_KEY ?? "sk-test-key",
     });
 
-    const validation = provider.post.stream.coding.v1.messages.validatePayload({
+    const result = provider.post.stream.coding.v1.messages.schema.safeParse({
       model: "k2p5",
       messages: [{ role: "user", content: "Hello" }],
       max_tokens: 1024,
       stream: true,
     });
 
-    expect(validation.valid).toBe(true);
-    expect(validation.errors).toHaveLength(0);
+    expect(result.success).toBe(true);
   });
 });

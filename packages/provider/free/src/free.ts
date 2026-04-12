@@ -16,18 +16,16 @@ import {
   FreeProvider,
   FreeError,
 } from "./types";
-import type { ValidationResult } from "./types";
 import {
-  tmpfilesUploadSchema,
-  uguuUploadSchema,
-  catboxUploadSchema,
-  litterboxUploadSchema,
-  gofileUploadSchema,
-  filebinUploadSchema,
-  tempshUploadSchema,
-  tflinkUploadSchema,
-} from "./schemas";
-import { validatePayload } from "./validate";
+  TmpfilesUploadRequestSchema,
+  UguuUploadRequestSchema,
+  CatboxUploadRequestSchema,
+  LitterboxUploadRequestSchema,
+  GofileUploadRequestSchema,
+  FilebinUploadRequestSchema,
+  TempshUploadRequestSchema,
+  TflinkUploadRequestSchema,
+} from "./zod";
 
 export function free(opts?: FreeOptions): FreeProvider {
   const doFetch = opts?.fetch ?? fetch;
@@ -187,10 +185,7 @@ export function free(opts?: FreeOptions): FreeProvider {
         );
       },
       {
-        payloadSchema: tmpfilesUploadSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, tmpfilesUploadSchema);
-        },
+        schema: TmpfilesUploadRequestSchema,
       }
     ),
   };
@@ -212,10 +207,7 @@ export function free(opts?: FreeOptions): FreeProvider {
         );
       },
       {
-        payloadSchema: uguuUploadSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, uguuUploadSchema);
-        },
+        schema: UguuUploadRequestSchema,
       }
     ),
   };
@@ -238,10 +230,7 @@ export function free(opts?: FreeOptions): FreeProvider {
         );
       },
       {
-        payloadSchema: catboxUploadSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, catboxUploadSchema);
-        },
+        schema: CatboxUploadRequestSchema,
       }
     ),
   };
@@ -265,10 +254,7 @@ export function free(opts?: FreeOptions): FreeProvider {
         );
       },
       {
-        payloadSchema: litterboxUploadSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, litterboxUploadSchema);
-        },
+        schema: LitterboxUploadRequestSchema,
       }
     ),
   };
@@ -290,10 +276,7 @@ export function free(opts?: FreeOptions): FreeProvider {
         );
       },
       {
-        payloadSchema: gofileUploadSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, gofileUploadSchema);
-        },
+        schema: GofileUploadRequestSchema,
       }
     ),
   };
@@ -318,10 +301,7 @@ export function free(opts?: FreeOptions): FreeProvider {
         );
       },
       {
-        payloadSchema: filebinUploadSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, filebinUploadSchema);
-        },
+        schema: FilebinUploadRequestSchema,
       }
     ),
   };
@@ -339,10 +319,7 @@ export function free(opts?: FreeOptions): FreeProvider {
         return makeFormRequestText("https://temp.sh/upload", form, signal);
       },
       {
-        payloadSchema: tempshUploadSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, tempshUploadSchema);
-        },
+        schema: TempshUploadRequestSchema,
       }
     ),
   };
@@ -364,10 +341,7 @@ export function free(opts?: FreeOptions): FreeProvider {
         );
       },
       {
-        payloadSchema: tflinkUploadSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, tflinkUploadSchema);
-        },
+        schema: TflinkUploadRequestSchema,
       }
     ),
   };

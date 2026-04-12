@@ -28,22 +28,20 @@ describe("xai tokenize-text integration", () => {
   });
 
   // Payload validation
-  it("should expose payloadSchema and validatePayload", () => {
+  it("should expose schema with safeParse", () => {
     const provider = createXaiProvider();
     const endpoint = provider.post.v1.tokenizeText;
-    expect(endpoint.payloadSchema).toBeDefined();
-    expect(endpoint.payloadSchema.method).toBe("POST");
-    expect(endpoint.payloadSchema.path).toBe("/tokenize-text");
+    expect(endpoint.schema).toBeDefined();
+    expect(typeof endpoint.schema.safeParse).toBe("function");
 
-    const valid = endpoint.validatePayload({
+    const valid = endpoint.schema.safeParse({
       model: "grok-3",
       text: "test",
     });
-    expect(valid.valid).toBe(true);
-    expect(valid.errors).toHaveLength(0);
+    expect(valid.success).toBe(true);
 
-    const invalid = endpoint.validatePayload({});
-    expect(invalid.valid).toBe(false);
-    expect(invalid.errors.length).toBeGreaterThan(0);
+    const invalid = endpoint.schema.safeParse({});
+    expect(invalid.success).toBe(false);
+    expect(invalid.error?.issues.length).toBeGreaterThan(0);
   });
 });

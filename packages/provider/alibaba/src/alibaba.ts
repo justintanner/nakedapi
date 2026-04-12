@@ -10,9 +10,10 @@ import {
   AlibabaVideoSynthesisSubmitResponse,
   AlibabaTaskStatusResponse,
 } from "./types";
-import type { ValidationResult } from "./types";
-import { chatCompletionsSchema, videoSynthesisSchema } from "./schemas";
-import { validatePayload } from "./validate";
+import {
+  AlibabaChatRequestSchema,
+  AlibabaVideoSynthesisRequestSchema,
+} from "./zod";
 import { sseToIterable } from "./sse";
 
 export function alibaba(opts: AlibabaOptions): AlibabaProvider {
@@ -227,10 +228,7 @@ export function alibaba(opts: AlibabaOptions): AlibabaProvider {
           );
         },
         {
-          payloadSchema: chatCompletionsSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, chatCompletionsSchema);
-          },
+          schema: AlibabaChatRequestSchema,
         }
       ),
     },
@@ -250,10 +248,7 @@ export function alibaba(opts: AlibabaOptions): AlibabaProvider {
           );
         },
         {
-          payloadSchema: chatCompletionsSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, chatCompletionsSchema);
-          },
+          schema: AlibabaChatRequestSchema,
         }
       ),
     },
@@ -285,10 +280,7 @@ export function alibaba(opts: AlibabaOptions): AlibabaProvider {
               );
             },
             {
-              payloadSchema: videoSynthesisSchema,
-              validatePayload(data: unknown): ValidationResult {
-                return validatePayload(data, videoSynthesisSchema);
-              },
+              schema: AlibabaVideoSynthesisRequestSchema,
             }
           ),
         },

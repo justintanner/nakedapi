@@ -469,44 +469,45 @@ describe("xAI provider core", () => {
     });
   });
 
-  describe("payload schema and validatePayload methods", () => {
-    it("has payloadSchema on chat.completions", () => {
+  describe("schema and safeParse methods", () => {
+    it("has schema on chat.completions", () => {
       const provider = xai({ apiKey: "sk-test" });
-      expect(provider.post.v1.chat.completions.payloadSchema).toBeDefined();
+      expect(provider.post.v1.chat.completions.schema).toBeDefined();
+      expect(typeof provider.post.v1.chat.completions.schema.safeParse).toBe(
+        "function"
+      );
     });
 
-    it("has validatePayload method on chat.completions", () => {
+    it("validates valid chat payload via schema.safeParse", () => {
       const provider = xai({ apiKey: "sk-test" });
-      expect(provider.post.v1.chat.completions.validatePayload).toBeDefined();
-
-      const result = provider.post.v1.chat.completions.validatePayload({
+      const result = provider.post.v1.chat.completions.schema.safeParse({
         messages: [{ role: "user", content: "Hello" }],
       });
-      expect(result.valid).toBe(true);
+      expect(result.success).toBe(true);
     });
 
-    it("has validatePayload method on responses", () => {
+    it("validates valid responses payload via schema.safeParse", () => {
       const provider = xai({ apiKey: "sk-test" });
-      const result = provider.post.v1.responses.validatePayload({
+      const result = provider.post.v1.responses.schema.safeParse({
         model: "grok-4-fast",
         input: "Hello",
       });
-      expect(result.valid).toBe(true);
+      expect(result.success).toBe(true);
     });
 
-    it("has validatePayload method on image.generations", () => {
+    it("validates valid image.generations payload via schema.safeParse", () => {
       const provider = xai({ apiKey: "sk-test" });
-      const result = provider.post.v1.images.generations.validatePayload({
+      const result = provider.post.v1.images.generations.schema.safeParse({
         prompt: "A red apple",
       });
-      expect(result.valid).toBe(true);
+      expect(result.success).toBe(true);
     });
 
     it("returns validation errors for invalid payload", () => {
       const provider = xai({ apiKey: "sk-test" });
-      const result = provider.post.v1.chat.completions.validatePayload({});
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain("messages is required");
+      const result = provider.post.v1.chat.completions.schema.safeParse({});
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
     });
   });
 });

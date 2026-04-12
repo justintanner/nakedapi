@@ -9,26 +9,23 @@ import {
   OpenAiModerationRequestSchema,
 } from "../../packages/provider/openai/src/zod";
 
-// KimiCoding validation
-import { validatePayload as validateKimiPayload } from "../../packages/provider/kimicoding/src/validate";
+// KimiCoding validation (Zod schemas)
 import {
-  messagesSchema as kimiMessagesSchema,
-  embeddingsSchema as kimiEmbeddingsSchema,
-} from "../../packages/provider/kimicoding/src/schemas";
+  ChatRequestSchema as KimiChatRequestSchema,
+  EmbeddingRequestSchema as KimiEmbeddingRequestSchema,
+} from "../../packages/provider/kimicoding/src/zod";
 
-// xAI validation
-import { validatePayload as validateXaiPayload } from "../../packages/provider/xai/src/validate";
+// xAI validation (Zod schemas)
 import {
-  chatCompletionsSchema as xaiChatSchema,
-  imageGenerationsSchema as xaiImageSchema,
-} from "../../packages/provider/xai/src/schemas";
+  XaiChatRequestSchema as xaiChatSchema,
+  XaiImageGenerateRequestSchema as xaiImageSchema,
+} from "../../packages/provider/xai/src/zod";
 
-// Anthropic validation
-import { validatePayload as validateAnthropicPayload } from "../../packages/provider/anthropic/src/validate";
+// Anthropic validation (now uses Zod schemas)
 import {
-  messagesSchema as anthropicMessagesSchema,
-  countTokensSchema,
-} from "../../packages/provider/anthropic/src/schemas";
+  AnthropicMessageRequestSchema,
+  AnthropicCountTokensRequestSchema,
+} from "../../packages/provider/anthropic/src/zod";
 
 describe("validatePayload", () => {
   describe("OpenAI", () => {
@@ -93,109 +90,83 @@ describe("validatePayload", () => {
 
   describe("KimiCoding", () => {
     it("should validate valid messages payload", () => {
-      const result = validateKimiPayload(
-        {
-          model: "k2p5",
-          messages: [{ role: "user", content: "Hello" }],
-          max_tokens: 1024,
-        },
-        kimiMessagesSchema
-      );
-      expect(result.valid).toBe(true);
+      const result = KimiChatRequestSchema.safeParse({
+        model: "k2p5",
+        messages: [{ role: "user", content: "Hello" }],
+        max_tokens: 1024,
+      });
+      expect(result.success).toBe(true);
     });
 
     it("should reject invalid messages payload", () => {
-      const result = validateKimiPayload(
-        {
-          model: "k2p5",
-          // Missing required fields
-        },
-        kimiMessagesSchema
-      );
-      expect(result.valid).toBe(false);
+      const result = KimiChatRequestSchema.safeParse({
+        model: "k2p5",
+        // Missing required fields
+      });
+      expect(result.success).toBe(false);
     });
 
     it("should validate valid embeddings payload", () => {
-      const result = validateKimiPayload(
-        {
-          model: "k2p5",
-          input: "Hello world",
-        },
-        kimiEmbeddingsSchema
-      );
-      expect(result.valid).toBe(true);
+      const result = KimiEmbeddingRequestSchema.safeParse({
+        model: "k2p5",
+        input: "Hello world",
+      });
+      expect(result.success).toBe(true);
     });
   });
 
   describe("xAI", () => {
     it("should validate valid chat completion payload", () => {
-      const result = validateXaiPayload(
-        {
-          model: "grok-3",
-          messages: [{ role: "user", content: "Hello" }],
-        },
-        xaiChatSchema
-      );
-      expect(result.valid).toBe(true);
+      const result = xaiChatSchema.safeParse({
+        model: "grok-3",
+        messages: [{ role: "user", content: "Hello" }],
+      });
+      expect(result.success).toBe(true);
     });
 
     it("should reject invalid chat completion payload", () => {
-      const result = validateXaiPayload(
-        {
-          model: "grok-3",
-          // Missing required 'messages' field
-        },
-        xaiChatSchema
-      );
-      expect(result.valid).toBe(false);
+      const result = xaiChatSchema.safeParse({
+        model: "grok-3",
+        // Missing required 'messages' field
+      });
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
     });
 
     it("should validate valid image generation payload", () => {
-      const result = validateXaiPayload(
-        {
-          model: "grok-2-image",
-          prompt: "A cat",
-        },
-        xaiImageSchema
-      );
-      expect(result.valid).toBe(true);
+      const result = xaiImageSchema.safeParse({
+        model: "grok-2-image",
+        prompt: "A cat",
+      });
+      expect(result.success).toBe(true);
     });
   });
 
   describe("Anthropic", () => {
     it("should validate valid messages payload", () => {
-      const result = validateAnthropicPayload(
-        {
-          model: "claude-sonnet-4-5-20250929",
-          max_tokens: 1024,
-          messages: [{ role: "user", content: "Hello" }],
-        },
-        anthropicMessagesSchema
-      );
-      expect(result.valid).toBe(true);
+      const result = AnthropicMessageRequestSchema.safeParse({
+        model: "claude-sonnet-4-5-20250929",
+        max_tokens: 1024,
+        messages: [{ role: "user", content: "Hello" }],
+      });
+      expect(result.success).toBe(true);
     });
 
     it("should reject invalid messages payload", () => {
-      const result = validateAnthropicPayload(
-        {
-          model: "claude-sonnet",
-          // Missing required 'max_tokens'
-          messages: [{ role: "user", content: "Hello" }],
-        },
-        anthropicMessagesSchema
-      );
-      expect(result.valid).toBe(false);
+      const result = AnthropicMessageRequestSchema.safeParse({
+        model: "claude-sonnet",
+        // Missing required 'max_tokens'
+        messages: [{ role: "user", content: "Hello" }],
+      });
+      expect(result.success).toBe(false);
     });
 
     it("should validate valid count tokens payload", () => {
-      const result = validateAnthropicPayload(
-        {
-          model: "claude-sonnet",
-          messages: [{ role: "user", content: "Hello" }],
-        },
-        countTokensSchema
-      );
-      expect(result.valid).toBe(true);
+      const result = AnthropicCountTokensRequestSchema.safeParse({
+        model: "claude-sonnet",
+        messages: [{ role: "user", content: "Hello" }],
+      });
+      expect(result.success).toBe(true);
     });
   });
 });

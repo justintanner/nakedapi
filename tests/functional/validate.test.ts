@@ -1,207 +1,174 @@
 // Tests for validatePayload — pure function, no API calls
-// All providers share the same validation engine; testing via kimicoding's export
+// Providers migrated to Zod (openai, kie, kimicoding, free, xai, anthropic) are tested via safeParse.
 import { describe, it, expect } from "vitest";
-import { validatePayload } from "../../packages/provider/kimicoding/src/validate";
-import type { PayloadSchema } from "../../packages/provider/kimicoding/src/types";
 
-const testSchema: PayloadSchema = {
-  method: "POST",
-  path: "/test",
-  contentType: "application/json",
-  fields: {
-    name: { type: "string", required: true },
-    count: { type: "number" },
-    active: { type: "boolean" },
-    role: { type: "string", enum: ["admin", "user", "guest"] as const },
-    tags: {
-      type: "array",
-      items: { type: "string" },
-    },
-    metadata: {
-      type: "object",
-      properties: {
-        key: { type: "string", required: true },
-        value: { type: "string" },
-      },
-    },
-    items: {
-      type: "array",
-      required: true,
-      items: {
-        type: "object",
-        properties: {
-          id: { type: "number", required: true },
-          label: { type: "string" },
-        },
-      },
-    },
-  },
-};
+// OpenAI validation (Zod schemas)
+import {
+  OpenAiChatRequestSchema,
+  OpenAiEmbeddingRequestSchema,
+  OpenAiResponseRequestSchema,
+  OpenAiSpeechRequestSchema,
+  OpenAiModerationRequestSchema,
+} from "../../packages/provider/openai/src/zod";
+
+// KimiCoding validation (Zod schemas)
+import {
+  ChatRequestSchema as KimiChatRequestSchema,
+  EmbeddingRequestSchema as KimiEmbeddingRequestSchema,
+} from "../../packages/provider/kimicoding/src/zod";
+
+// xAI validation (Zod schemas)
+import {
+  XaiChatRequestSchema as xaiChatSchema,
+  XaiImageGenerateRequestSchema as xaiImageSchema,
+} from "../../packages/provider/xai/src/zod";
+
+// Anthropic validation (Zod schemas)
+import {
+  AnthropicMessageRequestSchema,
+  AnthropicCountTokensRequestSchema,
+} from "../../packages/provider/anthropic/src/zod";
 
 describe("validatePayload", () => {
-  it("accepts valid payload with all required fields", () => {
-    const result = validatePayload(
-      { name: "test", items: [{ id: 1 }] },
-      testSchema
-    );
-    expect(result.valid).toBe(true);
-    expect(result.errors).toHaveLength(0);
+  describe("OpenAI", () => {
+    it("should validate valid chat completion payload", () => {
+      const result = OpenAiChatRequestSchema.safeParse({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: "Hello" }],
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("should reject invalid chat completion payload", () => {
+      const result = OpenAiChatRequestSchema.safeParse({
+        model: "gpt-4o",
+        // Missing required 'messages' field
+      });
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
+    });
+
+    it("should validate valid embeddings payload", () => {
+      const result = OpenAiEmbeddingRequestSchema.safeParse({
+        model: "text-embedding-3-small",
+        input: "Hello world",
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("should validate valid responses payload", () => {
+      const result = OpenAiResponseRequestSchema.safeParse({
+        model: "gpt-4o",
+        input: "Hello",
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("should validate valid audio speech payload", () => {
+      const result = OpenAiSpeechRequestSchema.safeParse({
+        model: "tts-1",
+        input: "Hello",
+        voice: "alloy",
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("should reject invalid audio speech payload", () => {
+      const result = OpenAiSpeechRequestSchema.safeParse({
+        model: "tts-1",
+        input: "Hello",
+        // Missing required 'voice' field
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it("should validate valid moderations payload", () => {
+      const result = OpenAiModerationRequestSchema.safeParse({
+        input: "Text to moderate",
+      });
+      expect(result.success).toBe(true);
+    });
   });
 
-  it("accepts valid payload with all fields", () => {
-    const result = validatePayload(
-      {
-        name: "test",
-        count: 5,
-        active: true,
-        role: "admin",
-        tags: ["a", "b"],
-        metadata: { key: "k", value: "v" },
-        items: [{ id: 1, label: "first" }],
-      },
-      testSchema
-    );
-    expect(result.valid).toBe(true);
-    expect(result.errors).toHaveLength(0);
+  describe("KimiCoding", () => {
+    it("should validate valid messages payload", () => {
+      const result = KimiChatRequestSchema.safeParse({
+        model: "k2p5",
+        messages: [{ role: "user", content: "Hello" }],
+        max_tokens: 1024,
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("should reject invalid messages payload", () => {
+      const result = KimiChatRequestSchema.safeParse({
+        model: "k2p5",
+        // Missing required fields
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it("should validate valid embeddings payload", () => {
+      const result = KimiEmbeddingRequestSchema.safeParse({
+        model: "k2p5",
+        input: "Hello world",
+      });
+      expect(result.success).toBe(true);
+    });
   });
 
-  it("rejects missing required fields", () => {
-    const result = validatePayload({}, testSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("name is required");
-    expect(result.errors).toContain("items is required");
+  describe("xAI", () => {
+    it("should validate valid chat completion payload", () => {
+      const result = xaiChatSchema.safeParse({
+        model: "grok-3",
+        messages: [{ role: "user", content: "Hello" }],
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("should reject invalid chat completion payload", () => {
+      const result = xaiChatSchema.safeParse({
+        model: "grok-3",
+        // Missing required 'messages' field
+      });
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
+    });
+
+    it("should validate valid image generation payload", () => {
+      const result = xaiImageSchema.safeParse({
+        model: "grok-2-image",
+        prompt: "A cat",
+      });
+      expect(result.success).toBe(true);
+    });
   });
 
-  it("rejects wrong type for string field", () => {
-    const result = validatePayload(
-      { name: 123, items: [{ id: 1 }] },
-      testSchema
-    );
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("name must be of type string");
-  });
+  describe("Anthropic", () => {
+    it("should validate valid messages payload", () => {
+      const result = AnthropicMessageRequestSchema.safeParse({
+        model: "claude-sonnet-4-5-20250929",
+        max_tokens: 1024,
+        messages: [{ role: "user", content: "Hello" }],
+      });
+      expect(result.success).toBe(true);
+    });
 
-  it("rejects wrong type for number field", () => {
-    const result = validatePayload(
-      { name: "x", count: "five", items: [{ id: 1 }] },
-      testSchema
-    );
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("count must be of type number");
-  });
+    it("should reject invalid messages payload", () => {
+      const result = AnthropicMessageRequestSchema.safeParse({
+        model: "claude-sonnet",
+        // Missing required 'max_tokens'
+        messages: [{ role: "user", content: "Hello" }],
+      });
+      expect(result.success).toBe(false);
+    });
 
-  it("rejects wrong type for boolean field", () => {
-    const result = validatePayload(
-      { name: "x", active: "yes", items: [{ id: 1 }] },
-      testSchema
-    );
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("active must be of type boolean");
-  });
-
-  it("rejects invalid enum value", () => {
-    const result = validatePayload(
-      { name: "x", role: "superadmin", items: [{ id: 1 }] },
-      testSchema
-    );
-    expect(result.valid).toBe(false);
-    expect(result.errors[0]).toContain("must be one of");
-    expect(result.errors[0]).toContain("admin");
-  });
-
-  it("accepts valid enum value", () => {
-    const result = validatePayload(
-      { name: "x", role: "guest", items: [{ id: 1 }] },
-      testSchema
-    );
-    expect(result.valid).toBe(true);
-  });
-
-  it("rejects non-array for array field", () => {
-    const result = validatePayload(
-      { name: "x", tags: "not-array", items: [{ id: 1 }] },
-      testSchema
-    );
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("tags must be of type array");
-  });
-
-  it("validates array item types", () => {
-    const result = validatePayload(
-      { name: "x", tags: ["ok", 123], items: [{ id: 1 }] },
-      testSchema
-    );
-    expect(result.valid).toBe(false);
-    expect(result.errors[0]).toContain("tags[1] must be of type string");
-  });
-
-  it("rejects non-object for object field", () => {
-    const result = validatePayload(
-      { name: "x", metadata: "not-object", items: [{ id: 1 }] },
-      testSchema
-    );
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("metadata must be of type object");
-  });
-
-  it("validates nested object required fields", () => {
-    const result = validatePayload(
-      { name: "x", metadata: { value: "v" }, items: [{ id: 1 }] },
-      testSchema
-    );
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("metadata.key is required");
-  });
-
-  it("validates array of objects with nested required fields", () => {
-    const result = validatePayload(
-      { name: "x", items: [{ label: "no-id" }] },
-      testSchema
-    );
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("items[0].id is required");
-  });
-
-  it("validates array items that are wrong type", () => {
-    const result = validatePayload(
-      { name: "x", items: ["not-object"] },
-      testSchema
-    );
-    expect(result.valid).toBe(false);
-    expect(result.errors[0]).toContain("items[0] must be of type object");
-  });
-
-  it("rejects null payload", () => {
-    const result = validatePayload(null, testSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("payload must be a non-null object");
-  });
-
-  it("rejects array payload", () => {
-    const result = validatePayload([], testSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("payload must be a non-null object");
-  });
-
-  it("rejects string payload", () => {
-    const result = validatePayload("hello", testSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("payload must be a non-null object");
-  });
-
-  it("skips validation for undefined optional fields", () => {
-    const result = validatePayload(
-      { name: "x", items: [{ id: 1 }] },
-      testSchema
-    );
-    expect(result.valid).toBe(true);
-  });
-
-  it("skips validation for null optional fields", () => {
-    const result = validatePayload(
-      { name: "x", count: null, items: [{ id: 1 }] },
-      testSchema
-    );
-    expect(result.valid).toBe(true);
+    it("should validate valid count tokens payload", () => {
+      const result = AnthropicCountTokensRequestSchema.safeParse({
+        model: "claude-sonnet",
+        messages: [{ role: "user", content: "Hello" }],
+      });
+      expect(result.success).toBe(true);
+    });
   });
 });

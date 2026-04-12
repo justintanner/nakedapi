@@ -1,48 +1,28 @@
-export type Role = "user" | "assistant";
+import type { z } from "zod";
 
-export interface Base64ImageSource {
-  type: "base64";
-  media_type: "image/jpeg" | "image/png" | "image/gif" | "image/webp";
-  data: string;
-}
+// ---------------------------------------------------------------------------
+// Request types — derived from Zod schemas (source of truth in zod.ts)
+// ---------------------------------------------------------------------------
 
-export interface UrlImageSource {
-  type: "url";
-  url: string;
-}
+export type {
+  Role,
+  Base64ImageSource,
+  UrlImageSource,
+  ImageSource,
+  TextContentBlock,
+  ImageContentBlock,
+  ContentBlock,
+  MessageContent,
+  ChatMessage,
+  ChatRequest,
+  EmbeddingRequest,
+  CountTokensRequest,
+  KimiCodingOptions,
+} from "./zod";
 
-export type ImageSource = Base64ImageSource | UrlImageSource;
-
-export interface TextContentBlock {
-  type: "text";
-  text: string;
-}
-
-export interface ImageContentBlock {
-  type: "image";
-  source: ImageSource;
-}
-
-export type ContentBlock = TextContentBlock | ImageContentBlock;
-export type MessageContent = string | ContentBlock[];
-
-export interface ChatMessage {
-  role: Role;
-  content: MessageContent;
-}
-
-// Raw Anthropic Messages API request shape
-export interface ChatRequest {
-  model: string;
-  messages: ChatMessage[];
-  max_tokens: number;
-  system?: string;
-  temperature?: number;
-  top_p?: number;
-  stop_sequences?: string[];
-  stream?: boolean;
-  [key: string]: unknown;
-}
+// ---------------------------------------------------------------------------
+// Response types (hand-written — not schema-ified yet)
+// ---------------------------------------------------------------------------
 
 // Raw Anthropic content block in response
 export interface AnthropicContentBlock {
@@ -104,15 +84,6 @@ export interface KimiCodingModelListResponse {
   has_more: boolean;
 }
 
-// Embeddings request (OpenAI-compatible)
-export interface EmbeddingRequest {
-  input: string | string[] | number[] | number[][];
-  model: string;
-  encoding_format?: "float" | "base64";
-  dimensions?: number;
-  user?: string;
-}
-
 // Embeddings response
 export interface EmbeddingData {
   index: number;
@@ -125,68 +96,35 @@ export interface EmbeddingResponse {
   model: string;
 }
 
-// Token counting types
-export interface CountTokensRequest {
-  model: string;
-  messages: ChatMessage[];
-  system?: string;
-  tools?: Array<{
-    name: string;
-    description?: string;
-    input_schema: Record<string, unknown>;
-  }>;
-  tool_choice?: { type: string } | { type: "tool"; name: string };
-}
-
+// Token counting response
 export interface CountTokensResponse {
   input_tokens: number;
 }
 
-// Payload schema types
-export interface PayloadFieldSchema {
-  type: "string" | "number" | "boolean" | "array" | "object";
-  required?: boolean;
-  description?: string;
-  enum?: readonly (string | number | boolean)[];
-  items?: PayloadFieldSchema;
-  properties?: Record<string, PayloadFieldSchema>;
-}
+// ---------------------------------------------------------------------------
+// Method interface types (endpoint shapes with .schema)
+// ---------------------------------------------------------------------------
 
-export interface PayloadSchema {
-  method: "POST" | "DELETE";
-  path: string;
-  contentType: "application/json" | "multipart/form-data";
-  fields: Record<string, PayloadFieldSchema>;
-}
+import type { ChatRequest, EmbeddingRequest, CountTokensRequest } from "./zod";
 
-export interface ValidationResult {
-  valid: boolean;
-  errors: string[];
-}
-
-// Namespace types
 interface KimiCodingStreamMethod {
   (req: ChatRequest, signal?: AbortSignal): AsyncIterable<AnthropicStreamEvent>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<ChatRequest>;
 }
 
 interface KimiCodingMessagesMethod {
   (req: ChatRequest, signal?: AbortSignal): Promise<AnthropicMessage>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<ChatRequest>;
 }
 
 interface KimiCodingEmbeddingsMethod {
   (req: EmbeddingRequest, signal?: AbortSignal): Promise<EmbeddingResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<EmbeddingRequest>;
 }
 
 interface KimiCodingCountTokensMethod {
   (req: CountTokensRequest, signal?: AbortSignal): Promise<CountTokensResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<CountTokensRequest>;
 }
 
 interface KimiCodingGetV1 {
@@ -209,14 +147,6 @@ export interface Provider {
     stream: { coding: { v1: KimiCodingPostStreamV1 } };
   };
   get: { coding: { v1: KimiCodingGetV1 } };
-}
-
-export interface KimiCodingOptions {
-  apiKey: string;
-  baseURL?: string;
-  maxRetries?: number;
-  timeout?: number;
-  fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 }
 
 export class KimiCodingError extends Error {

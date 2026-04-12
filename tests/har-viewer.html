@@ -452,30 +452,32 @@
 
       function syntaxHighlight(json) {
         if (typeof json !== "string") json = JSON.stringify(json, null, 2);
-        return json
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(
-            /"((?:\\.|[^"\\])+)"(\s*:)/g,
-            '<span class="json-key">"$1"</span>$2'
-          )
-          .replace(
-            /: "((?:\\.|[^"\\])*)"/g,
-            ': <span class="json-str">"$1"</span>'
-          )
-          // Wrap array-element strings in raw JSON: `"..."` preceded by `[`
-          // or `,` (with optional whitespace) and NOT followed by `:` (which
-          // would make it an object key, not an element). Must run on raw
-          // JSON before keys/values are wrapped in spans, to avoid matching
-          // HTML attribute quotes.
-          .replace(
-            /([\[,])(\s*)"((?:\\.|[^"\\])*)"(?!\s*:)/g,
-            '$1$2<span class="json-str">"$3"</span>'
-          )
-          .replace(/: (\d+\.?\d*)/g, ': <span class="json-num">$1</span>')
-          .replace(/: (true|false)/g, ': <span class="json-bool">$1</span>')
-          .replace(/: (null)/g, ': <span class="json-null">$1</span>');
+        return (
+          json
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(
+              /"((?:\\.|[^"\\])+)"(\s*:)/g,
+              '<span class="json-key">"$1"</span>$2'
+            )
+            .replace(
+              /: "((?:\\.|[^"\\])*)"/g,
+              ': <span class="json-str">"$1"</span>'
+            )
+            // Wrap array-element strings in raw JSON: `"..."` preceded by `[`
+            // or `,` (with optional whitespace) and NOT followed by `:` (which
+            // would make it an object key, not an element). Must run on raw
+            // JSON before keys/values are wrapped in spans, to avoid matching
+            // HTML attribute quotes.
+            .replace(
+              /([\[,])(\s*)"((?:\\.|[^"\\])*)"(?!\s*:)/g,
+              '$1$2<span class="json-str">"$3"</span>'
+            )
+            .replace(/: (\d+\.?\d*)/g, ': <span class="json-num">$1</span>')
+            .replace(/: (true|false)/g, ': <span class="json-bool">$1</span>')
+            .replace(/: (null)/g, ': <span class="json-null">$1</span>')
+        );
       }
 
       function inlineMediaPreviews(html) {
@@ -747,10 +749,7 @@
                     prefix +
                     b64 +
                     '"></audio>'
-                  : '<img class="b64-img-preview" src="' +
-                    prefix +
-                    b64 +
-                    '">';
+                  : '<img class="b64-img-preview" src="' + prefix + b64 + '">';
             return (
               '<span class="json-str">"' +
               prefix +
@@ -1144,28 +1143,36 @@
         var info = extractInfo(rec);
         var ep = recEndpoint(rec);
 
-        var html = '<section class="recording-section" data-rec-idx="' +
-          recIdx + '" data-rec-source="' + escapeHtml(rec.source || "") + '">';
+        var html =
+          '<section class="recording-section" data-rec-idx="' +
+          recIdx +
+          '" data-rec-source="' +
+          escapeHtml(rec.source || "") +
+          '">';
 
         html += '<div class="recording-section-header">';
         if (rec.gitStatus)
           html += '<span class="dot ' + rec.gitStatus + '"></span>';
-        html += '<span class="recording-title">' +
-          escapeHtml(dn.provider + ": " + dn.test) + "</span>";
+        html +=
+          '<span class="recording-title">' +
+          escapeHtml(dn.provider + ": " + dn.test) +
+          "</span>";
         if (info.model)
-          html += '<span class="info-model">' +
-            escapeHtml(info.model) + "</span>";
+          html +=
+            '<span class="info-model">' + escapeHtml(info.model) + "</span>";
         if (rec.gitStatus && rec.gitStatus !== "clean")
           html += '<span class="review-badge needs-review">review</span>';
-        if (ep)
-          html += '<span class="endpoint">' + escapeHtml(ep) + "</span>";
+        if (ep) html += '<span class="endpoint">' + escapeHtml(ep) + "</span>";
 
         html += '<div class="section-actions">';
         if (VIEWER_CONFIG.features.gitApprove) {
           var approveDisabled = rec.gitStatus === "clean";
-          html += '<button class="approve"' +
-            (approveDisabled ? " disabled" : "") + ">" +
-            (approveDisabled ? "Approved" : "Approve") + "</button>";
+          html +=
+            '<button class="approve"' +
+            (approveDisabled ? " disabled" : "") +
+            ">" +
+            (approveDisabled ? "Approved" : "Approve") +
+            "</button>";
         }
         html += '<button class="copy-llm">Copy for LLM</button>';
         html += "</div>";
@@ -1175,8 +1182,10 @@
         var groups = groupTransactions(rec.entries);
         html += '<div class="txn-row">';
         for (var g = 0; g < groups.length; g++) {
-          html += '<div class="txn-col">' +
-            renderTransactionColumn(groups[g], g) + "</div>";
+          html +=
+            '<div class="txn-col">' +
+            renderTransactionColumn(groups[g], g) +
+            "</div>";
         }
         html += "</div>";
         html += "</div>";
@@ -1198,7 +1207,8 @@
         }
 
         countEl.textContent =
-          recordings.length + " recording" +
+          recordings.length +
+          " recording" +
           (recordings.length === 1 ? "" : "s");
 
         var html = "";

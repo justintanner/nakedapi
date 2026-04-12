@@ -1,11 +1,11 @@
 // Tests for schema objects and schema+validation integration — pure data, no API calls
 import { describe, it, expect } from "vitest";
 
-// Import all schemas from each provider
+// Import Zod schemas from kimicoding
 import {
-  messagesSchema,
-  embeddingsSchema as kimiEmbeddingsSchema,
-} from "../../packages/provider/kimicoding/src/schemas";
+  ChatRequestSchema as KimiChatRequestSchema,
+  EmbeddingRequestSchema as KimiEmbeddingRequestSchema,
+} from "../../packages/provider/kimicoding/src/zod";
 import {
   OpenAiChatRequestSchema,
   OpenAiEmbeddingRequestSchema,
@@ -24,23 +24,22 @@ import {
   OpenAiResponseInputTokensRequestSchema,
 } from "../../packages/provider/openai/src/zod";
 import {
-  chatCompletionsSchema as xaiChatSchema,
-  imageGenerationsSchema as xaiImageGenSchema,
-  imageEditsSchema as xaiImageEditsSchema,
-  videoGenerationsSchema,
-  videoEditsSchema,
-  videoExtensionsSchema,
-  batchCreateSchema,
-  batchAddRequestsSchema,
-  collectionCreateSchema,
-  collectionUpdateSchema,
-  documentAddSchema,
-  documentSearchSchema,
-  responsesSchema as xaiResponsesSchema,
-  responsesDeleteSchema as xaiResponsesDeleteSchema,
-  tokenizeTextSchema,
-  realtimeClientSecretsSchema,
-} from "../../packages/provider/xai/src/schemas";
+  XaiChatRequestSchema as xaiChatSchema,
+  XaiImageGenerateRequestSchema as xaiImageGenSchema,
+  XaiImageEditRequestSchema as xaiImageEditsSchema,
+  XaiVideoGenerateRequestSchema as xaiVideoGenSchema,
+  XaiVideoEditRequestSchema as xaiVideoEditsSchema,
+  XaiVideoExtendRequestSchema as xaiVideoExtensionsSchema,
+  XaiBatchCreateRequestSchema as xaiBatchCreateSchema,
+  XaiBatchAddRequestsBodySchema as xaiBatchAddRequestsSchema,
+  XaiCollectionCreateRequestSchema as xaiCollectionCreateSchema,
+  XaiCollectionUpdateRequestSchema as xaiCollectionUpdateSchema,
+  XaiDocumentAddRequestSchema as xaiDocumentAddSchema,
+  XaiDocumentSearchRequestSchema as xaiDocumentSearchSchema,
+  XaiResponseRequestSchema as xaiResponsesSchema,
+  XaiTokenizeTextRequestSchema as xaiTokenizeTextSchema,
+  XaiRealtimeClientSecretRequestSchema as xaiRealtimeClientSecretsSchema,
+} from "../../packages/provider/xai/src/zod";
 import {
   pricingEstimateSchema,
   deletePayloadsSchema,
@@ -63,35 +62,19 @@ import {
 } from "../../packages/provider/kie/src/zod";
 import { modelInputSchemas } from "../../packages/provider/kie/src/model-schemas";
 import {
-  messagesSchema as anthropicMessagesSchema,
-  countTokensSchema,
-  batchesCreateSchema as anthropicBatchesCreateSchema,
-  filesUploadSchema as anthropicFilesUploadSchema,
-  skillsCreateSchema,
-} from "../../packages/provider/anthropic/src/schemas";
+  AnthropicMessageRequestSchema,
+  AnthropicCountTokensRequestSchema,
+  AnthropicBatchCreateRequestSchema,
+  AnthropicFileUploadRequestSchema,
+  AnthropicSkillsCreateRequestSchema,
+} from "../../packages/provider/anthropic/src/zod";
 
-// Import validatePayload to test schemas with real validation
-import { validatePayload } from "../../packages/provider/kimicoding/src/validate";
+// Import validatePayload for fal schemas (fal still uses old PayloadSchema engine)
+import { validatePayload } from "../../packages/provider/fal/src/validate";
 
 describe("schema structure", () => {
-  // Non-OpenAI providers still use PayloadSchema with method/path/contentType/fields
+  // Non-OpenAI/non-xai providers still use PayloadSchema with method/path/contentType/fields
   const payloadSchemas = [
-    { name: "kimicoding/messages", schema: messagesSchema },
-    { name: "kimicoding/embeddings", schema: kimiEmbeddingsSchema },
-    { name: "xai/chat", schema: xaiChatSchema },
-    { name: "xai/imageGen", schema: xaiImageGenSchema },
-    { name: "xai/imageEdits", schema: xaiImageEditsSchema },
-    { name: "xai/videoGen", schema: videoGenerationsSchema },
-    { name: "xai/videoEdits", schema: videoEditsSchema },
-    { name: "xai/videoExtensions", schema: videoExtensionsSchema },
-    { name: "xai/batchCreate", schema: batchCreateSchema },
-    { name: "xai/batchAddRequests", schema: batchAddRequestsSchema },
-    { name: "xai/collectionCreate", schema: collectionCreateSchema },
-    { name: "xai/collectionUpdate", schema: collectionUpdateSchema },
-    { name: "xai/documentAdd", schema: documentAddSchema },
-    { name: "xai/documentSearch", schema: documentSearchSchema },
-    { name: "xai/responses", schema: xaiResponsesSchema },
-    { name: "xai/responsesDelete", schema: xaiResponsesDeleteSchema },
     { name: "fal/queueSubmit", schema: queueSubmitSchema },
     { name: "fal/logsStream", schema: logsStreamSchema },
     { name: "fal/filesUploadUrl", schema: filesUploadUrlSchema },
@@ -120,8 +103,28 @@ describe("schema structure", () => {
     });
   }
 
-  // OpenAI uses Zod schemas — verify they expose safeParse
+  // OpenAI, xAI, kie, and kimicoding use Zod schemas — verify they expose safeParse
   const zodSchemas = [
+    { name: "kimicoding/messages", schema: KimiChatRequestSchema },
+    { name: "kimicoding/embeddings", schema: KimiEmbeddingRequestSchema },
+    { name: "xai/chat", schema: xaiChatSchema },
+    { name: "xai/imageGen", schema: xaiImageGenSchema },
+    { name: "xai/imageEdits", schema: xaiImageEditsSchema },
+    { name: "xai/videoGen", schema: xaiVideoGenSchema },
+    { name: "xai/videoEdits", schema: xaiVideoEditsSchema },
+    { name: "xai/videoExtensions", schema: xaiVideoExtensionsSchema },
+    { name: "xai/batchCreate", schema: xaiBatchCreateSchema },
+    { name: "xai/batchAddRequests", schema: xaiBatchAddRequestsSchema },
+    { name: "xai/collectionCreate", schema: xaiCollectionCreateSchema },
+    { name: "xai/collectionUpdate", schema: xaiCollectionUpdateSchema },
+    { name: "xai/documentAdd", schema: xaiDocumentAddSchema },
+    { name: "xai/documentSearch", schema: xaiDocumentSearchSchema },
+    { name: "xai/responses", schema: xaiResponsesSchema },
+    { name: "xai/tokenizeText", schema: xaiTokenizeTextSchema },
+    {
+      name: "xai/realtimeClientSecrets",
+      schema: xaiRealtimeClientSecretsSchema,
+    },
     { name: "openai/chat", schema: OpenAiChatRequestSchema },
     { name: "openai/embeddings", schema: OpenAiEmbeddingRequestSchema },
     { name: "openai/imageEdits", schema: OpenAiImageEditRequestSchema },
@@ -174,6 +177,26 @@ describe("schema structure", () => {
       name: "kie/claudeMessages",
       schema: KieClaudeRequestSchema,
     },
+    {
+      name: "anthropic/messages",
+      schema: AnthropicMessageRequestSchema,
+    },
+    {
+      name: "anthropic/countTokens",
+      schema: AnthropicCountTokensRequestSchema,
+    },
+    {
+      name: "anthropic/batchesCreate",
+      schema: AnthropicBatchCreateRequestSchema,
+    },
+    {
+      name: "anthropic/filesUpload",
+      schema: AnthropicFileUploadRequestSchema,
+    },
+    {
+      name: "anthropic/skillsCreate",
+      schema: AnthropicSkillsCreateRequestSchema,
+    },
   ];
 
   for (const { name, schema } of zodSchemas) {
@@ -189,38 +212,45 @@ describe("schema structure", () => {
 
 describe("schema + validatePayload integration", () => {
   it("kimicoding messages: accepts valid request", () => {
-    const result = validatePayload(
-      {
-        model: "k2p5",
-        messages: [{ role: "user", content: "Hello" }],
-        max_tokens: 1024,
-      },
-      messagesSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = KimiChatRequestSchema.safeParse({
+      model: "k2p5",
+      messages: [{ role: "user", content: "Hello" }],
+      max_tokens: 1024,
+    });
+    expect(result.success).toBe(true);
   });
 
   it("kimicoding messages: rejects missing required fields", () => {
-    const result = validatePayload({}, messagesSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("model is required");
-    expect(result.errors).toContain("messages is required");
-    expect(result.errors).toContain("max_tokens is required");
+    const result = KimiChatRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("model"))).toBe(
+      true
+    );
+    expect(result.error?.issues.some((i) => i.path.includes("messages"))).toBe(
+      true
+    );
+    expect(
+      result.error?.issues.some((i) => i.path.includes("max_tokens"))
+    ).toBe(true);
   });
 
   it("kimicoding embeddings: accepts valid request", () => {
-    const result = validatePayload(
-      { model: "k2p5", input: "hello" },
-      kimiEmbeddingsSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = KimiEmbeddingRequestSchema.safeParse({
+      model: "k2p5",
+      input: "hello",
+    });
+    expect(result.success).toBe(true);
   });
 
   it("kimicoding embeddings: rejects missing required fields", () => {
-    const result = validatePayload({}, kimiEmbeddingsSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("input is required");
-    expect(result.errors).toContain("model is required");
+    const result = KimiEmbeddingRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("input"))).toBe(
+      true
+    );
+    expect(result.error?.issues.some((i) => i.path.includes("model"))).toBe(
+      true
+    );
   });
 
   it("openai chat: accepts valid request", () => {
@@ -257,32 +287,37 @@ describe("schema + validatePayload integration", () => {
   });
 
   it("xai chat: accepts valid request", () => {
-    const result = validatePayload(
-      { messages: [{ role: "user", content: "hi" }] },
-      xaiChatSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = xaiChatSchema.safeParse({
+      messages: [{ role: "user", content: "hi" }],
+    });
+    expect(result.success).toBe(true);
   });
 
   it("xai videoGen: rejects missing prompt", () => {
-    const result = validatePayload({}, videoGenerationsSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("prompt is required");
+    const result = xaiVideoGenSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("prompt"))).toBe(
+      true
+    );
   });
 
   it("xai documentSearch: accepts valid request", () => {
-    const result = validatePayload(
-      { query: "test", source: { collection_ids: ["col-1"] } },
-      documentSearchSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = xaiDocumentSearchSchema.safeParse({
+      query: "test",
+      source: { collection_ids: ["col-1"] },
+    });
+    expect(result.success).toBe(true);
   });
 
   it("xai documentSearch: rejects missing query and source", () => {
-    const result = validatePayload({}, documentSearchSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("query is required");
-    expect(result.errors).toContain("source is required");
+    const result = xaiDocumentSearchSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("query"))).toBe(
+      true
+    );
+    expect(result.error?.issues.some((i) => i.path.includes("source"))).toBe(
+      true
+    );
   });
 
   it("fal pricingEstimate: accepts valid request", () => {
@@ -463,112 +498,127 @@ describe("schema + validatePayload integration", () => {
   });
 
   it("xai tokenizeText: accepts valid request", () => {
-    const result = validatePayload(
-      { model: "grok-3-fast", text: "Hello world" },
-      tokenizeTextSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = xaiTokenizeTextSchema.safeParse({
+      model: "grok-3-fast",
+      text: "Hello world",
+    });
+    expect(result.success).toBe(true);
   });
 
   it("xai tokenizeText: rejects missing required fields", () => {
-    const result = validatePayload({}, tokenizeTextSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("model is required");
-    expect(result.errors).toContain("text is required");
+    const result = xaiTokenizeTextSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("model"))).toBe(
+      true
+    );
+    expect(result.error?.issues.some((i) => i.path.includes("text"))).toBe(
+      true
+    );
   });
 
   it("xai realtimeClientSecrets: accepts valid request", () => {
-    const result = validatePayload({}, realtimeClientSecretsSchema);
-    expect(result.valid).toBe(true);
+    const result = xaiRealtimeClientSecretsSchema.safeParse({});
+    expect(result.success).toBe(true);
   });
 
   it("anthropic messages: accepts valid request", () => {
-    const result = validatePayload(
-      {
-        model: "claude-sonnet-4-20250514",
-        messages: [{ role: "user", content: "Hello" }],
-        max_tokens: 1024,
-      },
-      anthropicMessagesSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = AnthropicMessageRequestSchema.safeParse({
+      model: "claude-sonnet-4-20250514",
+      messages: [{ role: "user", content: "Hello" }],
+      max_tokens: 1024,
+    });
+    expect(result.success).toBe(true);
   });
 
   it("anthropic messages: rejects missing required fields", () => {
-    const result = validatePayload({}, anthropicMessagesSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("model is required");
-    expect(result.errors).toContain("messages is required");
-    expect(result.errors).toContain("max_tokens is required");
+    const result = AnthropicMessageRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("model"))).toBe(
+      true
+    );
+    expect(result.error?.issues.some((i) => i.path.includes("messages"))).toBe(
+      true
+    );
+    expect(
+      result.error?.issues.some((i) => i.path.includes("max_tokens"))
+    ).toBe(true);
   });
 
   it("anthropic countTokens: accepts valid request", () => {
-    const result = validatePayload(
-      {
-        model: "claude-sonnet-4-20250514",
-        messages: [{ role: "user", content: "Hello" }],
-      },
-      countTokensSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = AnthropicCountTokensRequestSchema.safeParse({
+      model: "claude-sonnet-4-20250514",
+      messages: [{ role: "user", content: "Hello" }],
+    });
+    expect(result.success).toBe(true);
   });
 
   it("anthropic countTokens: rejects missing required fields", () => {
-    const result = validatePayload({}, countTokensSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("model is required");
-    expect(result.errors).toContain("messages is required");
+    const result = AnthropicCountTokensRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("model"))).toBe(
+      true
+    );
+    expect(result.error?.issues.some((i) => i.path.includes("messages"))).toBe(
+      true
+    );
   });
 
   it("anthropic batchesCreate: accepts valid request", () => {
-    const result = validatePayload(
-      {
-        requests: [
-          {
-            custom_id: "req-1",
-            params: {
-              model: "claude-sonnet-4-20250514",
-              messages: [{ role: "user", content: "Hello" }],
-              max_tokens: 1024,
-            },
+    const result = AnthropicBatchCreateRequestSchema.safeParse({
+      requests: [
+        {
+          custom_id: "req-1",
+          params: {
+            model: "claude-sonnet-4-20250514",
+            messages: [{ role: "user", content: "Hello" }],
+            max_tokens: 1024,
           },
-        ],
-      },
-      anthropicBatchesCreateSchema
-    );
-    expect(result.valid).toBe(true);
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
   });
 
   it("anthropic batchesCreate: rejects missing requests", () => {
-    const result = validatePayload({}, anthropicBatchesCreateSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("requests is required");
+    const result = AnthropicBatchCreateRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("requests"))).toBe(
+      true
+    );
   });
 
   it("anthropic filesUpload: accepts valid request", () => {
-    const result = validatePayload({ file: {} }, anthropicFilesUploadSchema);
-    expect(result.valid).toBe(true);
+    const result = AnthropicFileUploadRequestSchema.safeParse({
+      file: new Blob(["test"]),
+    });
+    expect(result.success).toBe(true);
   });
 
   it("anthropic filesUpload: rejects missing file", () => {
-    const result = validatePayload({}, anthropicFilesUploadSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("file is required");
+    const result = AnthropicFileUploadRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("file"))).toBe(
+      true
+    );
   });
 
   it("anthropic skillsCreate: accepts valid request", () => {
-    const result = validatePayload(
-      { display_title: "test-skill", files: [{}] },
-      skillsCreateSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = AnthropicSkillsCreateRequestSchema.safeParse({
+      display_title: "test-skill",
+      files: [{ data: new Blob(["# Skill"]), path: "SKILL.md" }],
+    });
+    expect(result.success).toBe(true);
   });
 
   it("anthropic skillsCreate: rejects missing required fields", () => {
-    const result = validatePayload({}, skillsCreateSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("display_title is required");
-    expect(result.errors).toContain("files is required");
+    const result = AnthropicSkillsCreateRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(
+      result.error?.issues.some((i) => i.path.includes("display_title"))
+    ).toBe(true);
+    expect(result.error?.issues.some((i) => i.path.includes("files"))).toBe(
+      true
+    );
   });
 
   it("openai responsesInputTokens: accepts valid request", () => {

@@ -20,7 +20,7 @@ export type {
   RateLimitOptions,
 } from "./middleware";
 
-// Export all types
+// Export all types (request types now flow from zod.ts via types.ts)
 export type {
   XaiOptions,
   XaiMessage,
@@ -157,7 +157,4 @@ export type {
   XaiRealtimeConnectOptions,
   XaiRealtimeConnection,
   XaiProvider,
-  PayloadFieldSchema,
-  PayloadSchema,
-  ValidationResult,
 } from "./types";

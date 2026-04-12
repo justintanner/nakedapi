@@ -13,15 +13,17 @@ describe("xAI collections PUT update integration", () => {
     await teardownPolly(ctx);
   });
 
-  it("should have validatePayload method on put.v1.collections", () => {
+  it("should have schema with safeParse on put.v1.collections", () => {
     const provider = xai({ apiKey: "sk-test-key" });
-    expect(provider.put.v1.collections.payloadSchema).toBeDefined();
-    expect(provider.put.v1.collections.validatePayload).toBeDefined();
+    expect(provider.put.v1.collections.schema).toBeDefined();
+    expect(typeof provider.put.v1.collections.schema.safeParse).toBe(
+      "function"
+    );
 
-    const result = provider.put.v1.collections.validatePayload({
+    const result = provider.put.v1.collections.schema.safeParse({
       collection_name: "test-collection",
     });
-    expect(result.valid).toBe(true);
+    expect(result.success).toBe(true);
   });
 
   it("should update a collection using PUT with management API", async () => {

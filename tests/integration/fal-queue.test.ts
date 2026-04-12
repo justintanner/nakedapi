@@ -2,72 +2,62 @@ import { describe, it, expect } from "vitest";
 import { fal } from "@apicity/fal";
 
 describe("fal queue validation", () => {
-  it("should expose queue submit payloadSchema", () => {
+  it("should expose queue submit schema", () => {
     const provider = fal({
       apiKey: "fal-test-key",
     });
-    expect(provider.ai.v1.queue.submit.payloadSchema).toBeDefined();
-    expect(provider.ai.v1.queue.submit.payloadSchema.method).toBe("POST");
-    expect(
-      provider.ai.v1.queue.submit.payloadSchema.fields.endpoint_id
-    ).toBeDefined();
-    expect(
-      provider.ai.v1.queue.submit.payloadSchema.fields.endpoint_id.required
-    ).toBe(true);
-    expect(
-      provider.ai.v1.queue.submit.payloadSchema.fields.input
-    ).toBeDefined();
-    expect(
-      provider.ai.v1.queue.submit.payloadSchema.fields.input.required
-    ).toBe(true);
+    expect(provider.ai.v1.queue.submit.schema).toBeDefined();
+    expect(typeof provider.ai.v1.queue.submit.schema.safeParse).toBe(
+      "function"
+    );
   });
 
-  it("should validate queue submit params — valid", () => {
+  it("should validate queue submit params - valid", () => {
     const provider = fal({
       apiKey: "fal-test-key",
     });
-    const result = provider.ai.v1.queue.submit.validatePayload({
+    const result = provider.ai.v1.queue.submit.schema.safeParse({
       endpoint_id: "fal-ai/flux/schnell",
       input: { prompt: "a cat" },
     });
-    expect(result.valid).toBe(true);
-    expect(result.errors).toHaveLength(0);
+    expect(result.success).toBe(true);
   });
 
-  it("should validate queue submit params — missing required", () => {
+  it("should validate queue submit params - missing required", () => {
     const provider = fal({
       apiKey: "fal-test-key",
     });
-    const result = provider.ai.v1.queue.submit.validatePayload({});
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("endpoint_id is required");
-    expect(result.errors).toContain("input is required");
+    const result = provider.ai.v1.queue.submit.schema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(
+      result.error?.issues.some((i) => i.path.includes("endpoint_id"))
+    ).toBe(true);
+    expect(result.error?.issues.some((i) => i.path.includes("input"))).toBe(
+      true
+    );
   });
 
-  it("should validate queue submit params — wrong types", () => {
+  it("should validate queue submit params - wrong types", () => {
     const provider = fal({
       apiKey: "fal-test-key",
     });
-    const result = provider.ai.v1.queue.submit.validatePayload({
+    const result = provider.ai.v1.queue.submit.schema.safeParse({
       endpoint_id: 123,
       input: "not-an-object",
     });
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("endpoint_id must be of type string");
-    expect(result.errors).toContain("input must be of type object");
+    expect(result.success).toBe(false);
   });
 
-  it("should validate queue submit params — invalid priority enum", () => {
+  it("should validate queue submit params - invalid priority enum", () => {
     const provider = fal({
       apiKey: "fal-test-key",
     });
-    const result = provider.ai.v1.queue.submit.validatePayload({
+    const result = provider.ai.v1.queue.submit.schema.safeParse({
       endpoint_id: "fal-ai/flux/schnell",
       input: { prompt: "a cat" },
       priority: "urgent",
     });
-    expect(result.valid).toBe(false);
-    expect(result.errors[0]).toContain("must be one of");
+    expect(result.success).toBe(false);
   });
 
   it("should expose queue namespace methods", () => {

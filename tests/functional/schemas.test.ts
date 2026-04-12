@@ -41,13 +41,13 @@ import {
   XaiRealtimeClientSecretRequestSchema as xaiRealtimeClientSecretsSchema,
 } from "../../packages/provider/xai/src/zod";
 import {
-  pricingEstimateSchema,
-  deletePayloadsSchema,
-  queueSubmitSchema,
-  logsStreamSchema,
-  filesUploadUrlSchema,
-  filesUploadLocalSchema,
-} from "../../packages/provider/fal/src/schemas";
+  FalPricingEstimateRequestSchema,
+  FalDeletePayloadsRequestSchema,
+  FalQueueSubmitRequestSchema,
+  FalLogsStreamRequestSchema,
+  FalFilesUploadUrlRequestSchema,
+  FalFilesUploadLocalRequestSchema,
+} from "../../packages/provider/fal/src/zod";
 import {
   CreateTaskRequestSchema,
   DownloadUrlRequestSchema,
@@ -69,42 +69,15 @@ import {
   AnthropicSkillsCreateRequestSchema,
 } from "../../packages/provider/anthropic/src/zod";
 
-// Import validatePayload for fal schemas (fal still uses old PayloadSchema engine)
-import { validatePayload } from "../../packages/provider/fal/src/validate";
-
 describe("schema structure", () => {
-  // Non-OpenAI/non-xai providers still use PayloadSchema with method/path/contentType/fields
-  const payloadSchemas = [
-    { name: "fal/queueSubmit", schema: queueSubmitSchema },
-    { name: "fal/logsStream", schema: logsStreamSchema },
-    { name: "fal/filesUploadUrl", schema: filesUploadUrlSchema },
-    { name: "fal/filesUploadLocal", schema: filesUploadLocalSchema },
-    { name: "fal/deletePayloads", schema: deletePayloadsSchema },
-  ];
-
-  for (const { name, schema } of payloadSchemas) {
-    it(`${name} has valid method`, () => {
-      expect(["POST", "PUT", "DELETE"]).toContain(schema.method);
-    });
-
-    it(`${name} has non-empty path`, () => {
-      expect(schema.path.length).toBeGreaterThan(0);
-    });
-
-    it(`${name} has valid contentType`, () => {
-      expect(["application/json", "multipart/form-data"]).toContain(
-        schema.contentType
-      );
-    });
-
-    it(`${name} has fields object`, () => {
-      expect(typeof schema.fields).toBe("object");
-      expect(Object.keys(schema.fields).length).toBeGreaterThan(0);
-    });
-  }
-
-  // OpenAI, xAI, kie, and kimicoding use Zod schemas — verify they expose safeParse
+  // All providers now use Zod schemas — verify they expose safeParse
   const zodSchemas = [
+    { name: "fal/pricingEstimate", schema: FalPricingEstimateRequestSchema },
+    { name: "fal/queueSubmit", schema: FalQueueSubmitRequestSchema },
+    { name: "fal/logsStream", schema: FalLogsStreamRequestSchema },
+    { name: "fal/filesUploadUrl", schema: FalFilesUploadUrlRequestSchema },
+    { name: "fal/filesUploadLocal", schema: FalFilesUploadLocalRequestSchema },
+    { name: "fal/deletePayloads", schema: FalDeletePayloadsRequestSchema },
     { name: "kimicoding/messages", schema: KimiChatRequestSchema },
     { name: "kimicoding/embeddings", schema: KimiEmbeddingRequestSchema },
     { name: "xai/chat", schema: xaiChatSchema },
@@ -321,11 +294,11 @@ describe("schema + validatePayload integration", () => {
   });
 
   it("fal pricingEstimate: accepts valid request", () => {
-    const result = validatePayload(
-      { estimate_type: "unit_price", endpoints: {} },
-      pricingEstimateSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = FalPricingEstimateRequestSchema.safeParse({
+      estimate_type: "unit_price",
+      endpoints: {},
+    });
+    expect(result.success).toBe(true);
   });
 
   it("kie createTask: accepts valid request", () => {
@@ -643,55 +616,64 @@ describe("schema + validatePayload integration", () => {
     ).toBe(true);
   });
 
-  // Fal missing schema tests
   it("fal queueSubmit: accepts valid request", () => {
-    const result = validatePayload(
-      { endpoint_id: "fal-ai/flux/schnell", input: { prompt: "a cat" } },
-      queueSubmitSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = FalQueueSubmitRequestSchema.safeParse({
+      endpoint_id: "fal-ai/flux/schnell",
+      input: { prompt: "a cat" },
+    });
+    expect(result.success).toBe(true);
   });
 
   it("fal queueSubmit: rejects missing required fields", () => {
-    const result = validatePayload({}, queueSubmitSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("endpoint_id is required");
-    expect(result.errors).toContain("input is required");
+    const result = FalQueueSubmitRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(
+      result.error?.issues.some((i) => i.path.includes("endpoint_id"))
+    ).toBe(true);
+    expect(result.error?.issues.some((i) => i.path.includes("input"))).toBe(
+      true
+    );
   });
 
   it("fal logsStream: accepts valid request", () => {
-    const result = validatePayload({ level: "info" }, logsStreamSchema);
-    expect(result.valid).toBe(true);
+    const result = FalLogsStreamRequestSchema.safeParse({ level: "info" });
+    expect(result.success).toBe(true);
   });
 
   it("fal filesUploadUrl: accepts valid request", () => {
-    const result = validatePayload(
-      { file: "path/to/file.png", url: "https://example.com/image.png" },
-      filesUploadUrlSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = FalFilesUploadUrlRequestSchema.safeParse({
+      file: "path/to/file.png",
+      url: "https://example.com/image.png",
+    });
+    expect(result.success).toBe(true);
   });
 
   it("fal filesUploadUrl: rejects missing required fields", () => {
-    const result = validatePayload({}, filesUploadUrlSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("file is required");
-    expect(result.errors).toContain("url is required");
+    const result = FalFilesUploadUrlRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("file"))).toBe(
+      true
+    );
+    expect(result.error?.issues.some((i) => i.path.includes("url"))).toBe(true);
   });
 
   it("fal filesUploadLocal: accepts valid request", () => {
-    const result = validatePayload(
-      { target_path: "uploads/image.png", file: {} },
-      filesUploadLocalSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = FalFilesUploadLocalRequestSchema.safeParse({
+      target_path: "uploads/image.png",
+      file: new Blob(["test"]),
+    });
+    expect(result.success).toBe(true);
   });
 
   it("fal filesUploadLocal: rejects missing required fields", () => {
-    const result = validatePayload({}, filesUploadLocalSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("target_path is required");
-    expect(result.errors).toContain("file is required");
+    const result = FalFilesUploadLocalRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(
+      result.error?.issues.some((i) => i.path.includes("target_path"))
+    ).toBe(true);
+    expect(result.error?.issues.some((i) => i.path.includes("file"))).toBe(
+      true
+    );
   });
 });
 

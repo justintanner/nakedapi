@@ -41,6 +41,10 @@ export default defineConfig({
         __dirname,
         "../packages/provider/openai/src"
       ),
+      "@apicity/fal/zod": path.resolve(
+        __dirname,
+        "../packages/provider/fal/src/zod"
+      ),
       "@apicity/fal": path.resolve(__dirname, "../packages/provider/fal/src"),
       "@apicity/fireworks": path.resolve(
         __dirname,

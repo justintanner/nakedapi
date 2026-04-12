@@ -49,43 +49,40 @@ describe("fal bytedance seedance2p0 image-to-video integration", () => {
 
   it("should validate a valid payload", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const v = provider.run.bytedance.seedance2p0.imageToVideo.validatePayload({
+    const v = provider.run.bytedance.seedance2p0.imageToVideo.schema.safeParse({
       prompt: "a cat",
       image_url: "https://example.com/cat.jpg",
     });
-    expect(v.valid).toBe(true);
-    expect(v.errors).toHaveLength(0);
+    expect(v.success).toBe(true);
   });
 
   it("should reject payload missing required fields", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const v = provider.run.bytedance.seedance2p0.imageToVideo.validatePayload(
+    const v = provider.run.bytedance.seedance2p0.imageToVideo.schema.safeParse(
       {}
     );
-    expect(v.valid).toBe(false);
-    expect(v.errors).toContain("prompt is required");
-    expect(v.errors).toContain("image_url is required");
+    expect(v.success).toBe(false);
+    expect(v.error?.issues.some((i) => i.path.includes("prompt"))).toBe(true);
+    expect(v.error?.issues.some((i) => i.path.includes("image_url"))).toBe(
+      true
+    );
   });
 
   it("should reject payload with wrong enum value", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const v = provider.run.bytedance.seedance2p0.imageToVideo.validatePayload({
+    const v = provider.run.bytedance.seedance2p0.imageToVideo.schema.safeParse({
       prompt: "a cat",
       image_url: "https://example.com/cat.jpg",
       resolution: "1080p",
     });
-    expect(v.valid).toBe(false);
+    expect(v.success).toBe(false);
   });
 
-  it("should expose payloadSchema", () => {
+  it("should expose schema", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const schema =
-      provider.run.bytedance.seedance2p0.imageToVideo.payloadSchema;
-    expect(schema.method).toBe("POST");
-    expect(schema.path).toBe("/bytedance/seedance-2.0/image-to-video");
-    expect(schema.contentType).toBe("application/json");
-    expect(schema.fields.prompt.required).toBe(true);
-    expect(schema.fields.image_url.required).toBe(true);
+    const schema = provider.run.bytedance.seedance2p0.imageToVideo.schema;
+    expect(schema).toBeDefined();
+    expect(typeof schema.safeParse).toBe("function");
   });
 
   it("should expose the same function via run and post.run", () => {

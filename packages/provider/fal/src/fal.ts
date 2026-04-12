@@ -46,21 +46,19 @@ import {
   FalSeedreamV5LiteTextToImageResponse,
   FalRunNamespace,
 } from "./types";
-import type { ValidationResult } from "./types";
 import {
-  pricingEstimateSchema,
-  deletePayloadsSchema,
-  queueSubmitSchema,
-  logsStreamSchema,
-  filesUploadUrlSchema,
-  filesUploadLocalSchema,
-  bytedanceSeedance2p0ImageToVideoSchema,
-  nanoBananaProTextToImageSchema,
-  nanoBananaProEditSchema,
-  seedreamV5LiteEditSchema,
-  seedreamV5LiteTextToImageSchema,
-} from "./schemas";
-import { validatePayload } from "./validate";
+  FalPricingEstimateRequestSchema,
+  FalDeletePayloadsRequestSchema,
+  FalQueueSubmitRequestSchema,
+  FalLogsStreamRequestSchema,
+  FalFilesUploadUrlRequestSchema,
+  FalFilesUploadLocalRequestSchema,
+  FalSeedance2p0ImageToVideoRequestSchema,
+  FalNanoBananaProTextToImageRequestSchema,
+  FalNanoBananaProEditRequestSchema,
+  FalSeedreamV5LiteEditRequestSchema,
+  FalSeedreamV5LiteTextToImageRequestSchema,
+} from "./zod";
 
 // Helper function to safely handle AbortSignal across different environments
 function attachAbortHandler(
@@ -409,10 +407,7 @@ export function fal(opts: FalOptions): FalProvider {
           );
         },
         {
-          payloadSchema: pricingEstimateSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, pricingEstimateSchema);
-          },
+          schema: FalPricingEstimateRequestSchema,
         }
       ),
     }
@@ -449,10 +444,7 @@ export function fal(opts: FalOptions): FalProvider {
         );
       },
       {
-        payloadSchema: deletePayloadsSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, deletePayloadsSchema);
-        },
+        schema: FalDeletePayloadsRequestSchema,
       }
     ),
   };
@@ -518,10 +510,7 @@ export function fal(opts: FalOptions): FalProvider {
       );
     },
     {
-      payloadSchema: bytedanceSeedance2p0ImageToVideoSchema,
-      validatePayload(data: unknown): ValidationResult {
-        return validatePayload(data, bytedanceSeedance2p0ImageToVideoSchema);
-      },
+      schema: FalSeedance2p0ImageToVideoRequestSchema,
     }
   );
 
@@ -540,10 +529,7 @@ export function fal(opts: FalOptions): FalProvider {
       );
     },
     {
-      payloadSchema: nanoBananaProEditSchema,
-      validatePayload(data: unknown): ValidationResult {
-        return validatePayload(data, nanoBananaProEditSchema);
-      },
+      schema: FalNanoBananaProEditRequestSchema,
     }
   );
 
@@ -562,10 +548,7 @@ export function fal(opts: FalOptions): FalProvider {
       );
     },
     {
-      payloadSchema: nanoBananaProTextToImageSchema,
-      validatePayload(data: unknown): ValidationResult {
-        return validatePayload(data, nanoBananaProTextToImageSchema);
-      },
+      schema: FalNanoBananaProTextToImageRequestSchema,
     }
   );
 
@@ -584,10 +567,7 @@ export function fal(opts: FalOptions): FalProvider {
       );
     },
     {
-      payloadSchema: seedreamV5LiteEditSchema,
-      validatePayload(data: unknown): ValidationResult {
-        return validatePayload(data, seedreamV5LiteEditSchema);
-      },
+      schema: FalSeedreamV5LiteEditRequestSchema,
     }
   );
 
@@ -606,10 +586,7 @@ export function fal(opts: FalOptions): FalProvider {
       );
     },
     {
-      payloadSchema: seedreamV5LiteTextToImageSchema,
-      validatePayload(data: unknown): ValidationResult {
-        return validatePayload(data, seedreamV5LiteTextToImageSchema);
-      },
+      schema: FalSeedreamV5LiteTextToImageRequestSchema,
     }
   );
 
@@ -674,10 +651,7 @@ export function fal(opts: FalOptions): FalProvider {
         );
       },
       {
-        payloadSchema: queueSubmitSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, queueSubmitSchema);
-        },
+        schema: FalQueueSubmitRequestSchema,
       }
     ),
 
@@ -730,10 +704,7 @@ export function fal(opts: FalOptions): FalProvider {
           return sseToIterable<FalLogEntry>(res);
         },
         {
-          payloadSchema: logsStreamSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, logsStreamSchema);
-          },
+          schema: FalLogsStreamRequestSchema,
         }
       ),
     },
@@ -762,10 +733,7 @@ export function fal(opts: FalOptions): FalProvider {
           );
         },
         {
-          payloadSchema: filesUploadUrlSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, filesUploadUrlSchema);
-          },
+          schema: FalFilesUploadUrlRequestSchema,
         }
       ),
 
@@ -796,10 +764,7 @@ export function fal(opts: FalOptions): FalProvider {
           return (await res.json()) as boolean;
         },
         {
-          payloadSchema: filesUploadLocalSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, filesUploadLocalSchema);
-          },
+          schema: FalFilesUploadLocalRequestSchema,
         }
       ),
     },
@@ -931,10 +896,7 @@ export function fal(opts: FalOptions): FalProvider {
           );
         },
         {
-          payloadSchema: pricingEstimateSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, pricingEstimateSchema);
-          },
+          schema: FalPricingEstimateRequestSchema,
         }
       ),
     }
@@ -971,10 +933,7 @@ export function fal(opts: FalOptions): FalProvider {
         );
       },
       {
-        payloadSchema: deletePayloadsSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, deletePayloadsSchema);
-        },
+        schema: FalDeletePayloadsRequestSchema,
       }
     ),
   };
@@ -1179,10 +1138,7 @@ export function fal(opts: FalOptions): FalProvider {
         );
       },
       {
-        payloadSchema: pricingEstimateSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, pricingEstimateSchema);
-        },
+        schema: FalPricingEstimateRequestSchema,
       }
     ),
   };
@@ -1232,10 +1188,7 @@ export function fal(opts: FalOptions): FalProvider {
         );
       },
       {
-        payloadSchema: queueSubmitSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, queueSubmitSchema);
-        },
+        schema: FalQueueSubmitRequestSchema,
       }
     ),
   };
@@ -1254,10 +1207,7 @@ export function fal(opts: FalOptions): FalProvider {
         );
       },
       {
-        payloadSchema: filesUploadUrlSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, filesUploadUrlSchema);
-        },
+        schema: FalFilesUploadUrlRequestSchema,
       }
     ),
 
@@ -1288,10 +1238,7 @@ export function fal(opts: FalOptions): FalProvider {
         return (await res.json()) as boolean;
       },
       {
-        payloadSchema: filesUploadLocalSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, filesUploadLocalSchema);
-        },
+        schema: FalFilesUploadLocalRequestSchema,
       }
     ),
   };
@@ -1323,10 +1270,7 @@ export function fal(opts: FalOptions): FalProvider {
         return sseToIterable<FalLogEntry>(res);
       },
       {
-        payloadSchema: logsStreamSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, logsStreamSchema);
-        },
+        schema: FalLogsStreamRequestSchema,
       }
     ),
   };
@@ -1363,10 +1307,7 @@ export function fal(opts: FalOptions): FalProvider {
         );
       },
       {
-        payloadSchema: deletePayloadsSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, deletePayloadsSchema);
-        },
+        schema: FalDeletePayloadsRequestSchema,
       }
     ),
   };

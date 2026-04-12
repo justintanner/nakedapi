@@ -11,91 +11,84 @@ describe("fal serverless files validation", () => {
     expect(typeof provider.ai.v1.serverless.files.uploadLocal).toBe("function");
   });
 
-  it("should expose uploadUrl payloadSchema", () => {
+  it("should expose uploadUrl schema", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const schema = provider.ai.v1.serverless.files.uploadUrl.payloadSchema;
+    const schema = provider.ai.v1.serverless.files.uploadUrl.schema;
     expect(schema).toBeDefined();
-    expect(schema.method).toBe("POST");
-    expect(schema.path).toBe("/serverless/files/file/url/{file}");
-    expect(schema.contentType).toBe("application/json");
-    expect(schema.fields.file).toBeDefined();
-    expect(schema.fields.file.required).toBe(true);
-    expect(schema.fields.url).toBeDefined();
-    expect(schema.fields.url.required).toBe(true);
+    expect(typeof schema.safeParse).toBe("function");
   });
 
   it("should validate uploadUrl params - valid", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const result = provider.ai.v1.serverless.files.uploadUrl.validatePayload({
+    const result = provider.ai.v1.serverless.files.uploadUrl.schema.safeParse({
       file: "datasets/image.jpg",
       url: "https://example.com/image.jpg",
     });
-    expect(result.valid).toBe(true);
-    expect(result.errors).toHaveLength(0);
+    expect(result.success).toBe(true);
   });
 
   it("should validate uploadUrl params - missing required", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const result = provider.ai.v1.serverless.files.uploadUrl.validatePayload(
+    const result = provider.ai.v1.serverless.files.uploadUrl.schema.safeParse(
       {}
     );
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("file is required");
-    expect(result.errors).toContain("url is required");
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("file"))).toBe(
+      true
+    );
+    expect(result.error?.issues.some((i) => i.path.includes("url"))).toBe(true);
   });
 
   it("should validate uploadUrl params - wrong types", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const result = provider.ai.v1.serverless.files.uploadUrl.validatePayload({
+    const result = provider.ai.v1.serverless.files.uploadUrl.schema.safeParse({
       file: 123,
       url: true,
     });
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("file must be of type string");
-    expect(result.errors).toContain("url must be of type string");
+    expect(result.success).toBe(false);
   });
 
-  it("should expose uploadLocal payloadSchema", () => {
+  it("should expose uploadLocal schema", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const schema = provider.ai.v1.serverless.files.uploadLocal.payloadSchema;
+    const schema = provider.ai.v1.serverless.files.uploadLocal.schema;
     expect(schema).toBeDefined();
-    expect(schema.method).toBe("POST");
-    expect(schema.path).toBe("/serverless/files/file/local/{target_path}");
-    expect(schema.contentType).toBe("multipart/form-data");
-    expect(schema.fields.target_path).toBeDefined();
-    expect(schema.fields.target_path.required).toBe(true);
-    expect(schema.fields.file).toBeDefined();
-    expect(schema.fields.file.required).toBe(true);
+    expect(typeof schema.safeParse).toBe("function");
   });
 
   it("should validate uploadLocal params - valid", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const result = provider.ai.v1.serverless.files.uploadLocal.validatePayload({
-      target_path: "datasets/image.jpg",
-      file: {},
-    });
-    expect(result.valid).toBe(true);
-    expect(result.errors).toHaveLength(0);
+    const result = provider.ai.v1.serverless.files.uploadLocal.schema.safeParse(
+      {
+        target_path: "datasets/image.jpg",
+        file: new Blob(["test"]),
+      }
+    );
+    expect(result.success).toBe(true);
   });
 
   it("should validate uploadLocal params - missing required", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const result = provider.ai.v1.serverless.files.uploadLocal.validatePayload(
+    const result = provider.ai.v1.serverless.files.uploadLocal.schema.safeParse(
       {}
     );
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("target_path is required");
-    expect(result.errors).toContain("file is required");
+    expect(result.success).toBe(false);
+    expect(
+      result.error?.issues.some((i) => i.path.includes("target_path"))
+    ).toBe(true);
+    expect(result.error?.issues.some((i) => i.path.includes("file"))).toBe(
+      true
+    );
   });
 
   it("should validate uploadLocal params - optional unzip field", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const result = provider.ai.v1.serverless.files.uploadLocal.validatePayload({
-      target_path: "datasets/archive.zip",
-      file: {},
-      unzip: true,
-    });
-    expect(result.valid).toBe(true);
-    expect(result.errors).toHaveLength(0);
+    const result = provider.ai.v1.serverless.files.uploadLocal.schema.safeParse(
+      {
+        target_path: "datasets/archive.zip",
+        file: new Blob(["test"]),
+        unzip: true,
+      }
+    );
+    expect(result.success).toBe(true);
   });
 });

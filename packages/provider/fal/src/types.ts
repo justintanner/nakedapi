@@ -1,12 +1,38 @@
-// Fal provider options
-export interface FalOptions {
-  apiKey: string;
-  baseURL?: string;
-  queueBaseURL?: string;
-  runBaseURL?: string;
-  timeout?: number;
-  fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
-}
+import type { z } from "zod";
+
+// ---------------------------------------------------------------------------
+// Request types — derived from Zod schemas (source of truth in zod.ts)
+// ---------------------------------------------------------------------------
+
+export type {
+  FalOptions,
+  FalEstimateRequest,
+  FalQueueSubmitParams,
+  FalLogsStreamParams,
+  FalFilesUploadUrlParams,
+  FalFilesUploadLocalParams,
+  FalDeletePayloadsParams,
+  FalSeedance2p0ImageToVideoParams,
+  FalNanoBananaProTextToImageParams,
+  FalNanoBananaProEditParams,
+  FalSeedreamV5LiteEditParams,
+  FalSeedreamV5LiteTextToImageParams,
+} from "./zod";
+
+// Re-import for use in this file's interface definitions
+import type {
+  FalEstimateRequest,
+  FalQueueSubmitParams,
+  FalLogsStreamParams,
+  FalFilesUploadUrlParams,
+  FalFilesUploadLocalParams,
+  FalDeletePayloadsParams,
+  FalSeedance2p0ImageToVideoParams,
+  FalNanoBananaProTextToImageParams,
+  FalNanoBananaProEditParams,
+  FalSeedreamV5LiteEditParams,
+  FalSeedreamV5LiteTextToImageParams,
+} from "./zod";
 
 // Error types returned by fal API
 export type FalErrorType =
@@ -151,23 +177,6 @@ export interface FalPricingResponse {
 
 // ==================== Cost Estimation ====================
 
-// Historical API price estimate request
-export interface FalHistoricalApiPriceEstimate {
-  estimate_type: "historical_api_price";
-  endpoints: Record<string, { call_quantity: number }>;
-}
-
-// Unit price estimate request
-export interface FalUnitPriceEstimate {
-  estimate_type: "unit_price";
-  endpoints: Record<string, { unit_quantity: number }>;
-}
-
-// Estimate request (discriminated union)
-export type FalEstimateRequest =
-  | FalHistoricalApiPriceEstimate
-  | FalUnitPriceEstimate;
-
 // Estimate response
 export interface FalEstimateResponse {
   estimate_type: "historical_api_price" | "unit_price";
@@ -281,12 +290,6 @@ export interface FalRequestsResponse {
 
 // ==================== Delete Payloads ====================
 
-// Delete payloads parameters
-export interface FalDeletePayloadsParams {
-  request_id: string;
-  idempotency_key?: string;
-}
-
 // CDN delete result
 export interface FalCdnDeleteResult {
   link: string;
@@ -382,18 +385,6 @@ export type FalSeedanceAspectRatio =
   | "3:4"
   | "9:16";
 
-export interface FalSeedance2p0ImageToVideoParams {
-  prompt: string;
-  image_url: string;
-  end_image_url?: string;
-  resolution?: FalSeedanceResolution;
-  duration?: FalSeedanceDuration;
-  aspect_ratio?: FalSeedanceAspectRatio;
-  generate_audio?: boolean;
-  seed?: number;
-  end_user_id?: string;
-}
-
 export interface FalSeedance2p0ImageToVideoResponse {
   video: FalFile;
   seed: number;
@@ -419,36 +410,9 @@ export type FalNanoBananaProSafetyTolerance = "1" | "2" | "3" | "4" | "5" | "6";
 
 export type FalNanoBananaProResolution = "1K" | "2K" | "4K";
 
-export interface FalNanoBananaProTextToImageParams {
-  prompt: string;
-  num_images?: number;
-  seed?: number;
-  aspect_ratio?: FalNanoBananaProAspectRatio;
-  output_format?: FalNanoBananaProOutputFormat;
-  safety_tolerance?: FalNanoBananaProSafetyTolerance;
-  sync_mode?: boolean;
-  resolution?: FalNanoBananaProResolution;
-  limit_generations?: boolean;
-  enable_web_search?: boolean;
-}
-
 export interface FalNanoBananaProTextToImageResponse {
   images: FalFile[];
   description: string;
-}
-
-export interface FalNanoBananaProEditParams {
-  prompt: string;
-  image_urls: string[];
-  num_images?: number;
-  seed?: number;
-  aspect_ratio?: FalNanoBananaProAspectRatio;
-  output_format?: FalNanoBananaProOutputFormat;
-  safety_tolerance?: FalNanoBananaProSafetyTolerance;
-  sync_mode?: boolean;
-  resolution?: FalNanoBananaProResolution;
-  limit_generations?: boolean;
-  enable_web_search?: boolean;
 }
 
 export interface FalNanoBananaProEditResponse {
@@ -462,56 +426,15 @@ export type FalSeedreamV5LiteImageSize =
   | "auto_4K"
   | { width: number; height: number };
 
-export interface FalSeedreamV5LiteEditParams {
-  prompt: string;
-  image_urls: string[];
-  image_size?: FalSeedreamV5LiteImageSize;
-  num_images?: number;
-  max_images?: number;
-  sync_mode?: boolean;
-  enable_safety_checker?: boolean;
-}
-
 export interface FalSeedreamV5LiteEditResponse {
   images: FalFile[];
   seed: number;
 }
 
 // Bytedance Seedream v5 Lite text-to-image
-export interface FalSeedreamV5LiteTextToImageParams {
-  prompt: string;
-  image_size?: FalSeedreamV5LiteImageSize;
-  num_images?: number;
-  max_images?: number;
-  sync_mode?: boolean;
-  enable_safety_checker?: boolean;
-}
-
 export interface FalSeedreamV5LiteTextToImageResponse {
   images: FalFile[];
   seed: number;
-}
-
-// Payload schema types
-export interface PayloadFieldSchema {
-  type: "string" | "number" | "boolean" | "array" | "object";
-  required?: boolean;
-  description?: string;
-  enum?: readonly (string | number | boolean)[];
-  items?: PayloadFieldSchema;
-  properties?: Record<string, PayloadFieldSchema>;
-}
-
-export interface PayloadSchema {
-  method: "POST" | "DELETE";
-  path: string;
-  contentType: "application/json" | "multipart/form-data";
-  fields: Record<string, PayloadFieldSchema>;
-}
-
-export interface ValidationResult {
-  valid: boolean;
-  errors: string[];
 }
 
 // ==================== Serverless Logs ====================
@@ -525,23 +448,6 @@ export interface FalLabelFilter {
 
 // Run source for serverless logs
 export type FalRunSource = "grpc-run" | "grpc-register" | "gateway" | "cron";
-
-// Shared filter parameters for both history and stream
-export interface FalLogsFilterParams {
-  start?: string;
-  end?: string;
-  app_id?: string[];
-  revision?: string;
-  run_source?: FalRunSource;
-  traceback?: boolean;
-  search?: string;
-  level?: string;
-  job_id?: string;
-  request_id?: string;
-}
-
-// Stream parameters (same filters, no pagination)
-export type FalLogsStreamParams = FalLogsFilterParams;
 
 // Log entry returned by stream events
 export interface FalLogEntry {
@@ -572,34 +478,7 @@ export interface FalFilesListParams {
   dir?: string;
 }
 
-// Upload from URL parameters
-export interface FalFilesUploadUrlParams {
-  file: string;
-  url: string;
-}
-
-// Upload local file parameters
-export interface FalFilesUploadLocalParams {
-  target_path: string;
-  file: Blob;
-  filename?: string;
-  unzip?: boolean;
-}
-
 // ==================== Queue ====================
-
-// Queue submit options (model-specific input is the body)
-export interface FalQueueSubmitParams {
-  endpoint_id: string;
-  input: Record<string, unknown>;
-  webhook?: string;
-  priority?: "normal" | "low";
-  timeout?: number;
-  no_retry?: boolean;
-  runner_hint?: string;
-  store_io?: string;
-  object_lifecycle_preference?: string;
-}
 
 // Queue submit response
 export interface FalQueueSubmitResponse {
@@ -681,8 +560,7 @@ export interface FalAppsQueueResponse {
 // Namespace types
 interface FalPricingEstimateMethod {
   (req: FalEstimateRequest, signal?: AbortSignal): Promise<FalEstimateResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<FalEstimateRequest>;
 }
 
 interface FalModelsPricingNamespace {
@@ -695,8 +573,7 @@ interface FalDeletePayloadsMethod {
     params: FalDeletePayloadsParams,
     signal?: AbortSignal
   ): Promise<FalDeletePayloadsResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<FalDeletePayloadsParams>;
 }
 
 interface FalModelsRequestsNamespace {
@@ -729,8 +606,7 @@ interface FalQueueSubmitMethod {
     params: FalQueueSubmitParams,
     signal?: AbortSignal
   ): Promise<FalQueueSubmitResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<FalQueueSubmitParams>;
 }
 
 interface FalQueueNamespace {
@@ -748,8 +624,7 @@ interface FalLogsStreamMethod {
     body?: FalLabelFilter[],
     signal?: AbortSignal
   ): Promise<AsyncIterable<FalLogEntry>>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<FalLogsStreamParams>;
 }
 
 interface FalServerlessLogsNamespace {
@@ -759,14 +634,12 @@ interface FalServerlessLogsNamespace {
 // Serverless files namespace types
 interface FalFilesUploadUrlMethod {
   (params: FalFilesUploadUrlParams, signal?: AbortSignal): Promise<boolean>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<FalFilesUploadUrlParams>;
 }
 
 interface FalFilesUploadLocalMethod {
   (params: FalFilesUploadLocalParams, signal?: AbortSignal): Promise<boolean>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<FalFilesUploadLocalParams>;
 }
 
 interface FalServerlessFilesNamespace {
@@ -825,8 +698,7 @@ type FalSeedance2p0ImageToVideoFn = ((
   params: FalSeedance2p0ImageToVideoParams,
   signal?: AbortSignal
 ) => Promise<FalSeedance2p0ImageToVideoResponse>) & {
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<FalSeedance2p0ImageToVideoParams>;
 };
 
 export interface FalRunBytedanceSeedance2p0Namespace {
@@ -855,16 +727,14 @@ type FalNanoBananaProEditFn = ((
   params: FalNanoBananaProEditParams,
   signal?: AbortSignal
 ) => Promise<FalNanoBananaProEditResponse>) & {
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<FalNanoBananaProEditParams>;
 };
 
 type FalNanoBananaProTextToImageFn = ((
   params: FalNanoBananaProTextToImageParams,
   signal?: AbortSignal
 ) => Promise<FalNanoBananaProTextToImageResponse>) & {
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<FalNanoBananaProTextToImageParams>;
 };
 
 export interface FalRunNanoBananaProNamespace {
@@ -876,16 +746,14 @@ type FalSeedreamV5LiteEditFn = ((
   params: FalSeedreamV5LiteEditParams,
   signal?: AbortSignal
 ) => Promise<FalSeedreamV5LiteEditResponse>) & {
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<FalSeedreamV5LiteEditParams>;
 };
 
 type FalSeedreamV5LiteTextToImageFn = ((
   params: FalSeedreamV5LiteTextToImageParams,
   signal?: AbortSignal
 ) => Promise<FalSeedreamV5LiteTextToImageResponse>) & {
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<FalSeedreamV5LiteTextToImageParams>;
 };
 
 export interface FalRunNamespace {

@@ -64,7 +64,7 @@ describe("fal nano banana pro", () => {
   it("validates text-to-image payloads", () => {
     const provider = fal({ apiKey: "fal-test-key" });
 
-    const valid = provider.run.nanoBananaPro.textToImage.validatePayload({
+    const valid = provider.run.nanoBananaPro.textToImage.schema.safeParse({
       prompt: "a cat",
       num_images: 1,
       aspect_ratio: "16:9",
@@ -73,19 +73,19 @@ describe("fal nano banana pro", () => {
       resolution: "2K",
       enable_web_search: false,
     });
-    expect(valid.valid).toBe(true);
-    expect(valid.errors).toHaveLength(0);
+    expect(valid.success).toBe(true);
 
     const missingPrompt =
-      provider.run.nanoBananaPro.textToImage.validatePayload({});
-    expect(missingPrompt.valid).toBe(false);
-    expect(missingPrompt.errors).toContain("prompt is required");
+      provider.run.nanoBananaPro.textToImage.schema.safeParse({});
+    expect(missingPrompt.success).toBe(false);
 
-    const invalidEnum = provider.run.nanoBananaPro.textToImage.validatePayload({
-      prompt: "a cat",
-      resolution: "8K",
-    });
-    expect(invalidEnum.valid).toBe(false);
+    const invalidEnum = provider.run.nanoBananaPro.textToImage.schema.safeParse(
+      {
+        prompt: "a cat",
+        resolution: "8K",
+      }
+    );
+    expect(invalidEnum.success).toBe(false);
   });
 
   it("exposes text-to-image through run and post.run", () => {
@@ -94,8 +94,8 @@ describe("fal nano banana pro", () => {
     expect(provider.run.nanoBananaPro.textToImage).toBe(
       provider.post.run.nanoBananaPro.textToImage
     );
-    expect(provider.run.nanoBananaPro.textToImage.payloadSchema.path).toBe(
-      "/fal-ai/nano-banana-pro"
+    expect(typeof provider.run.nanoBananaPro.textToImage.schema.safeParse).toBe(
+      "function"
     );
   });
 });

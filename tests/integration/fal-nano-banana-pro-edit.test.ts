@@ -46,49 +46,47 @@ describe("fal nano-banana-pro edit integration", () => {
 
   it("should validate a valid payload", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const v = provider.run.nanoBananaPro.edit.validatePayload({
+    const v = provider.run.nanoBananaPro.edit.schema.safeParse({
       prompt: "a cat",
       image_urls: ["https://example.com/cat.png"],
     });
-    expect(v.valid).toBe(true);
-    expect(v.errors).toHaveLength(0);
+    expect(v.success).toBe(true);
   });
 
   it("should reject payload missing required fields", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const v = provider.run.nanoBananaPro.edit.validatePayload({});
-    expect(v.valid).toBe(false);
-    expect(v.errors).toContain("prompt is required");
-    expect(v.errors).toContain("image_urls is required");
+    const v = provider.run.nanoBananaPro.edit.schema.safeParse({});
+    expect(v.success).toBe(false);
+    expect(v.error?.issues.some((i) => i.path.includes("prompt"))).toBe(true);
+    expect(v.error?.issues.some((i) => i.path.includes("image_urls"))).toBe(
+      true
+    );
   });
 
   it("should reject payload with wrong enum value", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const v = provider.run.nanoBananaPro.edit.validatePayload({
+    const v = provider.run.nanoBananaPro.edit.schema.safeParse({
       prompt: "a cat",
       image_urls: ["https://example.com/cat.png"],
       resolution: "8K",
     });
-    expect(v.valid).toBe(false);
+    expect(v.success).toBe(false);
   });
 
   it("should reject non-string items in image_urls", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const v = provider.run.nanoBananaPro.edit.validatePayload({
+    const v = provider.run.nanoBananaPro.edit.schema.safeParse({
       prompt: "a cat",
       image_urls: [123, 456],
     });
-    expect(v.valid).toBe(false);
+    expect(v.success).toBe(false);
   });
 
-  it("should expose payloadSchema", () => {
+  it("should expose schema", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const schema = provider.run.nanoBananaPro.edit.payloadSchema;
-    expect(schema.method).toBe("POST");
-    expect(schema.path).toBe("/fal-ai/nano-banana-pro/edit");
-    expect(schema.contentType).toBe("application/json");
-    expect(schema.fields.prompt.required).toBe(true);
-    expect(schema.fields.image_urls.required).toBe(true);
+    const schema = provider.run.nanoBananaPro.edit.schema;
+    expect(schema).toBeDefined();
+    expect(typeof schema.safeParse).toBe("function");
   });
 
   it("should expose the same function via run and post.run", () => {

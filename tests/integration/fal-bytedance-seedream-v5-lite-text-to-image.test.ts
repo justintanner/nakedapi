@@ -37,41 +37,35 @@ describe("fal bytedance seedream v5 lite text-to-image integration", () => {
   it("should validate a valid payload", () => {
     const provider = fal({ apiKey: "fal-test-key" });
     const v =
-      provider.run.bytedance.seedream.v5.lite.textToImage.validatePayload({
+      provider.run.bytedance.seedream.v5.lite.textToImage.schema.safeParse({
         prompt: "a beautiful landscape",
       });
-    expect(v.valid).toBe(true);
-    expect(v.errors).toHaveLength(0);
+    expect(v.success).toBe(true);
   });
 
   it("should reject payload missing required fields", () => {
     const provider = fal({ apiKey: "fal-test-key" });
     const v =
-      provider.run.bytedance.seedream.v5.lite.textToImage.validatePayload({});
-    expect(v.valid).toBe(false);
-    expect(v.errors).toContain("prompt is required");
+      provider.run.bytedance.seedream.v5.lite.textToImage.schema.safeParse({});
+    expect(v.success).toBe(false);
+    expect(v.error?.issues.some((i) => i.path.includes("prompt"))).toBe(true);
   });
 
   it("should reject payload with wrong enum value for image_size", () => {
     const provider = fal({ apiKey: "fal-test-key" });
     const v =
-      provider.run.bytedance.seedream.v5.lite.textToImage.validatePayload({
+      provider.run.bytedance.seedream.v5.lite.textToImage.schema.safeParse({
         prompt: "a cat",
         image_size: "auto_8K",
       });
-    expect(v.valid).toBe(false);
+    expect(v.success).toBe(false);
   });
 
-  it("should expose payloadSchema", () => {
+  it("should expose schema", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const schema =
-      provider.run.bytedance.seedream.v5.lite.textToImage.payloadSchema;
-    expect(schema.method).toBe("POST");
-    expect(schema.path).toBe(
-      "/fal-ai/bytedance/seedream/v5/lite/text-to-image"
-    );
-    expect(schema.contentType).toBe("application/json");
-    expect(schema.fields.prompt.required).toBe(true);
+    const schema = provider.run.bytedance.seedream.v5.lite.textToImage.schema;
+    expect(schema).toBeDefined();
+    expect(typeof schema.safeParse).toBe("function");
   });
 
   it("should expose the same function via run and post.run", () => {

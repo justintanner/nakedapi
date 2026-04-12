@@ -94,6 +94,8 @@ export type {
   FalNanoBananaProOutputFormat,
   FalNanoBananaProSafetyTolerance,
   FalNanoBananaProResolution,
+  FalNanoBananaProTextToImageParams,
+  FalNanoBananaProTextToImageResponse,
   FalNanoBananaProEditParams,
   FalNanoBananaProEditResponse,
   FalRunNanoBananaProNamespace,

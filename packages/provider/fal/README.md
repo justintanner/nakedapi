@@ -181,6 +181,36 @@ fal.bytedance.seedance2p0.image.to.video.validatePayload(data)
 </details>
 
 <details>
+<summary><b><code>falai.nanobananapro</code></b> — <code>POST /fal-ai/nano-banana-pro</code></summary>
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `prompt` | string | Yes | The text prompt to generate an image from |
+| `num_images` | number | No | The number of images to generate (1-4, default 1) |
+| `seed` | number | No | The seed for the random number generator |
+| `aspect_ratio` | string | No | Aspect ratio of the generated image (default 1:1)<br>Enum: `auto`, `21:9`, `16:9`, `3:2`, `4:3`, `5:4`, `1:1`, `4:5`, `3:4`, `2:3`, `9:16` |
+| `output_format` | string | No | Format of the generated image (default png)<br>Enum: `jpeg`, `png`, `webp` |
+| `safety_tolerance` | string | No | Content moderation level: 1 strictest, 6 most permissive (default 4)<br>Enum: `1`, `2`, `3`, `4`, `5`, `6` |
+| `sync_mode` | boolean | No | If true, media is returned as a data URI and not recorded in request history |
+| `resolution` | string | No | Resolution of the generated image; 4K costs double (default 1K)<br>Enum: `1K`, `2K`, `4K` |
+| `limit_generations` | boolean | No | Experimental: limit generations to 1 per prompt regardless of prompt instructions |
+| `enable_web_search` | boolean | No | Enable web search to use the latest web information (adds $0.015 per call) |
+
+**Validation:**
+
+```typescript
+// Access the schema
+fal.nano.banana.pro.text.to.image.payloadSchema
+
+// Validate data
+fal.nano.banana.pro.text.to.image.validatePayload(data)
+```
+
+</details>
+
+<details>
 <summary><b><code>falai.nanobananapro.edit</code></b> — <code>POST /fal-ai/nano-banana-pro/edit</code></summary>
 
 **Parameters:**

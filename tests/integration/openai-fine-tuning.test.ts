@@ -5,33 +5,29 @@ describe("openai fine-tuning", () => {
   describe("payload validation", () => {
     const provider = openai({ apiKey: "sk-test-key" });
 
-    it("should expose payloadSchema on jobs create", () => {
-      const schema = provider.post.v1.fine_tuning.jobs.payloadSchema;
-      expect(schema.method).toBe("POST");
-      expect(schema.path).toBe("/fine_tuning/jobs");
-      expect(schema.contentType).toBe("application/json");
-      expect(schema.fields.model.required).toBe(true);
-      expect(schema.fields.training_file.required).toBe(true);
+    it("should expose schema on jobs create", () => {
+      expect(provider.post.v1.fine_tuning.jobs.schema).toBeDefined();
+      expect(typeof provider.post.v1.fine_tuning.jobs.schema.safeParse).toBe(
+        "function"
+      );
     });
 
     it("should validate create request - valid", () => {
-      const result = provider.post.v1.fine_tuning.jobs.validatePayload({
+      const result = provider.post.v1.fine_tuning.jobs.schema.safeParse({
         model: "gpt-4o-mini-2024-07-18",
         training_file: "file-abc123",
       });
-      expect(result.valid).toBe(true);
-      expect(result.errors).toHaveLength(0);
+      expect(result.success).toBe(true);
     });
 
     it("should validate create request - missing required fields", () => {
-      const result = provider.post.v1.fine_tuning.jobs.validatePayload({});
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain("model is required");
-      expect(result.errors).toContain("training_file is required");
+      const result = provider.post.v1.fine_tuning.jobs.schema.safeParse({});
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThanOrEqual(2);
     });
 
     it("should validate create request with optional fields", () => {
-      const result = provider.post.v1.fine_tuning.jobs.validatePayload({
+      const result = provider.post.v1.fine_tuning.jobs.schema.safeParse({
         model: "gpt-4o-mini-2024-07-18",
         training_file: "file-abc123",
         suffix: "my-model",
@@ -41,35 +37,36 @@ describe("openai fine-tuning", () => {
           type: "supervised",
         },
       });
-      expect(result.valid).toBe(true);
-      expect(result.errors).toHaveLength(0);
+      expect(result.success).toBe(true);
     });
 
-    it("should expose payloadSchema on checkpoint permissions create", () => {
-      const schema =
-        provider.post.v1.fine_tuning.checkpoints.permissions.payloadSchema;
-      expect(schema.method).toBe("POST");
-      expect(schema.path).toBe(
-        "/fine_tuning/checkpoints/{checkpoint}/permissions"
-      );
-      expect(schema.fields.project_ids.required).toBe(true);
+    it("should expose schema on checkpoint permissions create", () => {
+      expect(
+        provider.post.v1.fine_tuning.checkpoints.permissions.schema
+      ).toBeDefined();
+      expect(
+        typeof provider.post.v1.fine_tuning.checkpoints.permissions.schema
+          .safeParse
+      ).toBe("function");
     });
 
     it("should validate checkpoint permissions create - valid", () => {
       const result =
-        provider.post.v1.fine_tuning.checkpoints.permissions.validatePayload({
+        provider.post.v1.fine_tuning.checkpoints.permissions.schema.safeParse({
           project_ids: ["proj-abc123"],
         });
-      expect(result.valid).toBe(true);
+      expect(result.success).toBe(true);
     });
 
     it("should validate checkpoint permissions create - missing project_ids", () => {
       const result =
-        provider.post.v1.fine_tuning.checkpoints.permissions.validatePayload(
+        provider.post.v1.fine_tuning.checkpoints.permissions.schema.safeParse(
           {}
         );
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain("project_ids is required");
+      expect(result.success).toBe(false);
+      expect(
+        result.error?.issues.some((i) => i.path.includes("project_ids"))
+      ).toBe(true);
     });
   });
 

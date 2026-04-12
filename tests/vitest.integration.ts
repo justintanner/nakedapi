@@ -21,6 +21,10 @@ export default defineConfig({
       ),
       "@apicity/kie": path.resolve(__dirname, "../packages/provider/kie/src"),
       "@apicity/xai": path.resolve(__dirname, "../packages/provider/xai/src"),
+      "@apicity/openai/zod": path.resolve(
+        __dirname,
+        "../packages/provider/openai/src/zod"
+      ),
       "@apicity/openai": path.resolve(
         __dirname,
         "../packages/provider/openai/src"

@@ -61,31 +61,23 @@ import {
   OpenAiTextPart,
   OpenAiImageUrlPart,
 } from "./types";
-import type { ValidationResult } from "./types";
 import {
-  chatCompletionsSchema,
-  embeddingsSchema,
-  filesUploadSchema,
-  filesDeleteSchema,
-  imageEditsSchema,
-  imageGenerationsSchema,
-  modelsDeleteSchema,
-  moderationsSchema,
-  audioSpeechSchema,
-  batchesCreateSchema,
-  batchesCancelSchema,
-  audioTranscriptionsSchema,
-  audioTranslationsSchema,
-  responsesSchema,
-  responsesDeleteSchema,
-  responsesCancelSchema,
-  responsesCompactSchema,
-  responsesInputTokensSchema,
-  fineTuningJobsCreateSchema,
-  checkpointPermissionsCreateSchema,
-  storedCompletionsDeleteSchema,
-} from "./schemas";
-import { validatePayload } from "./validate";
+  OpenAiChatRequestSchema,
+  OpenAiEmbeddingRequestSchema,
+  OpenAiFileUploadRequestSchema,
+  OpenAiImageEditRequestSchema,
+  OpenAiImageGenerationRequestSchema,
+  OpenAiModerationRequestSchema,
+  OpenAiSpeechRequestSchema,
+  OpenAiTranscribeRequestSchema,
+  OpenAiTranslateRequestSchema,
+  OpenAiBatchCreateRequestSchema,
+  OpenAiResponseRequestSchema,
+  OpenAiResponseCompactRequestSchema,
+  OpenAiResponseInputTokensRequestSchema,
+  OpenAiFineTuningJobCreateRequestSchema,
+  OpenAiCheckpointPermissionCreateRequestSchema,
+} from "./zod";
 
 export function textPart(text: string): OpenAiTextPart {
   return { type: "text", text };
@@ -463,10 +455,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
           );
         },
         {
-          payloadSchema: chatCompletionsSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, chatCompletionsSchema);
-          },
+          schema: OpenAiChatRequestSchema,
         }
       ),
     },
@@ -479,10 +468,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
           return makeBinaryRequest("/audio/speech", jsonRequest(req), signal);
         },
         {
-          payloadSchema: audioSpeechSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, audioSpeechSchema);
-          },
+          schema: OpenAiSpeechRequestSchema,
         }
       ),
       transcriptions: Object.assign(
@@ -507,10 +493,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
           );
         },
         {
-          payloadSchema: audioTranscriptionsSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, audioTranscriptionsSchema);
-          },
+          schema: OpenAiTranscribeRequestSchema,
         }
       ),
       translations: Object.assign(
@@ -534,10 +517,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
           );
         },
         {
-          payloadSchema: audioTranslationsSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, audioTranslationsSchema);
-          },
+          schema: OpenAiTranslateRequestSchema,
         }
       ),
     },
@@ -553,10 +533,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
         );
       },
       {
-        payloadSchema: embeddingsSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, embeddingsSchema);
-        },
+        schema: OpenAiEmbeddingRequestSchema,
       }
     ),
     images: {
@@ -572,10 +549,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
           );
         },
         {
-          payloadSchema: imageGenerationsSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, imageGenerationsSchema);
-          },
+          schema: OpenAiImageGenerationRequestSchema,
         }
       ),
       edits: Object.assign(
@@ -616,10 +590,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
           );
         },
         {
-          payloadSchema: imageEditsSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, imageEditsSchema);
-          },
+          schema: OpenAiImageEditRequestSchema,
         }
       ),
     },
@@ -642,10 +613,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
         );
       },
       {
-        payloadSchema: filesUploadSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, filesUploadSchema);
-        },
+        schema: OpenAiFileUploadRequestSchema,
       }
     ),
     moderations: Object.assign(
@@ -660,10 +628,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
         );
       },
       {
-        payloadSchema: moderationsSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, moderationsSchema);
-        },
+        schema: OpenAiModerationRequestSchema,
       }
     ),
     responses: Object.assign(
@@ -678,10 +643,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
         );
       },
       {
-        payloadSchema: responsesSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, responsesSchema);
-        },
+        schema: OpenAiResponseRequestSchema,
         compact: Object.assign(
           async (
             req: OpenAiResponseCompactRequest,
@@ -694,10 +656,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             );
           },
           {
-            payloadSchema: responsesCompactSchema,
-            validatePayload(data: unknown): ValidationResult {
-              return validatePayload(data, responsesCompactSchema);
-            },
+            schema: OpenAiResponseCompactRequestSchema,
           }
         ),
         inputTokens: Object.assign(
@@ -712,10 +671,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             );
           },
           {
-            payloadSchema: responsesInputTokensSchema,
-            validatePayload(data: unknown): ValidationResult {
-              return validatePayload(data, responsesInputTokensSchema);
-            },
+            schema: OpenAiResponseInputTokensRequestSchema,
           }
         ),
         cancel: Object.assign(
@@ -728,9 +684,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
               signal
             );
           },
-          {
-            payloadSchema: responsesCancelSchema,
-          }
+          {}
         ),
       }
     ),
@@ -742,10 +696,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
         return makeRequest<OpenAiBatch>("/batches", jsonRequest(req), signal);
       },
       {
-        payloadSchema: batchesCreateSchema,
-        validatePayload(data: unknown): ValidationResult {
-          return validatePayload(data, batchesCreateSchema);
-        },
+        schema: OpenAiBatchCreateRequestSchema,
         cancel: Object.assign(
           async (id: string, signal?: AbortSignal): Promise<OpenAiBatch> => {
             return makeEmptyPostRequest<OpenAiBatch>(
@@ -753,9 +704,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
               signal
             );
           },
-          {
-            payloadSchema: batchesCancelSchema,
-          }
+          {}
         ),
       }
     ),
@@ -772,10 +721,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
           );
         },
         {
-          payloadSchema: fineTuningJobsCreateSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, fineTuningJobsCreateSchema);
-          },
+          schema: OpenAiFineTuningJobCreateRequestSchema,
           cancel: Object.assign(
             async (
               id: string,
@@ -786,14 +732,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
                 signal
               );
             },
-            {
-              payloadSchema: {
-                method: "POST",
-                path: "/fine_tuning/jobs/{id}/cancel",
-                contentType: "application/json",
-                fields: {},
-              } as import("./types").PayloadSchema,
-            }
+            {}
           ),
           pause: Object.assign(
             async (
@@ -805,14 +744,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
                 signal
               );
             },
-            {
-              payloadSchema: {
-                method: "POST",
-                path: "/fine_tuning/jobs/{id}/pause",
-                contentType: "application/json",
-                fields: {},
-              } as import("./types").PayloadSchema,
-            }
+            {}
           ),
           resume: Object.assign(
             async (
@@ -824,14 +756,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
                 signal
               );
             },
-            {
-              payloadSchema: {
-                method: "POST",
-                path: "/fine_tuning/jobs/{id}/resume",
-                contentType: "application/json",
-                fields: {},
-              } as import("./types").PayloadSchema,
-            }
+            {}
           ),
         }
       ),
@@ -849,10 +774,7 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
             );
           },
           {
-            payloadSchema: checkpointPermissionsCreateSchema,
-            validatePayload(data: unknown): ValidationResult {
-              return validatePayload(data, checkpointPermissionsCreateSchema);
-            },
+            schema: OpenAiCheckpointPermissionCreateRequestSchema,
           }
         ),
       },
@@ -1115,63 +1037,43 @@ export function openai(opts: OpenAiOptions): OpenAiProvider {
   // DELETE v1 namespace
   const deleteV1 = {
     chat: {
-      completions: Object.assign(
-        async (
-          id: string,
-          signal?: AbortSignal
-        ): Promise<OpenAiStoredCompletionDeleteResponse> => {
-          return makeDeleteRequest<OpenAiStoredCompletionDeleteResponse>(
-            `/chat/completions/${encodeURIComponent(id)}`,
-            signal
-          );
-        },
-        {
-          payloadSchema: storedCompletionsDeleteSchema,
-        }
-      ),
+      completions: async (
+        id: string,
+        signal?: AbortSignal
+      ): Promise<OpenAiStoredCompletionDeleteResponse> => {
+        return makeDeleteRequest<OpenAiStoredCompletionDeleteResponse>(
+          `/chat/completions/${encodeURIComponent(id)}`,
+          signal
+        );
+      },
     },
-    files: Object.assign(
-      async (
-        id: string,
-        signal?: AbortSignal
-      ): Promise<OpenAiFileDeleteResponse> => {
-        return makeDeleteRequest<OpenAiFileDeleteResponse>(
-          `/files/${encodeURIComponent(id)}`,
-          signal
-        );
-      },
-      {
-        payloadSchema: filesDeleteSchema,
-      }
-    ),
-    models: Object.assign(
-      async (
-        id: string,
-        signal?: AbortSignal
-      ): Promise<OpenAiModelDeleteResponse> => {
-        return makeDeleteRequest<OpenAiModelDeleteResponse>(
-          `/models/${encodeURIComponent(id)}`,
-          signal
-        );
-      },
-      {
-        payloadSchema: modelsDeleteSchema,
-      }
-    ),
-    responses: Object.assign(
-      async (
-        id: string,
-        signal?: AbortSignal
-      ): Promise<OpenAiResponseDeleteResponse> => {
-        return makeDeleteRequest<OpenAiResponseDeleteResponse>(
-          `/responses/${encodeURIComponent(id)}`,
-          signal
-        );
-      },
-      {
-        payloadSchema: responsesDeleteSchema,
-      }
-    ),
+    files: async (
+      id: string,
+      signal?: AbortSignal
+    ): Promise<OpenAiFileDeleteResponse> => {
+      return makeDeleteRequest<OpenAiFileDeleteResponse>(
+        `/files/${encodeURIComponent(id)}`,
+        signal
+      );
+    },
+    models: async (
+      id: string,
+      signal?: AbortSignal
+    ): Promise<OpenAiModelDeleteResponse> => {
+      return makeDeleteRequest<OpenAiModelDeleteResponse>(
+        `/models/${encodeURIComponent(id)}`,
+        signal
+      );
+    },
+    responses: async (
+      id: string,
+      signal?: AbortSignal
+    ): Promise<OpenAiResponseDeleteResponse> => {
+      return makeDeleteRequest<OpenAiResponseDeleteResponse>(
+        `/responses/${encodeURIComponent(id)}`,
+        signal
+      );
+    },
     fine_tuning: {
       checkpoints: {
         permissions: async (

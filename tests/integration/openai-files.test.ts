@@ -84,55 +84,41 @@ describe("openai files integration", () => {
   });
 
   describe("validation", () => {
-    it("should expose payloadSchema on upload", () => {
+    it("should expose schema on upload", () => {
       const provider = openai({ apiKey: "sk-test" });
-      const schema = provider.post.v1.files.payloadSchema;
-
-      expect(schema.method).toBe("POST");
-      expect(schema.path).toBe("/files");
-      expect(schema.contentType).toBe("multipart/form-data");
-      expect(schema.fields.file).toBeDefined();
-      expect(schema.fields.purpose).toBeDefined();
+      expect(provider.post.v1.files.schema).toBeDefined();
+      expect(typeof provider.post.v1.files.schema.safeParse).toBe("function");
     });
 
     it("should validate upload payload - valid", () => {
       const provider = openai({ apiKey: "sk-test" });
-      const result = provider.post.v1.files.validatePayload({
-        file: {},
+      const result = provider.post.v1.files.schema.safeParse({
+        file: new Blob(["test"]),
         purpose: "fine-tune",
       });
 
-      expect(result.valid).toBe(true);
-      expect(result.errors).toHaveLength(0);
+      expect(result.success).toBe(true);
     });
 
     it("should validate upload payload - missing required fields", () => {
       const provider = openai({ apiKey: "sk-test" });
-      const result = provider.post.v1.files.validatePayload({});
+      const result = provider.post.v1.files.schema.safeParse({});
 
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain("file is required");
-      expect(result.errors).toContain("purpose is required");
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThanOrEqual(2);
     });
 
     it("should validate upload payload - invalid purpose", () => {
       const provider = openai({ apiKey: "sk-test" });
-      const result = provider.post.v1.files.validatePayload({
-        file: {},
+      const result = provider.post.v1.files.schema.safeParse({
+        file: new Blob(["test"]),
         purpose: "invalid",
       });
 
-      expect(result.valid).toBe(false);
-      expect(result.errors.some((e) => e.includes("purpose"))).toBe(true);
-    });
-
-    it("should expose payloadSchema on del", () => {
-      const provider = openai({ apiKey: "sk-test" });
-      const schema = provider.delete.v1.files.payloadSchema;
-
-      expect(schema.method).toBe("DELETE");
-      expect(schema.path).toBe("/files/{file_id}");
-      expect(schema.fields.file_id).toBeDefined();
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.some((i) => i.path.includes("purpose"))).toBe(
+        true
+      );
     });
   });
 });

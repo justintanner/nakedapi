@@ -19,13 +19,12 @@ describe("fal bytedance seedream v5 lite text-to-image integration", () => {
       timeout: 300000,
     });
 
-    const result =
-      await provider.run.bytedance.seedream.v5.lite.textToImage({
-        prompt:
-          "A photorealistic red fox sitting in a snowy forest clearing at golden hour",
-        num_images: 1,
-        enable_safety_checker: true,
-      });
+    const result = await provider.run.bytedance.seedream.v5.lite.textToImage({
+      prompt:
+        "A photorealistic red fox sitting in a snowy forest clearing at golden hour",
+      num_images: 1,
+      enable_safety_checker: true,
+    });
 
     expect(result).toBeDefined();
     expect(Array.isArray(result.images)).toBe(true);

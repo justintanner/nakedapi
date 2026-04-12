@@ -1,90 +1,66 @@
-// OpenAI provider options
-export interface OpenAiOptions {
-  apiKey: string;
-  baseURL?: string;
-  timeout?: number;
-  fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
-}
+import type { z } from "zod";
 
-// Content part for vision messages
-export interface OpenAiTextPart {
-  type: "text";
-  text: string;
-}
+// ---------------------------------------------------------------------------
+// Request types — derived from Zod schemas (source of truth in zod.ts)
+// ---------------------------------------------------------------------------
 
-export interface OpenAiImageUrlPart {
-  type: "image_url";
-  image_url: { url: string; detail?: "auto" | "low" | "high" };
-}
+export type {
+  OpenAiOptions,
+  OpenAiTextPart,
+  OpenAiImageUrlPart,
+  OpenAiContentPart,
+  OpenAiMessage,
+  OpenAiToolFunction,
+  OpenAiTool,
+  OpenAiChatRequest,
+  OpenAiStoredCompletionUpdateRequest,
+  OpenAiSpeechRequest,
+  OpenAiTranscribeRequest,
+  OpenAiTranslateRequest,
+  OpenAiEmbeddingRequest,
+  OpenAiImageEditRequest,
+  OpenAiImageGenerationRequest,
+  OpenAiModerationTextInput,
+  OpenAiModerationImageUrlInput,
+  OpenAiModerationMultiModalInput,
+  OpenAiModerationRequest,
+  OpenAiFileUploadRequest,
+  OpenAiBatchCreateRequest,
+  OpenAiResponseInputTextContent,
+  OpenAiResponseInputImageContent,
+  OpenAiResponseInputAudioContent,
+  OpenAiResponseInputContent,
+  OpenAiResponseInputMessage,
+  OpenAiResponseFunctionCallOutput,
+  OpenAiResponseItemReference,
+  OpenAiResponseInputItem,
+  OpenAiResponseFunctionTool,
+  OpenAiResponseWebSearchTool,
+  OpenAiResponseFileSearchTool,
+  OpenAiResponseCodeInterpreterTool,
+  OpenAiResponseTool,
+  OpenAiResponseTextFormat,
+  OpenAiResponseReasoning,
+  OpenAiResponseRequest,
+  OpenAiResponseCompactRequest,
+  OpenAiResponseInputTokensRequest,
+  OpenAiFineTuningHyperparameters,
+  OpenAiFineTuningSupervisedHyperparameters,
+  OpenAiFineTuningSupervisedMethod,
+  OpenAiFineTuningDpoHyperparameters,
+  OpenAiFineTuningDpoMethod,
+  OpenAiFineTuningReinforcementHyperparameters,
+  OpenAiFineTuningReinforcementMethod,
+  OpenAiFineTuningMethod,
+  OpenAiFineTuningWandbConfig,
+  OpenAiFineTuningIntegration,
+  OpenAiFineTuningJobCreateRequest,
+  OpenAiCheckpointPermissionCreateRequest,
+} from "./zod";
 
-export type OpenAiContentPart = OpenAiTextPart | OpenAiImageUrlPart;
-
-// Chat message
-export interface OpenAiMessage {
-  role: "user" | "assistant" | "system";
-  content: string | OpenAiContentPart[];
-}
-
-// Speech (text-to-speech) request
-export interface OpenAiSpeechRequest {
-  model: string;
-  input: string;
-  voice:
-    | "alloy"
-    | "ash"
-    | "coral"
-    | "echo"
-    | "fable"
-    | "onyx"
-    | "nova"
-    | "sage"
-    | "shimmer";
-  response_format?: "mp3" | "opus" | "aac" | "flac" | "wav" | "pcm";
-  speed?: number;
-  instructions?: string;
-}
-
-// Transcription request
-export interface OpenAiTranscribeRequest {
-  file: Blob;
-  model: string;
-  response_format?: string;
-  language?: string;
-  prompt?: string;
-  temperature?: number;
-}
-
-// Transcription response
-export interface OpenAiTranscribeResponse {
-  text: string;
-}
-
-// Translation request
-export interface OpenAiTranslateRequest {
-  file: Blob;
-  model: string;
-  response_format?: string;
-  prompt?: string;
-  temperature?: number;
-}
-
-// Translation response
-export interface OpenAiTranslateResponse {
-  text: string;
-}
-
-// Tool function definition
-export interface OpenAiToolFunction {
-  name: string;
-  description?: string;
-  parameters?: Record<string, unknown>;
-}
-
-// Tool definition
-export interface OpenAiTool {
-  type: "function";
-  function: OpenAiToolFunction;
-}
+// ---------------------------------------------------------------------------
+// Response types (hand-written — not schema-ified yet)
+// ---------------------------------------------------------------------------
 
 // Tool call in response
 export interface OpenAiToolCall {
@@ -103,24 +79,14 @@ export interface OpenAiUsage {
   total_tokens: number;
 }
 
-// Chat request
-export interface OpenAiChatRequest {
-  model?: string;
-  messages: OpenAiMessage[];
-  temperature?: number;
-  max_tokens?: number;
-  max_completion_tokens?: number;
-  tools?: OpenAiTool[];
-  tool_choice?:
-    | "auto"
-    | "none"
-    | { type: "function"; function: { name: string } };
-  response_format?: {
-    type: "text" | "json_object" | "json_schema";
-    json_schema?: Record<string, unknown>;
-  };
-  store?: boolean;
-  metadata?: Record<string, string>;
+// Transcription response
+export interface OpenAiTranscribeResponse {
+  text: string;
+}
+
+// Translation response
+export interface OpenAiTranslateResponse {
+  text: string;
 }
 
 // Chat response (raw API shape)
@@ -147,7 +113,6 @@ export interface OpenAiChatResponse {
 
 // --- Stored Chat Completions API types ---
 
-// List stored completions options
 export interface OpenAiStoredCompletionListOptions {
   after?: string;
   limit?: number;
@@ -155,7 +120,6 @@ export interface OpenAiStoredCompletionListOptions {
   metadata?: Record<string, string>;
 }
 
-// List stored completions response
 export interface OpenAiStoredCompletionListResponse {
   object: "list";
   data: OpenAiChatResponse[];
@@ -164,19 +128,12 @@ export interface OpenAiStoredCompletionListResponse {
   last_id: string;
 }
 
-// Delete stored completion response
 export interface OpenAiStoredCompletionDeleteResponse {
   id: string;
   object: "chat.completion.deleted";
   deleted: true;
 }
 
-// Update stored completion request
-export interface OpenAiStoredCompletionUpdateRequest {
-  metadata: Record<string, string>;
-}
-
-// Stored completion message
 export interface OpenAiStoredCompletionMessage {
   id: string;
   role: string;
@@ -186,29 +143,18 @@ export interface OpenAiStoredCompletionMessage {
   tool_calls?: OpenAiToolCall[] | null;
 }
 
-// List stored completion messages options
 export interface OpenAiStoredCompletionMessageListOptions {
   after?: string;
   limit?: number;
   order?: "asc" | "desc";
 }
 
-// List stored completion messages response
 export interface OpenAiStoredCompletionMessageListResponse {
   object: "list";
   data: OpenAiStoredCompletionMessage[];
   has_more: boolean;
   first_id: string;
   last_id: string;
-}
-
-// Embeddings request
-export interface OpenAiEmbeddingRequest {
-  input: string | string[] | number[] | number[][];
-  model: string;
-  encoding_format?: "float" | "base64";
-  dimensions?: number;
-  user?: string;
 }
 
 // Embeddings response
@@ -228,29 +174,6 @@ export interface OpenAiEmbeddingResponse {
   data: OpenAiEmbeddingData[];
   model: string;
   usage: OpenAiEmbeddingUsage;
-}
-
-// Image edit request
-export interface OpenAiImageEditRequest {
-  image: Blob | Blob[];
-  prompt: string;
-  mask?: Blob;
-  model?: string;
-  n?: number;
-  size?:
-    | "256x256"
-    | "512x512"
-    | "1024x1024"
-    | "1536x1024"
-    | "1024x1536"
-    | "auto";
-  quality?: "standard" | "low" | "medium" | "high" | "auto";
-  output_format?: "png" | "jpeg" | "webp";
-  response_format?: "url" | "b64_json";
-  background?: "transparent" | "opaque" | "auto";
-  input_fidelity?: "high" | "low";
-  output_compression?: number;
-  user?: string;
 }
 
 // Image edit response
@@ -284,22 +207,6 @@ export interface OpenAiImageEditResponse {
   usage?: OpenAiImageEditUsage | null;
 }
 
-// Image generation request
-export interface OpenAiImageGenerationRequest {
-  prompt: string;
-  model?: string;
-  n?: number;
-  size?: string;
-  quality?: string;
-  response_format?: "url" | "b64_json";
-  style?: "vivid" | "natural";
-  background?: "transparent" | "opaque" | "auto";
-  moderation?: "low" | "auto";
-  output_format?: "png" | "jpeg" | "webp";
-  output_compression?: number;
-  user?: string;
-}
-
 // Image generation response
 export interface OpenAiGeneratedImage {
   b64_json?: string;
@@ -323,144 +230,8 @@ export interface OpenAiImageGenerationResponse {
   usage?: OpenAiImageGenerationUsage;
 }
 
-// --- Responses API types ---
+// --- Responses API output types ---
 
-// Input content parts
-export interface OpenAiResponseInputTextContent {
-  type: "input_text";
-  text: string;
-}
-
-export interface OpenAiResponseInputImageContent {
-  type: "input_image";
-  image_url?: string;
-  file_id?: string;
-  detail?: "auto" | "low" | "high";
-}
-
-export interface OpenAiResponseInputAudioContent {
-  type: "input_audio";
-  data: string;
-  format: "wav" | "mp3";
-}
-
-export type OpenAiResponseInputContent =
-  | OpenAiResponseInputTextContent
-  | OpenAiResponseInputImageContent
-  | OpenAiResponseInputAudioContent;
-
-// Input items
-export interface OpenAiResponseInputMessage {
-  role: "user" | "assistant" | "system" | "developer";
-  content: string | OpenAiResponseInputContent[];
-}
-
-export interface OpenAiResponseFunctionCallOutput {
-  type: "function_call_output";
-  call_id: string;
-  output: string;
-}
-
-export interface OpenAiResponseItemReference {
-  type: "item_reference";
-  id: string;
-}
-
-export type OpenAiResponseInputItem =
-  | OpenAiResponseInputMessage
-  | OpenAiResponseFunctionCallOutput
-  | OpenAiResponseItemReference;
-
-// Tools for Responses API
-export interface OpenAiResponseFunctionTool {
-  type: "function";
-  name: string;
-  description?: string;
-  parameters?: Record<string, unknown>;
-  strict?: boolean;
-}
-
-export interface OpenAiResponseWebSearchTool {
-  type: "web_search_preview" | "web_search_preview_2025_03_11";
-  search_context_size?: "low" | "medium" | "high";
-  user_location?: {
-    type: "approximate";
-    city?: string;
-    state?: string;
-    country?: string;
-    timezone?: string;
-  };
-}
-
-export interface OpenAiResponseFileSearchTool {
-  type: "file_search";
-  vector_store_ids: string[];
-  max_num_results?: number;
-  ranking_options?: {
-    ranker?: string;
-    score_threshold?: number;
-  };
-}
-
-export interface OpenAiResponseCodeInterpreterTool {
-  type: "code_interpreter";
-}
-
-export type OpenAiResponseTool =
-  | OpenAiResponseFunctionTool
-  | OpenAiResponseWebSearchTool
-  | OpenAiResponseFileSearchTool
-  | OpenAiResponseCodeInterpreterTool;
-
-// Text format for structured output
-export interface OpenAiResponseTextFormat {
-  format:
-    | { type: "text" }
-    | { type: "json_object" }
-    | {
-        type: "json_schema";
-        name: string;
-        schema: Record<string, unknown>;
-        description?: string;
-        strict?: boolean;
-      };
-}
-
-// Reasoning config
-export interface OpenAiResponseReasoning {
-  effort?: "low" | "medium" | "high";
-  summary?: "auto" | "concise" | "detailed" | null;
-}
-
-// Responses API GET options
-export interface OpenAiResponseGetOptions {
-  include?: string[];
-  stream?: boolean;
-}
-
-// Responses API request
-export interface OpenAiResponseRequest {
-  model: string;
-  input: string | OpenAiResponseInputItem[];
-  instructions?: string;
-  temperature?: number;
-  max_output_tokens?: number;
-  top_p?: number;
-  tools?: OpenAiResponseTool[];
-  tool_choice?: "auto" | "none" | "required" | { type: string; name?: string };
-  previous_response_id?: string;
-  store?: boolean;
-  metadata?: Record<string, string>;
-  stream?: boolean;
-  text?: OpenAiResponseTextFormat;
-  truncation?: "auto" | "disabled";
-  reasoning?: OpenAiResponseReasoning;
-  user?: string;
-  include?: string[];
-  parallel_tool_calls?: boolean;
-}
-
-// Output content types
 export interface OpenAiResponseAnnotation {
   type: "url_citation" | "file_citation" | "file_path";
   start_index: number;
@@ -486,7 +257,6 @@ export type OpenAiResponseOutputContent =
   | OpenAiResponseOutputText
   | OpenAiResponseRefusal;
 
-// Output items
 export interface OpenAiResponseOutputMessage {
   type: "message";
   id: string;
@@ -550,6 +320,12 @@ export interface OpenAiResponseDeleteResponse {
   deleted: true;
 }
 
+// Responses API GET options
+export interface OpenAiResponseGetOptions {
+  include?: string[];
+  stream?: boolean;
+}
+
 // Responses API response
 export interface OpenAiResponseResponse {
   id: string;
@@ -578,12 +354,6 @@ export interface OpenAiResponseResponse {
   top_p?: number | null;
   max_output_tokens?: number | null;
   previous_response_id?: string | null;
-  reasoning?: OpenAiResponseReasoning | null;
-  text?: OpenAiResponseTextFormat;
-  tool_choice?: "auto" | "none" | "required" | { type: string; name?: string };
-  tools?: OpenAiResponseTool[];
-  truncation?: "auto" | "disabled";
-  parallel_tool_calls?: boolean;
 }
 
 // Responses API input_items list options
@@ -595,21 +365,14 @@ export interface OpenAiResponseInputItemsOptions {
 }
 
 // Responses API input_items list response
+import type { OpenAiResponseInputItem } from "./zod";
+
 export interface OpenAiResponseInputItemsResponse {
   object: "list";
   data: (OpenAiResponseInputItem | OpenAiResponseOutputItem)[];
   first_id: string;
   last_id: string;
   has_more: boolean;
-}
-
-// Responses API compact request
-export interface OpenAiResponseCompactRequest {
-  model: string;
-  input?: string | OpenAiResponseInputItem[] | null;
-  instructions?: string | null;
-  previous_response_id?: string | null;
-  prompt_cache_key?: string | null;
 }
 
 // Responses API compact response
@@ -621,106 +384,26 @@ export interface OpenAiResponseCompactResponse {
   usage?: OpenAiResponseUsage;
 }
 
-// Responses API input_tokens request
-export interface OpenAiResponseInputTokensRequest {
-  model?: string | null;
-  input?: string | OpenAiResponseInputItem[] | null;
-  instructions?: string | null;
-  conversation?: string | Record<string, unknown> | null;
-  previous_response_id?: string | null;
-  tools?: OpenAiResponseTool[] | null;
-  tool_choice?:
-    | "auto"
-    | "none"
-    | "required"
-    | { type: string; name?: string }
-    | null;
-  parallel_tool_calls?: boolean | null;
-  reasoning?: OpenAiResponseReasoning | null;
-  text?: OpenAiResponseTextFormat | null;
-  truncation?: "auto" | "disabled";
-}
-
 // Responses API input_tokens response
 export interface OpenAiResponseInputTokensResponse {
   object: "response.input_tokens";
   input_tokens: number;
 }
 
-// --- Fine-Tuning API types ---
+// --- Fine-Tuning API response types ---
 
-// Fine-tuning job error
 export interface OpenAiFineTuningJobError {
   code: string;
   message: string;
   param: string | null;
 }
 
-// Fine-tuning hyperparameters
-export interface OpenAiFineTuningHyperparameters {
-  batch_size?: "auto" | number | null;
-  learning_rate_multiplier?: "auto" | number | null;
-  n_epochs?: "auto" | number | null;
-}
+import type {
+  OpenAiFineTuningHyperparameters,
+  OpenAiFineTuningMethod,
+  OpenAiFineTuningIntegration,
+} from "./zod";
 
-// Fine-tuning method types
-export interface OpenAiFineTuningSupervisedHyperparameters {
-  batch_size?: "auto" | number;
-  learning_rate_multiplier?: "auto" | number;
-  n_epochs?: "auto" | number;
-}
-
-export interface OpenAiFineTuningSupervisedMethod {
-  hyperparameters?: OpenAiFineTuningSupervisedHyperparameters;
-}
-
-export interface OpenAiFineTuningDpoHyperparameters {
-  batch_size?: "auto" | number;
-  beta?: "auto" | number;
-  learning_rate_multiplier?: "auto" | number;
-  n_epochs?: "auto" | number;
-}
-
-export interface OpenAiFineTuningDpoMethod {
-  hyperparameters?: OpenAiFineTuningDpoHyperparameters;
-}
-
-export interface OpenAiFineTuningReinforcementHyperparameters {
-  batch_size?: "auto" | number;
-  compute_multiplier?: "auto" | number;
-  eval_interval?: "auto" | number;
-  eval_samples?: "auto" | number;
-  learning_rate_multiplier?: "auto" | number;
-  n_epochs?: "auto" | number;
-  reasoning_effort?: "default" | "low" | "medium" | "high";
-}
-
-export interface OpenAiFineTuningReinforcementMethod {
-  grader: Record<string, unknown>;
-  hyperparameters?: OpenAiFineTuningReinforcementHyperparameters;
-}
-
-export interface OpenAiFineTuningMethod {
-  type: "supervised" | "dpo" | "reinforcement";
-  supervised?: OpenAiFineTuningSupervisedMethod | null;
-  dpo?: OpenAiFineTuningDpoMethod | null;
-  reinforcement?: OpenAiFineTuningReinforcementMethod | null;
-}
-
-// Fine-tuning WandB integration
-export interface OpenAiFineTuningWandbConfig {
-  project: string;
-  entity?: string | null;
-  name?: string | null;
-  tags?: string[];
-}
-
-export interface OpenAiFineTuningIntegration {
-  type: "wandb";
-  wandb: OpenAiFineTuningWandbConfig;
-}
-
-// Fine-tuning job object (response)
 export interface OpenAiFineTuningJob {
   id: string;
   object: "fine_tuning.job";
@@ -749,34 +432,18 @@ export interface OpenAiFineTuningJob {
   method: OpenAiFineTuningMethod | null;
 }
 
-// Create fine-tuning job request
-export interface OpenAiFineTuningJobCreateRequest {
-  model: string;
-  training_file: string;
-  hyperparameters?: OpenAiFineTuningHyperparameters;
-  integrations?: OpenAiFineTuningIntegration[] | null;
-  metadata?: Record<string, string> | null;
-  method?: OpenAiFineTuningMethod;
-  seed?: number | null;
-  suffix?: string | null;
-  validation_file?: string | null;
-}
-
-// List fine-tuning jobs options
 export interface OpenAiFineTuningJobListOptions {
   after?: string;
   limit?: number;
   metadata?: Record<string, string>;
 }
 
-// List fine-tuning jobs response
 export interface OpenAiFineTuningJobListResponse {
   object: "list";
   data: OpenAiFineTuningJob[];
   has_more: boolean;
 }
 
-// Fine-tuning job event
 export interface OpenAiFineTuningJobEvent {
   id: string;
   object: "fine_tuning.job.event";
@@ -787,20 +454,17 @@ export interface OpenAiFineTuningJobEvent {
   type: "message" | "metrics" | null;
 }
 
-// List events options
 export interface OpenAiFineTuningJobEventListOptions {
   after?: string;
   limit?: number;
 }
 
-// List events response
 export interface OpenAiFineTuningJobEventListResponse {
   object: "list";
   data: OpenAiFineTuningJobEvent[];
   has_more: boolean;
 }
 
-// Fine-tuning job checkpoint metrics
 export interface OpenAiFineTuningCheckpointMetrics {
   full_valid_loss?: number | null;
   full_valid_mean_token_accuracy?: number | null;
@@ -811,7 +475,6 @@ export interface OpenAiFineTuningCheckpointMetrics {
   valid_mean_token_accuracy?: number | null;
 }
 
-// Fine-tuning job checkpoint
 export interface OpenAiFineTuningJobCheckpoint {
   id: string;
   object: "fine_tuning.job.checkpoint";
@@ -822,20 +485,17 @@ export interface OpenAiFineTuningJobCheckpoint {
   step_number: number;
 }
 
-// List checkpoints options
 export interface OpenAiFineTuningJobCheckpointListOptions {
   after?: string;
   limit?: number;
 }
 
-// List checkpoints response
 export interface OpenAiFineTuningJobCheckpointListResponse {
   object: "list";
   data: OpenAiFineTuningJobCheckpoint[];
   has_more: boolean;
 }
 
-// Checkpoint permission
 export interface OpenAiCheckpointPermission {
   id: string;
   object: "checkpoint.permission";
@@ -843,18 +503,11 @@ export interface OpenAiCheckpointPermission {
   project_id: string;
 }
 
-// Create checkpoint permissions request
-export interface OpenAiCheckpointPermissionCreateRequest {
-  project_ids: string[];
-}
-
-// Create checkpoint permissions response
 export interface OpenAiCheckpointPermissionCreateResponse {
   object: "list";
   data: OpenAiCheckpointPermission[];
 }
 
-// List checkpoint permissions options
 export interface OpenAiCheckpointPermissionListOptions {
   after?: string;
   limit?: number;
@@ -862,7 +515,6 @@ export interface OpenAiCheckpointPermissionListOptions {
   project_id?: string;
 }
 
-// List checkpoint permissions response
 export interface OpenAiCheckpointPermissionListResponse {
   object: "list";
   data: OpenAiCheckpointPermission[];
@@ -871,54 +523,14 @@ export interface OpenAiCheckpointPermissionListResponse {
   last_id: string | null;
 }
 
-// Delete checkpoint permission response
 export interface OpenAiCheckpointPermissionDeleteResponse {
   id: string;
   object: "checkpoint.permission";
   deleted: boolean;
 }
 
-// Models API types
-export interface OpenAiModel {
-  id: string;
-  object: "model";
-  created: number;
-  owned_by: string;
-}
+// --- Moderation response types ---
 
-export interface OpenAiModelListResponse {
-  object: "list";
-  data: OpenAiModel[];
-}
-
-export interface OpenAiModelDeleteResponse {
-  id: string;
-  object: "model";
-  deleted: boolean;
-}
-
-// Moderation input types
-export interface OpenAiModerationTextInput {
-  type: "text";
-  text: string;
-}
-
-export interface OpenAiModerationImageUrlInput {
-  type: "image_url";
-  image_url: { url: string };
-}
-
-export type OpenAiModerationMultiModalInput =
-  | OpenAiModerationTextInput
-  | OpenAiModerationImageUrlInput;
-
-// Moderation request
-export interface OpenAiModerationRequest {
-  input: string | string[] | OpenAiModerationMultiModalInput[];
-  model?: string;
-}
-
-// Moderation response
 export interface OpenAiModerationCategories {
   harassment: boolean;
   "harassment/threatening": boolean;
@@ -980,16 +592,14 @@ export interface OpenAiModerationResponse {
   results: OpenAiModerationResult[];
 }
 
-// --- Batches API types ---
+// --- Batches API response types ---
 
-// Batch request counts
 export interface OpenAiBatchRequestCounts {
   total: number;
   completed: number;
   failed: number;
 }
 
-// Batch errors
 export interface OpenAiBatchError {
   code: string;
   message: string;
@@ -1002,21 +612,6 @@ export interface OpenAiBatchErrors {
   data: OpenAiBatchError[];
 }
 
-// Batch create request
-export interface OpenAiBatchCreateRequest {
-  input_file_id: string;
-  endpoint: string;
-  completion_window: string;
-  metadata?: Record<string, string> | null;
-}
-
-// Batch list query params
-export interface OpenAiBatchListParams {
-  after?: string;
-  limit?: number;
-}
-
-// Batch object
 export interface OpenAiBatch {
   id: string;
   object: "batch";
@@ -1048,7 +643,11 @@ export interface OpenAiBatch {
   metadata?: Record<string, string> | null;
 }
 
-// Batch list response
+export interface OpenAiBatchListParams {
+  after?: string;
+  limit?: number;
+}
+
 export interface OpenAiBatchListResponse {
   object: "list";
   data: OpenAiBatch[];
@@ -1057,7 +656,8 @@ export interface OpenAiBatchListResponse {
   last_id?: string;
 }
 
-// Files API types
+// --- Files API response types ---
+
 export interface OpenAiFile {
   id: string;
   object: "file";
@@ -1093,56 +693,59 @@ export interface OpenAiFileListResponse {
   has_more: boolean;
 }
 
-export interface OpenAiFileUploadRequest {
-  file: Blob;
-  purpose:
-    | "assistants"
-    | "batch"
-    | "fine-tune"
-    | "vision"
-    | "user_data"
-    | "evals";
-  expires_after?: {
-    anchor: "created_at";
-    seconds: number;
-  };
-}
-
 export interface OpenAiFileDeleteResponse {
   id: string;
   object: "file";
   deleted: boolean;
 }
 
-// Payload schema types
-export interface PayloadFieldSchema {
-  type: "string" | "number" | "boolean" | "array" | "object";
-  required?: boolean;
-  description?: string;
-  enum?: readonly (string | number | boolean)[];
-  items?: PayloadFieldSchema;
-  properties?: Record<string, PayloadFieldSchema>;
+// --- Models API types ---
+
+export interface OpenAiModel {
+  id: string;
+  object: "model";
+  created: number;
+  owned_by: string;
 }
 
-export interface PayloadSchema {
-  method: "POST" | "DELETE";
-  path: string;
-  contentType: "application/json" | "multipart/form-data";
-  fields: Record<string, PayloadFieldSchema>;
+export interface OpenAiModelListResponse {
+  object: "list";
+  data: OpenAiModel[];
 }
 
-export interface ValidationResult {
-  valid: boolean;
-  errors: string[];
+export interface OpenAiModelDeleteResponse {
+  id: string;
+  object: "model";
+  deleted: boolean;
 }
 
-// --- POST v1 namespace types ---
+// ---------------------------------------------------------------------------
+// Method interface types (endpoint shapes with .schema)
+// ---------------------------------------------------------------------------
 
 // POST /v1/chat/completions (create)
 // POST /v1/chat/completions/{id} (update) - overload by arity
+import type {
+  OpenAiChatRequest,
+  OpenAiStoredCompletionUpdateRequest,
+  OpenAiSpeechRequest,
+  OpenAiTranscribeRequest,
+  OpenAiTranslateRequest,
+  OpenAiEmbeddingRequest,
+  OpenAiImageEditRequest,
+  OpenAiImageGenerationRequest,
+  OpenAiModerationRequest,
+  OpenAiFileUploadRequest,
+  OpenAiBatchCreateRequest,
+  OpenAiResponseRequest,
+  OpenAiResponseCompactRequest,
+  OpenAiResponseInputTokensRequest,
+  OpenAiFineTuningJobCreateRequest,
+  OpenAiCheckpointPermissionCreateRequest,
+} from "./zod";
+
 interface OpenAiPostV1ChatCompletionsBase {
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<OpenAiChatRequest>;
 }
 
 export interface OpenAiPostV1ChatCompletions extends OpenAiPostV1ChatCompletionsBase {
@@ -1154,166 +757,128 @@ export interface OpenAiPostV1ChatCompletions extends OpenAiPostV1ChatCompletions
   ): Promise<OpenAiChatResponse>;
 }
 
-// POST /v1/embeddings
 export interface OpenAiPostV1Embeddings {
   (
     req: OpenAiEmbeddingRequest,
     signal?: AbortSignal
   ): Promise<OpenAiEmbeddingResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<OpenAiEmbeddingRequest>;
 }
 
-// POST /v1/audio/speech
 export interface OpenAiPostV1AudioSpeech {
   (req: OpenAiSpeechRequest, signal?: AbortSignal): Promise<ArrayBuffer>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<OpenAiSpeechRequest>;
 }
 
-// POST /v1/audio/transcriptions
 export interface OpenAiPostV1AudioTranscriptions {
   (
     req: OpenAiTranscribeRequest,
     signal?: AbortSignal
   ): Promise<OpenAiTranscribeResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<OpenAiTranscribeRequest>;
 }
 
-// POST /v1/audio/translations
 export interface OpenAiPostV1AudioTranslations {
   (
     req: OpenAiTranslateRequest,
     signal?: AbortSignal
   ): Promise<OpenAiTranslateResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<OpenAiTranslateRequest>;
 }
 
-// POST /v1/images/generations
 export interface OpenAiPostV1ImagesGenerations {
   (
     req: OpenAiImageGenerationRequest,
     signal?: AbortSignal
   ): Promise<OpenAiImageGenerationResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<OpenAiImageGenerationRequest>;
 }
 
-// POST /v1/images/edits
 export interface OpenAiPostV1ImagesEdits {
   (
     req: OpenAiImageEditRequest,
     signal?: AbortSignal
   ): Promise<OpenAiImageEditResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<OpenAiImageEditRequest>;
 }
 
-// POST /v1/files (upload)
 export interface OpenAiPostV1Files {
   (req: OpenAiFileUploadRequest, signal?: AbortSignal): Promise<OpenAiFile>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<OpenAiFileUploadRequest>;
 }
 
-// POST /v1/moderations
 export interface OpenAiPostV1Moderations {
   (
     req: OpenAiModerationRequest,
     signal?: AbortSignal
   ): Promise<OpenAiModerationResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<OpenAiModerationRequest>;
 }
 
-// POST /v1/responses
 export interface OpenAiPostV1Responses {
   (
     req: OpenAiResponseRequest,
     signal?: AbortSignal
   ): Promise<OpenAiResponseResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<OpenAiResponseRequest>;
 }
 
-// POST /v1/responses/compact
 export interface OpenAiPostV1ResponsesCompact {
   (
     req: OpenAiResponseCompactRequest,
     signal?: AbortSignal
   ): Promise<OpenAiResponseCompactResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<OpenAiResponseCompactRequest>;
 }
 
-// POST /v1/responses/input_tokens
 export interface OpenAiPostV1ResponsesInputTokens {
   (
     req: OpenAiResponseInputTokensRequest,
     signal?: AbortSignal
   ): Promise<OpenAiResponseInputTokensResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<OpenAiResponseInputTokensRequest>;
 }
 
-// POST /v1/responses/{id}/cancel
 export interface OpenAiPostV1ResponsesCancel {
   (id: string, signal?: AbortSignal): Promise<OpenAiResponseResponse>;
-  payloadSchema: PayloadSchema;
 }
 
-// POST /v1/batches
 export interface OpenAiPostV1Batches {
   (req: OpenAiBatchCreateRequest, signal?: AbortSignal): Promise<OpenAiBatch>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<OpenAiBatchCreateRequest>;
 }
 
-// POST /v1/batches/{id}/cancel
 export interface OpenAiPostV1BatchesCancel {
   (id: string, signal?: AbortSignal): Promise<OpenAiBatch>;
-  payloadSchema: PayloadSchema;
 }
 
-// POST /v1/fine_tuning/jobs
 export interface OpenAiPostV1FineTuningJobs {
   (
     req: OpenAiFineTuningJobCreateRequest,
     signal?: AbortSignal
   ): Promise<OpenAiFineTuningJob>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<OpenAiFineTuningJobCreateRequest>;
 }
 
-// POST /v1/fine_tuning/jobs/{id}/cancel
 export interface OpenAiPostV1FineTuningJobsCancel {
   (id: string, signal?: AbortSignal): Promise<OpenAiFineTuningJob>;
-  payloadSchema: PayloadSchema;
 }
 
-// POST /v1/fine_tuning/jobs/{id}/pause
 export interface OpenAiPostV1FineTuningJobsPause {
   (id: string, signal?: AbortSignal): Promise<OpenAiFineTuningJob>;
-  payloadSchema: PayloadSchema;
 }
 
-// POST /v1/fine_tuning/jobs/{id}/resume
 export interface OpenAiPostV1FineTuningJobsResume {
   (id: string, signal?: AbortSignal): Promise<OpenAiFineTuningJob>;
-  payloadSchema: PayloadSchema;
 }
 
-// POST /v1/fine_tuning/checkpoints/{id}/permissions
 export interface OpenAiPostV1FineTuningCheckpointsPermissions {
   (
     checkpoint: string,
     req: OpenAiCheckpointPermissionCreateRequest,
     signal?: AbortSignal
   ): Promise<OpenAiCheckpointPermissionCreateResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<OpenAiCheckpointPermissionCreateRequest>;
 }
 
 // Audio namespace for POST v1
@@ -1340,8 +905,7 @@ export interface OpenAiPostV1ResponsesNamespace {
     req: OpenAiResponseRequest,
     signal?: AbortSignal
   ): Promise<OpenAiResponseResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<OpenAiResponseRequest>;
   compact: OpenAiPostV1ResponsesCompact;
   inputTokens: OpenAiPostV1ResponsesInputTokens;
   cancel: OpenAiPostV1ResponsesCancel;
@@ -1376,8 +940,6 @@ export interface OpenAiPostV1Namespace {
 
 // --- GET v1 namespace types ---
 
-// GET /v1/chat/completions (list stored)
-// GET /v1/chat/completions/{id} (retrieve) - overload by arity
 export interface OpenAiGetV1ChatCompletions {
   (
     opts?: OpenAiStoredCompletionListOptions,
@@ -1386,7 +948,6 @@ export interface OpenAiGetV1ChatCompletions {
   (id: string, signal?: AbortSignal): Promise<OpenAiChatResponse>;
 }
 
-// GET /v1/chat/completions/{id}/messages
 export interface OpenAiGetV1ChatCompletionsMessages {
   (
     id: string,
@@ -1395,8 +956,6 @@ export interface OpenAiGetV1ChatCompletionsMessages {
   ): Promise<OpenAiStoredCompletionMessageListResponse>;
 }
 
-// GET /v1/files (list)
-// GET /v1/files/{id} (retrieve) - overload by arity
 export interface OpenAiGetV1Files {
   (
     opts?: OpenAiFileListRequest,
@@ -1405,19 +964,15 @@ export interface OpenAiGetV1Files {
   (id: string, signal?: AbortSignal): Promise<OpenAiFile>;
 }
 
-// GET /v1/files/{id}/content
 export interface OpenAiGetV1FilesContent {
   (id: string, signal?: AbortSignal): Promise<string>;
 }
 
-// GET /v1/models (list)
-// GET /v1/models/{id} (retrieve) - overload by arity
 export interface OpenAiGetV1Models {
   (signal?: AbortSignal): Promise<OpenAiModelListResponse>;
   (id: string, signal?: AbortSignal): Promise<OpenAiModel>;
 }
 
-// GET /v1/responses/{id}
 export interface OpenAiGetV1Responses {
   (
     id: string,
@@ -1426,7 +981,6 @@ export interface OpenAiGetV1Responses {
   ): Promise<OpenAiResponseResponse>;
 }
 
-// GET /v1/responses/{id}/input_items
 export interface OpenAiGetV1ResponsesInputItems {
   (
     id: string,
@@ -1435,8 +989,6 @@ export interface OpenAiGetV1ResponsesInputItems {
   ): Promise<OpenAiResponseInputItemsResponse>;
 }
 
-// GET /v1/batches (list)
-// GET /v1/batches/{id} (retrieve) - overload by arity
 export interface OpenAiGetV1Batches {
   (
     opts?: OpenAiBatchListParams,
@@ -1445,8 +997,6 @@ export interface OpenAiGetV1Batches {
   (id: string, signal?: AbortSignal): Promise<OpenAiBatch>;
 }
 
-// GET /v1/fine_tuning/jobs (list)
-// GET /v1/fine_tuning/jobs/{id} (retrieve) - overload by arity
 export interface OpenAiGetV1FineTuningJobs {
   (
     opts?: OpenAiFineTuningJobListOptions,
@@ -1455,7 +1005,6 @@ export interface OpenAiGetV1FineTuningJobs {
   (id: string, signal?: AbortSignal): Promise<OpenAiFineTuningJob>;
 }
 
-// GET /v1/fine_tuning/jobs/{id}/events
 export interface OpenAiGetV1FineTuningJobsEvents {
   (
     id: string,
@@ -1464,7 +1013,6 @@ export interface OpenAiGetV1FineTuningJobsEvents {
   ): Promise<OpenAiFineTuningJobEventListResponse>;
 }
 
-// GET /v1/fine_tuning/jobs/{id}/checkpoints
 export interface OpenAiGetV1FineTuningJobsCheckpoints {
   (
     id: string,
@@ -1473,7 +1021,6 @@ export interface OpenAiGetV1FineTuningJobsCheckpoints {
   ): Promise<OpenAiFineTuningJobCheckpointListResponse>;
 }
 
-// GET /v1/fine_tuning/checkpoints/{id}/permissions
 export interface OpenAiGetV1FineTuningCheckpointsPermissions {
   (
     checkpoint: string,
@@ -1482,13 +1029,11 @@ export interface OpenAiGetV1FineTuningCheckpointsPermissions {
   ): Promise<OpenAiCheckpointPermissionListResponse>;
 }
 
-// Chat namespace for GET v1
 export interface OpenAiGetV1ChatNamespace {
   completions: OpenAiGetV1ChatCompletions;
   completionsMessages: OpenAiGetV1ChatCompletionsMessages;
 }
 
-// Files namespace for GET v1
 export interface OpenAiGetV1FilesNamespace {
   (
     opts?: OpenAiFileListRequest,
@@ -1498,13 +1043,11 @@ export interface OpenAiGetV1FilesNamespace {
   content: OpenAiGetV1FilesContent;
 }
 
-// Models namespace for GET v1
 export interface OpenAiGetV1ModelsNamespace {
   (signal?: AbortSignal): Promise<OpenAiModelListResponse>;
   (id: string, signal?: AbortSignal): Promise<OpenAiModel>;
 }
 
-// Responses namespace for GET v1
 export interface OpenAiGetV1ResponsesNamespace {
   (
     id: string,
@@ -1514,7 +1057,6 @@ export interface OpenAiGetV1ResponsesNamespace {
   inputItems: OpenAiGetV1ResponsesInputItems;
 }
 
-// Batches namespace for GET v1
 export interface OpenAiGetV1BatchesNamespace {
   (
     opts?: OpenAiBatchListParams,
@@ -1523,7 +1065,6 @@ export interface OpenAiGetV1BatchesNamespace {
   (id: string, signal?: AbortSignal): Promise<OpenAiBatch>;
 }
 
-// Fine-tuning namespace for GET v1
 export interface OpenAiGetV1FineTuningNamespace {
   jobs: OpenAiGetV1FineTuningJobs & {
     events: OpenAiGetV1FineTuningJobsEvents;
@@ -1534,7 +1075,6 @@ export interface OpenAiGetV1FineTuningNamespace {
   };
 }
 
-// GET v1 namespace
 export interface OpenAiGetV1Namespace {
   chat: OpenAiGetV1ChatNamespace;
   files: OpenAiGetV1FilesNamespace;
@@ -1546,34 +1086,25 @@ export interface OpenAiGetV1Namespace {
 
 // --- DELETE v1 namespace types ---
 
-// DELETE /v1/chat/completions/{id}
 export interface OpenAiDeleteV1ChatCompletions {
   (
     id: string,
     signal?: AbortSignal
   ): Promise<OpenAiStoredCompletionDeleteResponse>;
-  payloadSchema: PayloadSchema;
 }
 
-// DELETE /v1/files/{id}
 export interface OpenAiDeleteV1Files {
   (id: string, signal?: AbortSignal): Promise<OpenAiFileDeleteResponse>;
-  payloadSchema: PayloadSchema;
 }
 
-// DELETE /v1/models/{id}
 export interface OpenAiDeleteV1Models {
   (id: string, signal?: AbortSignal): Promise<OpenAiModelDeleteResponse>;
-  payloadSchema: PayloadSchema;
 }
 
-// DELETE /v1/responses/{id}
 export interface OpenAiDeleteV1Responses {
   (id: string, signal?: AbortSignal): Promise<OpenAiResponseDeleteResponse>;
-  payloadSchema: PayloadSchema;
 }
 
-// DELETE /v1/fine_tuning/checkpoints/{id}/permissions/{permId}
 export interface OpenAiDeleteV1FineTuningCheckpointsPermissions {
   (
     checkpoint: string,
@@ -1582,37 +1113,28 @@ export interface OpenAiDeleteV1FineTuningCheckpointsPermissions {
   ): Promise<OpenAiCheckpointPermissionDeleteResponse>;
 }
 
-// Chat namespace for DELETE v1
 export interface OpenAiDeleteV1ChatNamespace {
   completions: OpenAiDeleteV1ChatCompletions;
 }
 
-// Files namespace for DELETE v1
 export interface OpenAiDeleteV1FilesNamespace {
   (id: string, signal?: AbortSignal): Promise<OpenAiFileDeleteResponse>;
-  payloadSchema: PayloadSchema;
 }
 
-// Models namespace for DELETE v1
 export interface OpenAiDeleteV1ModelsNamespace {
   (id: string, signal?: AbortSignal): Promise<OpenAiModelDeleteResponse>;
-  payloadSchema: PayloadSchema;
 }
 
-// Responses namespace for DELETE v1
 export interface OpenAiDeleteV1ResponsesNamespace {
   (id: string, signal?: AbortSignal): Promise<OpenAiResponseDeleteResponse>;
-  payloadSchema: PayloadSchema;
 }
 
-// Fine-tuning namespace for DELETE v1
 export interface OpenAiDeleteV1FineTuningNamespace {
   checkpoints: {
     permissions: OpenAiDeleteV1FineTuningCheckpointsPermissions;
   };
 }
 
-// DELETE v1 namespace
 export interface OpenAiDeleteV1Namespace {
   chat: OpenAiDeleteV1ChatNamespace;
   files: OpenAiDeleteV1FilesNamespace;

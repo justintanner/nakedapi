@@ -74,41 +74,31 @@ describe("openai stored completions integration", () => {
 });
 
 describe("openai stored completions payload validation", () => {
-  it("should expose payloadSchema on post method", () => {
+  it("should expose schema on post method", () => {
     const provider = openai({ apiKey: "sk-test-key" });
-    const schema = provider.post.v1.chat.completions.payloadSchema;
-    expect(schema.method).toBe("POST");
-    expect(schema.path).toBe("/chat/completions");
-    expect(schema.fields.metadata.type).toBe("object");
+    expect(provider.post.v1.chat.completions.schema).toBeDefined();
+    expect(typeof provider.post.v1.chat.completions.schema.safeParse).toBe(
+      "function"
+    );
   });
 
   it("should validate a valid chat completion payload", () => {
     const provider = openai({ apiKey: "sk-test-key" });
-    const result = provider.post.v1.chat.completions.validatePayload({
+    const result = provider.post.v1.chat.completions.schema.safeParse({
       messages: [{ role: "user", content: "Hello" }],
     });
-    expect(result.valid).toBe(true);
-    expect(result.errors).toHaveLength(0);
+    expect(result.success).toBe(true);
   });
 
   it("should reject payload missing messages", () => {
     const provider = openai({ apiKey: "sk-test-key" });
-    const result = provider.post.v1.chat.completions.validatePayload({});
-    expect(result.valid).toBe(false);
-    expect(result.errors.length).toBeGreaterThan(0);
+    const result = provider.post.v1.chat.completions.schema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.length).toBeGreaterThan(0);
   });
 
-  it("should expose payloadSchema on del method", () => {
+  it("should expose delete endpoint as a plain function", () => {
     const provider = openai({ apiKey: "sk-test-key" });
-    const schema = provider.delete.v1.chat.completions.payloadSchema;
-    expect(schema.method).toBe("DELETE");
-    expect(schema.path).toBe("/chat/completions/{completion_id}");
-  });
-
-  it("should expose store field in chat completions schema", () => {
-    const provider = openai({ apiKey: "sk-test-key" });
-    const schema = provider.post.v1.chat.completions.payloadSchema;
-    expect(schema.fields.store.type).toBe("boolean");
-    expect(schema.fields.metadata.type).toBe("object");
+    expect(typeof provider.delete.v1.chat.completions).toBe("function");
   });
 });

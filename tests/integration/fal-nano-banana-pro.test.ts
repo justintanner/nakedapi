@@ -33,9 +33,7 @@ describe("fal nano-banana-pro text-to-image integration", () => {
     expect(Array.isArray(result.images)).toBe(true);
     expect(result.images.length).toBeGreaterThan(0);
     expect(result.images[0].content_type).toBe("image/png");
-    expect(result.images[0].file_name).toBe(
-      "nano-banana-pro-t2i-output.png"
-    );
+    expect(result.images[0].file_name).toBe("nano-banana-pro-t2i-output.png");
     expect(typeof result.images[0].url).toBe("string");
     expect(result.images[0].url.startsWith("http")).toBe(true);
     expect(typeof result.description).toBe("string");

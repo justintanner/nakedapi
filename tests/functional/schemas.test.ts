@@ -7,28 +7,22 @@ import {
   embeddingsSchema as kimiEmbeddingsSchema,
 } from "../../packages/provider/kimicoding/src/schemas";
 import {
-  chatCompletionsSchema as openaiChatSchema,
-  embeddingsSchema,
-  imageEditsSchema as openaiImageEditsSchema,
-  imageGenerationsSchema,
-  audioTranscriptionsSchema,
-  audioTranslationsSchema,
-  responsesSchema,
-  filesUploadSchema as openaiFilesUploadSchema,
-  modelsDeleteSchema,
-  batchesCreateSchema as openaiBatchesCreateSchema,
-  batchesCancelSchema,
-  audioSpeechSchema,
-  moderationsSchema,
-  responsesCancelSchema,
-  responsesCompactSchema,
-  fineTuningJobsCreateSchema,
-  checkpointPermissionsCreateSchema,
-  filesDeleteSchema,
-  responsesDeleteSchema,
-  responsesInputTokensSchema,
-  storedCompletionsDeleteSchema,
-} from "../../packages/provider/openai/src/schemas";
+  OpenAiChatRequestSchema,
+  OpenAiEmbeddingRequestSchema,
+  OpenAiImageEditRequestSchema,
+  OpenAiImageGenerationRequestSchema,
+  OpenAiTranscribeRequestSchema,
+  OpenAiTranslateRequestSchema,
+  OpenAiResponseRequestSchema,
+  OpenAiFileUploadRequestSchema,
+  OpenAiBatchCreateRequestSchema,
+  OpenAiSpeechRequestSchema,
+  OpenAiModerationRequestSchema,
+  OpenAiResponseCompactRequestSchema,
+  OpenAiFineTuningJobCreateRequestSchema,
+  OpenAiCheckpointPermissionCreateRequestSchema,
+  OpenAiResponseInputTokensRequestSchema,
+} from "../../packages/provider/openai/src/zod";
 import {
   chatCompletionsSchema as xaiChatSchema,
   imageGenerationsSchema as xaiImageGenSchema,
@@ -80,16 +74,10 @@ import {
 import { validatePayload } from "../../packages/provider/kimicoding/src/validate";
 
 describe("schema structure", () => {
-  const allSchemas = [
+  // Non-OpenAI providers still use PayloadSchema with method/path/contentType/fields
+  const payloadSchemas = [
     { name: "kimicoding/messages", schema: messagesSchema },
     { name: "kimicoding/embeddings", schema: kimiEmbeddingsSchema },
-    { name: "openai/chat", schema: openaiChatSchema },
-    { name: "openai/embeddings", schema: embeddingsSchema },
-    { name: "openai/imageEdits", schema: openaiImageEditsSchema },
-    { name: "openai/imageGenerations", schema: imageGenerationsSchema },
-    { name: "openai/audioTranscriptions", schema: audioTranscriptionsSchema },
-    { name: "openai/audioTranslations", schema: audioTranslationsSchema },
-    { name: "openai/responses", schema: responsesSchema },
     { name: "xai/chat", schema: xaiChatSchema },
     { name: "xai/imageGen", schema: xaiImageGenSchema },
     { name: "xai/imageEdits", schema: xaiImageEditsSchema },
@@ -104,17 +92,6 @@ describe("schema structure", () => {
     { name: "xai/documentSearch", schema: documentSearchSchema },
     { name: "xai/responses", schema: xaiResponsesSchema },
     { name: "xai/responsesDelete", schema: xaiResponsesDeleteSchema },
-    { name: "openai/responsesDelete", schema: responsesDeleteSchema },
-    { name: "openai/responsesInputTokens", schema: responsesInputTokensSchema },
-    { name: "openai/filesDelete", schema: filesDeleteSchema },
-    {
-      name: "openai/storedCompletionsDelete",
-      schema: storedCompletionsDeleteSchema,
-    },
-    {
-      name: "openai/checkpointPermissionsCreate",
-      schema: checkpointPermissionsCreateSchema,
-    },
     { name: "fal/queueSubmit", schema: queueSubmitSchema },
     { name: "fal/logsStream", schema: logsStreamSchema },
     { name: "fal/filesUploadUrl", schema: filesUploadUrlSchema },
@@ -132,7 +109,7 @@ describe("schema structure", () => {
     { name: "kie/claudeMessages", schema: claudeMessagesSchema },
   ];
 
-  for (const { name, schema } of allSchemas) {
+  for (const { name, schema } of payloadSchemas) {
     it(`${name} has valid method`, () => {
       expect(["POST", "PUT", "DELETE"]).toContain(schema.method);
     });
@@ -150,6 +127,53 @@ describe("schema structure", () => {
     it(`${name} has fields object`, () => {
       expect(typeof schema.fields).toBe("object");
       expect(Object.keys(schema.fields).length).toBeGreaterThan(0);
+    });
+  }
+
+  // OpenAI uses Zod schemas — verify they expose safeParse
+  const zodSchemas = [
+    { name: "openai/chat", schema: OpenAiChatRequestSchema },
+    { name: "openai/embeddings", schema: OpenAiEmbeddingRequestSchema },
+    { name: "openai/imageEdits", schema: OpenAiImageEditRequestSchema },
+    {
+      name: "openai/imageGenerations",
+      schema: OpenAiImageGenerationRequestSchema,
+    },
+    {
+      name: "openai/audioTranscriptions",
+      schema: OpenAiTranscribeRequestSchema,
+    },
+    { name: "openai/audioTranslations", schema: OpenAiTranslateRequestSchema },
+    { name: "openai/responses", schema: OpenAiResponseRequestSchema },
+    { name: "openai/filesUpload", schema: OpenAiFileUploadRequestSchema },
+    { name: "openai/batchesCreate", schema: OpenAiBatchCreateRequestSchema },
+    { name: "openai/audioSpeech", schema: OpenAiSpeechRequestSchema },
+    { name: "openai/moderations", schema: OpenAiModerationRequestSchema },
+    {
+      name: "openai/responsesCompact",
+      schema: OpenAiResponseCompactRequestSchema,
+    },
+    {
+      name: "openai/fineTuningJobsCreate",
+      schema: OpenAiFineTuningJobCreateRequestSchema,
+    },
+    {
+      name: "openai/checkpointPermissionsCreate",
+      schema: OpenAiCheckpointPermissionCreateRequestSchema,
+    },
+    {
+      name: "openai/responsesInputTokens",
+      schema: OpenAiResponseInputTokensRequestSchema,
+    },
+  ];
+
+  for (const { name, schema } of zodSchemas) {
+    it(`${name} exposes safeParse`, () => {
+      expect(typeof schema.safeParse).toBe("function");
+    });
+
+    it(`${name} exposes parse`, () => {
+      expect(typeof schema.parse).toBe("function");
     });
   }
 });
@@ -191,36 +215,36 @@ describe("schema + validatePayload integration", () => {
   });
 
   it("openai chat: accepts valid request", () => {
-    const result = validatePayload(
-      { messages: [{ role: "user", content: "hi" }] },
-      openaiChatSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = OpenAiChatRequestSchema.safeParse({
+      messages: [{ role: "user", content: "hi" }],
+    });
+    expect(result.success).toBe(true);
   });
 
   it("openai embeddings: accepts valid request", () => {
-    const result = validatePayload(
-      { model: "text-embedding-3-small", input: "hello" },
-      embeddingsSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = OpenAiEmbeddingRequestSchema.safeParse({
+      model: "text-embedding-3-small",
+      input: "hello",
+    });
+    expect(result.success).toBe(true);
   });
 
   it("openai embeddings: rejects missing input", () => {
-    const result = validatePayload(
-      { model: "text-embedding-3-small" },
-      embeddingsSchema
+    const result = OpenAiEmbeddingRequestSchema.safeParse({
+      model: "text-embedding-3-small",
+    });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("input"))).toBe(
+      true
     );
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("input is required");
   });
 
   it("openai responses: accepts valid request", () => {
-    const result = validatePayload(
-      { model: "gpt-4o", input: "What is 2+2?" },
-      responsesSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = OpenAiResponseRequestSchema.safeParse({
+      model: "gpt-4o",
+      input: "What is 2+2?",
+    });
+    expect(result.success).toBe(true);
   });
 
   it("xai chat: accepts valid request", () => {
@@ -337,130 +361,91 @@ describe("schema + validatePayload integration", () => {
   });
 
   it("openai filesUpload: accepts valid request", () => {
-    const result = validatePayload(
-      { file: {}, purpose: "assistants" },
-      openaiFilesUploadSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = OpenAiFileUploadRequestSchema.safeParse({
+      file: new Blob(["test"]),
+      purpose: "assistants",
+    });
+    expect(result.success).toBe(true);
   });
 
   it("openai filesUpload: rejects missing required fields", () => {
-    const result = validatePayload({}, openaiFilesUploadSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("file is required");
-    expect(result.errors).toContain("purpose is required");
-  });
-
-  it("openai modelsDelete: accepts valid request", () => {
-    const result = validatePayload(
-      { model: "ft:gpt-4o-2024-08-06:org:custom" },
-      modelsDeleteSchema
-    );
-    expect(result.valid).toBe(true);
-  });
-
-  it("openai modelsDelete: rejects missing model", () => {
-    const result = validatePayload({}, modelsDeleteSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("model is required");
+    const result = OpenAiFileUploadRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.length).toBeGreaterThanOrEqual(2);
   });
 
   it("openai batchesCreate: accepts valid request", () => {
-    const result = validatePayload(
-      {
-        input_file_id: "file-123",
-        endpoint: "/v1/chat/completions",
-        completion_window: "24h",
-      },
-      openaiBatchesCreateSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = OpenAiBatchCreateRequestSchema.safeParse({
+      input_file_id: "file-123",
+      endpoint: "/v1/chat/completions",
+      completion_window: "24h",
+    });
+    expect(result.success).toBe(true);
   });
 
   it("openai batchesCreate: rejects missing required fields", () => {
-    const result = validatePayload({}, openaiBatchesCreateSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("input_file_id is required");
-    expect(result.errors).toContain("endpoint is required");
-    expect(result.errors).toContain("completion_window is required");
-  });
-
-  it("openai batchesCancel: accepts valid request", () => {
-    const result = validatePayload(
-      { batch_id: "batch-123" },
-      batchesCancelSchema
-    );
-    expect(result.valid).toBe(true);
-  });
-
-  it("openai batchesCancel: rejects missing batch_id", () => {
-    const result = validatePayload({}, batchesCancelSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("batch_id is required");
+    const result = OpenAiBatchCreateRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.length).toBeGreaterThanOrEqual(3);
   });
 
   it("openai audioSpeech: accepts valid request", () => {
-    const result = validatePayload(
-      { model: "tts-1", input: "Hello world", voice: "alloy" },
-      audioSpeechSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = OpenAiSpeechRequestSchema.safeParse({
+      model: "tts-1",
+      input: "Hello world",
+      voice: "alloy",
+    });
+    expect(result.success).toBe(true);
   });
 
   it("openai audioSpeech: rejects missing required fields", () => {
-    const result = validatePayload({}, audioSpeechSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("model is required");
-    expect(result.errors).toContain("input is required");
-    expect(result.errors).toContain("voice is required");
+    const result = OpenAiSpeechRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.length).toBeGreaterThanOrEqual(3);
   });
 
   it("openai moderations: accepts valid request", () => {
-    const result = validatePayload({ input: "Hello world" }, moderationsSchema);
-    expect(result.valid).toBe(true);
+    const result = OpenAiModerationRequestSchema.safeParse({
+      input: "Hello world",
+    });
+    expect(result.success).toBe(true);
   });
 
   it("openai moderations: rejects missing input", () => {
-    const result = validatePayload({}, moderationsSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("input is required");
-  });
-
-  it("openai responsesCancel: accepts valid request", () => {
-    const result = validatePayload({ id: "resp-123" }, responsesCancelSchema);
-    expect(result.valid).toBe(true);
-  });
-
-  it("openai responsesCancel: rejects missing id", () => {
-    const result = validatePayload({}, responsesCancelSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("id is required");
+    const result = OpenAiModerationRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("input"))).toBe(
+      true
+    );
   });
 
   it("openai responsesCompact: accepts valid request", () => {
-    const result = validatePayload({ model: "gpt-4o" }, responsesCompactSchema);
-    expect(result.valid).toBe(true);
+    const result = OpenAiResponseCompactRequestSchema.safeParse({
+      model: "gpt-4o",
+    });
+    expect(result.success).toBe(true);
   });
 
   it("openai responsesCompact: rejects missing model", () => {
-    const result = validatePayload({}, responsesCompactSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("model is required");
+    const result = OpenAiResponseCompactRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("model"))).toBe(
+      true
+    );
   });
 
   it("openai fineTuningJobsCreate: accepts valid request", () => {
-    const result = validatePayload(
-      { model: "gpt-4o", training_file: "file-123" },
-      fineTuningJobsCreateSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = OpenAiFineTuningJobCreateRequestSchema.safeParse({
+      model: "gpt-4o",
+      training_file: "file-123",
+    });
+    expect(result.success).toBe(true);
   });
 
   it("openai fineTuningJobsCreate: rejects missing required fields", () => {
-    const result = validatePayload({}, fineTuningJobsCreateSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("model is required");
-    expect(result.errors).toContain("training_file is required");
+    const result = OpenAiFineTuningJobCreateRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.length).toBeGreaterThanOrEqual(2);
   });
 
   it("xai tokenizeText: accepts valid request", () => {
@@ -572,63 +557,26 @@ describe("schema + validatePayload integration", () => {
     expect(result.errors).toContain("files is required");
   });
 
-  // OpenAI missing schema tests
-  it("openai responsesDelete: accepts valid request", () => {
-    const result = validatePayload({ id: "resp-123" }, responsesDeleteSchema);
-    expect(result.valid).toBe(true);
-  });
-
-  it("openai responsesDelete: rejects missing id", () => {
-    const result = validatePayload({}, responsesDeleteSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("id is required");
-  });
-
   it("openai responsesInputTokens: accepts valid request", () => {
-    const result = validatePayload(
-      { model: "gpt-4o" },
-      responsesInputTokensSchema
-    );
-    expect(result.valid).toBe(true);
-  });
-
-  it("openai filesDelete: accepts valid request", () => {
-    const result = validatePayload({ file_id: "file-123" }, filesDeleteSchema);
-    expect(result.valid).toBe(true);
-  });
-
-  it("openai filesDelete: rejects missing file_id", () => {
-    const result = validatePayload({}, filesDeleteSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("file_id is required");
-  });
-
-  it("openai storedCompletionsDelete: accepts valid request", () => {
-    const result = validatePayload(
-      { completion_id: "comp-123" },
-      storedCompletionsDeleteSchema
-    );
-    expect(result.valid).toBe(true);
-  });
-
-  it("openai storedCompletionsDelete: rejects missing completion_id", () => {
-    const result = validatePayload({}, storedCompletionsDeleteSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("completion_id is required");
+    const result = OpenAiResponseInputTokensRequestSchema.safeParse({
+      model: "gpt-4o",
+    });
+    expect(result.success).toBe(true);
   });
 
   it("openai checkpointPermissionsCreate: accepts valid request", () => {
-    const result = validatePayload(
-      { project_ids: ["proj-1", "proj-2"] },
-      checkpointPermissionsCreateSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = OpenAiCheckpointPermissionCreateRequestSchema.safeParse({
+      project_ids: ["proj-1", "proj-2"],
+    });
+    expect(result.success).toBe(true);
   });
 
   it("openai checkpointPermissionsCreate: rejects missing project_ids", () => {
-    const result = validatePayload({}, checkpointPermissionsCreateSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("project_ids is required");
+    const result = OpenAiCheckpointPermissionCreateRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(
+      result.error?.issues.some((i) => i.path.includes("project_ids"))
+    ).toBe(true);
   });
 
   // Fal missing schema tests

@@ -38,40 +38,27 @@ describe("openai batches integration", () => {
   });
 
   describe("payload validation", () => {
-    it("should expose payloadSchema on create method", () => {
+    it("should expose schema on create method", () => {
       const provider = openai({ apiKey: "sk-test-key" });
-      const schema = provider.post.v1.batches.payloadSchema;
-      expect(schema.method).toBe("POST");
-      expect(schema.path).toBe("/batches");
-      expect(schema.contentType).toBe("application/json");
-      expect(schema.fields.input_file_id.required).toBe(true);
-      expect(schema.fields.endpoint.required).toBe(true);
-      expect(schema.fields.completion_window.required).toBe(true);
+      expect(provider.post.v1.batches.schema).toBeDefined();
+      expect(typeof provider.post.v1.batches.schema.safeParse).toBe("function");
     });
 
     it("should validate a valid create payload", () => {
       const provider = openai({ apiKey: "sk-test-key" });
-      const result = provider.post.v1.batches.validatePayload({
+      const result = provider.post.v1.batches.schema.safeParse({
         input_file_id: "file-abc123",
         endpoint: "/v1/chat/completions",
         completion_window: "24h",
       });
-      expect(result.valid).toBe(true);
-      expect(result.errors).toHaveLength(0);
+      expect(result.success).toBe(true);
     });
 
     it("should reject payload missing required fields", () => {
       const provider = openai({ apiKey: "sk-test-key" });
-      const result = provider.post.v1.batches.validatePayload({});
-      expect(result.valid).toBe(false);
-      expect(result.errors.length).toBeGreaterThan(0);
-    });
-
-    it("should expose payloadSchema on cancel method", () => {
-      const provider = openai({ apiKey: "sk-test-key" });
-      const schema = provider.post.v1.batches.cancel.payloadSchema;
-      expect(schema.method).toBe("POST");
-      expect(schema.path).toBe("/batches/{batch_id}/cancel");
+      const result = provider.post.v1.batches.schema.safeParse({});
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
     });
   });
 });

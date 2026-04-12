@@ -193,8 +193,13 @@ async function generateReadme(providerDir, providerName) {
   const srcDir = path.join(providerDir, "src");
   const schemasPath = path.join(srcDir, "schemas.ts");
 
-  // Parse schemas.ts
-  const sourceText = await fs.readFile(schemasPath, "utf8");
+  // Parse schemas.ts (skip if absent — provider may use Zod schemas instead)
+  let sourceText = "";
+  try {
+    sourceText = await fs.readFile(schemasPath, "utf8");
+  } catch {
+    // No schemas.ts — provider uses Zod schemas in zod.ts
+  }
   const schemas = extractSchemas(sourceText);
 
   const { pkg } = await extractProviderMetadata(providerDir);

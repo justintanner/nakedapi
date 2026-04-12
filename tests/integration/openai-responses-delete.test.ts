@@ -35,10 +35,8 @@ describe("openai responses delete integration", () => {
     expect(deleted.deleted).toBe(true);
   });
 
-  it("should expose payloadSchema on del method", () => {
+  it("should expose delete endpoint as a plain function", () => {
     const provider = openai({ apiKey: "sk-test-key" });
-    const schema = provider.delete.v1.responses.payloadSchema;
-    expect(schema.method).toBe("DELETE");
-    expect(schema.path).toBe("/responses/{id}");
+    expect(typeof provider.delete.v1.responses).toBe("function");
   });
 });

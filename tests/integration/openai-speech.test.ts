@@ -30,31 +30,25 @@ describe("openai speech", () => {
   it("should validate speech payload", () => {
     const provider = openai({ apiKey: "sk-test-key" });
 
-    const valid = provider.post.v1.audio.speech.validatePayload({
+    const valid = provider.post.v1.audio.speech.schema.safeParse({
       model: "tts-1",
       input: "Hello",
       voice: "alloy",
     });
-    expect(valid.valid).toBe(true);
-    expect(valid.errors).toHaveLength(0);
+    expect(valid.success).toBe(true);
 
-    const missing = provider.post.v1.audio.speech.validatePayload({
+    const missing = provider.post.v1.audio.speech.schema.safeParse({
       model: "tts-1",
     });
-    expect(missing.valid).toBe(false);
-    expect(missing.errors).toContain("input is required");
-    expect(missing.errors).toContain("voice is required");
+    expect(missing.success).toBe(false);
+    expect(missing.error?.issues.length).toBeGreaterThanOrEqual(2);
   });
 
-  it("should expose speech payload schema", () => {
+  it("should expose speech schema", () => {
     const provider = openai({ apiKey: "sk-test-key" });
-    const schema = provider.post.v1.audio.speech.payloadSchema;
-
-    expect(schema.method).toBe("POST");
-    expect(schema.path).toBe("/audio/speech");
-    expect(schema.contentType).toBe("application/json");
-    expect(schema.fields.model.required).toBe(true);
-    expect(schema.fields.input.required).toBe(true);
-    expect(schema.fields.voice.required).toBe(true);
+    expect(provider.post.v1.audio.speech.schema).toBeDefined();
+    expect(typeof provider.post.v1.audio.speech.schema.safeParse).toBe(
+      "function"
+    );
   });
 });

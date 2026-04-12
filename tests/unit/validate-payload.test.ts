@@ -1,14 +1,13 @@
 import { describe, it, expect } from "vitest";
 
-// OpenAI validation
-import { validatePayload } from "../../packages/provider/openai/src/validate";
+// OpenAI validation (Zod schemas)
 import {
-  chatCompletionsSchema,
-  embeddingsSchema,
-  responsesSchema,
-  audioSpeechSchema,
-  moderationsSchema,
-} from "../../packages/provider/openai/src/schemas";
+  OpenAiChatRequestSchema,
+  OpenAiEmbeddingRequestSchema,
+  OpenAiResponseRequestSchema,
+  OpenAiSpeechRequestSchema,
+  OpenAiModerationRequestSchema,
+} from "../../packages/provider/openai/src/zod";
 
 // KimiCoding validation
 import { validatePayload as validateKimiPayload } from "../../packages/provider/kimicoding/src/validate";
@@ -34,83 +33,61 @@ import {
 describe("validatePayload", () => {
   describe("OpenAI", () => {
     it("should validate valid chat completion payload", () => {
-      const result = validatePayload(
-        {
-          model: "gpt-4o",
-          messages: [{ role: "user", content: "Hello" }],
-        },
-        chatCompletionsSchema
-      );
-      expect(result.valid).toBe(true);
-      expect(result.errors).toHaveLength(0);
+      const result = OpenAiChatRequestSchema.safeParse({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: "Hello" }],
+      });
+      expect(result.success).toBe(true);
     });
 
     it("should reject invalid chat completion payload", () => {
-      const result = validatePayload(
-        {
-          model: "gpt-4o",
-          // Missing required 'messages' field
-        },
-        chatCompletionsSchema
-      );
-      expect(result.valid).toBe(false);
-      expect(result.errors?.length).toBeGreaterThan(0);
+      const result = OpenAiChatRequestSchema.safeParse({
+        model: "gpt-4o",
+        // Missing required 'messages' field
+      });
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
     });
 
     it("should validate valid embeddings payload", () => {
-      const result = validatePayload(
-        {
-          model: "text-embedding-3-small",
-          input: "Hello world",
-        },
-        embeddingsSchema
-      );
-      expect(result.valid).toBe(true);
+      const result = OpenAiEmbeddingRequestSchema.safeParse({
+        model: "text-embedding-3-small",
+        input: "Hello world",
+      });
+      expect(result.success).toBe(true);
     });
 
     it("should validate valid responses payload", () => {
-      const result = validatePayload(
-        {
-          model: "gpt-4o",
-          input: "Hello",
-        },
-        responsesSchema
-      );
-      expect(result.valid).toBe(true);
+      const result = OpenAiResponseRequestSchema.safeParse({
+        model: "gpt-4o",
+        input: "Hello",
+      });
+      expect(result.success).toBe(true);
     });
 
     it("should validate valid audio speech payload", () => {
-      const result = validatePayload(
-        {
-          model: "tts-1",
-          input: "Hello",
-          voice: "alloy",
-        },
-        audioSpeechSchema
-      );
-      expect(result.valid).toBe(true);
+      const result = OpenAiSpeechRequestSchema.safeParse({
+        model: "tts-1",
+        input: "Hello",
+        voice: "alloy",
+      });
+      expect(result.success).toBe(true);
     });
 
     it("should reject invalid audio speech payload", () => {
-      const result = validatePayload(
-        {
-          model: "tts-1",
-          input: "Hello",
-          // Missing required 'voice' field
-        },
-        audioSpeechSchema
-      );
-      expect(result.valid).toBe(false);
+      const result = OpenAiSpeechRequestSchema.safeParse({
+        model: "tts-1",
+        input: "Hello",
+        // Missing required 'voice' field
+      });
+      expect(result.success).toBe(false);
     });
 
     it("should validate valid moderations payload", () => {
-      const result = validatePayload(
-        {
-          input: "Text to moderate",
-        },
-        moderationsSchema
-      );
-      expect(result.valid).toBe(true);
+      const result = OpenAiModerationRequestSchema.safeParse({
+        input: "Text to moderate",
+      });
+      expect(result.success).toBe(true);
     });
   });
 

@@ -25,7 +25,7 @@ export type {
   RateLimitOptions,
 } from "./middleware";
 
-// Export all types
+// Export all types (request types now flow from zod.ts via types.ts)
 export type {
   OpenAiOptions,
   OpenAiMessage,
@@ -36,8 +36,8 @@ export type {
   OpenAiTool,
   OpenAiToolCall,
   OpenAiUsage,
-  OpenAiChatChoice,
   OpenAiChatRequest,
+  OpenAiChatChoice,
   OpenAiChatResponse,
   OpenAiSpeechRequest,
   OpenAiTranscribeRequest,
@@ -152,7 +152,4 @@ export type {
   OpenAiStoredCompletionMessageListOptions,
   OpenAiStoredCompletionMessageListResponse,
   OpenAiProvider,
-  PayloadFieldSchema,
-  PayloadSchema,
-  ValidationResult,
 } from "./types";

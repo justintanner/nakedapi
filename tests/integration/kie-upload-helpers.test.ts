@@ -72,21 +72,23 @@ describe("kie helper functions", () => {
       });
 
       // Valid payload
-      const validResult = provider.post.api.v1.jobs.createTask.validatePayload({
-        model: "grok-imagine/text-to-image",
-        input: {
-          prompt: "A test image",
-        },
-      });
-      expect(validResult.valid).toBe(true);
+      const validResult = provider.post.api.v1.jobs.createTask.schema.safeParse(
+        {
+          model: "grok-imagine/text-to-image",
+          input: {
+            prompt: "A test image",
+          },
+        }
+      );
+      expect(validResult.success).toBe(true);
 
       // Invalid payload (missing required field)
       const invalidResult =
-        provider.post.api.v1.jobs.createTask.validatePayload({
+        provider.post.api.v1.jobs.createTask.schema.safeParse({
           input: {},
         });
-      expect(invalidResult.valid).toBe(false);
-      expect(invalidResult.errors?.length).toBeGreaterThan(0);
+      expect(invalidResult.success).toBe(false);
+      expect(invalidResult.error?.issues.length).toBeGreaterThan(0);
     });
 
     it("should validate payload schema for file uploads", async () => {
@@ -95,18 +97,19 @@ describe("kie helper functions", () => {
       });
 
       // Valid payload
-      const validResult = provider.post.api.fileStreamUpload.validatePayload({
+      const validResult = provider.post.api.fileStreamUpload.schema.safeParse({
         file: new Blob(["test"]),
+        filename: "test.bin",
         uploadPath: "uploads",
       });
-      expect(validResult.valid).toBe(true);
+      expect(validResult.success).toBe(true);
 
       // Invalid payload (missing required fields)
-      const invalidResult = provider.post.api.fileStreamUpload.validatePayload(
+      const invalidResult = provider.post.api.fileStreamUpload.schema.safeParse(
         {}
       );
-      expect(invalidResult.valid).toBe(false);
-      expect(invalidResult.errors?.length).toBeGreaterThan(0);
+      expect(invalidResult.success).toBe(false);
+      expect(invalidResult.error?.issues.length).toBeGreaterThan(0);
     });
   });
 

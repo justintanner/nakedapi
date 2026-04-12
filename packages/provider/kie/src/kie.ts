@@ -13,16 +13,14 @@ import {
   FileBase64UploadRequest,
   KieTaskInfo,
 } from "./types";
-import type { ValidationResult } from "./types";
 import {
-  createTaskSchema,
-  downloadUrlSchema,
-  fileStreamUploadSchema,
-  fileUrlUploadSchema,
-  fileBase64UploadSchema,
-  modelInputSchemas,
-} from "./schemas";
-import { validatePayload } from "./validate";
+  CreateTaskRequestSchema,
+  DownloadUrlRequestSchema,
+  UploadMediaRequestSchema,
+  FileUrlUploadRequestSchema,
+  FileBase64UploadRequestSchema,
+} from "./zod";
+import { modelInputSchemas } from "./model-schemas";
 import { createVeoProvider } from "./veo";
 import { createSunoProvider } from "./suno";
 import { createChatProvider } from "./chat";
@@ -395,38 +393,23 @@ export function kie(opts: KieOptions): KieProvider {
         v1: {
           jobs: {
             createTask: Object.assign(createTask, {
-              payloadSchema: createTaskSchema,
-              validatePayload(data: unknown): ValidationResult {
-                return validatePayload(data, createTaskSchema);
-              },
+              schema: CreateTaskRequestSchema,
             }),
           },
           common: {
             downloadUrl: Object.assign(downloadUrl, {
-              payloadSchema: downloadUrlSchema,
-              validatePayload(data: unknown): ValidationResult {
-                return validatePayload(data, downloadUrlSchema);
-              },
+              schema: DownloadUrlRequestSchema,
             }),
           },
         },
         fileStreamUpload: Object.assign(fileStreamUpload, {
-          payloadSchema: fileStreamUploadSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, fileStreamUploadSchema);
-          },
+          schema: UploadMediaRequestSchema,
         }),
         fileUrlUpload: Object.assign(fileUrlUpload, {
-          payloadSchema: fileUrlUploadSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, fileUrlUploadSchema);
-          },
+          schema: FileUrlUploadRequestSchema,
         }),
         fileBase64Upload: Object.assign(fileBase64Upload, {
-          payloadSchema: fileBase64UploadSchema,
-          validatePayload(data: unknown): ValidationResult {
-            return validatePayload(data, fileBase64UploadSchema);
-          },
+          schema: FileBase64UploadRequestSchema,
         }),
       },
     },

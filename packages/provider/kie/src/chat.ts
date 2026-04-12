@@ -1,7 +1,6 @@
 import { KieError } from "./types";
-import type { PayloadSchema, ValidationResult } from "./types";
-import { chatCompletions55Schema } from "./schemas";
-import { validatePayload } from "./validate";
+import { KieChatRequestSchema } from "./zod";
+import type { z } from "zod";
 import { withFallback } from "./middleware";
 
 // Helper function to safely handle AbortSignal across different environments
@@ -72,8 +71,7 @@ export interface KieChatResponse {
 
 interface KieChatCompletionsMethod {
   (req: KieChatRequest, signal?: AbortSignal): Promise<KieChatResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<KieChatRequest>;
 }
 
 export interface KieChatProvider {
@@ -161,10 +159,7 @@ export function createChatProvider(
 
   return {
     completions: Object.assign(fallback, {
-      payloadSchema: chatCompletions55Schema,
-      validatePayload(data: unknown): ValidationResult {
-        return validatePayload(data, chatCompletions55Schema);
-      },
+      schema: KieChatRequestSchema,
     }),
   };
 }

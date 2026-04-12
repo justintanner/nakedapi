@@ -1,7 +1,6 @@
 import { KieError } from "./types";
-import type { PayloadSchema, ValidationResult } from "./types";
-import { claudeMessagesSchema } from "./schemas";
-import { validatePayload } from "./validate";
+import { KieClaudeRequestSchema } from "./zod";
+import type { z } from "zod";
 
 // Helper function to safely handle AbortSignal across different environments
 function attachAbortHandler(
@@ -100,8 +99,7 @@ export interface KieClaudeResponse {
 
 interface KieClaudeMessagesMethod {
   (req: KieClaudeRequest, signal?: AbortSignal): Promise<KieClaudeResponse>;
-  payloadSchema: PayloadSchema;
-  validatePayload(data: unknown): ValidationResult;
+  schema: z.ZodType<KieClaudeRequest>;
 }
 
 interface KieClaudeV1Namespace {
@@ -193,10 +191,7 @@ export function createClaudeProvider(
               }
             },
             {
-              payloadSchema: claudeMessagesSchema,
-              validatePayload(data: unknown): ValidationResult {
-                return validatePayload(data, claudeMessagesSchema);
-              },
+              schema: KieClaudeRequestSchema,
             }
           ),
         },

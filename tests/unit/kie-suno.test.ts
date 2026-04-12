@@ -1,8 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 import { createSunoProvider } from "../../packages/provider/kie/src/suno";
-import { sunoGenerateSchema } from "../../packages/provider/kie/src/schemas";
-import { validatePayload } from "../../packages/provider/kie/src/validate";
+import { SunoGenerateRequestSchema } from "../../packages/provider/kie/src/zod";
 
 describe("KIE Suno provider", () => {
   const mockFetch = () => Promise.resolve(new Response());
@@ -25,48 +24,13 @@ describe("KIE Suno provider", () => {
     });
   });
 
-  describe("sunoGenerateSchema", () => {
-    it("should have correct method and path", () => {
-      expect(sunoGenerateSchema.method).toBe("POST");
-      expect(sunoGenerateSchema.path).toBe("/api/v1/generate");
-      expect(sunoGenerateSchema.contentType).toBe("application/json");
+  describe("SunoGenerateRequestSchema", () => {
+    it("should expose safeParse", () => {
+      expect(typeof SunoGenerateRequestSchema.safeParse).toBe("function");
     });
 
-    it("should define correct fields", () => {
-      const fields = sunoGenerateSchema.fields;
-
-      expect(fields.prompt).toBeDefined();
-      expect(fields.prompt.type).toBe("string");
-      expect(fields.prompt.required).toBe(true);
-
-      expect(fields.model).toBeDefined();
-      expect(fields.model.type).toBe("string");
-      expect(fields.model.required).toBe(true);
-      expect(fields.model.enum).toEqual([
-        "V4",
-        "V4_5",
-        "V4_5PLUS",
-        "V4_5ALL",
-        "V5",
-      ]);
-
-      expect(fields.instrumental).toBeDefined();
-      expect(fields.instrumental.type).toBe("boolean");
-      expect(fields.instrumental.required).toBe(true);
-
-      expect(fields.customMode).toBeDefined();
-      expect(fields.customMode.type).toBe("boolean");
-      expect(fields.customMode.required).toBe(true);
-
-      expect(fields.style).toBeDefined();
-      expect(fields.style.type).toBe("string");
-      expect(fields.style.required).toBeUndefined();
-
-      expect(fields.negativeTags).toBeDefined();
-      expect(fields.negativeTags.type).toBe("string");
-
-      expect(fields.title).toBeDefined();
-      expect(fields.title.type).toBe("string");
+    it("should expose parse", () => {
+      expect(typeof SunoGenerateRequestSchema.parse).toBe("function");
     });
   });
 
@@ -79,9 +43,8 @@ describe("KIE Suno provider", () => {
         customMode: true,
       };
 
-      const result = validatePayload(payload, sunoGenerateSchema);
-      expect(result.valid).toBe(true);
-      expect(result.errors).toHaveLength(0);
+      const result = SunoGenerateRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
 
     it("should validate minimal required payload", () => {
@@ -92,8 +55,8 @@ describe("KIE Suno provider", () => {
         customMode: false,
       };
 
-      const result = validatePayload(payload, sunoGenerateSchema);
-      expect(result.valid).toBe(true);
+      const result = SunoGenerateRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
 
     it("should reject payload without required prompt", () => {
@@ -103,9 +66,11 @@ describe("KIE Suno provider", () => {
         customMode: true,
       };
 
-      const result = validatePayload(payload, sunoGenerateSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain("prompt is required");
+      const result = SunoGenerateRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.some((i) => i.path.includes("prompt"))).toBe(
+        true
+      );
     });
 
     it("should reject payload without required model", () => {
@@ -115,9 +80,11 @@ describe("KIE Suno provider", () => {
         customMode: true,
       };
 
-      const result = validatePayload(payload, sunoGenerateSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain("model is required");
+      const result = SunoGenerateRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.some((i) => i.path.includes("model"))).toBe(
+        true
+      );
     });
 
     it("should reject payload without required instrumental", () => {
@@ -127,9 +94,11 @@ describe("KIE Suno provider", () => {
         customMode: true,
       };
 
-      const result = validatePayload(payload, sunoGenerateSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain("instrumental is required");
+      const result = SunoGenerateRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(
+        result.error?.issues.some((i) => i.path.includes("instrumental"))
+      ).toBe(true);
     });
 
     it("should reject payload without required customMode", () => {
@@ -139,9 +108,11 @@ describe("KIE Suno provider", () => {
         instrumental: false,
       };
 
-      const result = validatePayload(payload, sunoGenerateSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain("customMode is required");
+      const result = SunoGenerateRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(
+        result.error?.issues.some((i) => i.path.includes("customMode"))
+      ).toBe(true);
     });
 
     it("should reject invalid model enum", () => {
@@ -152,9 +123,11 @@ describe("KIE Suno provider", () => {
         customMode: true,
       };
 
-      const result = validatePayload(payload, sunoGenerateSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain("model must be one of");
+      const result = SunoGenerateRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.some((i) => i.path.includes("model"))).toBe(
+        true
+      );
     });
 
     it("should validate with all valid model versions", () => {
@@ -168,8 +141,8 @@ describe("KIE Suno provider", () => {
           customMode: true,
         };
 
-        const result = validatePayload(payload, sunoGenerateSchema);
-        expect(result.valid).toBe(true);
+        const result = SunoGenerateRequestSchema.safeParse(payload);
+        expect(result.success).toBe(true);
       }
     });
 
@@ -184,8 +157,8 @@ describe("KIE Suno provider", () => {
         title: "My Jazz Song",
       };
 
-      const result = validatePayload(payload, sunoGenerateSchema);
-      expect(result.valid).toBe(true);
+      const result = SunoGenerateRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
 
     it("should validate with only required fields", () => {
@@ -196,8 +169,8 @@ describe("KIE Suno provider", () => {
         customMode: false,
       };
 
-      const result = validatePayload(payload, sunoGenerateSchema);
-      expect(result.valid).toBe(true);
+      const result = SunoGenerateRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
 
     it("should reject non-boolean instrumental", () => {
@@ -208,9 +181,11 @@ describe("KIE Suno provider", () => {
         customMode: true,
       };
 
-      const result = validatePayload(payload, sunoGenerateSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain("instrumental must be of type");
+      const result = SunoGenerateRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(
+        result.error?.issues.some((i) => i.path.includes("instrumental"))
+      ).toBe(true);
     });
 
     it("should reject non-boolean customMode", () => {
@@ -221,9 +196,11 @@ describe("KIE Suno provider", () => {
         customMode: "no",
       };
 
-      const result = validatePayload(payload, sunoGenerateSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain("customMode must be of type");
+      const result = SunoGenerateRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(
+        result.error?.issues.some((i) => i.path.includes("customMode"))
+      ).toBe(true);
     });
 
     it("should reject non-string prompt", () => {
@@ -234,45 +211,41 @@ describe("KIE Suno provider", () => {
         customMode: true,
       };
 
-      const result = validatePayload(payload, sunoGenerateSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain("prompt must be of type");
+      const result = SunoGenerateRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.some((i) => i.path.includes("prompt"))).toBe(
+        true
+      );
     });
   });
 
   describe("provider method validation", () => {
-    it("generate should have payloadSchema attached", () => {
+    it("generate should have schema attached", () => {
       const provider = createProvider();
-      expect(provider.post.api.v1.generate.payloadSchema).toBe(
-        sunoGenerateSchema
-      );
-    });
-
-    it("generate should have validatePayload method", () => {
-      const provider = createProvider();
-      expect(typeof provider.post.api.v1.generate.validatePayload).toBe(
+      expect(provider.post.api.v1.generate.schema).toBeDefined();
+      expect(typeof provider.post.api.v1.generate.schema.safeParse).toBe(
         "function"
       );
     });
 
-    it("generate validatePayload should validate correctly", () => {
+    it("generate schema should validate correctly", () => {
       const provider = createProvider();
-      const result = provider.post.api.v1.generate.validatePayload({
+      const result = provider.post.api.v1.generate.schema.safeParse({
         prompt: "Test song",
         model: "V4",
         instrumental: true,
         customMode: false,
       });
-      expect(result.valid).toBe(true);
+      expect(result.success).toBe(true);
     });
 
-    it("generate validatePayload should reject invalid payload", () => {
+    it("generate schema should reject invalid payload", () => {
       const provider = createProvider();
-      const result = provider.post.api.v1.generate.validatePayload({
+      const result = provider.post.api.v1.generate.schema.safeParse({
         prompt: "Test",
       });
-      expect(result.valid).toBe(false);
-      expect(result.errors.length).toBeGreaterThan(0);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
     });
   });
 
@@ -282,13 +255,13 @@ describe("KIE Suno provider", () => {
       const validModels = ["V4", "V4_5", "V4_5PLUS", "V4_5ALL", "V5"];
 
       for (const model of validModels) {
-        const result = provider.post.api.v1.generate.validatePayload({
+        const result = provider.post.api.v1.generate.schema.safeParse({
           prompt: "Test",
           model,
           instrumental: false,
           customMode: true,
         });
-        expect(result.valid).toBe(true);
+        expect(result.success).toBe(true);
       }
     });
   });

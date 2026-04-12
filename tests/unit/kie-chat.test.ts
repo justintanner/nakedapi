@@ -1,11 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 import { createChatProvider } from "../../packages/provider/kie/src/chat";
-import {
-  chatCompletions55Schema,
-  chatCompletionsSchema,
-} from "../../packages/provider/kie/src/schemas";
-import { validatePayload } from "../../packages/provider/kie/src/validate";
+import { KieChatRequestSchema } from "../../packages/provider/kie/src/zod";
 
 describe("KIE Chat provider", () => {
   const mockFetch = () => Promise.resolve(new Response());
@@ -26,63 +22,13 @@ describe("KIE Chat provider", () => {
     });
   });
 
-  describe("chatCompletions55Schema", () => {
-    it("should have correct method and path", () => {
-      expect(chatCompletions55Schema.method).toBe("POST");
-      expect(chatCompletions55Schema.path).toBe("/gpt-5.5/v1/chat/completions");
-      expect(chatCompletions55Schema.contentType).toBe("application/json");
+  describe("KieChatRequestSchema", () => {
+    it("should expose safeParse", () => {
+      expect(typeof KieChatRequestSchema.safeParse).toBe("function");
     });
 
-    it("should define correct fields", () => {
-      const fields = chatCompletions55Schema.fields;
-
-      expect(fields.model).toBeDefined();
-      expect(fields.model.type).toBe("string");
-      expect(fields.model.required).toBe(true);
-
-      expect(fields.messages).toBeDefined();
-      expect(fields.messages.type).toBe("array");
-      expect(fields.messages.required).toBe(true);
-      expect(fields.messages.items).toBeDefined();
-      expect(fields.messages.items?.type).toBe("object");
-      expect(fields.messages.items?.properties).toBeDefined();
-
-      const messageProps = fields.messages.items?.properties;
-      expect(messageProps?.role).toBeDefined();
-      expect(messageProps?.role.type).toBe("string");
-      expect(messageProps?.role.required).toBe(true);
-      expect(messageProps?.role.enum).toEqual(["user", "assistant", "system"]);
-
-      expect(messageProps?.content).toBeDefined();
-      expect(messageProps?.content.type).toBe("string");
-      expect(messageProps?.content.required).toBe(true);
-
-      expect(fields.temperature).toBeDefined();
-      expect(fields.temperature.type).toBe("number");
-
-      expect(fields.max_tokens).toBeDefined();
-      expect(fields.max_tokens.type).toBe("number");
-
-      expect(fields.stream).toBeDefined();
-      expect(fields.stream.type).toBe("boolean");
-
-      expect(fields.response_format).toBeDefined();
-      expect(fields.response_format.type).toBe("object");
-    });
-  });
-
-  describe("chatCompletionsSchema (gpt-5-2)", () => {
-    it("should have correct method and path", () => {
-      expect(chatCompletionsSchema.method).toBe("POST");
-      expect(chatCompletionsSchema.path).toBe("/gpt-5-2/v1/chat/completions");
-      expect(chatCompletionsSchema.contentType).toBe("application/json");
-    });
-
-    it("should have same field structure as chatCompletions55Schema", () => {
-      expect(chatCompletionsSchema.fields.model).toBeDefined();
-      expect(chatCompletionsSchema.fields.messages).toBeDefined();
-      expect(chatCompletionsSchema.fields.temperature).toBeDefined();
-      expect(chatCompletionsSchema.fields.max_tokens).toBeDefined();
+    it("should expose parse", () => {
+      expect(typeof KieChatRequestSchema.parse).toBe("function");
     });
   });
 
@@ -93,9 +39,8 @@ describe("KIE Chat provider", () => {
         messages: [{ role: "user", content: "Hello" }],
       };
 
-      const result = validatePayload(payload, chatCompletions55Schema);
-      expect(result.valid).toBe(true);
-      expect(result.errors).toHaveLength(0);
+      const result = KieChatRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
 
     it("should validate with all optional fields", () => {
@@ -112,8 +57,8 @@ describe("KIE Chat provider", () => {
         response_format: { type: "json_object" },
       };
 
-      const result = validatePayload(payload, chatCompletions55Schema);
-      expect(result.valid).toBe(true);
+      const result = KieChatRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
 
     it("should reject payload without required model", () => {
@@ -121,9 +66,11 @@ describe("KIE Chat provider", () => {
         messages: [{ role: "user", content: "Hello" }],
       };
 
-      const result = validatePayload(payload, chatCompletions55Schema);
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain("model is required");
+      const result = KieChatRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.some((i) => i.path.includes("model"))).toBe(
+        true
+      );
     });
 
     it("should reject payload without required messages", () => {
@@ -131,9 +78,11 @@ describe("KIE Chat provider", () => {
         model: "gpt-5.5",
       };
 
-      const result = validatePayload(payload, chatCompletions55Schema);
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain("messages is required");
+      const result = KieChatRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(
+        result.error?.issues.some((i) => i.path.includes("messages"))
+      ).toBe(true);
     });
 
     it("should reject invalid message role", () => {
@@ -142,9 +91,9 @@ describe("KIE Chat provider", () => {
         messages: [{ role: "invalid", content: "Hello" }],
       };
 
-      const result = validatePayload(payload, chatCompletions55Schema);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain("messages[0].role must be one of");
+      const result = KieChatRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
     });
 
     it("should reject missing message content", () => {
@@ -153,9 +102,9 @@ describe("KIE Chat provider", () => {
         messages: [{ role: "user" }],
       };
 
-      const result = validatePayload(payload, chatCompletions55Schema);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain("messages[0].content is required");
+      const result = KieChatRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
     });
 
     it("should validate multiple messages", () => {
@@ -168,8 +117,8 @@ describe("KIE Chat provider", () => {
         ],
       };
 
-      const result = validatePayload(payload, chatCompletions55Schema);
-      expect(result.valid).toBe(true);
+      const result = KieChatRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
 
     it("should reject non-array messages", () => {
@@ -178,9 +127,9 @@ describe("KIE Chat provider", () => {
         messages: "Hello",
       };
 
-      const result = validatePayload(payload, chatCompletions55Schema);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain("messages must be of type");
+      const result = KieChatRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
     });
 
     it("should validate response_format with json_schema", () => {
@@ -196,8 +145,8 @@ describe("KIE Chat provider", () => {
         },
       };
 
-      const result = validatePayload(payload, chatCompletions55Schema);
-      expect(result.valid).toBe(true);
+      const result = KieChatRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
 
     it("should validate with stream enabled", () => {
@@ -207,48 +156,44 @@ describe("KIE Chat provider", () => {
         stream: true,
       };
 
-      const result = validatePayload(payload, chatCompletions55Schema);
-      expect(result.valid).toBe(true);
+      const result = KieChatRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
   });
 
   describe("provider method validation", () => {
-    it("completions should have payloadSchema attached", () => {
+    it("completions should have schema attached", () => {
       const provider = createProvider();
-      expect(provider.completions.payloadSchema).toBe(chatCompletions55Schema);
+      expect(provider.completions.schema).toBeDefined();
+      expect(typeof provider.completions.schema.safeParse).toBe("function");
     });
 
-    it("completions should have validatePayload method", () => {
+    it("completions schema should validate correctly", () => {
       const provider = createProvider();
-      expect(typeof provider.completions.validatePayload).toBe("function");
-    });
-
-    it("completions validatePayload should validate correctly", () => {
-      const provider = createProvider();
-      const result = provider.completions.validatePayload({
+      const result = provider.completions.schema.safeParse({
         model: "gpt-5.5",
         messages: [{ role: "user", content: "Hello" }],
       });
-      expect(result.valid).toBe(true);
+      expect(result.success).toBe(true);
     });
 
-    it("completions validatePayload should reject invalid payload", () => {
+    it("completions schema should reject invalid payload", () => {
       const provider = createProvider();
-      const result = provider.completions.validatePayload({
+      const result = provider.completions.schema.safeParse({
         model: "gpt-5.5",
       });
-      expect(result.valid).toBe(false);
-      expect(result.errors.length).toBeGreaterThan(0);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
     });
 
-    it("completions validatePayload should check message roles", () => {
+    it("completions schema should check message roles", () => {
       const provider = createProvider();
-      const result = provider.completions.validatePayload({
+      const result = provider.completions.schema.safeParse({
         model: "gpt-5.5",
         messages: [{ role: "invalid", content: "Hello" }],
       });
-      expect(result.valid).toBe(false);
-      expect(result.errors.some((e) => e.includes("role"))).toBe(true);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
     });
   });
 
@@ -258,11 +203,11 @@ describe("KIE Chat provider", () => {
       const validRoles = ["user", "assistant", "system"];
 
       for (const role of validRoles) {
-        const result = provider.completions.validatePayload({
+        const result = provider.completions.schema.safeParse({
           model: "gpt-5.5",
           messages: [{ role, content: "Test" }],
         });
-        expect(result.valid).toBe(true);
+        expect(result.success).toBe(true);
       }
     });
   });
@@ -278,8 +223,8 @@ describe("KIE Chat provider", () => {
           response_format: { type },
         };
 
-        const result = validatePayload(payload, chatCompletions55Schema);
-        expect(result.valid).toBe(true);
+        const result = KieChatRequestSchema.safeParse(payload);
+        expect(result.success).toBe(true);
       }
     });
 
@@ -290,9 +235,9 @@ describe("KIE Chat provider", () => {
         response_format: { type: "xml" },
       };
 
-      const result = validatePayload(payload, chatCompletions55Schema);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain("response_format.type must be one of");
+      const result = KieChatRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
     });
   });
 });

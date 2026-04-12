@@ -38,17 +38,16 @@ describe("kie download url", () => {
     });
 
     // Valid payload
-    const validResult = provider.post.api.v1.common.downloadUrl.validatePayload(
-      {
+    const validResult =
+      provider.post.api.v1.common.downloadUrl.schema.safeParse({
         url: "https://cdn.kie.ai/files/test-file.mp4",
-      }
-    );
-    expect(validResult.valid).toBe(true);
+      });
+    expect(validResult.success).toBe(true);
 
     // Invalid payload (missing required field)
     const invalidResult =
-      provider.post.api.v1.common.downloadUrl.validatePayload({});
-    expect(invalidResult.valid).toBe(false);
-    expect(invalidResult.errors?.length).toBeGreaterThan(0);
+      provider.post.api.v1.common.downloadUrl.schema.safeParse({});
+    expect(invalidResult.success).toBe(false);
+    expect(invalidResult.error?.issues.length).toBeGreaterThan(0);
   });
 });

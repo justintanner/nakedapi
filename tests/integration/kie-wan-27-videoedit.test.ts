@@ -83,22 +83,21 @@ describe("kie wan/2-7-videoedit integration", () => {
   it("should validate wan/2-7-videoedit payload", () => {
     const provider = kie({ apiKey: "test-key" });
 
-    const valid = provider.post.api.v1.jobs.createTask.validatePayload({
+    const valid = provider.post.api.v1.jobs.createTask.schema.safeParse({
       model: "wan/2-7-videoedit",
       input: {
         video_url: "https://example.com/demo/video.mp4",
         prompt: "Make it look cinematic",
       },
     });
-    expect(valid.valid).toBe(true);
-    expect(valid.errors).toHaveLength(0);
+    expect(valid.success).toBe(true);
 
     // Missing required model field
-    const invalid = provider.post.api.v1.jobs.createTask.validatePayload({
+    const invalid = provider.post.api.v1.jobs.createTask.schema.safeParse({
       input: {},
     });
-    expect(invalid.valid).toBe(false);
-    expect(invalid.errors.length).toBeGreaterThan(0);
+    expect(invalid.success).toBe(false);
+    expect(invalid.error?.issues.length).toBeGreaterThan(0);
   });
 
   it("should expose model input schema for wan/2-7-videoedit", () => {

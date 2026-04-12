@@ -42,22 +42,21 @@ describe("kie qwen2/image-edit integration", () => {
     const provider = kie({ apiKey: "test-key" });
 
     // image_size and output_format are optional per spec
-    const valid = provider.post.api.v1.jobs.createTask.validatePayload({
+    const valid = provider.post.api.v1.jobs.createTask.schema.safeParse({
       model: "qwen2/image-edit",
       input: {
         prompt: "Edit this image",
         image_url: "https://example.com/image.jpg",
       },
     });
-    expect(valid.valid).toBe(true);
-    expect(valid.errors).toHaveLength(0);
+    expect(valid.success).toBe(true);
 
     // Missing required model field
-    const invalid = provider.post.api.v1.jobs.createTask.validatePayload({
+    const invalid = provider.post.api.v1.jobs.createTask.schema.safeParse({
       input: {},
     });
-    expect(invalid.valid).toBe(false);
-    expect(invalid.errors.length).toBeGreaterThan(0);
+    expect(invalid.success).toBe(false);
+    expect(invalid.error?.issues.length).toBeGreaterThan(0);
   });
 
   it("should expose model input schema for qwen2/image-edit", () => {

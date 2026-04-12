@@ -49,12 +49,14 @@ describe("kie file base64 upload integration", () => {
     expect(result.data?.downloadUrl).toBeTruthy();
   });
 
-  it("should have payload schema", async () => {
+  it("should have schema", async () => {
     const provider = kie({
       apiKey: process.env.KIE_API_KEY ?? "kie-test-key",
     });
-    expect(provider.post.api.fileBase64Upload.payloadSchema).toBeDefined();
-    expect(provider.post.api.fileBase64Upload.validatePayload).toBeDefined();
+    expect(provider.post.api.fileBase64Upload.schema).toBeDefined();
+    expect(typeof provider.post.api.fileBase64Upload.schema.safeParse).toBe(
+      "function"
+    );
   });
 
   it("should validate payload correctly", async () => {
@@ -66,7 +68,7 @@ describe("kie file base64 upload integration", () => {
       uploadPath: "uploads",
     };
     const result =
-      provider.post.api.fileBase64Upload.validatePayload(validPayload);
-    expect(result.valid).toBe(true);
+      provider.post.api.fileBase64Upload.schema.safeParse(validPayload);
+    expect(result.success).toBe(true);
   });
 });

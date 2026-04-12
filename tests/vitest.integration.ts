@@ -19,6 +19,10 @@ export default defineConfig({
         __dirname,
         "../packages/provider/kimicoding/src"
       ),
+      "@apicity/kie/zod": path.resolve(
+        __dirname,
+        "../packages/provider/kie/src/zod"
+      ),
       "@apicity/kie": path.resolve(__dirname, "../packages/provider/kie/src"),
       "@apicity/xai": path.resolve(__dirname, "../packages/provider/xai/src"),
       "@apicity/openai/zod": path.resolve(

@@ -66,17 +66,18 @@ describe("kie file uploads", () => {
     });
 
     // Valid payload
-    const validResult = provider.post.api.fileStreamUpload.validatePayload({
+    const validResult = provider.post.api.fileStreamUpload.schema.safeParse({
       file: new Blob(["test"]),
+      filename: "test.bin",
       uploadPath: "uploads",
     });
-    expect(validResult.valid).toBe(true);
+    expect(validResult.success).toBe(true);
 
     // Invalid payload (missing required fields)
-    const invalidResult = provider.post.api.fileStreamUpload.validatePayload(
+    const invalidResult = provider.post.api.fileStreamUpload.schema.safeParse(
       {}
     );
-    expect(invalidResult.valid).toBe(false);
-    expect(invalidResult.errors?.length).toBeGreaterThan(0);
+    expect(invalidResult.success).toBe(false);
+    expect(invalidResult.error?.issues.length).toBeGreaterThan(0);
   });
 });

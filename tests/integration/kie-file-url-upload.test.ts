@@ -2,12 +2,14 @@ import { describe, it, expect } from "vitest";
 import { kie } from "@apicity/kie";
 
 describe("kie file URL upload payload validation", () => {
-  it("should have payload schema", async () => {
+  it("should have schema", async () => {
     const provider = kie({
       apiKey: process.env.KIE_API_KEY ?? "kie-test-key",
     });
-    expect(provider.post.api.fileUrlUpload.payloadSchema).toBeDefined();
-    expect(provider.post.api.fileUrlUpload.validatePayload).toBeDefined();
+    expect(provider.post.api.fileUrlUpload.schema).toBeDefined();
+    expect(typeof provider.post.api.fileUrlUpload.schema.safeParse).toBe(
+      "function"
+    );
   });
 
   it("should validate payload correctly", async () => {
@@ -19,8 +21,8 @@ describe("kie file URL upload payload validation", () => {
       uploadPath: "images",
     };
     const result =
-      provider.post.api.fileUrlUpload.validatePayload(validPayload);
-    expect(result.valid).toBe(true);
+      provider.post.api.fileUrlUpload.schema.safeParse(validPayload);
+    expect(result.success).toBe(true);
   });
 
   it("should reject invalid payload", async () => {
@@ -29,8 +31,8 @@ describe("kie file URL upload payload validation", () => {
     });
     const invalidPayload = {};
     const result =
-      provider.post.api.fileUrlUpload.validatePayload(invalidPayload);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toBeDefined();
+      provider.post.api.fileUrlUpload.schema.safeParse(invalidPayload);
+    expect(result.success).toBe(false);
+    expect(result.error?.issues).toBeDefined();
   });
 });

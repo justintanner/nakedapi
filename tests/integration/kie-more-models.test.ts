@@ -65,23 +65,23 @@ describe("kie additional models", () => {
 
       // Validate bytedance/seedance schema
       const seedanceResult =
-        provider.post.api.v1.jobs.createTask.validatePayload({
+        provider.post.api.v1.jobs.createTask.schema.safeParse({
           model: "bytedance/seedance-1.5-pro",
           input: {
             prompt: "Test video",
           },
         });
-      expect(seedanceResult.valid).toBe(true);
+      expect(seedanceResult.success).toBe(true);
 
       // Validate elevenlabs schema
       const elevenlabsResult =
-        provider.post.api.v1.jobs.createTask.validatePayload({
+        provider.post.api.v1.jobs.createTask.schema.safeParse({
           model: "elevenlabs/text-to-dialogue-v3",
           input: {
             prompt: "Test dialogue",
           },
         });
-      expect(elevenlabsResult.valid).toBe(true);
+      expect(elevenlabsResult.success).toBe(true);
     });
   });
 });

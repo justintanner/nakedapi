@@ -50,18 +50,18 @@ import {
   filesUploadLocalSchema,
 } from "../../packages/provider/fal/src/schemas";
 import {
-  createTaskSchema,
-  downloadUrlSchema,
-  fileStreamUploadSchema,
-  fileUrlUploadSchema,
-  fileBase64UploadSchema,
-  veoGenerateSchema,
-  veoExtendSchema,
-  sunoGenerateSchema,
-  chatCompletions55Schema as kieChatSchema,
-  claudeMessagesSchema,
-  modelInputSchemas,
-} from "../../packages/provider/kie/src/schemas";
+  CreateTaskRequestSchema,
+  DownloadUrlRequestSchema,
+  UploadMediaRequestSchema,
+  FileUrlUploadRequestSchema,
+  FileBase64UploadRequestSchema,
+  VeoGenerateRequestSchema,
+  VeoExtendRequestSchema,
+  SunoGenerateRequestSchema,
+  KieChatRequestSchema,
+  KieClaudeRequestSchema,
+} from "../../packages/provider/kie/src/zod";
+import { modelInputSchemas } from "../../packages/provider/kie/src/model-schemas";
 import {
   messagesSchema as anthropicMessagesSchema,
   countTokensSchema,
@@ -97,16 +97,6 @@ describe("schema structure", () => {
     { name: "fal/filesUploadUrl", schema: filesUploadUrlSchema },
     { name: "fal/filesUploadLocal", schema: filesUploadLocalSchema },
     { name: "fal/deletePayloads", schema: deletePayloadsSchema },
-    { name: "kie/createTask", schema: createTaskSchema },
-    { name: "kie/downloadUrl", schema: downloadUrlSchema },
-    { name: "kie/fileStreamUpload", schema: fileStreamUploadSchema },
-    { name: "kie/fileUrlUpload", schema: fileUrlUploadSchema },
-    { name: "kie/fileBase64Upload", schema: fileBase64UploadSchema },
-    { name: "kie/veoGenerate", schema: veoGenerateSchema },
-    { name: "kie/veoExtend", schema: veoExtendSchema },
-    { name: "kie/sunoGenerate", schema: sunoGenerateSchema },
-    { name: "kie/chat", schema: kieChatSchema },
-    { name: "kie/claudeMessages", schema: claudeMessagesSchema },
   ];
 
   for (const { name, schema } of payloadSchemas) {
@@ -164,6 +154,25 @@ describe("schema structure", () => {
     {
       name: "openai/responsesInputTokens",
       schema: OpenAiResponseInputTokensRequestSchema,
+    },
+    { name: "kie/createTask", schema: CreateTaskRequestSchema },
+    { name: "kie/downloadUrl", schema: DownloadUrlRequestSchema },
+    {
+      name: "kie/fileStreamUpload",
+      schema: UploadMediaRequestSchema,
+    },
+    { name: "kie/fileUrlUpload", schema: FileUrlUploadRequestSchema },
+    {
+      name: "kie/fileBase64Upload",
+      schema: FileBase64UploadRequestSchema,
+    },
+    { name: "kie/veoGenerate", schema: VeoGenerateRequestSchema },
+    { name: "kie/veoExtend", schema: VeoExtendRequestSchema },
+    { name: "kie/sunoGenerate", schema: SunoGenerateRequestSchema },
+    { name: "kie/chat", schema: KieChatRequestSchema },
+    {
+      name: "kie/claudeMessages",
+      schema: KieClaudeRequestSchema,
     },
   ];
 
@@ -285,79 +294,84 @@ describe("schema + validatePayload integration", () => {
   });
 
   it("kie createTask: accepts valid request", () => {
-    const result = validatePayload(
-      { model: "nano-banana-pro", input: { prompt: "sunset" } },
-      createTaskSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = CreateTaskRequestSchema.safeParse({
+      model: "nano-banana-pro",
+      input: { prompt: "sunset" },
+    });
+    expect(result.success).toBe(true);
   });
 
   it("kie veoGenerate: accepts valid request", () => {
-    const result = validatePayload({ prompt: "A sunset" }, veoGenerateSchema);
-    expect(result.valid).toBe(true);
+    const result = VeoGenerateRequestSchema.safeParse({
+      prompt: "A sunset",
+    });
+    expect(result.success).toBe(true);
   });
 
   it("kie veoExtend: rejects missing required fields", () => {
-    const result = validatePayload({}, veoExtendSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("taskId is required");
-    expect(result.errors).toContain("prompt is required");
+    const result = VeoExtendRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("taskId"))).toBe(
+      true
+    );
+    expect(result.error?.issues.some((i) => i.path.includes("prompt"))).toBe(
+      true
+    );
   });
 
   it("kie sunoGenerate: accepts valid request", () => {
-    const result = validatePayload(
-      {
-        prompt: "A song",
-        model: "V5",
-        instrumental: false,
-        customMode: false,
-      },
-      sunoGenerateSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = SunoGenerateRequestSchema.safeParse({
+      prompt: "A song",
+      model: "V5",
+      instrumental: false,
+      customMode: false,
+    });
+    expect(result.success).toBe(true);
   });
 
   it("kie fileUrlUpload: accepts valid request", () => {
-    const result = validatePayload(
-      { fileUrl: "https://example.com/image.png", uploadPath: "images" },
-      fileUrlUploadSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = FileUrlUploadRequestSchema.safeParse({
+      fileUrl: "https://example.com/image.png",
+      uploadPath: "images",
+    });
+    expect(result.success).toBe(true);
   });
 
   it("kie fileUrlUpload: rejects missing fileUrl", () => {
-    const result = validatePayload(
-      { uploadPath: "images" },
-      fileUrlUploadSchema
+    const result = FileUrlUploadRequestSchema.safeParse({
+      uploadPath: "images",
+    });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.some((i) => i.path.includes("fileUrl"))).toBe(
+      true
     );
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("fileUrl is required");
   });
 
   it("kie fileBase64Upload: accepts valid request", () => {
-    const result = validatePayload(
-      { base64Data: "aGVsbG8=", uploadPath: "uploads" },
-      fileBase64UploadSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = FileBase64UploadRequestSchema.safeParse({
+      base64Data: "aGVsbG8=",
+      uploadPath: "uploads",
+    });
+    expect(result.success).toBe(true);
   });
 
   it("kie fileBase64Upload: rejects missing required fields", () => {
-    const result = validatePayload({}, fileBase64UploadSchema);
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain("base64Data is required");
-    expect(result.errors).toContain("uploadPath is required");
+    const result = FileBase64UploadRequestSchema.safeParse({});
+    expect(result.success).toBe(false);
+    expect(
+      result.error?.issues.some((i) => i.path.includes("base64Data"))
+    ).toBe(true);
+    expect(
+      result.error?.issues.some((i) => i.path.includes("uploadPath"))
+    ).toBe(true);
   });
 
   it("kie claude: accepts valid request", () => {
-    const result = validatePayload(
-      {
-        model: "claude-sonnet-4-6",
-        messages: [{ role: "user", content: "Hello" }],
-      },
-      claudeMessagesSchema
-    );
-    expect(result.valid).toBe(true);
+    const result = KieClaudeRequestSchema.safeParse({
+      model: "claude-sonnet-4-6",
+      messages: [{ role: "user", content: "Hello" }],
+    });
+    expect(result.success).toBe(true);
   });
 
   it("openai filesUpload: accepts valid request", () => {

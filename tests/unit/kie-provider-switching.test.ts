@@ -112,12 +112,9 @@ describe("KIE provider switching", () => {
     expect(provider.modelInputSchemas["grok-imagine/text-to-image"].type).toBe(
       "image"
     );
-    expect(
-      provider.post.api.v1.jobs.createTask.validatePayload(payload)
-    ).toEqual({
-      valid: true,
-      errors: [],
-    });
+    const validationResult =
+      provider.post.api.v1.jobs.createTask.schema.safeParse(payload);
+    expect(validationResult.success).toBe(true);
 
     await provider.post.api.v1.jobs.createTask(payload);
 

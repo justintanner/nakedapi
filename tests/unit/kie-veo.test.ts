@@ -2,10 +2,9 @@ import { describe, it, expect } from "vitest";
 
 import { createVeoProvider } from "../../packages/provider/kie/src/veo";
 import {
-  veoGenerateSchema,
-  veoExtendSchema,
-} from "../../packages/provider/kie/src/schemas";
-import { validatePayload } from "../../packages/provider/kie/src/validate";
+  VeoGenerateRequestSchema,
+  VeoExtendRequestSchema,
+} from "../../packages/provider/kie/src/zod";
 
 describe("KIE Veo provider", () => {
   const mockFetch = () => Promise.resolve(new Response());
@@ -35,74 +34,23 @@ describe("KIE Veo provider", () => {
     });
   });
 
-  describe("veoGenerateSchema", () => {
-    it("should have correct method and path", () => {
-      expect(veoGenerateSchema.method).toBe("POST");
-      expect(veoGenerateSchema.path).toBe("/api/v1/veo/generate");
-      expect(veoGenerateSchema.contentType).toBe("application/json");
+  describe("VeoGenerateRequestSchema", () => {
+    it("should expose safeParse", () => {
+      expect(typeof VeoGenerateRequestSchema.safeParse).toBe("function");
     });
 
-    it("should define correct fields", () => {
-      const fields = veoGenerateSchema.fields;
-
-      expect(fields.prompt).toBeDefined();
-      expect(fields.prompt.type).toBe("string");
-      expect(fields.prompt.required).toBe(true);
-
-      expect(fields.model).toBeDefined();
-      expect(fields.model.type).toBe("string");
-      expect(fields.model.enum).toEqual(["veo3", "veo3_fast"]);
-
-      expect(fields.aspectRatio).toBeDefined();
-      expect(fields.aspectRatio.enum).toEqual(["16:9", "9:16", "Auto"]);
-
-      expect(fields.generationType).toBeDefined();
-      expect(fields.generationType.enum).toEqual([
-        "TEXT_2_VIDEO",
-        "REFERENCE_2_VIDEO",
-        "FIRST_AND_LAST_FRAMES_2_VIDEO",
-      ]);
-
-      expect(fields.imageUrls).toBeDefined();
-      expect(fields.imageUrls.type).toBe("array");
-
-      expect(fields.seeds).toBeDefined();
-      expect(fields.seeds.type).toBe("number");
-
-      expect(fields.watermark).toBeDefined();
-      expect(fields.watermark.type).toBe("string");
-
-      expect(fields.enableTranslation).toBeDefined();
-      expect(fields.enableTranslation.type).toBe("boolean");
+    it("should expose parse", () => {
+      expect(typeof VeoGenerateRequestSchema.parse).toBe("function");
     });
   });
 
-  describe("veoExtendSchema", () => {
-    it("should have correct method and path", () => {
-      expect(veoExtendSchema.method).toBe("POST");
-      expect(veoExtendSchema.path).toBe("/api/v1/veo/extend");
-      expect(veoExtendSchema.contentType).toBe("application/json");
+  describe("VeoExtendRequestSchema", () => {
+    it("should expose safeParse", () => {
+      expect(typeof VeoExtendRequestSchema.safeParse).toBe("function");
     });
 
-    it("should define correct fields", () => {
-      const fields = veoExtendSchema.fields;
-
-      expect(fields.taskId).toBeDefined();
-      expect(fields.taskId.type).toBe("string");
-      expect(fields.taskId.required).toBe(true);
-
-      expect(fields.prompt).toBeDefined();
-      expect(fields.prompt.type).toBe("string");
-      expect(fields.prompt.required).toBe(true);
-
-      expect(fields.model).toBeDefined();
-      expect(fields.model.enum).toEqual(["fast", "quality"]);
-
-      expect(fields.seeds).toBeDefined();
-      expect(fields.seeds.type).toBe("number");
-
-      expect(fields.watermark).toBeDefined();
-      expect(fields.watermark.type).toBe("string");
+    it("should expose parse", () => {
+      expect(typeof VeoExtendRequestSchema.parse).toBe("function");
     });
   });
 
@@ -114,9 +62,8 @@ describe("KIE Veo provider", () => {
         aspectRatio: "16:9",
       };
 
-      const result = validatePayload(payload, veoGenerateSchema);
-      expect(result.valid).toBe(true);
-      expect(result.errors).toHaveLength(0);
+      const result = VeoGenerateRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
 
     it("should validate minimal generate payload", () => {
@@ -124,8 +71,8 @@ describe("KIE Veo provider", () => {
         prompt: "A beautiful sunset",
       };
 
-      const result = validatePayload(payload, veoGenerateSchema);
-      expect(result.valid).toBe(true);
+      const result = VeoGenerateRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
 
     it("should reject payload without required prompt", () => {
@@ -133,9 +80,11 @@ describe("KIE Veo provider", () => {
         model: "veo3",
       };
 
-      const result = validatePayload(payload, veoGenerateSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain("prompt is required");
+      const result = VeoGenerateRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.some((i) => i.path.includes("prompt"))).toBe(
+        true
+      );
     });
 
     it("should reject invalid model enum", () => {
@@ -144,9 +93,11 @@ describe("KIE Veo provider", () => {
         model: "invalid_model",
       };
 
-      const result = validatePayload(payload, veoGenerateSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain("model must be one of");
+      const result = VeoGenerateRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.some((i) => i.path.includes("model"))).toBe(
+        true
+      );
     });
 
     it("should reject invalid aspectRatio enum", () => {
@@ -155,9 +106,11 @@ describe("KIE Veo provider", () => {
         aspectRatio: "4:3",
       };
 
-      const result = validatePayload(payload, veoGenerateSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain("aspectRatio must be one of");
+      const result = VeoGenerateRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(
+        result.error?.issues.some((i) => i.path.includes("aspectRatio"))
+      ).toBe(true);
     });
 
     it("should reject invalid generationType enum", () => {
@@ -166,9 +119,11 @@ describe("KIE Veo provider", () => {
         generationType: "INVALID_TYPE",
       };
 
-      const result = validatePayload(payload, veoGenerateSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain("generationType must be one of");
+      const result = VeoGenerateRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(
+        result.error?.issues.some((i) => i.path.includes("generationType"))
+      ).toBe(true);
     });
 
     it("should validate with all optional fields", () => {
@@ -183,8 +138,8 @@ describe("KIE Veo provider", () => {
         enableTranslation: true,
       };
 
-      const result = validatePayload(payload, veoGenerateSchema);
-      expect(result.valid).toBe(true);
+      const result = VeoGenerateRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
   });
 
@@ -195,9 +150,8 @@ describe("KIE Veo provider", () => {
         prompt: "Extend the video",
       };
 
-      const result = validatePayload(payload, veoExtendSchema);
-      expect(result.valid).toBe(true);
-      expect(result.errors).toHaveLength(0);
+      const result = VeoExtendRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
 
     it("should reject payload without taskId", () => {
@@ -205,9 +159,11 @@ describe("KIE Veo provider", () => {
         prompt: "Extend the video",
       };
 
-      const result = validatePayload(payload, veoExtendSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain("taskId is required");
+      const result = VeoExtendRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.some((i) => i.path.includes("taskId"))).toBe(
+        true
+      );
     });
 
     it("should reject payload without prompt", () => {
@@ -215,9 +171,11 @@ describe("KIE Veo provider", () => {
         taskId: "task-123",
       };
 
-      const result = validatePayload(payload, veoExtendSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain("prompt is required");
+      const result = VeoExtendRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.some((i) => i.path.includes("prompt"))).toBe(
+        true
+      );
     });
 
     it("should validate with model option", () => {
@@ -227,8 +185,8 @@ describe("KIE Veo provider", () => {
         model: "quality",
       };
 
-      const result = validatePayload(payload, veoExtendSchema);
-      expect(result.valid).toBe(true);
+      const result = VeoExtendRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
 
     it("should reject invalid model option", () => {
@@ -238,62 +196,52 @@ describe("KIE Veo provider", () => {
         model: "invalid",
       };
 
-      const result = validatePayload(payload, veoExtendSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain("model must be one of");
+      const result = VeoExtendRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.some((i) => i.path.includes("model"))).toBe(
+        true
+      );
     });
   });
 
   describe("provider method validation", () => {
-    it("generate should have payloadSchema attached", () => {
+    it("generate should have schema attached", () => {
       const provider = createProvider();
-      expect(provider.post.api.v1.veo.generate.payloadSchema).toBe(
-        veoGenerateSchema
-      );
-    });
-
-    it("generate should have validatePayload method", () => {
-      const provider = createProvider();
-      expect(typeof provider.post.api.v1.veo.generate.validatePayload).toBe(
+      expect(provider.post.api.v1.veo.generate.schema).toBeDefined();
+      expect(typeof provider.post.api.v1.veo.generate.schema.safeParse).toBe(
         "function"
       );
     });
 
-    it("generate validatePayload should validate correctly", () => {
+    it("generate schema should validate correctly", () => {
       const provider = createProvider();
-      const result = provider.post.api.v1.veo.generate.validatePayload({
+      const result = provider.post.api.v1.veo.generate.schema.safeParse({
         prompt: "Test",
       });
-      expect(result.valid).toBe(true);
+      expect(result.success).toBe(true);
     });
 
-    it("generate validatePayload should reject invalid payload", () => {
+    it("generate schema should reject invalid payload", () => {
       const provider = createProvider();
-      const result = provider.post.api.v1.veo.generate.validatePayload({});
-      expect(result.valid).toBe(false);
+      const result = provider.post.api.v1.veo.generate.schema.safeParse({});
+      expect(result.success).toBe(false);
     });
 
-    it("extend should have payloadSchema attached", () => {
+    it("extend should have schema attached", () => {
       const provider = createProvider();
-      expect(provider.post.api.v1.veo.extend.payloadSchema).toBe(
-        veoExtendSchema
-      );
-    });
-
-    it("extend should have validatePayload method", () => {
-      const provider = createProvider();
-      expect(typeof provider.post.api.v1.veo.extend.validatePayload).toBe(
+      expect(provider.post.api.v1.veo.extend.schema).toBeDefined();
+      expect(typeof provider.post.api.v1.veo.extend.schema.safeParse).toBe(
         "function"
       );
     });
 
-    it("extend validatePayload should validate correctly", () => {
+    it("extend schema should validate correctly", () => {
       const provider = createProvider();
-      const result = provider.post.api.v1.veo.extend.validatePayload({
+      const result = provider.post.api.v1.veo.extend.schema.safeParse({
         taskId: "task-123",
         prompt: "Extend",
       });
-      expect(result.valid).toBe(true);
+      expect(result.success).toBe(true);
     });
   });
 
@@ -303,11 +251,11 @@ describe("KIE Veo provider", () => {
       const validModels = ["veo3", "veo3_fast"];
 
       for (const model of validModels) {
-        const result = provider.post.api.v1.veo.generate.validatePayload({
+        const result = provider.post.api.v1.veo.generate.schema.safeParse({
           prompt: "Test",
           model,
         });
-        expect(result.valid).toBe(true);
+        expect(result.success).toBe(true);
       }
     });
   });
@@ -322,11 +270,11 @@ describe("KIE Veo provider", () => {
       ];
 
       for (const generationType of validTypes) {
-        const result = provider.post.api.v1.veo.generate.validatePayload({
+        const result = provider.post.api.v1.veo.generate.schema.safeParse({
           prompt: "Test",
           generationType,
         });
-        expect(result.valid).toBe(true);
+        expect(result.success).toBe(true);
       }
     });
   });

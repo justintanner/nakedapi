@@ -55,20 +55,26 @@ describe("kie suno music generation integration", () => {
       apiKey: process.env.KIE_API_KEY ?? "test-key",
     });
 
-    const validResult = provider.suno.post.api.v1.generate.validatePayload({
+    const validResult = provider.suno.post.api.v1.generate.schema.safeParse({
       prompt: "A test song",
       model: "V5",
       instrumental: false,
       customMode: false,
     });
-    expect(validResult.valid).toBe(true);
+    expect(validResult.success).toBe(true);
 
-    const invalidResult = provider.suno.post.api.v1.generate.validatePayload({
+    const invalidResult = provider.suno.post.api.v1.generate.schema.safeParse({
       prompt: "Missing required fields",
     });
-    expect(invalidResult.valid).toBe(false);
-    expect(invalidResult.errors).toContain("model is required");
-    expect(invalidResult.errors).toContain("instrumental is required");
-    expect(invalidResult.errors).toContain("customMode is required");
+    expect(invalidResult.success).toBe(false);
+    expect(
+      invalidResult.error?.issues.some((i) => i.path.includes("model"))
+    ).toBe(true);
+    expect(
+      invalidResult.error?.issues.some((i) => i.path.includes("instrumental"))
+    ).toBe(true);
+    expect(
+      invalidResult.error?.issues.some((i) => i.path.includes("customMode"))
+    ).toBe(true);
   });
 });

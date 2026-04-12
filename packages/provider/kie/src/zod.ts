@@ -1,0 +1,852 @@
+import { z } from "zod";
+
+// ---------------------------------------------------------------------------
+// Enums / named union types
+// ---------------------------------------------------------------------------
+
+export const KieMediaModelSchema = z.enum([
+  "kling-3.0/video",
+  "kling-3.0/motion-control",
+  "grok-imagine/text-to-image",
+  "grok-imagine/image-to-image",
+  "grok-imagine/text-to-video",
+  "grok-imagine/image-to-video",
+  "nano-banana-pro",
+  "bytedance/seedance-1.5-pro",
+  "nano-banana-2",
+  "gpt-image/1.5-image-to-image",
+  "seedream/5-lite-image-to-image",
+  "elevenlabs/text-to-dialogue-v3",
+  "elevenlabs/sound-effect-v2",
+  "elevenlabs/speech-to-text",
+  "grok-imagine/extend",
+  "grok-imagine/upscale",
+  "qwen2/text-to-image",
+  "qwen2/image-edit",
+  "bytedance/seedance-2-fast",
+  "wan/2-7-image-to-video",
+  "wan/2-7-r2v",
+  "wan/2-7-videoedit",
+  "wan/2-7-image",
+  "wan/2-7-image-pro",
+  "sora-watermark-remover",
+]);
+
+export const MediaTypeSchema = z.enum([
+  "image",
+  "video",
+  "audio",
+  "transcription",
+]);
+
+export const KlingDurationSchema = z.enum([
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "11",
+  "12",
+  "13",
+  "14",
+  "15",
+]);
+
+export const KlingAspectRatioSchema = z.enum(["16:9", "9:16", "1:1"]);
+
+export const KlingModeSchema = z.enum(["std", "pro"]);
+
+export const GrokImagineModeSchema = z.enum(["fun", "normal", "spicy"]);
+
+export const GrokImagineDurationSchema = z.enum(["6", "10"]);
+
+export const GrokImagineResolutionSchema = z.enum(["480p", "720p"]);
+
+export const SeedanceDurationSchema = z.enum(["4", "8", "12"]);
+
+export const SeedanceResolutionSchema = z.enum(["480p", "720p", "1080p"]);
+
+export const NanoBananaResolutionSchema = z.enum(["1K", "2K", "4K"]);
+
+export const NanoBananaOutputFormatSchema = z.enum(["png", "jpg"]);
+
+export const GptImageQualitySchema = z.enum(["medium", "high"]);
+
+export const Wan27ResolutionSchema = z.enum(["720p", "1080p"]);
+
+export const Wan27AspectRatioSchema = z.enum([
+  "16:9",
+  "9:16",
+  "1:1",
+  "4:3",
+  "3:4",
+]);
+
+export const Wan27AudioSettingSchema = z.enum(["auto", "origin"]);
+
+export const Wan27ImageResolutionSchema = z.enum(["1K", "2K", "4K"]);
+
+export const Wan27ImageAspectRatioSchema = z.enum([
+  "1:1",
+  "16:9",
+  "4:3",
+  "21:9",
+  "3:4",
+  "9:16",
+  "8:1",
+  "1:8",
+]);
+
+export const ElevenLabsVoiceSchema = z.enum([
+  "Adam",
+  "Alice",
+  "Bill",
+  "Brian",
+  "Callum",
+  "Charlie",
+  "Chris",
+  "Daniel",
+  "Eric",
+  "George",
+  "Harry",
+  "Jessica",
+  "Laura",
+  "Liam",
+  "Lily",
+  "Matilda",
+  "River",
+  "Roger",
+  "Sarah",
+  "Will",
+]);
+
+// ---------------------------------------------------------------------------
+// Sub-schemas (composable building blocks)
+// ---------------------------------------------------------------------------
+
+export const KlingElementSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().min(1),
+  element_input_urls: z.array(z.string()).optional(),
+  element_input_video_urls: z.array(z.string()).optional(),
+});
+
+export const MultiShotPromptSchema = z.object({
+  prompt: z.string().min(1),
+  duration: z.number(),
+});
+
+export const DialogueLineSchema = z.object({
+  text: z.string().min(1),
+  voice: ElevenLabsVoiceSchema,
+});
+
+export const Wan27ImageColorPaletteSchema = z.object({
+  hex: z.string().min(1),
+  ratio: z.string().min(1),
+});
+
+// ---------------------------------------------------------------------------
+// Media request schemas
+// ---------------------------------------------------------------------------
+
+export const KlingVideoRequestSchema = z.object({
+  model: z.literal("kling-3.0/video"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    prompt: z.string().optional(),
+    image_urls: z.array(z.string()).optional(),
+    sound: z.boolean(),
+    duration: KlingDurationSchema,
+    aspect_ratio: KlingAspectRatioSchema.optional(),
+    mode: KlingModeSchema,
+    multi_shots: z.boolean(),
+    multi_prompt: z.array(MultiShotPromptSchema).optional(),
+    kling_elements: z.array(KlingElementSchema).optional(),
+  }),
+});
+
+export const KlingMotionControlRequestSchema = z.object({
+  model: z.literal("kling-3.0/motion-control"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    prompt: z.string().optional(),
+    input_urls: z.array(z.string()),
+    video_urls: z.array(z.string()),
+    mode: z.enum(["720p", "1080p"]).optional(),
+    character_orientation: z.enum(["video", "image"]).optional(),
+    background_source: z.enum(["input_video", "input_image"]).optional(),
+  }),
+});
+
+export const GrokTextToImageRequestSchema = z.object({
+  model: z.literal("grok-imagine/text-to-image"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    prompt: z.string().min(1),
+    aspect_ratio: z.enum(["2:3", "3:2", "1:1", "16:9", "9:16"]).optional(),
+  }),
+});
+
+export const Qwen2TextToImageRequestSchema = z.object({
+  model: z.literal("qwen2/text-to-image"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    prompt: z.string().min(1),
+    image_size: z.enum(["1:1", "4:3", "3:4", "16:9", "9:16"]).optional(),
+    output_format: z.enum(["png", "jpeg"]).optional(),
+    seed: z.number().optional(),
+  }),
+});
+
+export const Qwen2ImageEditRequestSchema = z.object({
+  model: z.literal("qwen2/image-edit"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    prompt: z.string().min(1),
+    image_url: z.string().min(1),
+    image_size: z
+      .enum(["1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", "21:9"])
+      .optional(),
+    output_format: z.enum(["png", "jpeg"]).optional(),
+    seed: z.number().optional(),
+  }),
+});
+
+export const GrokImageToImageRequestSchema = z.object({
+  model: z.literal("grok-imagine/image-to-image"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    prompt: z.string().optional(),
+    image_urls: z.tuple([z.string()]),
+    aspect_ratio: z.enum(["2:3", "3:2", "1:1", "16:9", "9:16"]).optional(),
+  }),
+});
+
+export const GrokTextToVideoRequestSchema = z.object({
+  model: z.literal("grok-imagine/text-to-video"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    prompt: z.string().min(1),
+    aspect_ratio: z.enum(["16:9", "9:16", "1:1"]).optional(),
+    duration: GrokImagineDurationSchema.optional(),
+  }),
+});
+
+export const GrokImageToVideoRequestSchema = z.object({
+  model: z.literal("grok-imagine/image-to-video"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    prompt: z.string().optional(),
+    image_urls: z.array(z.string()).optional(),
+    task_id: z.string().optional(),
+    index: z.number().optional(),
+    mode: GrokImagineModeSchema.optional(),
+    duration: GrokImagineDurationSchema.optional(),
+    resolution: GrokImagineResolutionSchema.optional(),
+    aspect_ratio: z.enum(["2:3", "3:2", "1:1", "16:9", "9:16"]).optional(),
+  }),
+});
+
+export const GrokVideoExtendRequestSchema = z.object({
+  model: z.literal("grok-imagine/extend"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    task_id: z.string().min(1),
+    prompt: z.string().min(1),
+    extend_at: z.number(),
+    extend_times: GrokImagineDurationSchema,
+  }),
+});
+
+export const GrokVideoUpscaleRequestSchema = z.object({
+  model: z.literal("grok-imagine/upscale"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    task_id: z.string().min(1),
+  }),
+});
+
+export const NanoBananaProRequestSchema = z.object({
+  model: z.literal("nano-banana-pro"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    prompt: z.string().min(1),
+    image_input: z.array(z.string()).optional(),
+    aspect_ratio: z
+      .enum([
+        "1:1",
+        "2:3",
+        "3:2",
+        "3:4",
+        "4:3",
+        "4:5",
+        "5:4",
+        "9:16",
+        "16:9",
+        "21:9",
+        "auto",
+      ])
+      .optional(),
+    resolution: NanoBananaResolutionSchema.optional(),
+    output_format: NanoBananaOutputFormatSchema.optional(),
+  }),
+});
+
+export const SeedanceVideoRequestSchema = z.object({
+  model: z.literal("bytedance/seedance-1.5-pro"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    prompt: z.string().min(1),
+    input_urls: z.array(z.string()).optional(),
+    aspect_ratio: z
+      .enum(["1:1", "21:9", "4:3", "3:4", "16:9", "9:16"])
+      .optional(),
+    resolution: SeedanceResolutionSchema.optional(),
+    duration: SeedanceDurationSchema.optional(),
+    fixed_lens: z.boolean().optional(),
+    generate_audio: z.boolean().optional(),
+  }),
+});
+
+export const Seedance2FastRequestSchema = z.object({
+  model: z.literal("bytedance/seedance-2-fast"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    prompt: z.string().min(1),
+    first_frame_url: z.string().optional(),
+    last_frame_url: z.string().optional(),
+    reference_image_urls: z.array(z.string()).optional(),
+    reference_video_urls: z.array(z.string()).optional(),
+    reference_audio_urls: z.array(z.string()).optional(),
+    return_last_frame: z.boolean().optional(),
+    generate_audio: z.boolean().optional(),
+    resolution: z.enum(["480p", "720p"]).optional(),
+    aspect_ratio: z
+      .enum(["1:1", "4:3", "3:4", "16:9", "9:16", "21:9", "adaptive"])
+      .optional(),
+    duration: z.number().optional(),
+    web_search: z.boolean(),
+    nsfw_checker: z.boolean().optional(),
+  }),
+});
+
+export const NanoBanana2RequestSchema = z.object({
+  model: z.literal("nano-banana-2"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    prompt: z.string().min(1),
+    image_input: z.array(z.string()).optional(),
+    aspect_ratio: z
+      .enum([
+        "1:1",
+        "2:3",
+        "3:2",
+        "3:4",
+        "4:3",
+        "4:5",
+        "5:4",
+        "9:16",
+        "16:9",
+        "21:9",
+        "1:4",
+        "1:8",
+        "4:1",
+        "8:1",
+        "auto",
+      ])
+      .optional(),
+    resolution: NanoBananaResolutionSchema.optional(),
+    output_format: NanoBananaOutputFormatSchema.optional(),
+    google_search: z.boolean().optional(),
+  }),
+});
+
+export const GptImageToImageRequestSchema = z.object({
+  model: z.literal("gpt-image/1.5-image-to-image"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    input_urls: z.array(z.string()),
+    prompt: z.string().min(1),
+    aspect_ratio: z.enum(["1:1", "2:3", "3:2"]).optional(),
+    quality: GptImageQualitySchema.optional(),
+  }),
+});
+
+export const SeedreamImageToImageRequestSchema = z.object({
+  model: z.literal("seedream/5-lite-image-to-image"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    image_urls: z.array(z.string()),
+    prompt: z.string().min(1),
+    aspect_ratio: z
+      .enum(["1:1", "4:3", "3:4", "16:9", "9:16", "2:3", "3:2", "21:9"])
+      .optional(),
+    quality: z.enum(["basic", "high"]).optional(),
+  }),
+});
+
+export const ElevenLabsDialogueRequestSchema = z.object({
+  model: z.literal("elevenlabs/text-to-dialogue-v3"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    dialogue: z.array(DialogueLineSchema),
+    stability: z
+      .union([z.literal(0), z.literal(0.5), z.literal(1.0)])
+      .optional(),
+    language_code: z.string().optional(),
+  }),
+});
+
+export const ElevenLabsSfxRequestSchema = z.object({
+  model: z.literal("elevenlabs/sound-effect-v2"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    text: z.string().min(1),
+    output_format: z.string().optional(),
+    prompt_influence: z.number().optional(),
+    loop: z.boolean().optional(),
+    duration_seconds: z.number().optional(),
+  }),
+});
+
+export const ElevenLabsSttRequestSchema = z.object({
+  model: z.literal("elevenlabs/speech-to-text"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    audio_url: z.string().min(1),
+    tag_audio_events: z.boolean().optional(),
+    diarize: z.boolean().optional(),
+    language_code: z.string().optional(),
+  }),
+});
+
+export const SoraWatermarkRequestSchema = z.object({
+  model: z.literal("sora-watermark-remover"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    video_url: z.string().min(1),
+  }),
+});
+
+export const Wan27ImageToVideoRequestSchema = z.object({
+  model: z.literal("wan/2-7-image-to-video"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    prompt: z.string().min(1),
+    negative_prompt: z.string().optional(),
+    first_frame_url: z.string().optional(),
+    last_frame_url: z.string().optional(),
+    first_clip_url: z.string().optional(),
+    driving_audio_url: z.string().optional(),
+    resolution: Wan27ResolutionSchema.optional(),
+    duration: z.number().optional(),
+    prompt_extend: z.boolean().optional(),
+    watermark: z.boolean().optional(),
+    seed: z.number().optional(),
+    nsfw_checker: z.boolean().optional(),
+  }),
+});
+
+export const Wan27RefToVideoRequestSchema = z.object({
+  model: z.literal("wan/2-7-r2v"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    prompt: z.string().min(1),
+    negative_prompt: z.string().optional(),
+    reference_image: z.array(z.string()).optional(),
+    reference_video: z.array(z.string()).optional(),
+    first_frame: z.string().optional(),
+    reference_voice: z.string().optional(),
+    resolution: Wan27ResolutionSchema.optional(),
+    aspect_ratio: Wan27AspectRatioSchema.optional(),
+    duration: z.number().optional(),
+    prompt_extend: z.boolean().optional(),
+    watermark: z.boolean().optional(),
+    seed: z.number().optional(),
+    nsfw_checker: z.boolean().optional(),
+  }),
+});
+
+export const Wan27VideoEditRequestSchema = z.object({
+  model: z.literal("wan/2-7-videoedit"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    prompt: z.string().optional(),
+    negative_prompt: z.string().optional(),
+    video_url: z.string().min(1),
+    reference_image: z.string().optional(),
+    resolution: Wan27ResolutionSchema.optional(),
+    aspect_ratio: Wan27AspectRatioSchema.optional(),
+    duration: z.number().optional(),
+    audio_setting: Wan27AudioSettingSchema.optional(),
+    prompt_extend: z.boolean().optional(),
+    watermark: z.boolean().optional(),
+    seed: z.number().optional(),
+    nsfw_checker: z.boolean().optional(),
+  }),
+});
+
+export const Wan27ImageRequestSchema = z.object({
+  model: z.literal("wan/2-7-image"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    prompt: z.string().min(1),
+    input_urls: z.array(z.string()).optional(),
+    aspect_ratio: Wan27ImageAspectRatioSchema.optional(),
+    enable_sequential: z.boolean().optional(),
+    n: z.number().optional(),
+    resolution: Wan27ImageResolutionSchema.optional(),
+    thinking_mode: z.boolean().optional(),
+    color_palette: z.array(Wan27ImageColorPaletteSchema).optional(),
+    bbox_list: z.array(z.array(z.array(z.number()))).optional(),
+    watermark: z.boolean().optional(),
+    seed: z.number().optional(),
+    nsfw_checker: z.boolean().optional(),
+  }),
+});
+
+export const Wan27ImageProRequestSchema = z.object({
+  model: z.literal("wan/2-7-image-pro"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    prompt: z.string().min(1),
+    input_urls: z.array(z.string()).optional(),
+    aspect_ratio: Wan27ImageAspectRatioSchema.optional(),
+    enable_sequential: z.boolean().optional(),
+    n: z.number().optional(),
+    resolution: Wan27ImageResolutionSchema.optional(),
+    thinking_mode: z.boolean().optional(),
+    color_palette: z.array(Wan27ImageColorPaletteSchema).optional(),
+    bbox_list: z.array(z.array(z.array(z.number()))).optional(),
+    watermark: z.boolean().optional(),
+    seed: z.number().optional(),
+    nsfw_checker: z.boolean().optional(),
+  }),
+});
+
+// ---------------------------------------------------------------------------
+// Upload schemas
+// ---------------------------------------------------------------------------
+
+const blobSchema = z.instanceof(Blob);
+
+export const UploadMediaRequestSchema = z.object({
+  file: blobSchema,
+  filename: z.string().min(1),
+  uploadPath: z.string().min(1),
+  fileName: z.string().optional(),
+  mimeType: z.string().optional(),
+});
+
+export const FileUrlUploadRequestSchema = z.object({
+  fileUrl: z.string().min(1),
+  uploadPath: z.string().min(1),
+  fileName: z.string().optional(),
+});
+
+export const FileBase64UploadRequestSchema = z.object({
+  base64Data: z.string().min(1),
+  uploadPath: z.string().min(1),
+  fileName: z.string().optional(),
+  mimeType: z.string().optional(),
+});
+
+// ---------------------------------------------------------------------------
+// Download URL
+// ---------------------------------------------------------------------------
+
+export const DownloadUrlRequestSchema = z.object({
+  url: z.string().min(1),
+});
+
+// ---------------------------------------------------------------------------
+// Options
+// ---------------------------------------------------------------------------
+
+export const KieOptionsSchema = z.object({
+  apiKey: z.string().min(1),
+  baseURL: z.string().url().optional(),
+  uploadBaseURL: z.string().url().optional(),
+  timeout: z.number().int().positive().optional(),
+  fetch: z
+    .custom<
+      (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+    >()
+    .optional(),
+});
+
+// ---------------------------------------------------------------------------
+// CreateTask request (alias for MediaGenerationRequest — what the createTask
+// endpoint actually receives)
+// ---------------------------------------------------------------------------
+
+export const CreateTaskRequestSchema = z.object({
+  model: KieMediaModelSchema,
+  callBackUrl: z.string().optional(),
+  input: z.record(z.string(), z.unknown()),
+});
+
+// ---------------------------------------------------------------------------
+// Sub-provider schemas: Veo
+// ---------------------------------------------------------------------------
+
+export const VeoGenerateRequestSchema = z.object({
+  prompt: z.string().min(1),
+  model: z.enum(["veo3", "veo3_fast"]).optional(),
+  aspectRatio: z.enum(["16:9", "9:16", "Auto"]).optional(),
+  generationType: z
+    .enum([
+      "TEXT_2_VIDEO",
+      "REFERENCE_2_VIDEO",
+      "FIRST_AND_LAST_FRAMES_2_VIDEO",
+    ])
+    .optional(),
+  imageUrls: z.array(z.string()).optional(),
+  seeds: z.number().optional(),
+  watermark: z.string().optional(),
+  enableTranslation: z.boolean().optional(),
+});
+
+export const VeoExtendRequestSchema = z.object({
+  taskId: z.string().min(1),
+  prompt: z.string().min(1),
+  model: z.enum(["fast", "quality"]).optional(),
+  seeds: z.number().optional(),
+  watermark: z.string().optional(),
+});
+
+export type VeoGenerateRequest = z.infer<typeof VeoGenerateRequestSchema>;
+export type VeoExtendRequest = z.infer<typeof VeoExtendRequestSchema>;
+export type VeoModel = "veo3" | "veo3_fast";
+export type VeoGenerationType =
+  | "TEXT_2_VIDEO"
+  | "REFERENCE_2_VIDEO"
+  | "FIRST_AND_LAST_FRAMES_2_VIDEO";
+
+// ---------------------------------------------------------------------------
+// Sub-provider schemas: Suno
+// ---------------------------------------------------------------------------
+
+export const SunoGenerateRequestSchema = z.object({
+  prompt: z.string().min(1),
+  model: z.enum(["V4", "V4_5", "V4_5PLUS", "V4_5ALL", "V5"]),
+  instrumental: z.boolean(),
+  customMode: z.boolean(),
+  style: z.string().optional(),
+  negativeTags: z.string().optional(),
+  title: z.string().optional(),
+});
+
+export type SunoGenerateRequest = z.infer<typeof SunoGenerateRequestSchema>;
+export type SunoModel = "V4" | "V4_5" | "V4_5PLUS" | "V4_5ALL" | "V5";
+
+// ---------------------------------------------------------------------------
+// Sub-provider schemas: Chat (GPT-5.5 / GPT-5.2 via Kie)
+// ---------------------------------------------------------------------------
+
+export const KieChatContentPartSchema = z.object({
+  type: z.enum(["text", "image_url"]),
+  text: z.string().optional(),
+  image_url: z.object({ url: z.string() }).optional(),
+});
+
+export const KieChatMessageSchema = z.object({
+  role: z.enum(["user", "assistant", "system"]),
+  content: z.union([z.string(), z.array(KieChatContentPartSchema)]),
+});
+
+export const KieChatRequestSchema = z.object({
+  model: z.string(),
+  messages: z.array(KieChatMessageSchema),
+  temperature: z.number().min(0).max(2).optional(),
+  max_tokens: z.number().int().positive().optional(),
+  stream: z.boolean().optional(),
+  response_format: z
+    .object({
+      type: z.enum(["text", "json_object", "json_schema"]),
+      json_schema: z.record(z.string(), z.unknown()).optional(),
+    })
+    .optional(),
+});
+
+export type KieChatContentPart = z.infer<typeof KieChatContentPartSchema>;
+export type KieChatMessage = z.infer<typeof KieChatMessageSchema>;
+export type KieChatRequest = z.infer<typeof KieChatRequestSchema>;
+
+// ---------------------------------------------------------------------------
+// Sub-provider schemas: Claude (via Kie)
+// ---------------------------------------------------------------------------
+
+export const KieClaudeToolInputSchemaSchema = z.object({
+  type: z.string(),
+  properties: z.record(z.string(), z.unknown()).optional(),
+  required: z.array(z.string()).optional(),
+});
+
+export const KieClaudeToolSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  input_schema: KieClaudeToolInputSchemaSchema,
+});
+
+export const KieClaudeContentPartSchema = z
+  .object({
+    type: z.string(),
+    text: z.string().optional(),
+  })
+  .passthrough();
+
+export const KieClaudeMessageSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.union([z.string(), z.array(KieClaudeContentPartSchema)]),
+});
+
+export const KieClaudeRequestSchema = z.object({
+  model: z.enum(["claude-sonnet-4-6", "claude-haiku-4-5"]),
+  messages: z.array(KieClaudeMessageSchema),
+  tools: z.array(KieClaudeToolSchema).optional(),
+  thinkingFlag: z.boolean().optional(),
+  stream: z.boolean().optional(),
+});
+
+export type KieClaudeToolInputSchema = z.infer<
+  typeof KieClaudeToolInputSchemaSchema
+>;
+export type KieClaudeTool = z.infer<typeof KieClaudeToolSchema>;
+export type KieClaudeContentPart = z.infer<typeof KieClaudeContentPartSchema>;
+export type KieClaudeMessage = z.infer<typeof KieClaudeMessageSchema>;
+export type KieClaudeRequest = z.infer<typeof KieClaudeRequestSchema>;
+
+// ---------------------------------------------------------------------------
+// Media generation request (discriminated union on model)
+// ---------------------------------------------------------------------------
+
+export const MediaGenerationRequestSchema = z.discriminatedUnion("model", [
+  KlingVideoRequestSchema,
+  KlingMotionControlRequestSchema,
+  GrokTextToImageRequestSchema,
+  GrokImageToImageRequestSchema,
+  GrokTextToVideoRequestSchema,
+  GrokImageToVideoRequestSchema,
+  GrokVideoExtendRequestSchema,
+  GrokVideoUpscaleRequestSchema,
+  NanoBananaProRequestSchema,
+  SeedanceVideoRequestSchema,
+  NanoBanana2RequestSchema,
+  GptImageToImageRequestSchema,
+  SeedreamImageToImageRequestSchema,
+  ElevenLabsDialogueRequestSchema,
+  ElevenLabsSfxRequestSchema,
+  ElevenLabsSttRequestSchema,
+  Qwen2TextToImageRequestSchema,
+  Qwen2ImageEditRequestSchema,
+  Seedance2FastRequestSchema,
+  Wan27ImageToVideoRequestSchema,
+  Wan27RefToVideoRequestSchema,
+  Wan27VideoEditRequestSchema,
+  Wan27ImageRequestSchema,
+  Wan27ImageProRequestSchema,
+  SoraWatermarkRequestSchema,
+]);
+
+// ---------------------------------------------------------------------------
+// Inferred types (source of truth — replaces hand-written interfaces)
+// ---------------------------------------------------------------------------
+
+export type KieMediaModel = z.infer<typeof KieMediaModelSchema>;
+export type MediaType = z.infer<typeof MediaTypeSchema>;
+
+export type KlingDuration = z.infer<typeof KlingDurationSchema>;
+export type KlingAspectRatio = z.infer<typeof KlingAspectRatioSchema>;
+export type KlingMode = z.infer<typeof KlingModeSchema>;
+export type GrokImagineMode = z.infer<typeof GrokImagineModeSchema>;
+export type GrokImagineDuration = z.infer<typeof GrokImagineDurationSchema>;
+export type GrokImagineResolution = z.infer<typeof GrokImagineResolutionSchema>;
+export type SeedanceDuration = z.infer<typeof SeedanceDurationSchema>;
+export type SeedanceResolution = z.infer<typeof SeedanceResolutionSchema>;
+export type NanoBananaResolution = z.infer<typeof NanoBananaResolutionSchema>;
+export type NanoBananaOutputFormat = z.infer<
+  typeof NanoBananaOutputFormatSchema
+>;
+export type GptImageQuality = z.infer<typeof GptImageQualitySchema>;
+export type Wan27Resolution = z.infer<typeof Wan27ResolutionSchema>;
+export type Wan27AspectRatio = z.infer<typeof Wan27AspectRatioSchema>;
+export type Wan27AudioSetting = z.infer<typeof Wan27AudioSettingSchema>;
+export type Wan27ImageResolution = z.infer<typeof Wan27ImageResolutionSchema>;
+export type Wan27ImageAspectRatio = z.infer<typeof Wan27ImageAspectRatioSchema>;
+export type ElevenLabsVoice = z.infer<typeof ElevenLabsVoiceSchema>;
+
+export type KlingElement = z.infer<typeof KlingElementSchema>;
+export type MultiShotPrompt = z.infer<typeof MultiShotPromptSchema>;
+export type DialogueLine = z.infer<typeof DialogueLineSchema>;
+export type Wan27ImageColorPalette = z.infer<
+  typeof Wan27ImageColorPaletteSchema
+>;
+
+export type KlingVideoRequest = z.infer<typeof KlingVideoRequestSchema>;
+export type KlingMotionControlRequest = z.infer<
+  typeof KlingMotionControlRequestSchema
+>;
+export type GrokTextToImageRequest = z.infer<
+  typeof GrokTextToImageRequestSchema
+>;
+export type Qwen2TextToImageRequest = z.infer<
+  typeof Qwen2TextToImageRequestSchema
+>;
+export type Qwen2ImageEditRequest = z.infer<typeof Qwen2ImageEditRequestSchema>;
+export type GrokImageToImageRequest = z.infer<
+  typeof GrokImageToImageRequestSchema
+>;
+export type GrokTextToVideoRequest = z.infer<
+  typeof GrokTextToVideoRequestSchema
+>;
+export type GrokImageToVideoRequest = z.infer<
+  typeof GrokImageToVideoRequestSchema
+>;
+export type GrokVideoExtendRequest = z.infer<
+  typeof GrokVideoExtendRequestSchema
+>;
+export type GrokVideoUpscaleRequest = z.infer<
+  typeof GrokVideoUpscaleRequestSchema
+>;
+export type NanoBananaProRequest = z.infer<typeof NanoBananaProRequestSchema>;
+export type SeedanceVideoRequest = z.infer<typeof SeedanceVideoRequestSchema>;
+export type Seedance2FastRequest = z.infer<typeof Seedance2FastRequestSchema>;
+export type NanoBanana2Request = z.infer<typeof NanoBanana2RequestSchema>;
+export type GptImageToImageRequest = z.infer<
+  typeof GptImageToImageRequestSchema
+>;
+export type SeedreamImageToImageRequest = z.infer<
+  typeof SeedreamImageToImageRequestSchema
+>;
+export type ElevenLabsDialogueRequest = z.infer<
+  typeof ElevenLabsDialogueRequestSchema
+>;
+export type ElevenLabsSfxRequest = z.infer<typeof ElevenLabsSfxRequestSchema>;
+export type ElevenLabsSttRequest = z.infer<typeof ElevenLabsSttRequestSchema>;
+export type SoraWatermarkRequest = z.infer<typeof SoraWatermarkRequestSchema>;
+export type Wan27ImageToVideoRequest = z.infer<
+  typeof Wan27ImageToVideoRequestSchema
+>;
+export type Wan27RefToVideoRequest = z.infer<
+  typeof Wan27RefToVideoRequestSchema
+>;
+export type Wan27VideoEditRequest = z.infer<typeof Wan27VideoEditRequestSchema>;
+export type Wan27ImageRequest = z.infer<typeof Wan27ImageRequestSchema>;
+export type Wan27ImageProRequest = z.infer<typeof Wan27ImageProRequestSchema>;
+
+export type UploadMediaRequest = z.infer<typeof UploadMediaRequestSchema>;
+export type FileUrlUploadRequest = z.infer<typeof FileUrlUploadRequestSchema>;
+export type FileBase64UploadRequest = z.infer<
+  typeof FileBase64UploadRequestSchema
+>;
+export type DownloadUrlRequest = z.infer<typeof DownloadUrlRequestSchema>;
+export type KieOptions = z.infer<typeof KieOptionsSchema>;
+
+export type MediaGenerationRequest = z.infer<
+  typeof MediaGenerationRequestSchema
+>;

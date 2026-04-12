@@ -42,7 +42,7 @@ describe("kie bytedance/seedance-2-fast integration", () => {
   it("should validate seedance-2-fast payload", () => {
     const provider = kie({ apiKey: "test-key" });
 
-    const valid = provider.post.api.v1.jobs.createTask.validatePayload({
+    const valid = provider.post.api.v1.jobs.createTask.schema.safeParse({
       model: "bytedance/seedance-2-fast",
       input: {
         prompt: "A calm lake at dawn with mist rising over the water",
@@ -53,15 +53,14 @@ describe("kie bytedance/seedance-2-fast integration", () => {
         web_search: false,
       },
     });
-    expect(valid.valid).toBe(true);
-    expect(valid.errors).toHaveLength(0);
+    expect(valid.success).toBe(true);
 
     // Missing required model field
-    const invalid = provider.post.api.v1.jobs.createTask.validatePayload({
+    const invalid = provider.post.api.v1.jobs.createTask.schema.safeParse({
       input: {},
     });
-    expect(invalid.valid).toBe(false);
-    expect(invalid.errors.length).toBeGreaterThan(0);
+    expect(invalid.success).toBe(false);
+    expect(invalid.error?.issues.length).toBeGreaterThan(0);
   });
 
   it("should expose model input schema for bytedance/seedance-2-fast", () => {

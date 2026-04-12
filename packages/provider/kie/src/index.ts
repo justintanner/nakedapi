@@ -86,8 +86,6 @@ export type {
   FileUrlUploadRequest,
   FileBase64UploadRequest,
   PayloadFieldSchema,
-  PayloadSchema,
-  ValidationResult,
   ModelInputSchema,
   // Standalone parameter union types
   KlingDuration,

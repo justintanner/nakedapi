@@ -1,8 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 import { createClaudeProvider } from "../../packages/provider/kie/src/claude";
-import { claudeMessagesSchema } from "../../packages/provider/kie/src/schemas";
-import { validatePayload } from "../../packages/provider/kie/src/validate";
+import { KieClaudeRequestSchema } from "../../packages/provider/kie/src/zod";
 
 describe("KIE Claude provider", () => {
   const mockFetch = () => Promise.resolve(new Response());
@@ -26,56 +25,13 @@ describe("KIE Claude provider", () => {
     });
   });
 
-  describe("claudeMessagesSchema", () => {
-    it("should have correct method and path", () => {
-      expect(claudeMessagesSchema.method).toBe("POST");
-      expect(claudeMessagesSchema.path).toBe("/claude/v1/messages");
-      expect(claudeMessagesSchema.contentType).toBe("application/json");
+  describe("KieClaudeRequestSchema", () => {
+    it("should expose safeParse", () => {
+      expect(typeof KieClaudeRequestSchema.safeParse).toBe("function");
     });
 
-    it("should define correct fields", () => {
-      const fields = claudeMessagesSchema.fields;
-
-      expect(fields.model).toBeDefined();
-      expect(fields.model.type).toBe("string");
-      expect(fields.model.required).toBe(true);
-      expect(fields.model.enum).toEqual([
-        "claude-sonnet-4-6",
-        "claude-haiku-4-5",
-      ]);
-
-      expect(fields.messages).toBeDefined();
-      expect(fields.messages.type).toBe("array");
-      expect(fields.messages.required).toBe(true);
-      expect(fields.messages.items).toBeDefined();
-
-      const messageProps = fields.messages.items?.properties;
-      expect(messageProps?.role).toBeDefined();
-      expect(messageProps?.role.type).toBe("string");
-      expect(messageProps?.role.required).toBe(true);
-      expect(messageProps?.role.enum).toEqual(["user", "assistant"]);
-
-      expect(messageProps?.content).toBeDefined();
-      expect(messageProps?.content.type).toBe("string");
-      expect(messageProps?.content.required).toBe(true);
-
-      expect(fields.tools).toBeDefined();
-      expect(fields.tools.type).toBe("array");
-
-      const toolProps = fields.tools?.items?.properties;
-      expect(toolProps?.name).toBeDefined();
-      expect(toolProps?.name.type).toBe("string");
-      expect(toolProps?.name.required).toBe(true);
-      expect(toolProps?.description).toBeDefined();
-      expect(toolProps?.description.required).toBe(true);
-      expect(toolProps?.input_schema).toBeDefined();
-      expect(toolProps?.input_schema.required).toBe(true);
-
-      expect(fields.thinkingFlag).toBeDefined();
-      expect(fields.thinkingFlag.type).toBe("boolean");
-
-      expect(fields.stream).toBeDefined();
-      expect(fields.stream.type).toBe("boolean");
+    it("should expose parse", () => {
+      expect(typeof KieClaudeRequestSchema.parse).toBe("function");
     });
   });
 
@@ -86,9 +42,8 @@ describe("KIE Claude provider", () => {
         messages: [{ role: "user", content: "Hello" }],
       };
 
-      const result = validatePayload(payload, claudeMessagesSchema);
-      expect(result.valid).toBe(true);
-      expect(result.errors).toHaveLength(0);
+      const result = KieClaudeRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
 
     it("should validate with conversation history", () => {
@@ -101,8 +56,8 @@ describe("KIE Claude provider", () => {
         ],
       };
 
-      const result = validatePayload(payload, claudeMessagesSchema);
-      expect(result.valid).toBe(true);
+      const result = KieClaudeRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
 
     it("should reject payload without required model", () => {
@@ -110,9 +65,11 @@ describe("KIE Claude provider", () => {
         messages: [{ role: "user", content: "Hello" }],
       };
 
-      const result = validatePayload(payload, claudeMessagesSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain("model is required");
+      const result = KieClaudeRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.some((i) => i.path.includes("model"))).toBe(
+        true
+      );
     });
 
     it("should reject payload without required messages", () => {
@@ -120,9 +77,11 @@ describe("KIE Claude provider", () => {
         model: "claude-sonnet-4-6",
       };
 
-      const result = validatePayload(payload, claudeMessagesSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain("messages is required");
+      const result = KieClaudeRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(
+        result.error?.issues.some((i) => i.path.includes("messages"))
+      ).toBe(true);
     });
 
     it("should reject invalid model enum", () => {
@@ -131,9 +90,11 @@ describe("KIE Claude provider", () => {
         messages: [{ role: "user", content: "Hello" }],
       };
 
-      const result = validatePayload(payload, claudeMessagesSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain("model must be one of");
+      const result = KieClaudeRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.some((i) => i.path.includes("model"))).toBe(
+        true
+      );
     });
 
     it("should reject invalid message role", () => {
@@ -142,9 +103,9 @@ describe("KIE Claude provider", () => {
         messages: [{ role: "system", content: "Hello" }],
       };
 
-      const result = validatePayload(payload, claudeMessagesSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain("messages[0].role must be one of");
+      const result = KieClaudeRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
     });
 
     it("should reject missing message content", () => {
@@ -153,20 +114,20 @@ describe("KIE Claude provider", () => {
         messages: [{ role: "user" }],
       };
 
-      const result = validatePayload(payload, claudeMessagesSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain("messages[0].content is required");
+      const result = KieClaudeRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
     });
 
     it("should validate with both model options", () => {
       const validModels = ["claude-sonnet-4-6", "claude-haiku-4-5"];
 
       for (const model of validModels) {
-        const result = validatePayload(
-          { model, messages: [{ role: "user", content: "Hi" }] },
-          claudeMessagesSchema
-        );
-        expect(result.valid).toBe(true);
+        const result = KieClaudeRequestSchema.safeParse({
+          model,
+          messages: [{ role: "user", content: "Hi" }],
+        });
+        expect(result.success).toBe(true);
       }
     });
 
@@ -186,8 +147,8 @@ describe("KIE Claude provider", () => {
         ],
       };
 
-      const result = validatePayload(payload, claudeMessagesSchema);
-      expect(result.valid).toBe(true);
+      const result = KieClaudeRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
 
     it("should validate with thinkingFlag", () => {
@@ -197,8 +158,8 @@ describe("KIE Claude provider", () => {
         thinkingFlag: true,
       };
 
-      const result = validatePayload(payload, claudeMessagesSchema);
-      expect(result.valid).toBe(true);
+      const result = KieClaudeRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
 
     it("should validate with stream enabled", () => {
@@ -208,8 +169,8 @@ describe("KIE Claude provider", () => {
         stream: true,
       };
 
-      const result = validatePayload(payload, claudeMessagesSchema);
-      expect(result.valid).toBe(true);
+      const result = KieClaudeRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
 
     it("should validate complete payload with all optional fields", () => {
@@ -230,8 +191,8 @@ describe("KIE Claude provider", () => {
         stream: false,
       };
 
-      const result = validatePayload(payload, claudeMessagesSchema);
-      expect(result.valid).toBe(true);
+      const result = KieClaudeRequestSchema.safeParse(payload);
+      expect(result.success).toBe(true);
     });
 
     it("should reject tool without required name", () => {
@@ -246,9 +207,9 @@ describe("KIE Claude provider", () => {
         ],
       };
 
-      const result = validatePayload(payload, claudeMessagesSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain("tools[0].name is required");
+      const result = KieClaudeRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
     });
 
     it("should reject tool without required description", () => {
@@ -263,9 +224,9 @@ describe("KIE Claude provider", () => {
         ],
       };
 
-      const result = validatePayload(payload, claudeMessagesSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain("tools[0].description is required");
+      const result = KieClaudeRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
     });
 
     it("should reject tool without required input_schema", () => {
@@ -280,53 +241,49 @@ describe("KIE Claude provider", () => {
         ],
       };
 
-      const result = validatePayload(payload, claudeMessagesSchema);
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain("tools[0].input_schema is required");
+      const result = KieClaudeRequestSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
     });
   });
 
   describe("provider method validation", () => {
-    it("messages should have payloadSchema attached", () => {
+    it("messages should have schema attached", () => {
       const provider = createProvider();
-      expect(provider.claude.post.v1.messages.payloadSchema).toBe(
-        claudeMessagesSchema
-      );
-    });
-
-    it("messages should have validatePayload method", () => {
-      const provider = createProvider();
-      expect(typeof provider.claude.post.v1.messages.validatePayload).toBe(
+      expect(provider.claude.post.v1.messages.schema).toBeDefined();
+      expect(typeof provider.claude.post.v1.messages.schema.safeParse).toBe(
         "function"
       );
     });
 
-    it("messages validatePayload should validate correctly", () => {
+    it("messages schema should validate correctly", () => {
       const provider = createProvider();
-      const result = provider.claude.post.v1.messages.validatePayload({
+      const result = provider.claude.post.v1.messages.schema.safeParse({
         model: "claude-sonnet-4-6",
         messages: [{ role: "user", content: "Hello" }],
       });
-      expect(result.valid).toBe(true);
+      expect(result.success).toBe(true);
     });
 
-    it("messages validatePayload should reject invalid payload", () => {
+    it("messages schema should reject invalid payload", () => {
       const provider = createProvider();
-      const result = provider.claude.post.v1.messages.validatePayload({
+      const result = provider.claude.post.v1.messages.schema.safeParse({
         messages: [{ role: "user", content: "Hello" }],
       });
-      expect(result.valid).toBe(false);
-      expect(result.errors.length).toBeGreaterThan(0);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
     });
 
-    it("messages validatePayload should check model enum", () => {
+    it("messages schema should check model enum", () => {
       const provider = createProvider();
-      const result = provider.claude.post.v1.messages.validatePayload({
+      const result = provider.claude.post.v1.messages.schema.safeParse({
         model: "invalid-model",
         messages: [{ role: "user", content: "Hello" }],
       });
-      expect(result.valid).toBe(false);
-      expect(result.errors.some((e) => e.includes("model"))).toBe(true);
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.some((i) => i.path.includes("model"))).toBe(
+        true
+      );
     });
   });
 
@@ -336,30 +293,33 @@ describe("KIE Claude provider", () => {
       const validRoles = ["user", "assistant"];
 
       for (const role of validRoles) {
-        const result = provider.claude.post.v1.messages.validatePayload({
+        const result = provider.claude.post.v1.messages.schema.safeParse({
           model: "claude-sonnet-4-6",
           messages: [{ role, content: "Test" }],
         });
-        expect(result.valid).toBe(true);
+        expect(result.success).toBe(true);
       }
     });
 
     it("should reject system role", () => {
       const provider = createProvider();
-      const result = provider.claude.post.v1.messages.validatePayload({
+      const result = provider.claude.post.v1.messages.schema.safeParse({
         model: "claude-sonnet-4-6",
         messages: [{ role: "system", content: "System prompt" }],
       });
-      expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain("role must be one of");
+      expect(result.success).toBe(false);
+      expect(result.error?.issues.length).toBeGreaterThan(0);
     });
   });
 
   describe("claudeHaikuMessagesSchema", () => {
-    it("should be same as claudeMessagesSchema", async () => {
-      // Both schemas are identical per the source code
-      const schemas = await import("../../packages/provider/kie/src/schemas");
-      expect(schemas.claudeHaikuMessagesSchema).toBe(claudeMessagesSchema);
+    it("should validate haiku model using KieClaudeRequestSchema", () => {
+      // Both sonnet and haiku are validated by the same schema
+      const result = KieClaudeRequestSchema.safeParse({
+        model: "claude-haiku-4-5",
+        messages: [{ role: "user", content: "Hello" }],
+      });
+      expect(result.success).toBe(true);
     });
   });
 });

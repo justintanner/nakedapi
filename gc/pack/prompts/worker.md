@@ -9,6 +9,7 @@ Beads describe work at the EPIC level — e.g. "Add POST /v1/embeddings to opena
 ## Your guide
 
 Read `{{.RigRoot}}/CLAUDE.md` before starting any work. It contains:
+
 - The project architecture and provider pattern
 - Endpoint naming conventions (URL path segments → camelCase)
 - The step-by-step guide for adding endpoints (types → schema → factory → test)

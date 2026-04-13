@@ -75,6 +75,17 @@ export const NanoBananaOutputFormatSchema = z.enum(["png", "jpg"]);
 
 export const GptImageQualitySchema = z.enum(["medium", "high"]);
 
+export const Qwen2ImageSizeSchema = z.enum([
+  "square",
+  "square_hd",
+  "portrait_4_3",
+  "portrait_16_9",
+  "landscape_4_3",
+  "landscape_16_9",
+]);
+
+export const Qwen2AccelerationSchema = z.enum(["none", "regular", "high"]);
+
 export const Wan27ResolutionSchema = z.enum(["720p", "1080p"]);
 
 export const Wan27AspectRatioSchema = z.enum([
@@ -196,9 +207,14 @@ export const Qwen2TextToImageRequestSchema = z.object({
   callBackUrl: z.string().optional(),
   input: z.object({
     prompt: z.string().min(1),
-    image_size: z.enum(["1:1", "4:3", "3:4", "16:9", "9:16"]).optional(),
-    output_format: z.enum(["png", "jpeg"]).optional(),
+    image_size: Qwen2ImageSizeSchema.optional(),
+    num_inference_steps: z.number().optional(),
     seed: z.number().optional(),
+    guidance_scale: z.number().optional(),
+    enable_safety_checker: z.boolean().optional(),
+    output_format: z.enum(["png", "jpeg"]).optional(),
+    negative_prompt: z.string().optional(),
+    acceleration: Qwen2AccelerationSchema.optional(),
   }),
 });
 
@@ -231,8 +247,10 @@ export const GrokTextToVideoRequestSchema = z.object({
   callBackUrl: z.string().optional(),
   input: z.object({
     prompt: z.string().min(1),
-    aspect_ratio: z.enum(["16:9", "9:16", "1:1"]).optional(),
+    aspect_ratio: z.enum(["2:3", "3:2", "1:1", "16:9", "9:16"]).optional(),
+    mode: GrokImagineModeSchema.optional(),
     duration: GrokImagineDurationSchema.optional(),
+    resolution: GrokImagineResolutionSchema.optional(),
   }),
 });
 
@@ -309,6 +327,7 @@ export const SeedanceVideoRequestSchema = z.object({
     duration: SeedanceDurationSchema.optional(),
     fixed_lens: z.boolean().optional(),
     generate_audio: z.boolean().optional(),
+    nsfw_checker: z.boolean().optional(),
   }),
 });
 
@@ -386,6 +405,7 @@ export const SeedreamImageToImageRequestSchema = z.object({
       .enum(["1:1", "4:3", "3:4", "16:9", "9:16", "2:3", "3:2", "21:9"])
       .optional(),
     quality: z.enum(["basic", "high"]).optional(),
+    nsfw_checker: z.boolean().optional(),
   }),
 });
 
@@ -429,6 +449,7 @@ export const SoraWatermarkRequestSchema = z.object({
   callBackUrl: z.string().optional(),
   input: z.object({
     video_url: z.string().min(1),
+    upload_method: z.enum(["s3", "oss"]).optional(),
   }),
 });
 
@@ -773,6 +794,8 @@ export type NanoBananaOutputFormat = z.infer<
   typeof NanoBananaOutputFormatSchema
 >;
 export type GptImageQuality = z.infer<typeof GptImageQualitySchema>;
+export type Qwen2ImageSize = z.infer<typeof Qwen2ImageSizeSchema>;
+export type Qwen2Acceleration = z.infer<typeof Qwen2AccelerationSchema>;
 export type Wan27Resolution = z.infer<typeof Wan27ResolutionSchema>;
 export type Wan27AspectRatio = z.infer<typeof Wan27AspectRatioSchema>;
 export type Wan27AudioSetting = z.infer<typeof Wan27AudioSettingSchema>;

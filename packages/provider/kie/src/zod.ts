@@ -254,18 +254,21 @@ export const GrokTextToVideoRequestSchema = z.object({
   }),
 });
 
+export const GrokImageToVideoDurationSchema = z.number().int().min(6).max(30);
+
 export const GrokImageToVideoRequestSchema = z.object({
   model: z.literal("grok-imagine/image-to-video"),
   callBackUrl: z.string().optional(),
   input: z.object({
-    prompt: z.string().optional(),
+    prompt: z.string().max(5000).optional(),
     image_urls: z.array(z.string()).optional(),
-    task_id: z.string().optional(),
-    index: z.number().optional(),
+    task_id: z.string().max(100).optional(),
+    index: z.number().int().min(0).max(5).optional(),
     mode: GrokImagineModeSchema.optional(),
-    duration: GrokImagineDurationSchema.optional(),
+    duration: GrokImageToVideoDurationSchema.optional(),
     resolution: GrokImagineResolutionSchema.optional(),
     aspect_ratio: z.enum(["2:3", "3:2", "1:1", "16:9", "9:16"]).optional(),
+    nsfw_checker: z.boolean().optional(),
   }),
 });
 
@@ -273,10 +276,10 @@ export const GrokVideoExtendRequestSchema = z.object({
   model: z.literal("grok-imagine/extend"),
   callBackUrl: z.string().optional(),
   input: z.object({
-    task_id: z.string().min(1),
-    prompt: z.string().min(1),
-    extend_at: z.number(),
-    extend_times: GrokImagineDurationSchema,
+    task_id: z.string().min(1).max(100),
+    prompt: z.string().min(1).max(5000),
+    extend_at: z.number().optional(),
+    extend_times: GrokImagineDurationSchema.optional(),
   }),
 });
 
@@ -786,6 +789,9 @@ export type KlingAspectRatio = z.infer<typeof KlingAspectRatioSchema>;
 export type KlingMode = z.infer<typeof KlingModeSchema>;
 export type GrokImagineMode = z.infer<typeof GrokImagineModeSchema>;
 export type GrokImagineDuration = z.infer<typeof GrokImagineDurationSchema>;
+export type GrokImageToVideoDuration = z.infer<
+  typeof GrokImageToVideoDurationSchema
+>;
 export type GrokImagineResolution = z.infer<typeof GrokImagineResolutionSchema>;
 export type SeedanceDuration = z.infer<typeof SeedanceDurationSchema>;
 export type SeedanceResolution = z.infer<typeof SeedanceResolutionSchema>;

@@ -93,6 +93,7 @@ export type {
   KlingMode,
   GrokImagineMode,
   GrokImagineDuration,
+  GrokImageToVideoDuration,
   GrokImagineResolution,
   SeedanceDuration,
   SeedanceResolution,

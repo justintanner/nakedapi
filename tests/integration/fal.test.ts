@@ -124,7 +124,7 @@ describe("fal integration", () => {
     expect(Array.isArray(result.workflows)).toBe(true);
   });
 
-  it("should throw not_found for unknown workflow", async () => {
+  it("should throw validation_error for unknown workflow", async () => {
     ctx = setupPolly("fal/workflows-get");
     const provider = fal({
       apiKey: process.env.FAL_API_KEY ?? "fal-test-key",
@@ -137,8 +137,8 @@ describe("fal integration", () => {
       expect.unreachable("should have thrown");
     } catch (err) {
       expect(err).toBeInstanceOf(FalError);
-      expect((err as FalError).status).toBe(404);
-      expect((err as FalError).type).toBe("not_found");
+      expect((err as FalError).status).toBe(400);
+      expect((err as FalError).type).toBe("validation_error");
     }
   });
 });

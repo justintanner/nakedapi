@@ -130,8 +130,10 @@ export interface AlibabaTaskOutput {
 }
 
 export interface AlibabaTaskUsage {
-  video_duration?: number;
-  video_ratio?: string;
+  duration?: number;
+  input_video_duration?: number;
+  output_video_duration?: number;
+  SR?: number;
   video_count?: number;
 }
 

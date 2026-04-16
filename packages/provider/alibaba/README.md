@@ -31,7 +31,7 @@ const alibaba = createAlibaba({ apiKey: process.env.ALIBABA_API_KEY! });
 <details>
 <summary><code>GET</code> <b><code>alibaba.compatibleMode.v1.models</code></b></summary>
 
-<code>GET https://dashscope-intl.aliyuncs.com/compatible-mode/v1/models</code>
+<code>GET https://dashscope.aliyuncs.com/compatible-mode/v1/models</code>
 
 [Upstream docs ↗](https://help.aliyun.com/zh/model-studio)
 
@@ -46,7 +46,7 @@ Source: [`packages/provider/alibaba/src/alibaba.ts`](src/alibaba.ts)
 <details>
 <summary><code>POST</code> <b><code>alibaba.compatibleMode.v1.chat.completions</code></b></summary>
 
-<code>POST https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions</code>
+<code>POST https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions</code>
 
 [Upstream docs ↗](https://help.aliyun.com/zh/model-studio)
 
@@ -63,7 +63,7 @@ Source: [`packages/provider/alibaba/src/alibaba.ts`](src/alibaba.ts)
 <details>
 <summary><code>POST</code> <b><code>alibaba.api.v1.services.aigc.videoGeneration.videoSynthesis</code></b></summary>
 
-<code>POST https://dashscope-intl.aliyuncs.com/compatible-mode/v1/services/aigc/video-generation/video-synthesis</code>
+<code>POST https://dashscope.aliyuncs.com/api/v1/services/aigc/video-generation/video-synthesis</code>
 
 [Upstream docs ↗](https://help.aliyun.com/zh/model-studio)
 
@@ -80,7 +80,7 @@ Source: [`packages/provider/alibaba/src/alibaba.ts`](src/alibaba.ts)
 <details>
 <summary><code>GET</code> <b><code>alibaba.api.v1.tasks</code></b></summary>
 
-<code>GET https://dashscope-intl.aliyuncs.com/compatible-mode/v1/tasks/{taskId}</code>
+<code>GET https://dashscope.aliyuncs.com/api/v1/tasks/{taskId}</code>
 
 [Upstream docs ↗](https://help.aliyun.com/zh/model-studio)
 

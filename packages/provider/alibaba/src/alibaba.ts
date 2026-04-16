@@ -18,7 +18,7 @@ import { sseToIterable } from "./sse";
 
 export function alibaba(opts: AlibabaOptions): AlibabaProvider {
   const baseURL =
-    opts.baseURL ?? "https://dashscope-intl.aliyuncs.com/compatible-mode/v1";
+    opts.baseURL ?? "https://dashscope.aliyuncs.com/compatible-mode/v1";
   const nativeBaseURL = (() => {
     const u = new URL(baseURL);
     return `${u.origin}/api/v1`;
@@ -216,8 +216,8 @@ export function alibaba(opts: AlibabaOptions): AlibabaProvider {
 
   const postV1 = {
     chat: {
-      // sig-ok: dashscope-intl subdomain hoisted by walker
-      // POST https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions
+      // sig-ok: dashscope subdomain hoisted by walker
+      // POST https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
       // Docs: https://help.aliyun.com/zh/model-studio
       completions: Object.assign(
         async (
@@ -258,8 +258,8 @@ export function alibaba(opts: AlibabaOptions): AlibabaProvider {
   };
 
   const getV1 = {
-    // sig-ok: dashscope-intl subdomain hoisted by walker
-    // GET https://dashscope-intl.aliyuncs.com/compatible-mode/v1/models
+    // sig-ok: dashscope subdomain hoisted by walker
+    // GET https://dashscope.aliyuncs.com/compatible-mode/v1/models
     // Docs: https://help.aliyun.com/zh/model-studio
     models: async (signal?: AbortSignal): Promise<AlibabaModelListResponse> => {
       return makeGetRequest<AlibabaModelListResponse>("/models", signal);
@@ -270,8 +270,8 @@ export function alibaba(opts: AlibabaOptions): AlibabaProvider {
     services: {
       aigc: {
         videoGeneration: {
-          // sig-ok: dashscope-intl subdomain hoisted by walker
-          // POST https://dashscope-intl.aliyuncs.com/compatible-mode/v1/services/aigc/video-generation/video-synthesis
+          // sig-ok: dashscope subdomain hoisted by walker
+          // POST https://dashscope.aliyuncs.com/api/v1/services/aigc/video-generation/video-synthesis
           // Docs: https://help.aliyun.com/zh/model-studio
           videoSynthesis: Object.assign(
             async (
@@ -298,8 +298,8 @@ export function alibaba(opts: AlibabaOptions): AlibabaProvider {
   };
 
   const getApiV1 = {
-    // sig-ok: dashscope-intl subdomain hoisted by walker
-    // GET https://dashscope-intl.aliyuncs.com/compatible-mode/v1/tasks/{taskId}
+    // sig-ok: dashscope subdomain hoisted by walker
+    // GET https://dashscope.aliyuncs.com/api/v1/tasks/{taskId}
     // Docs: https://help.aliyun.com/zh/model-studio
     tasks: async (
       taskId: string,

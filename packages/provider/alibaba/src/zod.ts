@@ -78,7 +78,19 @@ export const AlibabaChatRequestSchema = z.object({
 
 export const AlibabaVideoSynthesisInputSchema = z.object({
   prompt: z.string(),
-  img_url: z.string(),
+  media: z
+    .array(
+      z.object({
+        type: z.enum([
+          "first_frame",
+          "last_frame",
+          "driving_audio",
+          "first_clip",
+        ]),
+        url: z.string().min(1),
+      })
+    )
+    .min(1),
   audio_url: z.string().optional(),
 });
 

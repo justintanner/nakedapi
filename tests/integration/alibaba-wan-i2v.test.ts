@@ -22,17 +22,11 @@ describe("alibaba wan i2v integration", () => {
     }
   });
 
-  // Skipped: wan2.7-i2v is only available on the Beijing endpoint
-  // (https://dashscope.aliyuncs.com), and the current DASHSCOPE_API_KEY is an
-  // intl-region key. Enable once a Beijing-scoped key is available.
-  it.skip("should submit an image-to-video task and poll status", async () => {
+  it("should submit an image-to-video task and poll status", async () => {
     ctx = setupPolly("alibaba/wan-i2v");
 
     const provider = alibaba({
       apiKey: process.env.DASHSCOPE_API_KEY ?? "test-key",
-      // wan2.7-i2v is only listed in the Beijing (cn-beijing) console, not
-      // on the Singapore intl endpoint the package defaults to.
-      baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
     });
 
     const imgBuffer = readFileSync(resolve(__dirname, "../fixtures/cat1.jpg"));
@@ -44,7 +38,12 @@ describe("alibaba wan i2v integration", () => {
         input: {
           prompt:
             "The odd-eyed white cat blinks slowly, whiskers twitching, then turns its head toward the camera",
-          img_url: imgDataUrl,
+          media: [
+            {
+              type: "first_frame",
+              url: imgDataUrl,
+            },
+          ],
         },
         parameters: {
           resolution: "720P",
@@ -96,7 +95,12 @@ describe("alibaba wan i2v integration", () => {
           model: "wan2.7-i2v",
           input: {
             prompt: "a cat looking at the camera",
-            img_url: "https://example.com/cat.jpg",
+            media: [
+              {
+                type: "first_frame",
+                url: "https://example.com/cat.jpg",
+              },
+            ],
           },
           parameters: { resolution: "720P", duration: 5 },
         }
@@ -109,16 +113,40 @@ describe("alibaba wan i2v integration", () => {
       );
     expect(missingInput.success).toBe(false);
 
-    const missingImg =
+    const missingMedia =
       provider.post.api.v1.services.aigc.videoGeneration.videoSynthesis.schema.safeParse(
         {
           model: "wan2.7-i2v",
           input: { prompt: "hi" },
         }
       );
-    expect(missingImg.success).toBe(false);
+    expect(missingMedia.success).toBe(false);
     expect(
-      missingImg.error?.issues.some((i) => i.path.includes("img_url"))
+      missingMedia.error?.issues.some((i) => i.path.includes("media"))
     ).toBe(true);
+
+    const legacyImgUrl =
+      provider.post.api.v1.services.aigc.videoGeneration.videoSynthesis.schema.safeParse(
+        {
+          model: "wan2.7-i2v",
+          input: {
+            prompt: "hi",
+            img_url: "https://example.com/cat.jpg",
+          },
+        }
+      );
+    expect(legacyImgUrl.success).toBe(false);
+
+    const emptyMedia =
+      provider.post.api.v1.services.aigc.videoGeneration.videoSynthesis.schema.safeParse(
+        {
+          model: "wan2.7-i2v",
+          input: {
+            prompt: "hi",
+            media: [],
+          },
+        }
+      );
+    expect(emptyMedia.success).toBe(false);
   });
 });

@@ -683,9 +683,11 @@ export const modelInputSchemas: Record<KieMediaModel, ModelInputSchema> = {
         description: "Image editing prompt (max 800 chars)",
       },
       image_url: {
-        type: "string",
+        type: "array",
         required: true,
-        description: "URL of the image to edit (jpeg/png/webp, max 10MB)",
+        description:
+          "URLs of the images to edit (jpeg/png/webp, max 10MB each)",
+        items: { type: "string" },
       },
       image_size: {
         type: "string",
@@ -700,6 +702,10 @@ export const modelInputSchemas: Record<KieMediaModel, ModelInputSchema> = {
       seed: {
         type: "number",
         description: "Random seed",
+      },
+      nsfw_checker: {
+        type: "boolean",
+        description: "Content safety filter (default true)",
       },
     },
   },

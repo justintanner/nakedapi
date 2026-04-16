@@ -20,8 +20,9 @@ describe("kie qwen2/image-edit integration", () => {
       model: "qwen2/image-edit",
       input: {
         prompt: "Add sunglasses to the subject",
-        image_url:
+        image_url: [
           "https://static.aiquickdraw.com/tools/example/1773473208660_6EO8TFjh.webp",
+        ],
         image_size: "1:1",
         output_format: "png",
       },
@@ -46,7 +47,7 @@ describe("kie qwen2/image-edit integration", () => {
       model: "qwen2/image-edit",
       input: {
         prompt: "Edit this image",
-        image_url: "https://example.com/image.jpg",
+        image_url: ["https://example.com/image.jpg"],
       },
     });
     expect(valid.success).toBe(true);
@@ -67,12 +68,15 @@ describe("kie qwen2/image-edit integration", () => {
     expect(schema.type).toBe("image");
     expect(schema.fields.prompt.required).toBe(true);
     expect(schema.fields.image_url.required).toBe(true);
-    expect(schema.fields.image_url.type).toBe("string");
+    expect(schema.fields.image_url.type).toBe("array");
+    expect(schema.fields.image_url.items).toEqual({ type: "string" });
     expect(schema.fields.image_size.required).toBeUndefined();
     expect(schema.fields.image_size.enum).toContain("1:1");
     expect(schema.fields.image_size.enum).toContain("21:9");
     expect(schema.fields.output_format.required).toBeUndefined();
     expect(schema.fields.output_format.enum).toEqual(["png", "jpeg"]);
     expect(schema.fields.seed).toBeDefined();
+    expect(schema.fields.nsfw_checker).toBeDefined();
+    expect(schema.fields.nsfw_checker.type).toBe("boolean");
   });
 });

@@ -4,7 +4,7 @@
 [![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript&logoColor=white)](tsconfig.json)
 
-Alibaba Cloud Model Studio provider for chat completions and streaming.
+Alibaba Cloud Model Studio provider for chat completions, image generation, and streaming.
 
 ## Installation
 
@@ -24,7 +24,7 @@ const alibaba = createAlibaba({ apiKey: process.env.ALIBABA_API_KEY! });
 
 ## API Reference
 
-4 endpoints across 3 groups. Each method mirrors an upstream URL path.
+5 endpoints across 3 groups. Each method mirrors an upstream URL path.
 
 ### compatibleMode
 
@@ -59,6 +59,19 @@ Source: [`packages/provider/alibaba/src/alibaba.ts`](src/alibaba.ts)
 </details>
 
 ### services
+
+<details>
+<summary><code>POST</code> <b><code>alibaba.api.v1.services.aigc.imageGeneration.generation</code></b></summary>
+
+<code>POST https://dashscope.aliyuncs.com/api/v1/services/aigc/image-generation/generation</code>
+
+```typescript
+const res = await alibaba.api.v1.services.aigc.imageGeneration.generation({ /* ... */ });
+```
+
+Source: [`packages/provider/alibaba/src/alibaba.ts`](src/alibaba.ts)
+
+</details>
 
 <details>
 <summary><code>POST</code> <b><code>alibaba.api.v1.services.aigc.videoGeneration.videoSynthesis</code></b></summary>

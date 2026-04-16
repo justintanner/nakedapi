@@ -223,12 +223,13 @@ export const Qwen2ImageEditRequestSchema = z.object({
   callBackUrl: z.string().optional(),
   input: z.object({
     prompt: z.string().min(1),
-    image_url: z.string().min(1),
+    image_url: z.array(z.string().min(1)),
     image_size: z
       .enum(["1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", "21:9"])
       .optional(),
     output_format: z.enum(["png", "jpeg"]).optional(),
     seed: z.number().optional(),
+    nsfw_checker: z.boolean().optional(),
   }),
 });
 

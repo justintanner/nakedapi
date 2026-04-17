@@ -223,7 +223,7 @@ export const Qwen2ImageEditRequestSchema = z.object({
   callBackUrl: z.string().optional(),
   input: z.object({
     prompt: z.string().min(1),
-    image_url: z.array(z.string().min(1)),
+    image_url: z.array(z.string().min(1)).min(1).max(3),
     image_size: z
       .enum(["1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", "21:9"])
       .optional(),
@@ -297,7 +297,7 @@ export const NanoBananaProRequestSchema = z.object({
   callBackUrl: z.string().optional(),
   input: z.object({
     prompt: z.string().min(1),
-    image_input: z.array(z.string()).optional(),
+    image_input: z.array(z.string()).max(8).optional(),
     aspect_ratio: z
       .enum([
         "1:1",
@@ -342,9 +342,9 @@ export const Seedance2FastRequestSchema = z.object({
     prompt: z.string().min(1),
     first_frame_url: z.string().optional(),
     last_frame_url: z.string().optional(),
-    reference_image_urls: z.array(z.string()).optional(),
-    reference_video_urls: z.array(z.string()).optional(),
-    reference_audio_urls: z.array(z.string()).optional(),
+    reference_image_urls: z.array(z.string()).max(9).optional(),
+    reference_video_urls: z.array(z.string()).max(3).optional(),
+    reference_audio_urls: z.array(z.string()).max(3).optional(),
     return_last_frame: z.boolean().optional(),
     generate_audio: z.boolean().optional(),
     resolution: z.enum(["480p", "720p"]).optional(),
@@ -392,7 +392,7 @@ export const GptImageToImageRequestSchema = z.object({
   model: z.literal("gpt-image/1.5-image-to-image"),
   callBackUrl: z.string().optional(),
   input: z.object({
-    input_urls: z.array(z.string()),
+    input_urls: z.array(z.string()).min(1).max(4),
     prompt: z.string().min(1),
     aspect_ratio: z.enum(["1:1", "2:3", "3:2"]).optional(),
     quality: GptImageQualitySchema.optional(),
@@ -457,24 +457,51 @@ export const SoraWatermarkRequestSchema = z.object({
   }),
 });
 
-export const Wan27ImageToVideoRequestSchema = z.object({
-  model: z.literal("wan/2-7-image-to-video"),
-  callBackUrl: z.string().optional(),
-  input: z.object({
-    prompt: z.string().min(1),
-    negative_prompt: z.string().optional(),
-    first_frame_url: z.string().optional(),
-    last_frame_url: z.string().optional(),
-    first_clip_url: z.string().optional(),
-    driving_audio_url: z.string().optional(),
-    resolution: Wan27ResolutionSchema.optional(),
-    duration: z.number().optional(),
-    prompt_extend: z.boolean().optional(),
-    watermark: z.boolean().optional(),
-    seed: z.number().optional(),
-    nsfw_checker: z.boolean().optional(),
-  }),
-});
+// Refines live on the outer request object (not the `input` sub-object) so
+// that `input.*` fields remain introspectable by downstream tools that walk
+// ZodArray/ZodObject defs (e.g. clipfirst's readSlotConstraints).
+export const Wan27ImageToVideoRequestSchema = z
+  .object({
+    model: z.literal("wan/2-7-image-to-video"),
+    callBackUrl: z.string().optional(),
+    input: z.object({
+      prompt: z.string().min(1),
+      negative_prompt: z.string().optional(),
+      first_frame_url: z.string().optional(),
+      last_frame_url: z.string().optional(),
+      first_clip_url: z.string().optional(),
+      driving_audio_url: z.string().optional(),
+      resolution: Wan27ResolutionSchema.optional(),
+      duration: z.number().optional(),
+      prompt_extend: z.boolean().optional(),
+      watermark: z.boolean().optional(),
+      seed: z.number().optional(),
+      nsfw_checker: z.boolean().optional(),
+    }),
+  })
+  .refine(
+    (v) =>
+      Boolean(v.input.first_frame_url) ||
+      Boolean(v.input.last_frame_url) ||
+      Boolean(v.input.first_clip_url),
+    {
+      message:
+        "wan/2-7-image-to-video requires at least one of first_frame_url, last_frame_url, or first_clip_url",
+      path: ["input", "first_frame_url"],
+    }
+  )
+  .refine(
+    (v) =>
+      !(
+        v.input.first_clip_url &&
+        (v.input.first_frame_url || v.input.last_frame_url)
+      ),
+    {
+      message:
+        "wan/2-7-image-to-video does not accept first_clip_url combined with first_frame_url or last_frame_url",
+      path: ["input", "first_clip_url"],
+    }
+  );
 
 export const Wan27RefToVideoRequestSchema = z.object({
   model: z.literal("wan/2-7-r2v"),
@@ -750,7 +777,11 @@ export type KieClaudeRequest = z.infer<typeof KieClaudeRequestSchema>;
 // Media generation request (discriminated union on model)
 // ---------------------------------------------------------------------------
 
-export const MediaGenerationRequestSchema = z.discriminatedUnion("model", [
+// Plain union (not discriminatedUnion) so individual members can be refined —
+// discriminatedUnion requires ZodObject members, but `.refine()` wraps an
+// object in ZodEffects. Parsing cost is slightly higher (tries each member)
+// but accepted for the added input-contract validation.
+export const MediaGenerationRequestSchema = z.union([
   KlingVideoRequestSchema,
   KlingMotionControlRequestSchema,
   GrokTextToImageRequestSchema,

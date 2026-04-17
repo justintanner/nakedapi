@@ -268,7 +268,7 @@ export const modelInputSchemas: Record<KieMediaModel, ModelInputSchema> = {
       task_id: {
         type: "string",
         required: true,
-        description: "Video task ID to upscale",
+        description: "Video task ID to upscale (max 100 chars)",
       },
     },
   },

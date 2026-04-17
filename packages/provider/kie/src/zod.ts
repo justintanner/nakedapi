@@ -291,7 +291,7 @@ export const GrokVideoUpscaleRequestSchema = z.object({
   model: z.literal("grok-imagine/upscale"),
   callBackUrl: z.string().optional(),
   input: z.object({
-    task_id: z.string().min(1),
+    task_id: z.string().min(1).max(100),
   }),
 });
 

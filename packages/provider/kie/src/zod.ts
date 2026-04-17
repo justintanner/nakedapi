@@ -343,19 +343,20 @@ export const Seedance2FastRequestSchema = z.object({
   model: z.literal("bytedance/seedance-2-fast"),
   callBackUrl: z.string().optional(),
   input: z.object({
-    prompt: z.string().min(1),
+    prompt: z.string().min(3).max(20000),
     first_frame_url: z.string().optional(),
     last_frame_url: z.string().optional(),
     reference_image_urls: z.array(z.string()).max(9).optional(),
     reference_video_urls: z.array(z.string()).max(3).optional(),
     reference_audio_urls: z.array(z.string()).max(3).optional(),
+    /** @deprecated */
     return_last_frame: z.boolean().optional(),
     generate_audio: z.boolean().optional(),
     resolution: z.enum(["480p", "720p"]).optional(),
     aspect_ratio: z
       .enum(["1:1", "4:3", "3:4", "16:9", "9:16", "21:9", "adaptive"])
       .optional(),
-    duration: z.number().optional(),
+    duration: z.number().int().min(4).max(15).default(5),
     web_search: z.boolean(),
     nsfw_checker: z.boolean().default(false),
   }),

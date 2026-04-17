@@ -74,43 +74,102 @@ export const AlibabaChatRequestSchema = z.object({
 
 // ---------------------------------------------------------------------------
 // Video synthesis request
+//
+// Covers the new DashScope image-to-video protocol (wan2.7 family). The
+// `media` array carries reference assets tagged by `type`; the wan2.7-i2v
+// model accepts first_frame/last_frame/driving_audio/first_clip, and
+// wan2.7-videoedit additionally accepts `video`. Each type can appear at
+// most once. Per-model business rules (required asset combinations,
+// resolution whitelist) are enforced via outer .refine() so the inner
+// field shapes stay introspectable by UI layers.
 // ---------------------------------------------------------------------------
 
+export const AlibabaVideoMediaTypeSchema = z.enum([
+  "first_frame",
+  "last_frame",
+  "driving_audio",
+  "first_clip",
+  "video",
+]);
+
+export const AlibabaVideoMediaSchema = z.object({
+  type: AlibabaVideoMediaTypeSchema,
+  url: z.string().min(1),
+});
+
 export const AlibabaVideoSynthesisInputSchema = z.object({
-  prompt: z.string(),
-  media: z
-    .array(
-      z.object({
-        type: z.enum([
-          "first_frame",
-          "last_frame",
-          "driving_audio",
-          "first_clip",
-          "video",
-        ]),
-        url: z.string().min(1),
-      })
-    )
-    .min(1),
-  audio_url: z.string().optional(),
+  prompt: z.string().max(5000).optional(),
+  negative_prompt: z.string().max(500).optional(),
+  media: z.array(AlibabaVideoMediaSchema).min(1),
 });
 
 export const AlibabaVideoSynthesisParametersSchema = z.object({
   resolution: z.enum(["480P", "720P", "1080P"]).optional(),
-  duration: z.number().optional(),
+  duration: z.number().int().min(2).max(15).optional(),
   shot_type: z.enum(["single", "multi"]).optional(),
   prompt_extend: z.boolean().optional(),
   watermark: z.boolean().optional(),
   audio: z.boolean().optional(),
-  seed: z.number().optional(),
-  negative_prompt: z.string().optional(),
+  seed: z.number().int().min(0).max(2147483647).optional(),
 });
 
-export const AlibabaVideoSynthesisRequestSchema = z.object({
-  model: z.string(),
-  input: AlibabaVideoSynthesisInputSchema,
-  parameters: AlibabaVideoSynthesisParametersSchema.optional(),
-});
+export const AlibabaVideoSynthesisRequestSchema = z
+  .object({
+    model: z.string(),
+    input: AlibabaVideoSynthesisInputSchema,
+    parameters: AlibabaVideoSynthesisParametersSchema.optional(),
+  })
+  .refine(
+    (v) => {
+      const types = v.input.media.map((m) => m.type);
+      return new Set(types).size === types.length;
+    },
+    {
+      message: "media entries must have unique `type` values",
+      path: ["input", "media"],
+    }
+  )
+  .refine(
+    (v) => {
+      if (v.model !== "wan2.7-i2v") return true;
+      return v.input.media.some(
+        (m) =>
+          m.type === "first_frame" ||
+          m.type === "last_frame" ||
+          m.type === "first_clip"
+      );
+    },
+    {
+      message:
+        "wan2.7-i2v requires at least one media entry of type first_frame, last_frame, or first_clip",
+      path: ["input", "media"],
+    }
+  )
+  .refine(
+    (v) => {
+      if (v.model !== "wan2.7-i2v") return true;
+      const hasFirstClip = v.input.media.some((m) => m.type === "first_clip");
+      const hasFrame = v.input.media.some(
+        (m) => m.type === "first_frame" || m.type === "last_frame"
+      );
+      return !(hasFirstClip && hasFrame);
+    },
+    {
+      message:
+        "wan2.7-i2v does not accept first_clip combined with first_frame or last_frame",
+      path: ["input", "media"],
+    }
+  )
+  .refine(
+    (v) => {
+      if (v.model !== "wan2.7-i2v") return true;
+      return v.parameters?.resolution !== "480P";
+    },
+    {
+      message: "wan2.7-i2v supports only 720P or 1080P",
+      path: ["parameters", "resolution"],
+    }
+  );
 
 // ---------------------------------------------------------------------------
 // Image generation request (Wan 2.7 — async)
@@ -204,6 +263,8 @@ export type AlibabaMessage = z.infer<typeof AlibabaMessageSchema>;
 export type AlibabaStreamOptions = z.infer<typeof AlibabaStreamOptionsSchema>;
 export type AlibabaResponseFormat = z.infer<typeof AlibabaResponseFormatSchema>;
 export type AlibabaChatRequest = z.infer<typeof AlibabaChatRequestSchema>;
+export type AlibabaVideoMediaType = z.infer<typeof AlibabaVideoMediaTypeSchema>;
+export type AlibabaVideoMedia = z.infer<typeof AlibabaVideoMediaSchema>;
 export type AlibabaVideoSynthesisInput = z.infer<
   typeof AlibabaVideoSynthesisInputSchema
 >;

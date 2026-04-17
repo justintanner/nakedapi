@@ -14,6 +14,8 @@ export type {
   AlibabaStreamOptions,
   AlibabaResponseFormat,
   AlibabaChatRequest,
+  AlibabaVideoMediaType,
+  AlibabaVideoMedia,
   AlibabaVideoSynthesisInput,
   AlibabaVideoSynthesisParameters,
   AlibabaVideoSynthesisRequest,

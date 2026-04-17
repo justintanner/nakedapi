@@ -170,5 +170,102 @@ describe("alibaba wan i2v integration", () => {
         }
       );
     expect(emptyMedia.success).toBe(false);
+
+    const negativePromptAccepted =
+      provider.post.api.v1.services.aigc.videoGeneration.videoSynthesis.schema.safeParse(
+        {
+          model: "wan2.7-i2v",
+          input: {
+            prompt: "hi",
+            negative_prompt: "low resolution, blurry",
+            media: [
+              { type: "first_frame", url: "https://example.com/cat.jpg" },
+            ],
+          },
+        }
+      );
+    expect(negativePromptAccepted.success).toBe(true);
+
+    const duplicateMediaType =
+      provider.post.api.v1.services.aigc.videoGeneration.videoSynthesis.schema.safeParse(
+        {
+          model: "wan2.7-i2v",
+          input: {
+            prompt: "hi",
+            media: [
+              { type: "first_frame", url: "https://example.com/a.jpg" },
+              { type: "first_frame", url: "https://example.com/b.jpg" },
+            ],
+          },
+        }
+      );
+    expect(duplicateMediaType.success).toBe(false);
+
+    const audioOnlyRejected =
+      provider.post.api.v1.services.aigc.videoGeneration.videoSynthesis.schema.safeParse(
+        {
+          model: "wan2.7-i2v",
+          input: {
+            prompt: "hi",
+            media: [
+              { type: "driving_audio", url: "https://example.com/a.mp3" },
+            ],
+          },
+        }
+      );
+    expect(audioOnlyRejected.success).toBe(false);
+
+    const firstClipWithFrameRejected =
+      provider.post.api.v1.services.aigc.videoGeneration.videoSynthesis.schema.safeParse(
+        {
+          model: "wan2.7-i2v",
+          input: {
+            prompt: "hi",
+            media: [
+              { type: "first_clip", url: "https://example.com/a.mp4" },
+              { type: "first_frame", url: "https://example.com/a.jpg" },
+            ],
+          },
+        }
+      );
+    expect(firstClipWithFrameRejected.success).toBe(false);
+
+    const resolution480Rejected =
+      provider.post.api.v1.services.aigc.videoGeneration.videoSynthesis.schema.safeParse(
+        {
+          model: "wan2.7-i2v",
+          input: {
+            prompt: "hi",
+            media: [{ type: "first_frame", url: "https://example.com/a.jpg" }],
+          },
+          parameters: { resolution: "480P" },
+        }
+      );
+    expect(resolution480Rejected.success).toBe(false);
+
+    const durationOutOfRange =
+      provider.post.api.v1.services.aigc.videoGeneration.videoSynthesis.schema.safeParse(
+        {
+          model: "wan2.7-i2v",
+          input: {
+            prompt: "hi",
+            media: [{ type: "first_frame", url: "https://example.com/a.jpg" }],
+          },
+          parameters: { duration: 20 },
+        }
+      );
+    expect(durationOutOfRange.success).toBe(false);
+
+    const promptTooLong =
+      provider.post.api.v1.services.aigc.videoGeneration.videoSynthesis.schema.safeParse(
+        {
+          model: "wan2.7-i2v",
+          input: {
+            prompt: "a".repeat(5001),
+            media: [{ type: "first_frame", url: "https://example.com/a.jpg" }],
+          },
+        }
+      );
+    expect(promptTooLong.success).toBe(false);
   });
 });

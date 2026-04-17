@@ -39,6 +39,8 @@ export type {
   AlibabaChatStreamChunk,
   AlibabaModel,
   AlibabaModelListResponse,
+  AlibabaVideoMediaType,
+  AlibabaVideoMedia,
   AlibabaVideoSynthesisInput,
   AlibabaVideoSynthesisParameters,
   AlibabaVideoSynthesisRequest,

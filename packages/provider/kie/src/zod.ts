@@ -229,7 +229,7 @@ export const Qwen2ImageEditRequestSchema = z.object({
       .optional(),
     output_format: z.enum(["png", "jpeg"]).optional(),
     seed: z.number().optional(),
-    nsfw_checker: z.boolean().optional(),
+    nsfw_checker: z.boolean().default(false),
   }),
 });
 
@@ -269,7 +269,7 @@ export const GrokImageToVideoRequestSchema = z.object({
     duration: GrokImageToVideoDurationSchema.optional(),
     resolution: GrokImagineResolutionSchema.optional(),
     aspect_ratio: z.enum(["2:3", "3:2", "1:1", "16:9", "9:16"]).optional(),
-    nsfw_checker: z.boolean().optional(),
+    nsfw_checker: z.boolean().default(false),
   }),
 });
 
@@ -331,7 +331,7 @@ export const SeedanceVideoRequestSchema = z.object({
     duration: SeedanceDurationSchema.optional(),
     fixed_lens: z.boolean().optional(),
     generate_audio: z.boolean().optional(),
-    nsfw_checker: z.boolean().optional(),
+    nsfw_checker: z.boolean().default(false),
   }),
 });
 
@@ -353,7 +353,7 @@ export const Seedance2FastRequestSchema = z.object({
       .optional(),
     duration: z.number().optional(),
     web_search: z.boolean(),
-    nsfw_checker: z.boolean().optional(),
+    nsfw_checker: z.boolean().default(false),
   }),
 });
 
@@ -409,7 +409,7 @@ export const SeedreamImageToImageRequestSchema = z.object({
       .enum(["1:1", "4:3", "3:4", "16:9", "9:16", "2:3", "3:2", "21:9"])
       .optional(),
     quality: z.enum(["basic", "high"]).optional(),
-    nsfw_checker: z.boolean().optional(),
+    nsfw_checker: z.boolean().default(false),
   }),
 });
 
@@ -476,7 +476,7 @@ export const Wan27ImageToVideoRequestSchema = z
       prompt_extend: z.boolean().optional(),
       watermark: z.boolean().optional(),
       seed: z.number().optional(),
-      nsfw_checker: z.boolean().optional(),
+      nsfw_checker: z.boolean().default(false),
     }),
   })
   .refine(
@@ -519,7 +519,7 @@ export const Wan27RefToVideoRequestSchema = z.object({
     prompt_extend: z.boolean().optional(),
     watermark: z.boolean().optional(),
     seed: z.number().optional(),
-    nsfw_checker: z.boolean().optional(),
+    nsfw_checker: z.boolean().default(false),
   }),
 });
 
@@ -538,7 +538,7 @@ export const Wan27VideoEditRequestSchema = z.object({
     prompt_extend: z.boolean().optional(),
     watermark: z.boolean().optional(),
     seed: z.number().optional(),
-    nsfw_checker: z.boolean().optional(),
+    nsfw_checker: z.boolean().default(false),
   }),
 });
 
@@ -557,7 +557,7 @@ export const Wan27ImageRequestSchema = z.object({
     bbox_list: z.array(z.array(z.array(z.number()))).optional(),
     watermark: z.boolean().optional(),
     seed: z.number().optional(),
-    nsfw_checker: z.boolean().optional(),
+    nsfw_checker: z.boolean().default(false),
   }),
 });
 
@@ -576,7 +576,7 @@ export const Wan27ImageProRequestSchema = z.object({
     bbox_list: z.array(z.array(z.array(z.number()))).optional(),
     watermark: z.boolean().optional(),
     seed: z.number().optional(),
-    nsfw_checker: z.boolean().optional(),
+    nsfw_checker: z.boolean().default(false),
   }),
 });
 

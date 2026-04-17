@@ -162,7 +162,7 @@ export const modelInputSchemas: Record<KieMediaModel, ModelInputSchema> = {
       prompt: {
         type: "string",
         required: true,
-        description: "Video generation prompt",
+        description: "Video generation prompt (max 5000 chars)",
       },
       aspect_ratio: {
         type: "string",
@@ -175,14 +175,18 @@ export const modelInputSchemas: Record<KieMediaModel, ModelInputSchema> = {
         description: "Generation mode (default normal)",
       },
       duration: {
-        type: "string",
-        enum: ["6", "10"],
-        description: "Duration in seconds (default 6)",
+        type: "number",
+        description: "Duration in seconds (6-30, default 6)",
       },
       resolution: {
         type: "string",
         enum: ["480p", "720p"],
         description: "Output resolution (default 480p)",
+      },
+      nsfw_checker: {
+        type: "boolean",
+        description:
+          "Enable content filtering (default false; false returns raw model output)",
       },
     },
   },

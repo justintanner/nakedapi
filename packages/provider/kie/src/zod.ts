@@ -25,6 +25,7 @@ export const KieMediaModelSchema = z.enum([
   "qwen2/image-edit",
   "bytedance/seedance-2-fast",
   "wan/2-7-image-to-video",
+  "wan/2-7-text-to-video",
   "wan/2-7-r2v",
   "wan/2-7-videoedit",
   "wan/2-7-image",
@@ -506,6 +507,23 @@ export const Wan27ImageToVideoRequestSchema = z
     }
   );
 
+export const Wan27TextToVideoRequestSchema = z.object({
+  model: z.literal("wan/2-7-text-to-video"),
+  callBackUrl: z.string().optional(),
+  input: z.object({
+    prompt: z.string().min(1).max(5000),
+    negative_prompt: z.string().max(500).optional(),
+    audio_url: z.string().optional(),
+    resolution: Wan27ResolutionSchema.optional(),
+    ratio: Wan27AspectRatioSchema.optional(),
+    duration: z.number().int().min(2).max(15).optional(),
+    prompt_extend: z.boolean().optional(),
+    watermark: z.boolean().optional(),
+    seed: z.number().int().min(0).max(2147483647).optional(),
+    nsfw_checker: z.boolean().default(false),
+  }),
+});
+
 export const Wan27RefToVideoRequestSchema = z.object({
   model: z.literal("wan/2-7-r2v"),
   callBackUrl: z.string().optional(),
@@ -805,6 +823,7 @@ export const MediaGenerationRequestSchema = z.union([
   Qwen2ImageEditRequestSchema,
   Seedance2FastRequestSchema,
   Wan27ImageToVideoRequestSchema,
+  Wan27TextToVideoRequestSchema,
   Wan27RefToVideoRequestSchema,
   Wan27VideoEditRequestSchema,
   Wan27ImageRequestSchema,
@@ -895,6 +914,9 @@ export type ElevenLabsSttRequest = z.infer<typeof ElevenLabsSttRequestSchema>;
 export type SoraWatermarkRequest = z.infer<typeof SoraWatermarkRequestSchema>;
 export type Wan27ImageToVideoRequest = z.infer<
   typeof Wan27ImageToVideoRequestSchema
+>;
+export type Wan27TextToVideoRequest = z.infer<
+  typeof Wan27TextToVideoRequestSchema
 >;
 export type Wan27RefToVideoRequest = z.infer<
   typeof Wan27RefToVideoRequestSchema

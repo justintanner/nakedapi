@@ -794,6 +794,55 @@ export const modelInputSchemas: Record<KieMediaModel, ModelInputSchema> = {
     },
   },
 
+  "wan/2-7-text-to-video": {
+    type: "video",
+    fields: {
+      prompt: {
+        type: "string",
+        required: true,
+        description: "Positive prompt (max 5000 chars)",
+      },
+      negative_prompt: {
+        type: "string",
+        description: "Negative prompt (max 500 chars)",
+      },
+      audio_url: {
+        type: "string",
+        description: "Optional custom audio URL",
+      },
+      resolution: {
+        type: "string",
+        enum: ["720p", "1080p"],
+        description: "Video resolution (default 1080p)",
+      },
+      ratio: {
+        type: "string",
+        enum: ["16:9", "9:16", "1:1", "4:3", "3:4"],
+        description: "Video aspect ratio (default 16:9)",
+      },
+      duration: {
+        type: "number",
+        description: "Duration in seconds, 2-15 (default 5)",
+      },
+      prompt_extend: {
+        type: "boolean",
+        description: "Intelligent prompt rewriting (default true)",
+      },
+      watermark: {
+        type: "boolean",
+        description: "AI-generated watermark (default false)",
+      },
+      seed: {
+        type: "number",
+        description: "Random seed (0-2147483647)",
+      },
+      nsfw_checker: {
+        type: "boolean",
+        description: "Content safety filter (default false)",
+      },
+    },
+  },
+
   "wan/2-7-r2v": {
     type: "video",
     fields: {

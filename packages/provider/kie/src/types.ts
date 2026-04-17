@@ -31,6 +31,7 @@ export type {
   Qwen2ImageEditRequest,
   Seedance2FastRequest,
   Wan27ImageToVideoRequest,
+  Wan27TextToVideoRequest,
   Wan27RefToVideoRequest,
   Wan27VideoEditRequest,
   Wan27ImageColorPalette,

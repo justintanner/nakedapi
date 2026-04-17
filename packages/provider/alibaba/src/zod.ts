@@ -115,7 +115,7 @@ export const AlibabaVideoSynthesisParametersSchema = z.object({
 
 export const AlibabaVideoSynthesisRequestSchema = z
   .object({
-    model: z.string(),
+    model: z.enum(["wan2.7-i2v", "wan2.7-videoedit"]),
     input: AlibabaVideoSynthesisInputSchema,
     parameters: AlibabaVideoSynthesisParametersSchema.optional(),
   })

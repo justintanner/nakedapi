@@ -116,12 +116,21 @@ export const modelInputSchemas: Record<KieMediaModel, ModelInputSchema> = {
       prompt: {
         type: "string",
         required: true,
-        description: "Image generation prompt",
+        description: "Image generation prompt (max 5000 chars)",
       },
       aspect_ratio: {
         type: "string",
         enum: ["2:3", "3:2", "1:1", "16:9", "9:16"],
-        description: "Output aspect ratio",
+        description: "Output aspect ratio (default 1:1)",
+      },
+      nsfw_checker: {
+        type: "boolean",
+        description:
+          "Enable content filtering (default false; false returns raw model output)",
+      },
+      enable_pro: {
+        type: "boolean",
+        description: "Quality mode when true, speed mode when false",
       },
     },
   },

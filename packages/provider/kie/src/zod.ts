@@ -197,8 +197,10 @@ export const GrokTextToImageRequestSchema = z.object({
   model: z.literal("grok-imagine/text-to-image"),
   callBackUrl: z.string().optional(),
   input: z.object({
-    prompt: z.string().min(1),
+    prompt: z.string().min(1).max(5000),
     aspect_ratio: z.enum(["2:3", "3:2", "1:1", "16:9", "9:16"]).optional(),
+    nsfw_checker: z.boolean().default(false),
+    enable_pro: z.boolean().optional(),
   }),
 });
 

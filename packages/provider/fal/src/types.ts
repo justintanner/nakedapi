@@ -34,6 +34,7 @@ export type {
   FalXaiGrokImagineVideoImageToVideoParams,
   FalVeo3p1TextToVideoParams,
   FalVeo3p1ImageToVideoParams,
+  FalKlingVideoV3ProImageToVideoParams,
 } from "./zod";
 
 // Re-import for use in this file's interface definitions
@@ -66,6 +67,7 @@ import type {
   FalXaiGrokImagineVideoImageToVideoParams,
   FalVeo3p1TextToVideoParams,
   FalVeo3p1ImageToVideoParams,
+  FalKlingVideoV3ProImageToVideoParams,
 } from "./zod";
 
 // Error types returned by fal API
@@ -702,6 +704,23 @@ export interface FalVeo3p1ImageToVideoResponse {
   video: FalFile;
 }
 
+// Kling Video v3 Pro (image-to-video)
+export interface FalKlingV3MultiPromptElement {
+  prompt: string;
+  duration?: string;
+}
+
+export interface FalKlingV3ComboElementInput {
+  frontal_image_url?: string;
+  reference_image_urls?: string[];
+  video_url?: string;
+  voice_id?: string;
+}
+
+export interface FalKlingVideoV3ProImageToVideoResponse {
+  video: FalFile;
+}
+
 // ==================== Serverless Logs ====================
 
 // Label filter for log queries
@@ -1171,8 +1190,28 @@ export interface FalRunVeo3p1Namespace {
   imageToVideo: FalVeo3p1ImageToVideoFn;
 }
 
+type FalKlingVideoV3ProImageToVideoFn = ((
+  params: FalKlingVideoV3ProImageToVideoParams,
+  signal?: AbortSignal
+) => Promise<FalKlingVideoV3ProImageToVideoResponse>) & {
+  schema: z.ZodType<FalKlingVideoV3ProImageToVideoParams>;
+};
+
+export interface FalRunKlingVideoV3ProNamespace {
+  imageToVideo: FalKlingVideoV3ProImageToVideoFn;
+}
+
+export interface FalRunKlingVideoV3Namespace {
+  pro: FalRunKlingVideoV3ProNamespace;
+}
+
+export interface FalRunKlingVideoNamespace {
+  v3: FalRunKlingVideoV3Namespace;
+}
+
 export interface FalRunNamespace {
   bytedance: FalRunBytedanceNamespace;
+  klingVideo: FalRunKlingVideoNamespace;
   nanoBanana: FalRunNanoBananaNamespace;
   nanoBananaPro: FalRunNanoBananaProNamespace;
   nanoBanana2: FalRunNanoBanana2Namespace;

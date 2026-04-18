@@ -562,6 +562,39 @@ export const FalXaiGrokImagineImageEditRequestSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// Kling Video v3 Pro image-to-video
+// ---------------------------------------------------------------------------
+
+export const FalKlingVideoV3ProImageToVideoRequestSchema = z.object({
+  start_image_url: z.string(),
+  prompt: z.string().max(2500).optional(),
+  multi_prompt: z
+    .array(
+      z.object({
+        prompt: z.string(),
+        duration: z.string().optional(),
+      })
+    )
+    .optional(),
+  end_image_url: z.string().optional(),
+  duration: z.string().optional(),
+  generate_audio: z.boolean().optional(),
+  shot_type: z.enum(["customize"]).optional(),
+  negative_prompt: z.string().max(2500).optional(),
+  cfg_scale: z.number().min(0).max(1).optional(),
+  elements: z
+    .array(
+      z.object({
+        frontal_image_url: z.string().optional(),
+        reference_image_urls: z.array(z.string()).optional(),
+        video_url: z.string().optional(),
+        voice_id: z.string().optional(),
+      })
+    )
+    .optional(),
+});
+
+// ---------------------------------------------------------------------------
 // Veo 3.1 text-to-video
 // ---------------------------------------------------------------------------
 
@@ -714,5 +747,8 @@ export type FalVeo3p1TextToVideoParams = z.infer<
 >;
 export type FalVeo3p1ImageToVideoParams = z.infer<
   typeof FalVeo3p1ImageToVideoRequestSchema
+>;
+export type FalKlingVideoV3ProImageToVideoParams = z.infer<
+  typeof FalKlingVideoV3ProImageToVideoRequestSchema
 >;
 export type FalOptions = z.infer<typeof FalOptionsSchema>;

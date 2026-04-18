@@ -24,7 +24,7 @@ const fal = createFal({ apiKey: process.env.FAL_API_KEY! });
 
 ## API Reference
 
-44 endpoints across 14 groups. Each method mirrors an upstream URL path.
+45 endpoints across 15 groups. Each method mirrors an upstream URL path.
 
 ### bytedance
 
@@ -131,6 +131,23 @@ Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
 
 ```typescript
 const res = await fal.gptImage1p5.edit({ /* ... */ });
+```
+
+Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
+
+</details>
+
+### klingVideo
+
+<details>
+<summary><code>POST</code> <b><code>fal.klingVideo.v3.pro.imageToVideo</code></b></summary>
+
+<code>POST https://api.fal.ai/v1/fal-ai/kling-video/v3/pro/image-to-video</code>
+
+[Upstream docs ↗](https://docs.fal.ai)
+
+```typescript
+const res = await fal.klingVideo.v3.pro.imageToVideo({ /* ... */ });
 ```
 
 Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)

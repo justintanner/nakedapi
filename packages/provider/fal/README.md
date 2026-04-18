@@ -24,7 +24,7 @@ const fal = createFal({ apiKey: process.env.FAL_API_KEY! });
 
 ## API Reference
 
-35 endpoints across 10 groups. Each method mirrors an upstream URL path.
+37 endpoints across 11 groups. Each method mirrors an upstream URL path.
 
 ### bytedance
 
@@ -347,6 +347,38 @@ Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
 
 ```typescript
 const res = await fal.v1.queue.submit({ /* ... */ });
+```
+
+Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
+
+</details>
+
+### qwenImage
+
+<details>
+<summary><code>POST</code> <b><code>fal.qwenImage</code></b></summary>
+
+<code>POST https://api.fal.ai/v1/fal-ai/qwen-image</code>
+
+[Upstream docs ↗](https://docs.fal.ai)
+
+```typescript
+const res = await fal.qwenImage({ /* ... */ });
+```
+
+Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
+
+</details>
+
+<details>
+<summary><code>POST</code> <b><code>fal.qwenImage.edit</code></b></summary>
+
+<code>POST https://api.fal.ai/v1/fal-ai/qwen-image-edit</code>
+
+[Upstream docs ↗](https://docs.fal.ai)
+
+```typescript
+const res = await fal.qwenImage.edit({ /* ... */ });
 ```
 
 Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)

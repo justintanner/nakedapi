@@ -135,6 +135,13 @@ export type {
   FalXaiGrokImagineImageEditParams,
   FalXaiGrokImagineImageEditResponse,
   FalRunXaiNamespace,
+  FalQwenImageSize,
+  FalQwenImageOutputFormat,
+  FalQwenImageAcceleration,
+  FalQwenImageParams,
+  FalQwenImageResponse,
+  FalQwenImageEditParams,
+  FalQwenImageEditResponse,
   FalRunNamespace,
   FalProvider,
 } from "./types";

@@ -60,6 +60,10 @@ import {
   FalXaiGrokImagineImageResponse,
   FalXaiGrokImagineImageEditParams,
   FalXaiGrokImagineImageEditResponse,
+  FalQwenImageParams,
+  FalQwenImageResponse,
+  FalQwenImageEditParams,
+  FalQwenImageEditResponse,
   FalRunNamespace,
 } from "./types";
 import {
@@ -82,6 +86,8 @@ import {
   FalWanV2p7EditRequestSchema,
   FalXaiGrokImagineImageRequestSchema,
   FalXaiGrokImagineImageEditRequestSchema,
+  FalQwenImageRequestSchema,
+  FalQwenImageEditRequestSchema,
 } from "./zod";
 
 // Helper function to safely handle AbortSignal across different environments
@@ -870,6 +876,51 @@ export function fal(opts: FalOptions): FalProvider {
     }
   );
 
+  // sig-ok: stylistic dotPath divergence from URL
+  // POST https://api.fal.ai/v1/fal-ai/qwen-image-edit
+  // Docs: https://docs.fal.ai
+  const qwenImageEdit = Object.assign(
+    async function edit(
+      params: FalQwenImageEditParams,
+      signal?: AbortSignal
+    ): Promise<FalQwenImageEditResponse> {
+      return makeRequest<FalQwenImageEditResponse>(
+        "POST",
+        "/fal-ai/qwen-image-edit",
+        params as unknown as Record<string, unknown>,
+        signal,
+        undefined,
+        runBaseURL
+      );
+    },
+    {
+      schema: FalQwenImageEditRequestSchema,
+    }
+  );
+
+  // sig-ok: stylistic dotPath divergence from URL
+  // POST https://api.fal.ai/v1/fal-ai/qwen-image
+  // Docs: https://docs.fal.ai
+  const qwenImage = Object.assign(
+    async function qwenImage(
+      params: FalQwenImageParams,
+      signal?: AbortSignal
+    ): Promise<FalQwenImageResponse> {
+      return makeRequest<FalQwenImageResponse>(
+        "POST",
+        "/fal-ai/qwen-image",
+        params as unknown as Record<string, unknown>,
+        signal,
+        undefined,
+        runBaseURL
+      );
+    },
+    {
+      schema: FalQwenImageRequestSchema,
+      edit: qwenImageEdit,
+    }
+  );
+
   const run: FalRunNamespace = {
     bytedance: {
       seedance2p0: {
@@ -893,6 +944,7 @@ export function fal(opts: FalOptions): FalProvider {
       textToImage: nanoBanana2TextToImage,
       edit: nanoBanana2Edit,
     },
+    qwenImage,
     falAi: {
       elevenlabs: {
         speechToText: {

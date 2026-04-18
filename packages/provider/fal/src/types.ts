@@ -25,6 +25,8 @@ export type {
   FalWanV2p7EditParams,
   FalXaiGrokImagineImageParams,
   FalXaiGrokImagineImageEditParams,
+  FalQwenImageParams,
+  FalQwenImageEditParams,
 } from "./zod";
 
 // Re-import for use in this file's interface definitions
@@ -48,6 +50,8 @@ import type {
   FalWanV2p7EditParams,
   FalXaiGrokImagineImageParams,
   FalXaiGrokImagineImageEditParams,
+  FalQwenImageParams,
+  FalQwenImageEditParams,
 } from "./zod";
 
 // Error types returned by fal API
@@ -494,6 +498,36 @@ export interface FalNanoBanana2TextToImageResponse {
 export interface FalNanoBanana2EditResponse {
   images: FalFile[];
   description: string;
+}
+
+// Qwen Image (text-to-image and edit)
+export type FalQwenImageSize =
+  | "square_hd"
+  | "square"
+  | "portrait_4_3"
+  | "portrait_16_9"
+  | "landscape_4_3"
+  | "landscape_16_9"
+  | { width: number; height: number };
+
+export type FalQwenImageOutputFormat = "jpeg" | "png";
+
+export type FalQwenImageAcceleration = "none" | "regular" | "high";
+
+export interface FalQwenImageResponse {
+  images: FalFile[];
+  timings: Record<string, unknown>;
+  seed: number;
+  has_nsfw_concepts: boolean[];
+  prompt: string;
+}
+
+export interface FalQwenImageEditResponse {
+  images: FalFile[];
+  timings: Record<string, unknown>;
+  seed: number;
+  has_nsfw_concepts: boolean[];
+  prompt: string;
 }
 
 // Bytedance Seedream v5 Lite image editing
@@ -953,10 +987,26 @@ export interface FalRunXaiNamespace {
   grokImagineImage: FalXaiGrokImagineImageFn;
 }
 
+type FalQwenImageEditFn = ((
+  params: FalQwenImageEditParams,
+  signal?: AbortSignal
+) => Promise<FalQwenImageEditResponse>) & {
+  schema: z.ZodType<FalQwenImageEditParams>;
+};
+
+type FalQwenImageFn = ((
+  params: FalQwenImageParams,
+  signal?: AbortSignal
+) => Promise<FalQwenImageResponse>) & {
+  schema: z.ZodType<FalQwenImageParams>;
+  edit: FalQwenImageEditFn;
+};
+
 export interface FalRunNamespace {
   bytedance: FalRunBytedanceNamespace;
   nanoBananaPro: FalRunNanoBananaProNamespace;
   nanoBanana2: FalRunNanoBanana2Namespace;
+  qwenImage: FalQwenImageFn;
   falAi: FalRunFalAiNamespace;
   wan: FalRunWanNamespace;
   xai: FalRunXaiNamespace;

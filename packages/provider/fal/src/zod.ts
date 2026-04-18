@@ -215,6 +215,68 @@ export const FalNanoBanana2EditRequestSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// Qwen Image text-to-image
+// ---------------------------------------------------------------------------
+
+export const FalQwenImageRequestSchema = z.object({
+  prompt: z.string(),
+  image_size: z
+    .union([
+      z.enum([
+        "square_hd",
+        "square",
+        "portrait_4_3",
+        "portrait_16_9",
+        "landscape_4_3",
+        "landscape_16_9",
+      ]),
+      z.object({ width: z.number(), height: z.number() }),
+    ])
+    .optional(),
+  num_inference_steps: z.number().int().min(2).max(250).optional(),
+  seed: z.number().int().optional(),
+  guidance_scale: z.number().min(0).max(20).optional(),
+  num_images: z.number().int().min(1).max(4).optional(),
+  output_format: z.enum(["jpeg", "png"]).optional(),
+  negative_prompt: z.string().optional(),
+  acceleration: z.enum(["none", "regular", "high"]).optional(),
+  sync_mode: z.boolean().optional(),
+  enable_safety_checker: z.boolean().optional(),
+  use_turbo: z.boolean().optional(),
+});
+
+// ---------------------------------------------------------------------------
+// Qwen Image edit
+// ---------------------------------------------------------------------------
+
+export const FalQwenImageEditRequestSchema = z.object({
+  prompt: z.string(),
+  image_url: z.string(),
+  num_images: z.number().int().min(1).max(4).optional(),
+  num_inference_steps: z.number().int().min(2).max(50).optional(),
+  guidance_scale: z.number().min(0).max(20).optional(),
+  seed: z.number().int().optional(),
+  negative_prompt: z.string().optional(),
+  image_size: z
+    .union([
+      z.enum([
+        "square_hd",
+        "square",
+        "portrait_4_3",
+        "portrait_16_9",
+        "landscape_4_3",
+        "landscape_16_9",
+      ]),
+      z.object({ width: z.number(), height: z.number() }),
+    ])
+    .optional(),
+  output_format: z.enum(["jpeg", "png"]).optional(),
+  enable_safety_checker: z.boolean().optional(),
+  acceleration: z.enum(["none", "regular", "high"]).optional(),
+  sync_mode: z.boolean().optional(),
+});
+
+// ---------------------------------------------------------------------------
 // Nano Banana Pro text-to-image
 // ---------------------------------------------------------------------------
 
@@ -491,5 +553,9 @@ export type FalXaiGrokImagineImageParams = z.infer<
 >;
 export type FalXaiGrokImagineImageEditParams = z.infer<
   typeof FalXaiGrokImagineImageEditRequestSchema
+>;
+export type FalQwenImageParams = z.infer<typeof FalQwenImageRequestSchema>;
+export type FalQwenImageEditParams = z.infer<
+  typeof FalQwenImageEditRequestSchema
 >;
 export type FalOptions = z.infer<typeof FalOptionsSchema>;

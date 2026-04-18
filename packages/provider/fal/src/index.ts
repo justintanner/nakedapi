@@ -107,6 +107,11 @@ export type {
   FalRunElevenlabsSpeechToTextNamespace,
   FalRunElevenlabsNamespace,
   FalRunFalAiNamespace,
+  FalWanImageSize,
+  FalWanV2p7TextToImageParams,
+  FalWanV2p7TextToImageResponse,
+  FalRunWanV2p7Namespace,
+  FalRunWanNamespace,
   FalRunNamespace,
   FalProvider,
 } from "./types";

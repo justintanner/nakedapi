@@ -210,6 +210,31 @@ export const FalSeedreamV5LiteTextToImageRequestSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// Wan v2.7 text-to-image
+// ---------------------------------------------------------------------------
+
+export const FalWanV2p7TextToImageRequestSchema = z.object({
+  prompt: z.string(),
+  negative_prompt: z.string().optional(),
+  image_size: z
+    .union([
+      z.enum([
+        "square_hd",
+        "square",
+        "portrait_4_3",
+        "portrait_16_9",
+        "landscape_4_3",
+        "landscape_16_9",
+      ]),
+      z.object({ width: z.number(), height: z.number() }),
+    ])
+    .optional(),
+  max_images: z.number().int().min(1).max(5).optional(),
+  seed: z.number().int().min(0).max(2147483647).optional(),
+  enable_safety_checker: z.boolean().optional(),
+});
+
+// ---------------------------------------------------------------------------
 // ElevenLabs Speech to Text Scribe V2
 // ---------------------------------------------------------------------------
 
@@ -273,5 +298,8 @@ export type FalSeedreamV5LiteTextToImageParams = z.infer<
 >;
 export type FalElevenlabsSpeechToTextScribeV2Params = z.infer<
   typeof FalElevenlabsSpeechToTextScribeV2RequestSchema
+>;
+export type FalWanV2p7TextToImageParams = z.infer<
+  typeof FalWanV2p7TextToImageRequestSchema
 >;
 export type FalOptions = z.infer<typeof FalOptionsSchema>;

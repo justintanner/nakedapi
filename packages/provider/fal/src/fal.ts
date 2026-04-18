@@ -46,6 +46,8 @@ import {
   FalSeedreamV5LiteTextToImageResponse,
   FalElevenlabsSpeechToTextScribeV2Params,
   FalElevenlabsSpeechToTextScribeV2Response,
+  FalWanV2p7TextToImageParams,
+  FalWanV2p7TextToImageResponse,
   FalRunNamespace,
 } from "./types";
 import {
@@ -61,6 +63,7 @@ import {
   FalSeedreamV5LiteEditRequestSchema,
   FalSeedreamV5LiteTextToImageRequestSchema,
   FalElevenlabsSpeechToTextScribeV2RequestSchema,
+  FalWanV2p7TextToImageRequestSchema,
 } from "./zod";
 
 // Helper function to safely handle AbortSignal across different environments
@@ -650,6 +653,28 @@ export function fal(opts: FalOptions): FalProvider {
     }
   );
 
+  // sig-ok: stylistic dotPath divergence from URL
+  // POST https://api.fal.ai/v1/fal-ai/wan/v2.7/text-to-image
+  // Docs: https://docs.fal.ai
+  const wanV2p7TextToImage = Object.assign(
+    async function textToImage(
+      params: FalWanV2p7TextToImageParams,
+      signal?: AbortSignal
+    ): Promise<FalWanV2p7TextToImageResponse> {
+      return makeRequest<FalWanV2p7TextToImageResponse>(
+        "POST",
+        "/fal-ai/wan/v2.7/text-to-image",
+        params as unknown as Record<string, unknown>,
+        signal,
+        undefined,
+        runBaseURL
+      );
+    },
+    {
+      schema: FalWanV2p7TextToImageRequestSchema,
+    }
+  );
+
   const run: FalRunNamespace = {
     bytedance: {
       seedance2p0: {
@@ -673,6 +698,11 @@ export function fal(opts: FalOptions): FalProvider {
         speechToText: {
           scribeV2: elevenlabsSpeechToTextScribeV2,
         },
+      },
+    },
+    wan: {
+      v2p7: {
+        textToImage: wanV2p7TextToImage,
       },
     },
   };

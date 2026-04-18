@@ -18,6 +18,7 @@ export type {
   FalSeedreamV5LiteEditParams,
   FalSeedreamV5LiteTextToImageParams,
   FalElevenlabsSpeechToTextScribeV2Params,
+  FalWanV2p7TextToImageParams,
 } from "./zod";
 
 // Re-import for use in this file's interface definitions
@@ -34,6 +35,7 @@ import type {
   FalSeedreamV5LiteEditParams,
   FalSeedreamV5LiteTextToImageParams,
   FalElevenlabsSpeechToTextScribeV2Params,
+  FalWanV2p7TextToImageParams,
 } from "./zod";
 
 // Error types returned by fal API
@@ -458,6 +460,22 @@ export interface FalSeedreamV5LiteTextToImageResponse {
   seed: number;
 }
 
+// Wan v2.7 text-to-image
+export type FalWanImageSize =
+  | "square_hd"
+  | "square"
+  | "portrait_4_3"
+  | "portrait_16_9"
+  | "landscape_4_3"
+  | "landscape_16_9"
+  | { width: number; height: number };
+
+export interface FalWanV2p7TextToImageResponse {
+  images: FalFile[];
+  generated_text?: string;
+  seed: number;
+}
+
 // ==================== Serverless Logs ====================
 
 // Label filter for log queries
@@ -772,10 +790,26 @@ type FalSeedreamV5LiteTextToImageFn = ((
   schema: z.ZodType<FalSeedreamV5LiteTextToImageParams>;
 };
 
+type FalWanV2p7TextToImageFn = ((
+  params: FalWanV2p7TextToImageParams,
+  signal?: AbortSignal
+) => Promise<FalWanV2p7TextToImageResponse>) & {
+  schema: z.ZodType<FalWanV2p7TextToImageParams>;
+};
+
+export interface FalRunWanV2p7Namespace {
+  textToImage: FalWanV2p7TextToImageFn;
+}
+
+export interface FalRunWanNamespace {
+  v2p7: FalRunWanV2p7Namespace;
+}
+
 export interface FalRunNamespace {
   bytedance: FalRunBytedanceNamespace;
   nanoBananaPro: FalRunNanoBananaProNamespace;
   falAi: FalRunFalAiNamespace;
+  wan: FalRunWanNamespace;
 }
 
 // ==================== fal.run fal-ai namespace ====================

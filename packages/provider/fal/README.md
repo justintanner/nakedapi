@@ -24,7 +24,7 @@ const fal = createFal({ apiKey: process.env.FAL_API_KEY! });
 
 ## API Reference
 
-26 endpoints across 7 groups. Each method mirrors an upstream URL path.
+27 endpoints across 8 groups. Each method mirrors an upstream URL path.
 
 ### bytedance
 
@@ -392,6 +392,23 @@ Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
 
 ```typescript
 const res = await fal.v1.serverless.logs({ /* ... */ });
+```
+
+Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
+
+</details>
+
+### wan
+
+<details>
+<summary><code>POST</code> <b><code>fal.wan.v2p7.textToImage</code></b></summary>
+
+<code>POST https://api.fal.ai/v1/fal-ai/wan/v2.7/text-to-image</code>
+
+[Upstream docs ↗](https://docs.fal.ai)
+
+```typescript
+const res = await fal.wan.v2p7.textToImage({ /* ... */ });
 ```
 
 Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)

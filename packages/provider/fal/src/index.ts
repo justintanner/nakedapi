@@ -115,6 +115,12 @@ export type {
   FalRunWanV2p7ProNamespace,
   FalRunWanV2p7Namespace,
   FalRunWanNamespace,
+  FalXaiGrokImagineImageAspectRatio,
+  FalXaiGrokImagineImageResolution,
+  FalXaiGrokImagineImageOutputFormat,
+  FalXaiGrokImagineImageParams,
+  FalXaiGrokImagineImageResponse,
+  FalRunXaiNamespace,
   FalRunNamespace,
   FalProvider,
 } from "./types";

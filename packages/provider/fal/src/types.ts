@@ -20,6 +20,7 @@ export type {
   FalElevenlabsSpeechToTextScribeV2Params,
   FalWanV2p7TextToImageParams,
   FalWanV2p7EditParams,
+  FalXaiGrokImagineImageParams,
 } from "./zod";
 
 // Re-import for use in this file's interface definitions
@@ -38,6 +39,7 @@ import type {
   FalElevenlabsSpeechToTextScribeV2Params,
   FalWanV2p7TextToImageParams,
   FalWanV2p7EditParams,
+  FalXaiGrokImagineImageParams,
 } from "./zod";
 
 // Error types returned by fal API
@@ -483,6 +485,31 @@ export interface FalWanV2p7EditResponse {
   seed: number;
 }
 
+// xAI Grok Imagine Image
+export type FalXaiGrokImagineImageAspectRatio =
+  | "2:1"
+  | "20:9"
+  | "19.5:9"
+  | "16:9"
+  | "4:3"
+  | "3:2"
+  | "1:1"
+  | "2:3"
+  | "3:4"
+  | "9:16"
+  | "9:19.5"
+  | "9:20"
+  | "1:2";
+
+export type FalXaiGrokImagineImageResolution = "1k" | "2k";
+
+export type FalXaiGrokImagineImageOutputFormat = "jpeg" | "png" | "webp";
+
+export interface FalXaiGrokImagineImageResponse {
+  images: FalFile[];
+  revised_prompt: string;
+}
+
 // ==================== Serverless Logs ====================
 
 // Label filter for log queries
@@ -826,11 +853,23 @@ export interface FalRunWanNamespace {
   v2p7: FalRunWanV2p7Namespace;
 }
 
+type FalXaiGrokImagineImageFn = ((
+  params: FalXaiGrokImagineImageParams,
+  signal?: AbortSignal
+) => Promise<FalXaiGrokImagineImageResponse>) & {
+  schema: z.ZodType<FalXaiGrokImagineImageParams>;
+};
+
+export interface FalRunXaiNamespace {
+  grokImagineImage: FalXaiGrokImagineImageFn;
+}
+
 export interface FalRunNamespace {
   bytedance: FalRunBytedanceNamespace;
   nanoBananaPro: FalRunNanoBananaProNamespace;
   falAi: FalRunFalAiNamespace;
   wan: FalRunWanNamespace;
+  xai: FalRunXaiNamespace;
 }
 
 // ==================== fal.run fal-ai namespace ====================

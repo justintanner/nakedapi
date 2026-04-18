@@ -262,6 +262,35 @@ export const FalWanV2p7EditRequestSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// xAI Grok Imagine Image
+// ---------------------------------------------------------------------------
+
+export const FalXaiGrokImagineImageRequestSchema = z.object({
+  prompt: z.string(),
+  num_images: z.number().int().min(1).max(4).optional(),
+  aspect_ratio: z
+    .enum([
+      "2:1",
+      "20:9",
+      "19.5:9",
+      "16:9",
+      "4:3",
+      "3:2",
+      "1:1",
+      "2:3",
+      "3:4",
+      "9:16",
+      "9:19.5",
+      "9:20",
+      "1:2",
+    ])
+    .optional(),
+  resolution: z.enum(["1k", "2k"]).optional(),
+  output_format: z.enum(["jpeg", "png", "webp"]).optional(),
+  sync_mode: z.boolean().optional(),
+});
+
+// ---------------------------------------------------------------------------
 // ElevenLabs Speech to Text Scribe V2
 // ---------------------------------------------------------------------------
 
@@ -330,4 +359,7 @@ export type FalWanV2p7TextToImageParams = z.infer<
   typeof FalWanV2p7TextToImageRequestSchema
 >;
 export type FalWanV2p7EditParams = z.infer<typeof FalWanV2p7EditRequestSchema>;
+export type FalXaiGrokImagineImageParams = z.infer<
+  typeof FalXaiGrokImagineImageRequestSchema
+>;
 export type FalOptions = z.infer<typeof FalOptionsSchema>;

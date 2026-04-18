@@ -50,6 +50,8 @@ import {
   FalWanV2p7TextToImageResponse,
   FalWanV2p7EditParams,
   FalWanV2p7EditResponse,
+  FalXaiGrokImagineImageParams,
+  FalXaiGrokImagineImageResponse,
   FalRunNamespace,
 } from "./types";
 import {
@@ -67,6 +69,7 @@ import {
   FalElevenlabsSpeechToTextScribeV2RequestSchema,
   FalWanV2p7TextToImageRequestSchema,
   FalWanV2p7EditRequestSchema,
+  FalXaiGrokImagineImageRequestSchema,
 } from "./zod";
 
 // Helper function to safely handle AbortSignal across different environments
@@ -744,6 +747,28 @@ export function fal(opts: FalOptions): FalProvider {
     }
   );
 
+  // sig-ok: stylistic dotPath divergence from URL
+  // POST https://api.fal.ai/v1/xai/grok-imagine-image
+  // Docs: https://docs.fal.ai
+  const xaiGrokImagineImage = Object.assign(
+    async function grokImagineImage(
+      params: FalXaiGrokImagineImageParams,
+      signal?: AbortSignal
+    ): Promise<FalXaiGrokImagineImageResponse> {
+      return makeRequest<FalXaiGrokImagineImageResponse>(
+        "POST",
+        "/xai/grok-imagine-image",
+        params as unknown as Record<string, unknown>,
+        signal,
+        undefined,
+        runBaseURL
+      );
+    },
+    {
+      schema: FalXaiGrokImagineImageRequestSchema,
+    }
+  );
+
   const run: FalRunNamespace = {
     bytedance: {
       seedance2p0: {
@@ -778,6 +803,9 @@ export function fal(opts: FalOptions): FalProvider {
           edit: wanV2p7ProEdit,
         },
       },
+    },
+    xai: {
+      grokImagineImage: xaiGrokImagineImage,
     },
   };
 

@@ -33,9 +33,11 @@ if (paths.length === 0) {
   process.exit(1);
 }
 
-const recordings = parseHarPaths(paths.map((p) => path.resolve(p))).filter(
-  (rec) => !mediaOnly || recordingHasMedia(rec)
-);
+const recordings = parseHarPaths(paths.map((p) => path.resolve(p)))
+  .filter((rec) => !mediaOnly || recordingHasMedia(rec))
+  .sort(
+    (a, b) => fs.statSync(b.source).mtimeMs - fs.statSync(a.source).mtimeMs
+  );
 
 if (gitApprove) {
   for (const rec of recordings) {

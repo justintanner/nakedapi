@@ -1,48 +1,61 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { setupPolly, teardownPolly, type PollyContext } from "../harness";
+import { describe, it, expect, afterEach } from "vitest";
+import {
+  setupPolly,
+  teardownPolly,
+  getPollyMode,
+  type PollyContext,
+} from "../harness";
 import { kie } from "@apicity/kie";
 
 describe("kie seedream/5-lite-text-to-image integration", () => {
   let ctx: PollyContext;
 
-  beforeEach(() => {
-    ctx = setupPolly("kie/seedream-5-lite-text-to-image");
-  });
-
   afterEach(async () => {
     await teardownPolly(ctx);
   });
 
-  it("should create a text-to-image task and poll status", async () => {
-    const provider = kie({
-      apiKey: process.env.KIE_API_KEY ?? "test-key",
-    });
+  it(
+    "should create a text-to-image task and poll to completion",
+    { timeout: 600_000 },
+    async () => {
+      ctx = setupPolly("kie/seedream-5-lite-text-to-image");
 
-    const task = await provider.post.api.v1.jobs.createTask({
-      model: "seedream/5-lite-text-to-image",
-      input: {
-        prompt: "A serene mountain landscape at sunrise, photorealistic",
-        aspect_ratio: "16:9",
-        quality: "basic",
-        nsfw_checker: false,
-      },
-    });
+      const provider = kie({
+        apiKey: process.env.KIE_API_KEY ?? "test-key",
+      });
 
-    expect(task).toBeDefined();
-    expect(typeof task.code).toBe("number");
-    if (task.code === 200) {
+      const task = await provider.post.api.v1.jobs.createTask({
+        model: "seedream/5-lite-text-to-image",
+        input: {
+          prompt: "A serene mountain landscape at sunrise, photorealistic",
+          aspect_ratio: "16:9",
+          quality: "basic",
+          nsfw_checker: false,
+        },
+      });
+
+      expect(task.code).toBe(200);
       expect(task.data?.taskId).toBeTruthy();
-      expect(typeof task.data?.taskId).toBe("string");
 
-      const info = await provider.get.api.v1.jobs.recordInfo(
-        task.data?.taskId as string
-      );
-      expect(info.data?.taskId).toBe(task.data?.taskId);
-      expect(["waiting", "queuing", "generating", "success", "fail"]).toContain(
-        info.data?.state
-      );
+      const pollDelay = getPollyMode() === "replay" ? 0 : 5000;
+      const taskId = task.data!.taskId;
+      let state = "waiting";
+      for (let i = 0; i < 200; i++) {
+        const info = await provider.get.api.v1.jobs.recordInfo(taskId);
+        state = info.data?.state ?? "waiting";
+        if (state === "success" || state === "fail") {
+          expect(info.data?.taskId).toBe(taskId);
+          if (state === "success") {
+            expect(info.data?.resultJson).toBeTruthy();
+          }
+          break;
+        }
+        if (pollDelay) await new Promise((r) => setTimeout(r, pollDelay));
+      }
+
+      expect(state).toBe("success");
     }
-  });
+  );
 
   it("should validate payload via schema", () => {
     const provider = kie({ apiKey: "test-key" });

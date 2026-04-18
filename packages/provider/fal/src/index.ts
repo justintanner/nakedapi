@@ -112,6 +112,7 @@ export type {
   FalWanV2p7TextToImageResponse,
   FalWanV2p7EditParams,
   FalWanV2p7EditResponse,
+  FalRunWanV2p7ProNamespace,
   FalRunWanV2p7Namespace,
   FalRunWanNamespace,
   FalRunNamespace,

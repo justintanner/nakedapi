@@ -811,9 +811,14 @@ type FalWanV2p7EditFn = ((
   schema: z.ZodType<FalWanV2p7EditParams>;
 };
 
+export interface FalRunWanV2p7ProNamespace {
+  edit: FalWanV2p7EditFn;
+}
+
 export interface FalRunWanV2p7Namespace {
   textToImage: FalWanV2p7TextToImageFn;
   edit: FalWanV2p7EditFn;
+  pro: FalRunWanV2p7ProNamespace;
 }
 
 export interface FalRunWanNamespace {

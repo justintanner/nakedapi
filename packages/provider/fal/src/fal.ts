@@ -80,6 +80,10 @@ import {
   FalVeo3p1ImageToVideoResponse,
   FalKlingVideoV3ProImageToVideoParams,
   FalKlingVideoV3ProImageToVideoResponse,
+  FalSora2TextToVideoParams,
+  FalSora2TextToVideoResponse,
+  FalSora2ImageToVideoParams,
+  FalSora2ImageToVideoResponse,
   FalRunNamespace,
 } from "./types";
 import {
@@ -112,6 +116,8 @@ import {
   FalVeo3p1TextToVideoRequestSchema,
   FalVeo3p1ImageToVideoRequestSchema,
   FalKlingVideoV3ProImageToVideoRequestSchema,
+  FalSora2TextToVideoRequestSchema,
+  FalSora2ImageToVideoRequestSchema,
 } from "./zod";
 
 // Helper function to safely handle AbortSignal across different environments
@@ -922,6 +928,50 @@ export function fal(opts: FalOptions): FalProvider {
   );
 
   // sig-ok: stylistic dotPath divergence from URL
+  // POST https://api.fal.ai/v1/fal-ai/sora-2/text-to-video
+  // Docs: https://docs.fal.ai
+  const sora2TextToVideo = Object.assign(
+    async function textToVideo(
+      params: FalSora2TextToVideoParams,
+      signal?: AbortSignal
+    ): Promise<FalSora2TextToVideoResponse> {
+      return makeRequest<FalSora2TextToVideoResponse>(
+        "POST",
+        "/fal-ai/sora-2/text-to-video",
+        params as unknown as Record<string, unknown>,
+        signal,
+        undefined,
+        runBaseURL
+      );
+    },
+    {
+      schema: FalSora2TextToVideoRequestSchema,
+    }
+  );
+
+  // sig-ok: stylistic dotPath divergence from URL
+  // POST https://api.fal.ai/v1/fal-ai/sora-2/image-to-video
+  // Docs: https://docs.fal.ai
+  const sora2ImageToVideo = Object.assign(
+    async function imageToVideo(
+      params: FalSora2ImageToVideoParams,
+      signal?: AbortSignal
+    ): Promise<FalSora2ImageToVideoResponse> {
+      return makeRequest<FalSora2ImageToVideoResponse>(
+        "POST",
+        "/fal-ai/sora-2/image-to-video",
+        params as unknown as Record<string, unknown>,
+        signal,
+        undefined,
+        runBaseURL
+      );
+    },
+    {
+      schema: FalSora2ImageToVideoRequestSchema,
+    }
+  );
+
+  // sig-ok: stylistic dotPath divergence from URL
   // POST https://api.fal.ai/v1/fal-ai/kling-video/v3/pro/image-to-video
   // Docs: https://docs.fal.ai
   const klingVideoV3ProImageToVideo = Object.assign(
@@ -1158,6 +1208,10 @@ export function fal(opts: FalOptions): FalProvider {
       },
     },
     gptImage1p5,
+    sora2: {
+      textToVideo: sora2TextToVideo,
+      imageToVideo: sora2ImageToVideo,
+    },
     veo3p1: {
       textToVideo: veo3p1TextToVideo,
       imageToVideo: veo3p1ImageToVideo,

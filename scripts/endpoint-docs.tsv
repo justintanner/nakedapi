@@ -42,6 +42,8 @@ fal	nanoBananaPro.edit	POST	https://api.fal.ai/v1/fal-ai/nano-banana-pro/edit	ht
 fal	nanoBananaPro.textToImage	POST	https://api.fal.ai/v1/fal-ai/nano-banana-pro	https://docs.fal.ai
 fal	qwenImage	POST	https://api.fal.ai/v1/fal-ai/qwen-image	https://docs.fal.ai
 fal	qwenImage.edit	POST	https://api.fal.ai/v1/fal-ai/qwen-image-edit	https://docs.fal.ai
+fal	sora2.imageToVideo	POST	https://api.fal.ai/v1/fal-ai/sora-2/image-to-video	https://docs.fal.ai
+fal	sora2.textToVideo	POST	https://api.fal.ai/v1/fal-ai/sora-2/text-to-video	https://docs.fal.ai
 fal	v1.models	GET	https://api.fal.ai/v1/models	https://docs.fal.ai
 fal	v1.models.pricing	GET	https://api.fal.ai/v1/models/pricing	https://docs.fal.ai
 fal	v1.models.pricing.estimate	GET	https://api.fal.ai/v1/models/pricing/estimate	https://docs.fal.ai

@@ -35,6 +35,8 @@ export type {
   FalVeo3p1TextToVideoParams,
   FalVeo3p1ImageToVideoParams,
   FalKlingVideoV3ProImageToVideoParams,
+  FalSora2TextToVideoParams,
+  FalSora2ImageToVideoParams,
 } from "./zod";
 
 // Re-import for use in this file's interface definitions
@@ -68,6 +70,8 @@ import type {
   FalVeo3p1TextToVideoParams,
   FalVeo3p1ImageToVideoParams,
   FalKlingVideoV3ProImageToVideoParams,
+  FalSora2TextToVideoParams,
+  FalSora2ImageToVideoParams,
 } from "./zod";
 
 // Error types returned by fal API
@@ -721,6 +725,36 @@ export interface FalKlingVideoV3ProImageToVideoResponse {
   video: FalFile;
 }
 
+// OpenAI Sora 2 (text-to-video and image-to-video)
+export type FalSora2Model =
+  | "sora-2"
+  | "sora-2-2025-12-08"
+  | "sora-2-2025-10-06";
+
+export type FalSora2AspectRatio = "9:16" | "16:9";
+
+export type FalSora2ImageToVideoAspectRatio = "auto" | FalSora2AspectRatio;
+
+export type FalSora2Resolution = "720p";
+
+export type FalSora2ImageToVideoResolution = "auto" | "720p";
+
+export type FalSora2Duration = 4 | 8 | 12 | 16 | 20;
+
+export interface FalSora2TextToVideoResponse {
+  video: FalFile;
+  video_id: string;
+  thumbnail: FalFile | null;
+  spritesheet: FalFile | null;
+}
+
+export interface FalSora2ImageToVideoResponse {
+  video: FalFile;
+  video_id: string;
+  thumbnail: FalFile | null;
+  spritesheet: FalFile | null;
+}
+
 // ==================== Serverless Logs ====================
 
 // Label filter for log queries
@@ -1209,6 +1243,25 @@ export interface FalRunKlingVideoNamespace {
   v3: FalRunKlingVideoV3Namespace;
 }
 
+type FalSora2TextToVideoFn = ((
+  params: FalSora2TextToVideoParams,
+  signal?: AbortSignal
+) => Promise<FalSora2TextToVideoResponse>) & {
+  schema: z.ZodType<FalSora2TextToVideoParams>;
+};
+
+type FalSora2ImageToVideoFn = ((
+  params: FalSora2ImageToVideoParams,
+  signal?: AbortSignal
+) => Promise<FalSora2ImageToVideoResponse>) & {
+  schema: z.ZodType<FalSora2ImageToVideoParams>;
+};
+
+export interface FalRunSora2Namespace {
+  textToVideo: FalSora2TextToVideoFn;
+  imageToVideo: FalSora2ImageToVideoFn;
+}
+
 export interface FalRunNamespace {
   bytedance: FalRunBytedanceNamespace;
   klingVideo: FalRunKlingVideoNamespace;
@@ -1217,6 +1270,7 @@ export interface FalRunNamespace {
   nanoBanana2: FalRunNanoBanana2Namespace;
   qwenImage: FalQwenImageFn;
   gptImage1p5: FalGptImage1p5Fn;
+  sora2: FalRunSora2Namespace;
   veo3p1: FalRunVeo3p1Namespace;
   falAi: FalRunFalAiNamespace;
   wan: FalRunWanNamespace;

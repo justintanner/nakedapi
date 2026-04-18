@@ -24,7 +24,7 @@ const fal = createFal({ apiKey: process.env.FAL_API_KEY! });
 
 ## API Reference
 
-45 endpoints across 15 groups. Each method mirrors an upstream URL path.
+47 endpoints across 16 groups. Each method mirrors an upstream URL path.
 
 ### bytedance
 
@@ -552,6 +552,38 @@ Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
 
 ```typescript
 const res = await fal.v1.serverless.logs({ /* ... */ });
+```
+
+Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
+
+</details>
+
+### sora2
+
+<details>
+<summary><code>POST</code> <b><code>fal.sora2.imageToVideo</code></b></summary>
+
+<code>POST https://api.fal.ai/v1/fal-ai/sora-2/image-to-video</code>
+
+[Upstream docs ↗](https://docs.fal.ai)
+
+```typescript
+const res = await fal.sora2.imageToVideo({ /* ... */ });
+```
+
+Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
+
+</details>
+
+<details>
+<summary><code>POST</code> <b><code>fal.sora2.textToVideo</code></b></summary>
+
+<code>POST https://api.fal.ai/v1/fal-ai/sora-2/text-to-video</code>
+
+[Upstream docs ↗](https://docs.fal.ai)
+
+```typescript
+const res = await fal.sora2.textToVideo({ /* ... */ });
 ```
 
 Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)

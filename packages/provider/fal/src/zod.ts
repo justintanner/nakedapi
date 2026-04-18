@@ -562,6 +562,57 @@ export const FalXaiGrokImagineImageEditRequestSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// Sora 2 text-to-video
+// ---------------------------------------------------------------------------
+
+export const FalSora2TextToVideoRequestSchema = z.object({
+  prompt: z.string().max(5000),
+  model: z
+    .enum(["sora-2", "sora-2-2025-12-08", "sora-2-2025-10-06"])
+    .optional(),
+  resolution: z.enum(["720p"]).optional(),
+  aspect_ratio: z.enum(["9:16", "16:9"]).optional(),
+  duration: z
+    .union([
+      z.literal(4),
+      z.literal(8),
+      z.literal(12),
+      z.literal(16),
+      z.literal(20),
+    ])
+    .optional(),
+  delete_video: z.boolean().optional(),
+  character_ids: z.array(z.string()).max(2).optional(),
+  detect_and_block_ip: z.boolean().optional(),
+});
+
+// ---------------------------------------------------------------------------
+// Sora 2 image-to-video
+// ---------------------------------------------------------------------------
+
+export const FalSora2ImageToVideoRequestSchema = z.object({
+  prompt: z.string().max(5000),
+  image_url: z.string(),
+  model: z
+    .enum(["sora-2", "sora-2-2025-12-08", "sora-2-2025-10-06"])
+    .optional(),
+  resolution: z.enum(["auto", "720p"]).optional(),
+  aspect_ratio: z.enum(["auto", "9:16", "16:9"]).optional(),
+  duration: z
+    .union([
+      z.literal(4),
+      z.literal(8),
+      z.literal(12),
+      z.literal(16),
+      z.literal(20),
+    ])
+    .optional(),
+  delete_video: z.boolean().optional(),
+  character_ids: z.array(z.string()).max(2).optional(),
+  detect_and_block_ip: z.boolean().optional(),
+});
+
+// ---------------------------------------------------------------------------
 // Kling Video v3 Pro image-to-video
 // ---------------------------------------------------------------------------
 
@@ -750,5 +801,11 @@ export type FalVeo3p1ImageToVideoParams = z.infer<
 >;
 export type FalKlingVideoV3ProImageToVideoParams = z.infer<
   typeof FalKlingVideoV3ProImageToVideoRequestSchema
+>;
+export type FalSora2TextToVideoParams = z.infer<
+  typeof FalSora2TextToVideoRequestSchema
+>;
+export type FalSora2ImageToVideoParams = z.infer<
+  typeof FalSora2ImageToVideoRequestSchema
 >;
 export type FalOptions = z.infer<typeof FalOptionsSchema>;

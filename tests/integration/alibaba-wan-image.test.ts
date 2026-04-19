@@ -118,6 +118,45 @@ describe("alibaba wan2.7 image generation integration", () => {
       );
     expect(withImage.success).toBe(true);
 
+    const withNegativePromptAndExtend =
+      provider.post.api.v1.services.aigc.imageGeneration.generation.schema.safeParse(
+        {
+          model: "wan2.7-image-pro",
+          input: {
+            messages: [
+              {
+                role: "user",
+                content: [{ text: "A cat" }],
+              },
+            ],
+          },
+          parameters: {
+            negative_prompt: "blurry, low quality, watermark",
+            prompt_extend: true,
+          },
+        }
+      );
+    expect(withNegativePromptAndExtend.success).toBe(true);
+
+    const negativePromptTooLong =
+      provider.post.api.v1.services.aigc.imageGeneration.generation.schema.safeParse(
+        {
+          model: "wan2.7-image-pro",
+          input: {
+            messages: [
+              {
+                role: "user",
+                content: [{ text: "A cat" }],
+              },
+            ],
+          },
+          parameters: {
+            negative_prompt: "x".repeat(501),
+          },
+        }
+      );
+    expect(negativePromptTooLong.success).toBe(false);
+
     const missingInput =
       provider.post.api.v1.services.aigc.imageGeneration.generation.schema.safeParse(
         { model: "wan2.7-image-pro" }

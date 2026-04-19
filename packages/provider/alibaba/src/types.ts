@@ -226,6 +226,29 @@ export interface AlibabaTaskStatusResponse {
   request_id: string;
 }
 
+// -- Upload policy (native DashScope /api/v1/uploads) -----------------------
+
+export interface AlibabaUploadPolicyData {
+  policy: string;
+  signature: string;
+  upload_dir: string;
+  upload_host: string;
+  expire_in_seconds: number;
+  oss_access_key_id: string;
+  x_oss_object_acl: string;
+  x_oss_forbid_overwrite: string;
+}
+
+export interface AlibabaUploadPolicyResponse {
+  data: AlibabaUploadPolicyData;
+  request_id: string;
+}
+
+export interface AlibabaUploadPolicyParams {
+  action: "getPolicy";
+  model: string;
+}
+
 // -- Error ------------------------------------------------------------------
 
 export class AlibabaError extends Error {
@@ -351,6 +374,10 @@ export interface AlibabaGetApiV1Namespace {
     taskId: string,
     signal?: AbortSignal
   ) => Promise<AlibabaTaskStatusResponse>;
+  uploads: (
+    params: AlibabaUploadPolicyParams,
+    signal?: AbortSignal
+  ) => Promise<AlibabaUploadPolicyResponse>;
 }
 
 export interface AlibabaGetApiNamespace {

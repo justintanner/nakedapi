@@ -49,17 +49,19 @@ describe("fal kling-video v3 standard image-to-video integration", () => {
 
   it("should validate a valid payload", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const v =
-      provider.run.klingVideo.v3.standard.imageToVideo.schema.safeParse({
+    const v = provider.run.klingVideo.v3.standard.imageToVideo.schema.safeParse(
+      {
         start_image_url: "https://example.com/img.png",
-      });
+      }
+    );
     expect(v.success).toBe(true);
   });
 
   it("should reject payload missing start_image_url", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const v =
-      provider.run.klingVideo.v3.standard.imageToVideo.schema.safeParse({});
+    const v = provider.run.klingVideo.v3.standard.imageToVideo.schema.safeParse(
+      {}
+    );
     expect(v.success).toBe(false);
     expect(
       v.error?.issues.some((i) => i.path.includes("start_image_url"))
@@ -68,11 +70,12 @@ describe("fal kling-video v3 standard image-to-video integration", () => {
 
   it("should reject payload with cfg_scale out of range", () => {
     const provider = fal({ apiKey: "fal-test-key" });
-    const v =
-      provider.run.klingVideo.v3.standard.imageToVideo.schema.safeParse({
+    const v = provider.run.klingVideo.v3.standard.imageToVideo.schema.safeParse(
+      {
         start_image_url: "https://example.com/img.png",
         cfg_scale: 5,
-      });
+      }
+    );
     expect(v.success).toBe(false);
   });
 

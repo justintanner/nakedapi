@@ -24,9 +24,39 @@ const fal = createFal({ apiKey: process.env.FAL_API_KEY! });
 
 ## API Reference
 
-47 endpoints across 16 groups. Each method mirrors an upstream URL path.
+57 endpoints across 17 groups. Each method mirrors an upstream URL path.
 
 ### bytedance
+
+<details>
+<summary><code>POST</code> <b><code>fal.bytedance.seedance2p0.fast.imageToVideo</code></b></summary>
+
+<code>POST https://api.fal.ai/v1/bytedance/seedance-2.0/fast/image-to-video</code>
+
+[Upstream docs ↗](https://docs.fal.ai)
+
+```typescript
+const res = await fal.bytedance.seedance2p0.fast.imageToVideo({ /* ... */ });
+```
+
+Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
+
+</details>
+
+<details>
+<summary><code>POST</code> <b><code>fal.bytedance.seedance2p0.fast.textToVideo</code></b></summary>
+
+<code>POST https://api.fal.ai/v1/bytedance/seedance-2.0/fast/text-to-video</code>
+
+[Upstream docs ↗](https://docs.fal.ai)
+
+```typescript
+const res = await fal.bytedance.seedance2p0.fast.textToVideo({ /* ... */ });
+```
+
+Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
+
+</details>
 
 <details>
 <summary><code>POST</code> <b><code>fal.bytedance.seedance2p0.imageToVideo</code></b></summary>
@@ -148,6 +178,51 @@ Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
 
 ```typescript
 const res = await fal.klingVideo.v3.pro.imageToVideo({ /* ... */ });
+```
+
+Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
+
+</details>
+
+<details>
+<summary><code>POST</code> <b><code>fal.klingVideo.v3.pro.textToVideo</code></b></summary>
+
+<code>POST https://api.fal.ai/v1/fal-ai/kling-video/v3/pro/text-to-video</code>
+
+[Upstream docs ↗](https://docs.fal.ai)
+
+```typescript
+const res = await fal.klingVideo.v3.pro.textToVideo({ /* ... */ });
+```
+
+Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
+
+</details>
+
+<details>
+<summary><code>POST</code> <b><code>fal.klingVideo.v3.standard.imageToVideo</code></b></summary>
+
+<code>POST https://api.fal.ai/v1/fal-ai/kling-video/v3/standard/image-to-video</code>
+
+[Upstream docs ↗](https://docs.fal.ai)
+
+```typescript
+const res = await fal.klingVideo.v3.standard.imageToVideo({ /* ... */ });
+```
+
+Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
+
+</details>
+
+<details>
+<summary><code>POST</code> <b><code>fal.klingVideo.v3.standard.textToVideo</code></b></summary>
+
+<code>POST https://api.fal.ai/v1/fal-ai/kling-video/v3/standard/text-to-video</code>
+
+[Upstream docs ↗](https://docs.fal.ai)
+
+```typescript
+const res = await fal.klingVideo.v3.standard.textToVideo({ /* ... */ });
 ```
 
 Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
@@ -590,6 +665,41 @@ Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
 
 </details>
 
+### storage
+
+<details>
+<summary><b><code>fal.storage.upload.completeMultipart</code></b></summary>
+
+```typescript
+const res = await fal.storage.upload.completeMultipart({ /* ... */ });
+```
+
+Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
+
+</details>
+
+<details>
+<summary><b><code>fal.storage.upload.initiate</code></b></summary>
+
+```typescript
+const res = await fal.storage.upload.initiate({ /* ... */ });
+```
+
+Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
+
+</details>
+
+<details>
+<summary><b><code>fal.storage.upload.initiateMultipart</code></b></summary>
+
+```typescript
+const res = await fal.storage.upload.initiateMultipart({ /* ... */ });
+```
+
+Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
+
+</details>
+
 ### veo3p1
 
 <details>
@@ -640,6 +750,21 @@ Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
 </details>
 
 <details>
+<summary><code>POST</code> <b><code>fal.wan.v2p7.imageToVideo</code></b></summary>
+
+<code>POST https://api.fal.ai/v1/fal-ai/wan/v2.7/image-to-video</code>
+
+[Upstream docs ↗](https://docs.fal.ai)
+
+```typescript
+const res = await fal.wan.v2p7.imageToVideo({ /* ... */ });
+```
+
+Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
+
+</details>
+
+<details>
 <summary><code>POST</code> <b><code>fal.wan.v2p7.pro.edit</code></b></summary>
 
 <code>POST https://api.fal.ai/v1/fal-ai/wan/v2.7/pro/edit</code>
@@ -678,6 +803,21 @@ Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
 
 ```typescript
 const res = await fal.wan.v2p7.textToImage({ /* ... */ });
+```
+
+Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
+
+</details>
+
+<details>
+<summary><code>POST</code> <b><code>fal.wan.v2p7.textToVideo</code></b></summary>
+
+<code>POST https://api.fal.ai/v1/fal-ai/wan/v2.7/text-to-video</code>
+
+[Upstream docs ↗](https://docs.fal.ai)
+
+```typescript
+const res = await fal.wan.v2p7.textToVideo({ /* ... */ });
 ```
 
 Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)

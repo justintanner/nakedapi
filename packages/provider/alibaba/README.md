@@ -24,7 +24,7 @@ const alibaba = createAlibaba({ apiKey: process.env.ALIBABA_API_KEY! });
 
 ## API Reference
 
-6 endpoints across 3 groups. Each method mirrors an upstream URL path.
+7 endpoints across 4 groups. Each method mirrors an upstream URL path.
 
 ### compatibleMode
 
@@ -114,6 +114,23 @@ Source: [`packages/provider/alibaba/src/alibaba.ts`](src/alibaba.ts)
 
 ```typescript
 const res = await alibaba.api.v1.tasks({ /* ... */ });
+```
+
+Source: [`packages/provider/alibaba/src/alibaba.ts`](src/alibaba.ts)
+
+</details>
+
+### uploads
+
+<details>
+<summary><code>GET</code> <b><code>alibaba.api.v1.uploads</code></b></summary>
+
+<code>GET https://dashscope.aliyuncs.com/api/v1/uploads</code>
+
+[Upstream docs ↗](https://help.aliyun.com/zh/model-studio)
+
+```typescript
+const res = await alibaba.api.v1.uploads({ /* ... */ });
 ```
 
 Source: [`packages/provider/alibaba/src/alibaba.ts`](src/alibaba.ts)

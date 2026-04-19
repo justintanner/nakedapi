@@ -13,6 +13,8 @@ import {
   AlibabaImageGenerationSubmitResponse,
   AlibabaMultimodalGenerationRequest,
   AlibabaMultimodalGenerationResponse,
+  AlibabaUploadPolicyParams,
+  AlibabaUploadPolicyResponse,
 } from "./types";
 import {
   AlibabaChatRequestSchema,
@@ -175,7 +177,10 @@ export function alibaba(opts: AlibabaOptions): AlibabaProvider {
   async function makeGetRequest<T>(
     path: string,
     signal?: AbortSignal,
-    options: { baseOverride?: string } = {}
+    options: {
+      baseOverride?: string;
+      query?: Record<string, string>;
+    } = {}
   ): Promise<T> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -184,14 +189,21 @@ export function alibaba(opts: AlibabaOptions): AlibabaProvider {
       attachAbortHandler(signal, controller);
     }
 
+    const qs = options.query
+      ? `?${new URLSearchParams(options.query).toString()}`
+      : "";
+
     try {
-      const res = await doFetch(`${options.baseOverride ?? baseURL}${path}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${opts.apiKey}`,
-        },
-        signal: controller.signal,
-      });
+      const res = await doFetch(
+        `${options.baseOverride ?? baseURL}${path}${qs}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${opts.apiKey}`,
+          },
+          signal: controller.signal,
+        }
+      );
 
       clearTimeout(timeoutId);
 
@@ -360,6 +372,18 @@ export function alibaba(opts: AlibabaOptions): AlibabaProvider {
         signal,
         { baseOverride: nativeBaseURL }
       );
+    },
+    // sig-ok: dashscope subdomain hoisted by walker
+    // GET https://dashscope.aliyuncs.com/api/v1/uploads
+    // Docs: https://help.aliyun.com/zh/model-studio
+    uploads: async (
+      params: AlibabaUploadPolicyParams,
+      signal?: AbortSignal
+    ): Promise<AlibabaUploadPolicyResponse> => {
+      return makeGetRequest<AlibabaUploadPolicyResponse>("/uploads", signal, {
+        baseOverride: nativeBaseURL,
+        query: { action: params.action, model: params.model },
+      });
     },
   };
 

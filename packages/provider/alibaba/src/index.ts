@@ -65,5 +65,8 @@ export type {
   AlibabaImageGenerationSubmitOutput,
   AlibabaImageGenerationSubmitResponse,
   AlibabaImageGenerationMethod,
+  AlibabaUploadPolicyData,
+  AlibabaUploadPolicyResponse,
+  AlibabaUploadPolicyParams,
   AlibabaProvider,
 } from "./types";

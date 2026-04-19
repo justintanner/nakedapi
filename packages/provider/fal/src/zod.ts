@@ -537,22 +537,35 @@ export const FalSeedreamV5LiteTextToImageRequestSchema = z.object({
 // Wan v2.7 text-to-image
 // ---------------------------------------------------------------------------
 
+const FalWanV2p7ImageSizeSchema = z.union([
+  z.enum([
+    "square_hd",
+    "square",
+    "portrait_4_3",
+    "portrait_16_9",
+    "landscape_4_3",
+    "landscape_16_9",
+  ]),
+  z.object({
+    width: z.number().int().positive(),
+    height: z.number().int().positive(),
+  }),
+]);
+
+const FalWanV2p7AspectRatioSchema = z.enum([
+  "16:9",
+  "9:16",
+  "1:1",
+  "4:3",
+  "3:4",
+]);
+const FalWanV2p7ResolutionSchema = z.enum(["720p", "1080p"]);
+const FalWanV2p7AudioSettingSchema = z.enum(["auto", "origin"]);
+
 export const FalWanV2p7TextToImageRequestSchema = z.object({
-  prompt: z.string(),
+  prompt: z.string().min(1).max(500),
   negative_prompt: z.string().max(500).optional(),
-  image_size: z
-    .union([
-      z.enum([
-        "square_hd",
-        "square",
-        "portrait_4_3",
-        "portrait_16_9",
-        "landscape_4_3",
-        "landscape_16_9",
-      ]),
-      z.object({ width: z.number(), height: z.number() }),
-    ])
-    .optional(),
+  image_size: FalWanV2p7ImageSizeSchema.optional(),
   max_images: z.number().int().min(1).max(5).optional(),
   seed: z.number().int().min(0).max(2147483647).optional(),
   enable_safety_checker: z.boolean().optional(),
@@ -563,22 +576,10 @@ export const FalWanV2p7TextToImageRequestSchema = z.object({
 // ---------------------------------------------------------------------------
 
 export const FalWanV2p7EditRequestSchema = z.object({
-  prompt: z.string(),
-  image_urls: z.array(z.string()).min(1).max(4),
+  prompt: z.string().min(1).max(500),
+  image_urls: z.array(z.string().url()).min(1).max(4),
   negative_prompt: z.string().max(500).optional(),
-  image_size: z
-    .union([
-      z.enum([
-        "square_hd",
-        "square",
-        "portrait_4_3",
-        "portrait_16_9",
-        "landscape_4_3",
-        "landscape_16_9",
-      ]),
-      z.object({ width: z.number(), height: z.number() }),
-    ])
-    .optional(),
+  image_size: FalWanV2p7ImageSizeSchema.optional(),
   num_images: z.number().int().min(1).max(4).optional(),
   enable_prompt_expansion: z.boolean().optional(),
   seed: z.number().int().min(0).max(2147483647).optional(),
@@ -590,12 +591,12 @@ export const FalWanV2p7EditRequestSchema = z.object({
 // ---------------------------------------------------------------------------
 
 export const FalWanV2p7TextToVideoRequestSchema = z.object({
-  prompt: z.string(),
-  audio_url: z.string().optional(),
-  aspect_ratio: z.enum(["16:9", "9:16", "1:1", "4:3", "3:4"]).optional(),
-  resolution: z.enum(["720p", "1080p"]).optional(),
+  prompt: z.string().min(1).max(5000),
+  audio_url: z.string().url().optional(),
+  aspect_ratio: FalWanV2p7AspectRatioSchema.optional(),
+  resolution: FalWanV2p7ResolutionSchema.optional(),
   duration: z.number().int().min(2).max(15).optional(),
-  negative_prompt: z.string().optional(),
+  negative_prompt: z.string().max(500).optional(),
   enable_prompt_expansion: z.boolean().optional(),
   seed: z.number().int().min(0).max(2147483647).optional(),
   enable_safety_checker: z.boolean().optional(),
@@ -606,15 +607,60 @@ export const FalWanV2p7TextToVideoRequestSchema = z.object({
 // ---------------------------------------------------------------------------
 
 export const FalWanV2p7ImageToVideoRequestSchema = z.object({
-  prompt: z.string(),
-  image_url: z.string().optional(),
-  end_image_url: z.string().optional(),
-  video_url: z.string().optional(),
-  audio_url: z.string().optional(),
-  resolution: z.enum(["720p", "1080p"]).optional(),
+  prompt: z.string().min(1).max(5000),
+  image_url: z.string().url(),
+  end_image_url: z.string().url().optional(),
+  video_url: z.string().url().optional(),
+  audio_url: z.string().url().optional(),
+  resolution: FalWanV2p7ResolutionSchema.optional(),
   duration: z.number().int().min(2).max(15).optional(),
-  negative_prompt: z.string().optional(),
+  negative_prompt: z.string().max(500).optional(),
   enable_prompt_expansion: z.boolean().optional(),
+  seed: z.number().int().min(0).max(2147483647).optional(),
+  enable_safety_checker: z.boolean().optional(),
+});
+
+// ---------------------------------------------------------------------------
+// Wan v2.7 reference-to-video
+// ---------------------------------------------------------------------------
+
+export const FalWanV2p7ReferenceToVideoRequestSchema = z
+  .object({
+    prompt: z.string().min(1).max(5000),
+    reference_image_urls: z.array(z.string().url()).max(4).optional(),
+    reference_video_urls: z.array(z.string().url()).max(4).optional(),
+    negative_prompt: z.string().max(500).optional(),
+    aspect_ratio: FalWanV2p7AspectRatioSchema.optional(),
+    resolution: FalWanV2p7ResolutionSchema.optional(),
+    duration: z.number().int().min(2).max(10).optional(),
+    multi_shots: z.boolean().optional(),
+    seed: z.number().int().min(0).max(2147483647).optional(),
+    enable_safety_checker: z.boolean().optional(),
+  })
+  .refine(
+    (v) =>
+      (v.reference_image_urls && v.reference_image_urls.length > 0) ||
+      (v.reference_video_urls && v.reference_video_urls.length > 0),
+    {
+      message:
+        "wan/v2.7/reference-to-video requires at least one of reference_image_urls or reference_video_urls",
+      path: ["reference_image_urls"],
+    }
+  );
+
+// ---------------------------------------------------------------------------
+// Wan v2.7 edit-video
+// ---------------------------------------------------------------------------
+
+export const FalWanV2p7EditVideoRequestSchema = z.object({
+  prompt: z.string().min(1).max(5000),
+  video_url: z.string().url(),
+  reference_image_url: z.string().url().optional(),
+  resolution: FalWanV2p7ResolutionSchema.optional(),
+  aspect_ratio: FalWanV2p7AspectRatioSchema.optional(),
+  duration: z.number().int().min(0).max(10).optional(),
+  audio_setting: FalWanV2p7AudioSettingSchema.optional(),
+  negative_prompt: z.string().max(500).optional(),
   seed: z.number().int().min(0).max(2147483647).optional(),
   enable_safety_checker: z.boolean().optional(),
 });
@@ -994,6 +1040,12 @@ export type FalWanV2p7TextToVideoParams = z.infer<
 >;
 export type FalWanV2p7ImageToVideoParams = z.infer<
   typeof FalWanV2p7ImageToVideoRequestSchema
+>;
+export type FalWanV2p7ReferenceToVideoParams = z.infer<
+  typeof FalWanV2p7ReferenceToVideoRequestSchema
+>;
+export type FalWanV2p7EditVideoParams = z.infer<
+  typeof FalWanV2p7EditVideoRequestSchema
 >;
 export type FalXaiGrokImagineImageParams = z.infer<
   typeof FalXaiGrokImagineImageRequestSchema

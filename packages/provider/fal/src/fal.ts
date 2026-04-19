@@ -64,6 +64,10 @@ import {
   FalWanV2p7TextToVideoResponse,
   FalWanV2p7ImageToVideoParams,
   FalWanV2p7ImageToVideoResponse,
+  FalWanV2p7ReferenceToVideoParams,
+  FalWanV2p7ReferenceToVideoResponse,
+  FalWanV2p7EditVideoParams,
+  FalWanV2p7EditVideoResponse,
   FalXaiGrokImagineImageParams,
   FalXaiGrokImagineImageResponse,
   FalXaiGrokImagineImageEditParams,
@@ -127,6 +131,8 @@ import {
   FalWanV2p7EditRequestSchema,
   FalWanV2p7TextToVideoRequestSchema,
   FalWanV2p7ImageToVideoRequestSchema,
+  FalWanV2p7ReferenceToVideoRequestSchema,
+  FalWanV2p7EditVideoRequestSchema,
   FalXaiGrokImagineImageRequestSchema,
   FalXaiGrokImagineImageEditRequestSchema,
   FalQwenImageRequestSchema,
@@ -1024,6 +1030,50 @@ export function fal(opts: FalOptions): FalProvider {
   );
 
   // sig-ok: stylistic dotPath divergence from URL
+  // POST https://api.fal.ai/v1/fal-ai/wan/v2.7/reference-to-video
+  // Docs: https://docs.fal.ai
+  const wanV2p7ReferenceToVideo = Object.assign(
+    async function referenceToVideo(
+      params: FalWanV2p7ReferenceToVideoParams,
+      signal?: AbortSignal
+    ): Promise<FalWanV2p7ReferenceToVideoResponse> {
+      return makeRequest<FalWanV2p7ReferenceToVideoResponse>(
+        "POST",
+        "/fal-ai/wan/v2.7/reference-to-video",
+        params as unknown as Record<string, unknown>,
+        signal,
+        undefined,
+        runBaseURL
+      );
+    },
+    {
+      schema: FalWanV2p7ReferenceToVideoRequestSchema,
+    }
+  );
+
+  // sig-ok: stylistic dotPath divergence from URL
+  // POST https://api.fal.ai/v1/fal-ai/wan/v2.7/edit-video
+  // Docs: https://docs.fal.ai
+  const wanV2p7EditVideo = Object.assign(
+    async function editVideo(
+      params: FalWanV2p7EditVideoParams,
+      signal?: AbortSignal
+    ): Promise<FalWanV2p7EditVideoResponse> {
+      return makeRequest<FalWanV2p7EditVideoResponse>(
+        "POST",
+        "/fal-ai/wan/v2.7/edit-video",
+        params as unknown as Record<string, unknown>,
+        signal,
+        undefined,
+        runBaseURL
+      );
+    },
+    {
+      schema: FalWanV2p7EditVideoRequestSchema,
+    }
+  );
+
+  // sig-ok: stylistic dotPath divergence from URL
   // POST https://api.fal.ai/v1/xai/grok-imagine-image/edit
   // Docs: https://docs.fal.ai
   const xaiGrokImagineImageEdit = Object.assign(
@@ -1523,6 +1573,8 @@ export function fal(opts: FalOptions): FalProvider {
         edit: wanV2p7Edit,
         textToVideo: wanV2p7TextToVideo,
         imageToVideo: wanV2p7ImageToVideo,
+        referenceToVideo: wanV2p7ReferenceToVideo,
+        editVideo: wanV2p7EditVideo,
         pro: {
           textToImage: wanV2p7ProTextToImage,
           edit: wanV2p7ProEdit,

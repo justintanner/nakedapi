@@ -486,17 +486,17 @@ export const Wan27ImageToVideoRequestSchema = z
     model: z.literal("wan/2-7-image-to-video"),
     callBackUrl: z.string().optional(),
     input: z.object({
-      prompt: z.string().min(1),
-      negative_prompt: z.string().optional(),
+      prompt: z.string().min(1).max(5000),
+      negative_prompt: z.string().max(500).optional(),
       first_frame_url: z.string().optional(),
       last_frame_url: z.string().optional(),
       first_clip_url: z.string().optional(),
       driving_audio_url: z.string().optional(),
       resolution: Wan27ResolutionSchema.optional(),
-      duration: z.number().optional(),
+      duration: z.number().int().min(2).max(15).optional(),
       prompt_extend: z.boolean().optional(),
       watermark: z.boolean().optional(),
-      seed: z.number().optional(),
+      seed: z.number().int().min(0).max(2147483647).optional(),
       nsfw_checker: z.boolean().default(false),
     }),
   })
@@ -541,82 +541,109 @@ export const Wan27TextToVideoRequestSchema = z.object({
   }),
 });
 
+// Per-field max(5) on reference_image/reference_video; the combined-≤5 cap is
+// enforced by callers (would require a wrapper-level refine, which would
+// turn this into ZodEffects and break `.shape` introspection used by
+// clipfirst's slot-constraint readers).
 export const Wan27RefToVideoRequestSchema = z.object({
   model: z.literal("wan/2-7-r2v"),
   callBackUrl: z.string().optional(),
   input: z.object({
-    prompt: z.string().min(1),
-    negative_prompt: z.string().optional(),
-    reference_image: z.array(z.string()).optional(),
-    reference_video: z.array(z.string()).optional(),
+    prompt: z.string().min(1).max(5000),
+    negative_prompt: z.string().max(500).optional(),
+    reference_image: z.array(z.string()).max(5).optional(),
+    reference_video: z.array(z.string()).max(5).optional(),
     first_frame: z.string().optional(),
     reference_voice: z.string().optional(),
     resolution: Wan27ResolutionSchema.optional(),
     aspect_ratio: Wan27AspectRatioSchema.optional(),
-    duration: z.number().optional(),
+    duration: z.number().int().min(2).max(10).optional(),
     prompt_extend: z.boolean().optional(),
     watermark: z.boolean().optional(),
-    seed: z.number().optional(),
+    seed: z.number().int().min(0).max(2147483647).optional(),
     nsfw_checker: z.boolean().default(false),
   }),
 });
 
-export const Wan27VideoEditRequestSchema = z.object({
-  model: z.literal("wan/2-7-videoedit"),
-  callBackUrl: z.string().optional(),
-  input: z.object({
-    prompt: z.string().optional(),
-    negative_prompt: z.string().optional(),
-    video_url: z.string().min(1),
-    reference_image: z.string().optional(),
-    resolution: Wan27ResolutionSchema.optional(),
-    aspect_ratio: Wan27AspectRatioSchema.optional(),
-    duration: z.number().optional(),
-    audio_setting: Wan27AudioSettingSchema.optional(),
-    prompt_extend: z.boolean().optional(),
-    watermark: z.boolean().optional(),
-    seed: z.number().optional(),
-    nsfw_checker: z.boolean().default(false),
-  }),
-});
+export const Wan27VideoEditRequestSchema = z
+  .object({
+    model: z.literal("wan/2-7-videoedit"),
+    callBackUrl: z.string().optional(),
+    input: z.object({
+      prompt: z.string().max(5000).optional(),
+      negative_prompt: z.string().max(500).optional(),
+      video_url: z.string().min(1),
+      reference_image: z.string().optional(),
+      resolution: Wan27ResolutionSchema.optional(),
+      aspect_ratio: Wan27AspectRatioSchema.optional(),
+      duration: z.number().int().optional(),
+      audio_setting: Wan27AudioSettingSchema.optional(),
+      prompt_extend: z.boolean().optional(),
+      watermark: z.boolean().optional(),
+      seed: z.number().int().min(0).max(2147483647).optional(),
+      nsfw_checker: z.boolean().default(false),
+    }),
+  })
+  .refine(
+    (v) => {
+      const d = v.input.duration;
+      return d === undefined || d === 0 || (d >= 2 && d <= 10);
+    },
+    {
+      message:
+        "wan/2-7-videoedit duration must be 0 (full input) or between 2 and 10 seconds",
+      path: ["input", "duration"],
+    }
+  );
+
+const Wan27ImageInputShape = {
+  prompt: z.string().min(1).max(5000),
+  input_urls: z.array(z.string()).max(9).optional(),
+  aspect_ratio: Wan27ImageAspectRatioSchema.optional(),
+  enable_sequential: z.boolean().optional(),
+  n: z.number().int().min(1).max(12).optional(),
+  resolution: Wan27ImageResolutionSchema.optional(),
+  thinking_mode: z.boolean().optional(),
+  color_palette: z
+    .array(Wan27ImageColorPaletteSchema)
+    .min(3)
+    .max(10)
+    .optional(),
+  bbox_list: z.array(z.array(z.array(z.number()).length(4)).max(2)).optional(),
+  watermark: z.boolean().optional(),
+  seed: z.number().int().min(0).max(2147483647).optional(),
+  nsfw_checker: z.boolean().default(false),
+} as const;
 
 export const Wan27ImageRequestSchema = z.object({
   model: z.literal("wan/2-7-image"),
   callBackUrl: z.string().optional(),
-  input: z.object({
-    prompt: z.string().min(1),
-    input_urls: z.array(z.string()).optional(),
-    aspect_ratio: Wan27ImageAspectRatioSchema.optional(),
-    enable_sequential: z.boolean().optional(),
-    n: z.number().optional(),
-    resolution: Wan27ImageResolutionSchema.optional(),
-    thinking_mode: z.boolean().optional(),
-    color_palette: z.array(Wan27ImageColorPaletteSchema).optional(),
-    bbox_list: z.array(z.array(z.array(z.number()))).optional(),
-    watermark: z.boolean().optional(),
-    seed: z.number().optional(),
-    nsfw_checker: z.boolean().default(false),
-  }),
+  input: z.object(Wan27ImageInputShape),
 });
 
 export const Wan27ImageProRequestSchema = z.object({
   model: z.literal("wan/2-7-image-pro"),
   callBackUrl: z.string().optional(),
-  input: z.object({
-    prompt: z.string().min(1),
-    input_urls: z.array(z.string()).optional(),
-    aspect_ratio: Wan27ImageAspectRatioSchema.optional(),
-    enable_sequential: z.boolean().optional(),
-    n: z.number().optional(),
-    resolution: Wan27ImageResolutionSchema.optional(),
-    thinking_mode: z.boolean().optional(),
-    color_palette: z.array(Wan27ImageColorPaletteSchema).optional(),
-    bbox_list: z.array(z.array(z.array(z.number()))).optional(),
-    watermark: z.boolean().optional(),
-    seed: z.number().optional(),
-    nsfw_checker: z.boolean().default(false),
-  }),
+  input: z.object(Wan27ImageInputShape),
 });
+
+// ---------------------------------------------------------------------------
+// Wan 2.7 task result schemas (parsed from KieTaskInfoData.resultJson)
+//
+// kie wraps async task results in a JSON envelope on `resultJson`. Both image
+// and video Wan 2.7 endpoints return the same shape: an array of result URLs
+// (image URLs for image jobs; one video URL for video jobs) plus an optional
+// passthrough `resultObject` for endpoint-specific metadata. Consumers should
+// `JSON.parse(data.resultJson)` then validate with these.
+// ---------------------------------------------------------------------------
+
+export const Wan27TaskResultJsonSchema = z.object({
+  resultUrls: z.array(z.string().url()).min(1),
+  resultObject: z.record(z.string(), z.unknown()).optional(),
+});
+
+export const Wan27VideoResultSchema = Wan27TaskResultJsonSchema;
+export const Wan27ImageResultSchema = Wan27TaskResultJsonSchema;
 
 // ---------------------------------------------------------------------------
 // Upload schemas
@@ -943,6 +970,9 @@ export type Wan27RefToVideoRequest = z.infer<
 export type Wan27VideoEditRequest = z.infer<typeof Wan27VideoEditRequestSchema>;
 export type Wan27ImageRequest = z.infer<typeof Wan27ImageRequestSchema>;
 export type Wan27ImageProRequest = z.infer<typeof Wan27ImageProRequestSchema>;
+export type Wan27TaskResultJson = z.infer<typeof Wan27TaskResultJsonSchema>;
+export type Wan27VideoResult = z.infer<typeof Wan27VideoResultSchema>;
+export type Wan27ImageResult = z.infer<typeof Wan27ImageResultSchema>;
 
 export type UploadMediaRequest = z.infer<typeof UploadMediaRequestSchema>;
 export type FileUrlUploadRequest = z.infer<typeof FileUrlUploadRequestSchema>;

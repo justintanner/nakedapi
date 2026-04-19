@@ -481,3 +481,295 @@ export type AlibabaMultimodalGenerationRequest = z.infer<
   typeof AlibabaMultimodalGenerationRequestSchema
 >;
 export type AlibabaOptions = z.infer<typeof AlibabaOptionsSchema>;
+
+// ---------------------------------------------------------------------------
+// Response sub-schemas (chat, image-gen, multimodal, video tasks, uploads)
+// ---------------------------------------------------------------------------
+
+export const AlibabaRoleSchema = z.enum([
+  "system",
+  "user",
+  "assistant",
+  "tool",
+]);
+
+export const AlibabaFinishReasonSchema = z
+  .enum(["stop", "length", "tool_calls", "content_filter", "null"])
+  .or(z.string());
+
+export const AlibabaTaskStatusSchema = z.enum([
+  "PENDING",
+  "RUNNING",
+  "SUSPENDED",
+  "SUCCEEDED",
+  "FAILED",
+  "CANCELED",
+  "UNKNOWN",
+]);
+
+// -- Chat response ----------------------------------------------------------
+
+export const AlibabaChatResponseMessageSchema = z.object({
+  role: AlibabaRoleSchema,
+  content: z.string().nullable(),
+  tool_calls: z.array(AlibabaToolCallSchema).optional(),
+});
+
+export const AlibabaChatChoiceSchema = z.object({
+  index: z.number().int(),
+  message: AlibabaChatResponseMessageSchema,
+  finish_reason: AlibabaFinishReasonSchema.nullable(),
+});
+
+export const AlibabaUsageSchema = z.object({
+  prompt_tokens: z.number().int(),
+  completion_tokens: z.number().int(),
+  total_tokens: z.number().int(),
+});
+
+export const AlibabaChatResponseSchema = z.object({
+  id: z.string(),
+  object: z.string(),
+  created: z.number(),
+  model: z.string(),
+  choices: z.array(AlibabaChatChoiceSchema),
+  usage: AlibabaUsageSchema.optional(),
+});
+
+// -- Streaming response -----------------------------------------------------
+
+export const AlibabaChatStreamDeltaSchema = z.object({
+  role: AlibabaRoleSchema.optional(),
+  content: z.string().nullable().optional(),
+  tool_calls: z.array(AlibabaToolCallSchema).optional(),
+});
+
+export const AlibabaChatStreamChoiceSchema = z.object({
+  index: z.number().int(),
+  delta: AlibabaChatStreamDeltaSchema,
+  finish_reason: AlibabaFinishReasonSchema.nullable(),
+});
+
+export const AlibabaChatStreamChunkSchema = z.object({
+  id: z.string(),
+  object: z.string(),
+  created: z.number(),
+  model: z.string(),
+  choices: z.array(AlibabaChatStreamChoiceSchema),
+  usage: AlibabaUsageSchema.optional(),
+});
+
+// -- Models -----------------------------------------------------------------
+
+export const AlibabaModelSchema = z.object({
+  id: z.string(),
+  object: z.string(),
+  created: z.number(),
+  owned_by: z.string(),
+});
+
+export const AlibabaModelListResponseSchema = z.object({
+  object: z.string(),
+  data: z.array(AlibabaModelSchema),
+});
+
+// -- Image generation (Wan 2.7 — async) -------------------------------------
+
+export const AlibabaImageGenerationContentSchema = z.object({
+  type: z.literal("image"),
+  image: z.string(),
+});
+
+export const AlibabaImageGenerationResultMessageSchema = z.object({
+  role: z.literal("assistant"),
+  content: z.array(AlibabaImageGenerationContentSchema),
+});
+
+export const AlibabaImageGenerationChoiceSchema = z.object({
+  finish_reason: AlibabaFinishReasonSchema,
+  message: AlibabaImageGenerationResultMessageSchema,
+});
+
+export const AlibabaImageGenerationSubmitOutputSchema = z.object({
+  task_id: z.string(),
+  task_status: AlibabaTaskStatusSchema,
+});
+
+export const AlibabaImageGenerationSubmitResponseSchema = z.object({
+  output: AlibabaImageGenerationSubmitOutputSchema,
+  request_id: z.string(),
+});
+
+// -- Multimodal generation (Qwen image editing — sync) ----------------------
+
+export const AlibabaMultimodalGenerationImagePartSchema = z.object({
+  image: z.string(),
+});
+
+export const AlibabaMultimodalGenerationResultMessageSchema = z.object({
+  role: z.literal("assistant"),
+  content: z.array(AlibabaMultimodalGenerationImagePartSchema),
+});
+
+export const AlibabaMultimodalGenerationChoiceSchema = z.object({
+  finish_reason: AlibabaFinishReasonSchema,
+  message: AlibabaMultimodalGenerationResultMessageSchema,
+});
+
+export const AlibabaMultimodalGenerationOutputSchema = z.object({
+  choices: z.array(AlibabaMultimodalGenerationChoiceSchema),
+});
+
+export const AlibabaMultimodalGenerationUsageSchema = z.object({
+  image_count: z.number().int().optional(),
+  width: z.number().int().optional(),
+  height: z.number().int().optional(),
+  input_tokens: z.number().int().optional(),
+  output_tokens: z.number().int().optional(),
+  characters: z.number().int().optional(),
+});
+
+export const AlibabaMultimodalGenerationResponseSchema = z.object({
+  output: AlibabaMultimodalGenerationOutputSchema,
+  usage: AlibabaMultimodalGenerationUsageSchema.optional(),
+  request_id: z.string(),
+});
+
+// -- Video synthesis (native DashScope /api/v1) -----------------------------
+
+export const AlibabaVideoSynthesisSubmitOutputSchema = z.object({
+  task_id: z.string(),
+  task_status: AlibabaTaskStatusSchema,
+});
+
+export const AlibabaVideoSynthesisSubmitResponseSchema = z.object({
+  output: AlibabaVideoSynthesisSubmitOutputSchema,
+  request_id: z.string(),
+});
+
+export const AlibabaTaskOutputSchema = z.object({
+  task_id: z.string(),
+  task_status: AlibabaTaskStatusSchema,
+  submit_time: z.string().optional(),
+  scheduled_time: z.string().optional(),
+  end_time: z.string().optional(),
+  video_url: z.string().optional(),
+  code: z.string().optional(),
+  message: z.string().optional(),
+  orig_prompt: z.string().optional(),
+  actual_prompt: z.string().optional(),
+  finished: z.boolean().optional(),
+  choices: z.array(AlibabaImageGenerationChoiceSchema).optional(),
+});
+
+export const AlibabaTaskUsageSchema = z.object({
+  duration: z.number().optional(),
+  input_video_duration: z.number().optional(),
+  output_video_duration: z.number().optional(),
+  SR: z.number().optional(),
+  video_count: z.number().int().optional(),
+  image_count: z.number().int().optional(),
+  size: z.string().optional(),
+  input_tokens: z.number().int().optional(),
+  output_tokens: z.number().int().optional(),
+  total_tokens: z.number().int().optional(),
+});
+
+export const AlibabaTaskStatusResponseSchema = z.object({
+  output: AlibabaTaskOutputSchema,
+  usage: AlibabaTaskUsageSchema.optional(),
+  request_id: z.string(),
+});
+
+// -- Upload policy (native DashScope /api/v1/uploads) -----------------------
+
+export const AlibabaUploadPolicyDataSchema = z.object({
+  policy: z.string(),
+  signature: z.string(),
+  upload_dir: z.string(),
+  upload_host: z.string(),
+  expire_in_seconds: z.number(),
+  oss_access_key_id: z.string(),
+  x_oss_object_acl: z.string(),
+  x_oss_forbid_overwrite: z.string(),
+});
+
+export const AlibabaUploadPolicyResponseSchema = z.object({
+  data: AlibabaUploadPolicyDataSchema,
+  request_id: z.string(),
+});
+
+// -- Inferred response types -----------------------------------------------
+
+export type AlibabaRole = z.infer<typeof AlibabaRoleSchema>;
+export type AlibabaFinishReason = z.infer<typeof AlibabaFinishReasonSchema>;
+export type AlibabaTaskStatus = z.infer<typeof AlibabaTaskStatusSchema>;
+export type AlibabaChatResponseMessage = z.infer<
+  typeof AlibabaChatResponseMessageSchema
+>;
+export type AlibabaChatChoice = z.infer<typeof AlibabaChatChoiceSchema>;
+export type AlibabaUsage = z.infer<typeof AlibabaUsageSchema>;
+export type AlibabaChatResponse = z.infer<typeof AlibabaChatResponseSchema>;
+export type AlibabaChatStreamDelta = z.infer<
+  typeof AlibabaChatStreamDeltaSchema
+>;
+export type AlibabaChatStreamChoice = z.infer<
+  typeof AlibabaChatStreamChoiceSchema
+>;
+export type AlibabaChatStreamChunk = z.infer<
+  typeof AlibabaChatStreamChunkSchema
+>;
+export type AlibabaModel = z.infer<typeof AlibabaModelSchema>;
+export type AlibabaModelListResponse = z.infer<
+  typeof AlibabaModelListResponseSchema
+>;
+export type AlibabaImageGenerationContent = z.infer<
+  typeof AlibabaImageGenerationContentSchema
+>;
+export type AlibabaImageGenerationResultMessage = z.infer<
+  typeof AlibabaImageGenerationResultMessageSchema
+>;
+export type AlibabaImageGenerationChoice = z.infer<
+  typeof AlibabaImageGenerationChoiceSchema
+>;
+export type AlibabaImageGenerationSubmitOutput = z.infer<
+  typeof AlibabaImageGenerationSubmitOutputSchema
+>;
+export type AlibabaImageGenerationSubmitResponse = z.infer<
+  typeof AlibabaImageGenerationSubmitResponseSchema
+>;
+export type AlibabaMultimodalGenerationImagePart = z.infer<
+  typeof AlibabaMultimodalGenerationImagePartSchema
+>;
+export type AlibabaMultimodalGenerationResultMessage = z.infer<
+  typeof AlibabaMultimodalGenerationResultMessageSchema
+>;
+export type AlibabaMultimodalGenerationChoice = z.infer<
+  typeof AlibabaMultimodalGenerationChoiceSchema
+>;
+export type AlibabaMultimodalGenerationOutput = z.infer<
+  typeof AlibabaMultimodalGenerationOutputSchema
+>;
+export type AlibabaMultimodalGenerationUsage = z.infer<
+  typeof AlibabaMultimodalGenerationUsageSchema
+>;
+export type AlibabaMultimodalGenerationResponse = z.infer<
+  typeof AlibabaMultimodalGenerationResponseSchema
+>;
+export type AlibabaVideoSynthesisSubmitOutput = z.infer<
+  typeof AlibabaVideoSynthesisSubmitOutputSchema
+>;
+export type AlibabaVideoSynthesisSubmitResponse = z.infer<
+  typeof AlibabaVideoSynthesisSubmitResponseSchema
+>;
+export type AlibabaTaskOutput = z.infer<typeof AlibabaTaskOutputSchema>;
+export type AlibabaTaskUsage = z.infer<typeof AlibabaTaskUsageSchema>;
+export type AlibabaTaskStatusResponse = z.infer<
+  typeof AlibabaTaskStatusResponseSchema
+>;
+export type AlibabaUploadPolicyData = z.infer<
+  typeof AlibabaUploadPolicyDataSchema
+>;
+export type AlibabaUploadPolicyResponse = z.infer<
+  typeof AlibabaUploadPolicyResponseSchema
+>;

@@ -27,6 +27,8 @@ export type {
   FalWanV2p7EditParams,
   FalWanV2p7TextToVideoParams,
   FalWanV2p7ImageToVideoParams,
+  FalWanV2p7ReferenceToVideoParams,
+  FalWanV2p7EditVideoParams,
   FalXaiGrokImagineImageParams,
   FalXaiGrokImagineImageEditParams,
   FalQwenImageParams,
@@ -72,6 +74,8 @@ import type {
   FalWanV2p7EditParams,
   FalWanV2p7TextToVideoParams,
   FalWanV2p7ImageToVideoParams,
+  FalWanV2p7ReferenceToVideoParams,
+  FalWanV2p7EditVideoParams,
   FalXaiGrokImagineImageParams,
   FalXaiGrokImagineImageEditParams,
   FalQwenImageParams,
@@ -420,6 +424,15 @@ export interface FalFile {
   file_size?: number;
 }
 
+// Video file output — fal video models include media metadata alongside FalFile
+export interface FalVideoFile extends FalFile {
+  width?: number;
+  height?: number;
+  fps?: number;
+  duration?: number;
+  num_frames?: number;
+}
+
 // ==================== ElevenLabs Speech to Text Scribe V2 ====================
 
 // Transcription word details
@@ -673,13 +686,25 @@ export interface FalWanV2p7EditResponse {
 }
 
 export interface FalWanV2p7TextToVideoResponse {
-  video: FalFile;
+  video: FalVideoFile;
   seed: number;
   actual_prompt?: string;
 }
 
 export interface FalWanV2p7ImageToVideoResponse {
-  video: FalFile;
+  video: FalVideoFile;
+  seed: number;
+  actual_prompt?: string;
+}
+
+export interface FalWanV2p7ReferenceToVideoResponse {
+  video: FalVideoFile;
+  seed: number;
+  actual_prompt?: string;
+}
+
+export interface FalWanV2p7EditVideoResponse {
+  video: FalVideoFile;
   seed: number;
   actual_prompt?: string;
 }
@@ -1198,6 +1223,20 @@ type FalWanV2p7ImageToVideoFn = ((
   schema: z.ZodType<FalWanV2p7ImageToVideoParams>;
 };
 
+type FalWanV2p7ReferenceToVideoFn = ((
+  params: FalWanV2p7ReferenceToVideoParams,
+  signal?: AbortSignal
+) => Promise<FalWanV2p7ReferenceToVideoResponse>) & {
+  schema: z.ZodType<FalWanV2p7ReferenceToVideoParams>;
+};
+
+type FalWanV2p7EditVideoFn = ((
+  params: FalWanV2p7EditVideoParams,
+  signal?: AbortSignal
+) => Promise<FalWanV2p7EditVideoResponse>) & {
+  schema: z.ZodType<FalWanV2p7EditVideoParams>;
+};
+
 export interface FalRunWanV2p7ProNamespace {
   textToImage: FalWanV2p7TextToImageFn;
   edit: FalWanV2p7EditFn;
@@ -1208,6 +1247,8 @@ export interface FalRunWanV2p7Namespace {
   edit: FalWanV2p7EditFn;
   textToVideo: FalWanV2p7TextToVideoFn;
   imageToVideo: FalWanV2p7ImageToVideoFn;
+  referenceToVideo: FalWanV2p7ReferenceToVideoFn;
+  editVideo: FalWanV2p7EditVideoFn;
   pro: FalRunWanV2p7ProNamespace;
 }
 

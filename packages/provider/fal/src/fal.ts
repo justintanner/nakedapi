@@ -42,6 +42,10 @@ import {
   FalSeedance2p0FastImageToVideoResponse,
   FalSeedance2p0FastTextToVideoParams,
   FalSeedance2p0FastTextToVideoResponse,
+  FalSeedance2p0ReferenceToVideoParams,
+  FalSeedance2p0ReferenceToVideoResponse,
+  FalSeedance2p0FastReferenceToVideoParams,
+  FalSeedance2p0FastReferenceToVideoResponse,
   FalNanoBananaProTextToImageParams,
   FalNanoBananaProTextToImageResponse,
   FalNanoBananaProEditParams,
@@ -120,6 +124,8 @@ import {
   FalSeedance2p0TextToVideoRequestSchema,
   FalSeedance2p0FastImageToVideoRequestSchema,
   FalSeedance2p0FastTextToVideoRequestSchema,
+  FalSeedance2p0ReferenceToVideoRequestSchema,
+  FalSeedance2p0FastReferenceToVideoRequestSchema,
   FalNanoBananaProTextToImageRequestSchema,
   FalNanoBananaProEditRequestSchema,
   FalNanoBanana2TextToImageRequestSchema,
@@ -684,6 +690,50 @@ export function fal(opts: FalOptions): FalProvider {
     },
     {
       schema: FalSeedance2p0FastTextToVideoRequestSchema,
+    }
+  );
+
+  // sig-ok: stylistic dotPath divergence from URL
+  // POST https://api.fal.ai/v1/bytedance/seedance-2.0/reference-to-video
+  // Docs: https://docs.fal.ai
+  const bytedanceSeedance2p0ReferenceToVideo = Object.assign(
+    async function referenceToVideo(
+      params: FalSeedance2p0ReferenceToVideoParams,
+      signal?: AbortSignal
+    ): Promise<FalSeedance2p0ReferenceToVideoResponse> {
+      return makeRequest<FalSeedance2p0ReferenceToVideoResponse>(
+        "POST",
+        "/bytedance/seedance-2.0/reference-to-video",
+        params as unknown as Record<string, unknown>,
+        signal,
+        undefined,
+        runBaseURL
+      );
+    },
+    {
+      schema: FalSeedance2p0ReferenceToVideoRequestSchema,
+    }
+  );
+
+  // sig-ok: stylistic dotPath divergence from URL
+  // POST https://api.fal.ai/v1/bytedance/seedance-2.0/fast/reference-to-video
+  // Docs: https://docs.fal.ai
+  const bytedanceSeedance2p0FastReferenceToVideo = Object.assign(
+    async function referenceToVideo(
+      params: FalSeedance2p0FastReferenceToVideoParams,
+      signal?: AbortSignal
+    ): Promise<FalSeedance2p0FastReferenceToVideoResponse> {
+      return makeRequest<FalSeedance2p0FastReferenceToVideoResponse>(
+        "POST",
+        "/bytedance/seedance-2.0/fast/reference-to-video",
+        params as unknown as Record<string, unknown>,
+        signal,
+        undefined,
+        runBaseURL
+      );
+    },
+    {
+      schema: FalSeedance2p0FastReferenceToVideoRequestSchema,
     }
   );
 
@@ -1512,9 +1562,11 @@ export function fal(opts: FalOptions): FalProvider {
       seedance2p0: {
         imageToVideo: bytedanceSeedance2p0ImageToVideo,
         textToVideo: bytedanceSeedance2p0TextToVideo,
+        referenceToVideo: bytedanceSeedance2p0ReferenceToVideo,
         fast: {
           imageToVideo: bytedanceSeedance2p0FastImageToVideo,
           textToVideo: bytedanceSeedance2p0FastTextToVideo,
+          referenceToVideo: bytedanceSeedance2p0FastReferenceToVideo,
         },
       },
       seedream: {

@@ -208,6 +208,66 @@ export const FalSeedance2p0FastTextToVideoRequestSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// Bytedance Seedance 2.0 reference-to-video
+// ---------------------------------------------------------------------------
+
+const Seedance2p0ReferenceDurationSchema = z.enum([
+  "auto",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "11",
+  "12",
+  "13",
+  "14",
+  "15",
+]);
+
+const Seedance2p0ReferenceAspectRatioSchema = z.enum([
+  "auto",
+  "21:9",
+  "16:9",
+  "4:3",
+  "1:1",
+  "3:4",
+  "9:16",
+]);
+
+export const FalSeedance2p0ReferenceToVideoRequestSchema = z.object({
+  prompt: z.string(),
+  image_urls: z.array(z.string()).max(9).optional(),
+  video_urls: z.array(z.string()).max(3).optional(),
+  audio_urls: z.array(z.string()).max(3).optional(),
+  resolution: z.enum(["480p", "720p"]).optional(),
+  duration: Seedance2p0ReferenceDurationSchema.optional(),
+  aspect_ratio: Seedance2p0ReferenceAspectRatioSchema.optional(),
+  generate_audio: z.boolean().optional(),
+  seed: z.number().int().optional(),
+  end_user_id: z.string().optional(),
+});
+
+// ---------------------------------------------------------------------------
+// Bytedance Seedance 2.0 Fast reference-to-video
+// ---------------------------------------------------------------------------
+
+export const FalSeedance2p0FastReferenceToVideoRequestSchema = z.object({
+  prompt: z.string(),
+  image_urls: z.array(z.string()).max(9).optional(),
+  video_urls: z.array(z.string()).max(3).optional(),
+  audio_urls: z.array(z.string()).max(3).optional(),
+  resolution: z.enum(["480p", "720p"]).optional(),
+  duration: Seedance2p0ReferenceDurationSchema.optional(),
+  aspect_ratio: Seedance2p0ReferenceAspectRatioSchema.optional(),
+  generate_audio: z.boolean().optional(),
+  seed: z.number().int().optional(),
+  end_user_id: z.string().optional(),
+});
+
+// ---------------------------------------------------------------------------
 // Nano Banana 2 text-to-image
 // ---------------------------------------------------------------------------
 
@@ -1017,6 +1077,12 @@ export type FalSeedance2p0FastImageToVideoParams = z.infer<
 >;
 export type FalSeedance2p0FastTextToVideoParams = z.infer<
   typeof FalSeedance2p0FastTextToVideoRequestSchema
+>;
+export type FalSeedance2p0ReferenceToVideoParams = z.infer<
+  typeof FalSeedance2p0ReferenceToVideoRequestSchema
+>;
+export type FalSeedance2p0FastReferenceToVideoParams = z.infer<
+  typeof FalSeedance2p0FastReferenceToVideoRequestSchema
 >;
 export type FalNanoBananaProTextToImageParams = z.infer<
   typeof FalNanoBananaProTextToImageRequestSchema

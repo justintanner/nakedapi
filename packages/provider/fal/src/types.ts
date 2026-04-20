@@ -16,6 +16,8 @@ export type {
   FalSeedance2p0TextToVideoParams,
   FalSeedance2p0FastImageToVideoParams,
   FalSeedance2p0FastTextToVideoParams,
+  FalSeedance2p0ReferenceToVideoParams,
+  FalSeedance2p0FastReferenceToVideoParams,
   FalNanoBananaProTextToImageParams,
   FalNanoBananaProEditParams,
   FalNanoBanana2TextToImageParams,
@@ -63,6 +65,8 @@ import type {
   FalSeedance2p0TextToVideoParams,
   FalSeedance2p0FastImageToVideoParams,
   FalSeedance2p0FastTextToVideoParams,
+  FalSeedance2p0ReferenceToVideoParams,
+  FalSeedance2p0FastReferenceToVideoParams,
   FalNanoBananaProTextToImageParams,
   FalNanoBananaProEditParams,
   FalNanoBanana2TextToImageParams,
@@ -493,6 +497,16 @@ export interface FalSeedance2p0FastImageToVideoResponse {
 }
 
 export interface FalSeedance2p0FastTextToVideoResponse {
+  video: FalFile;
+  seed: number;
+}
+
+export interface FalSeedance2p0ReferenceToVideoResponse {
+  video: FalFile;
+  seed: number;
+}
+
+export interface FalSeedance2p0FastReferenceToVideoResponse {
   video: FalFile;
   seed: number;
 }
@@ -1114,14 +1128,30 @@ type FalSeedance2p0FastTextToVideoFn = ((
   schema: z.ZodType<FalSeedance2p0FastTextToVideoParams>;
 };
 
+type FalSeedance2p0ReferenceToVideoFn = ((
+  params: FalSeedance2p0ReferenceToVideoParams,
+  signal?: AbortSignal
+) => Promise<FalSeedance2p0ReferenceToVideoResponse>) & {
+  schema: z.ZodType<FalSeedance2p0ReferenceToVideoParams>;
+};
+
+type FalSeedance2p0FastReferenceToVideoFn = ((
+  params: FalSeedance2p0FastReferenceToVideoParams,
+  signal?: AbortSignal
+) => Promise<FalSeedance2p0FastReferenceToVideoResponse>) & {
+  schema: z.ZodType<FalSeedance2p0FastReferenceToVideoParams>;
+};
+
 export interface FalRunBytedanceSeedance2p0FastNamespace {
   imageToVideo: FalSeedance2p0FastImageToVideoFn;
   textToVideo: FalSeedance2p0FastTextToVideoFn;
+  referenceToVideo: FalSeedance2p0FastReferenceToVideoFn;
 }
 
 export interface FalRunBytedanceSeedance2p0Namespace {
   imageToVideo: FalSeedance2p0ImageToVideoFn;
   textToVideo: FalSeedance2p0TextToVideoFn;
+  referenceToVideo: FalSeedance2p0ReferenceToVideoFn;
   fast: FalRunBytedanceSeedance2p0FastNamespace;
 }
 

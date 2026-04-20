@@ -24,7 +24,7 @@ const fal = createFal({ apiKey: process.env.FAL_API_KEY! });
 
 ## API Reference
 
-59 endpoints across 17 groups. Each method mirrors an upstream URL path.
+62 endpoints across 17 groups. Each method mirrors an upstream URL path.
 
 ### bytedance
 
@@ -37,6 +37,19 @@ const fal = createFal({ apiKey: process.env.FAL_API_KEY! });
 
 ```typescript
 const res = await fal.bytedance.seedance2p0.fast.imageToVideo({ /* ... */ });
+```
+
+Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
+
+</details>
+
+<details>
+<summary><code>POST</code> <b><code>fal.bytedance.seedance2p0.fast.referenceToVideo</code></b></summary>
+
+<code>POST https://api.fal.ai/v1/bytedance/seedance-2.0/fast/reference-to-video</code>
+
+```typescript
+const res = await fal.bytedance.seedance2p0.fast.referenceToVideo({ /* ... */ });
 ```
 
 Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
@@ -67,6 +80,19 @@ Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
 
 ```typescript
 const res = await fal.bytedance.seedance2p0.imageToVideo({ /* ... */ });
+```
+
+Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
+
+</details>
+
+<details>
+<summary><code>POST</code> <b><code>fal.bytedance.seedance2p0.referenceToVideo</code></b></summary>
+
+<code>POST https://api.fal.ai/v1/bytedance/seedance-2.0/reference-to-video</code>
+
+```typescript
+const res = await fal.bytedance.seedance2p0.referenceToVideo({ /* ... */ });
 ```
 
 Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
@@ -923,6 +949,21 @@ Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
 
 ```typescript
 const res = await fal.xai.grokImagineVideo.imageToVideo({ /* ... */ });
+```
+
+Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)
+
+</details>
+
+<details>
+<summary><code>POST</code> <b><code>fal.xai.grokImagineVideo.referenceToVideo</code></b></summary>
+
+<code>POST https://api.fal.ai/v1/xai/grok-imagine-video/reference-to-video</code>
+
+[Upstream docs ↗](https://docs.fal.ai)
+
+```typescript
+const res = await fal.xai.grokImagineVideo.referenceToVideo({ /* ... */ });
 ```
 
 Source: [`packages/provider/fal/src/fal.ts`](src/fal.ts)

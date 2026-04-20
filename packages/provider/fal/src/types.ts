@@ -40,6 +40,7 @@ export type {
   FalNanoBananaTextToImageParams,
   FalNanoBananaEditParams,
   FalXaiGrokImagineVideoImageToVideoParams,
+  FalXaiGrokImagineVideoReferenceToVideoParams,
   FalVeo3p1TextToVideoParams,
   FalVeo3p1ImageToVideoParams,
   FalStorageUploadInitiateParams,
@@ -89,6 +90,7 @@ import type {
   FalNanoBananaTextToImageParams,
   FalNanoBananaEditParams,
   FalXaiGrokImagineVideoImageToVideoParams,
+  FalXaiGrokImagineVideoReferenceToVideoParams,
   FalVeo3p1TextToVideoParams,
   FalVeo3p1ImageToVideoParams,
   FalStorageUploadInitiateParams,
@@ -766,7 +768,20 @@ export type FalXaiGrokImagineVideoAspectRatio =
 
 export type FalXaiGrokImagineVideoResolution = "480p" | "720p";
 
+export type FalXaiGrokImagineVideoReferenceAspectRatio =
+  | "16:9"
+  | "4:3"
+  | "3:2"
+  | "1:1"
+  | "2:3"
+  | "3:4"
+  | "9:16";
+
 export interface FalXaiGrokImagineVideoImageToVideoResponse {
+  video: FalFile;
+}
+
+export interface FalXaiGrokImagineVideoReferenceToVideoResponse {
   video: FalFile;
 }
 
@@ -1308,8 +1323,16 @@ type FalXaiGrokImagineVideoImageToVideoFn = ((
   schema: z.ZodType<FalXaiGrokImagineVideoImageToVideoParams>;
 };
 
+type FalXaiGrokImagineVideoReferenceToVideoFn = ((
+  params: FalXaiGrokImagineVideoReferenceToVideoParams,
+  signal?: AbortSignal
+) => Promise<FalXaiGrokImagineVideoReferenceToVideoResponse>) & {
+  schema: z.ZodType<FalXaiGrokImagineVideoReferenceToVideoParams>;
+};
+
 export interface FalRunXaiGrokImagineVideoNamespace {
   imageToVideo: FalXaiGrokImagineVideoImageToVideoFn;
+  referenceToVideo: FalXaiGrokImagineVideoReferenceToVideoFn;
 }
 
 export interface FalRunXaiNamespace {

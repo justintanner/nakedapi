@@ -1019,6 +1019,20 @@ export const FalXaiGrokImagineVideoImageToVideoRequestSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// xAI Grok Imagine Video reference-to-video
+// ---------------------------------------------------------------------------
+
+export const FalXaiGrokImagineVideoReferenceToVideoRequestSchema = z.object({
+  prompt: z.string(),
+  reference_image_urls: z.array(z.string()).max(7),
+  duration: z.number().int().min(1).max(10).optional(),
+  aspect_ratio: z
+    .enum(["16:9", "4:3", "3:2", "1:1", "2:3", "3:4", "9:16"])
+    .optional(),
+  resolution: z.enum(["480p", "720p"]).optional(),
+});
+
+// ---------------------------------------------------------------------------
 // ElevenLabs Speech to Text Scribe V2
 // ---------------------------------------------------------------------------
 
@@ -1143,6 +1157,9 @@ export type FalNanoBananaEditParams = z.infer<
 >;
 export type FalXaiGrokImagineVideoImageToVideoParams = z.infer<
   typeof FalXaiGrokImagineVideoImageToVideoRequestSchema
+>;
+export type FalXaiGrokImagineVideoReferenceToVideoParams = z.infer<
+  typeof FalXaiGrokImagineVideoReferenceToVideoRequestSchema
 >;
 export type FalVeo3p1TextToVideoParams = z.infer<
   typeof FalVeo3p1TextToVideoRequestSchema
